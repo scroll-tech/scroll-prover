@@ -1,0 +1,13 @@
+[package]
+name = "common"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
+base64 = "0.13.0"
+ethers-core = "0.6.0"
+serde = "1.0"
+serde_derive = "1.0"
