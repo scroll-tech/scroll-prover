@@ -263,8 +263,8 @@ pub struct StorageProofWrapper {
 
 #[cfg(test)]
 pub mod test {
-    use crate::protocol::eth::{AccountProofWrapper, BlockResult, BlockResultWrapper};
-    use crate::protocol::roller::{Msg, Type};
+    use crate::eth::{AccountProofWrapper, BlockResult, BlockResultWrapper};
+    use crate::roller::{Msg, Type};
     use eth_types::{Address, H256, U256};
 
     #[test]

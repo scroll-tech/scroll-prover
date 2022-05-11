@@ -1,4 +1,5 @@
 pub mod eth;
+pub mod roller;
 
 pub mod base64 {
     use base64::{decode, encode};
