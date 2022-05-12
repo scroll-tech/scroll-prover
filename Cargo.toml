@@ -1,7 +1,8 @@
-[package]
-name = "common"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = [
+    "types",
+    "zkevm",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [patch.crates-io]
@@ -11,11 +12,3 @@ edition = "2021"
 # is resolved: https://github.com/bitvecto-rs/bitvec/pull/141
 bitvec = { git = "https://github.com/ed255/bitvec.git", rev = "5cfc5fa8496c66872d21905e677120fc3e79693c" }
 
-[dependencies]
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
-base64 = "0.13.0"
-ethers-core = "0.6.0"
-serde = "1.0"
-serde_json = "1.0.66"
-serde_repr = "0.1"
-serde_derive = "1.0"
