@@ -1,11 +1,11 @@
 use crate::keygen::{gen_evm_pk, gen_state_pk};
 use crate::utils::{init_params, init_rng, load_randomness_and_circuits};
 use anyhow::Error;
-use halo2_proofs::plonk::{create_proof, Circuit, ProvingKey};
+use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::transcript::{Blake2bWrite, Challenge255};
-use pairing::bn256::{Fr, G1Affine};
-use zkevm_circuits::evm_circuit::witness::Block;
+use pairing::bn256::G1Affine;
+use rand_xorshift::XorShiftRng;
 
 pub struct Prover {
     pub params: Params<G1Affine>,
@@ -32,7 +32,7 @@ impl Prover {
         }
     }
 
-    pub fn with_fpath(params_fpath: &str, seed_fpath: XorShiftRng) -> Self {
+    pub fn with_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
         let params = init_params(params_fpath);
         let rng = init_rng(seed_fpath);
         let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm proving key");

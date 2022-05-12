@@ -27,7 +27,7 @@ pub fn gen_state_vk(params: &Params<G1Affine>) -> Result<VerifyingKey<G1Affine>,
 pub fn gen_state_pk(params: &Params<G1Affine>) -> Result<ProvingKey<G1Affine>, Error> {
     let state_vk = gen_state_vk(params)?;
     let state_circuit = create_state_circuit();
-    keygen_pk(&params, state_vk.clone(), &state_circuit)
+    keygen_pk(&params, state_vk, &state_circuit)
 }
 
 fn test_circuit() -> impl Circuit<Fr> {

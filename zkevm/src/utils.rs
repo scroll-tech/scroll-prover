@@ -1,7 +1,10 @@
 use crate::circuit::{block_result_to_circuits, DEGREE};
+use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::plonk::Circuit;
 use halo2_proofs::poly::commitment::Params;
 use pairing::bn256::{Bn256, Fr, G1Affine};
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
