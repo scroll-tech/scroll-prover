@@ -12,7 +12,7 @@ use types::eth::test::mock_block_result;
 use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 
 /// generate (randomness, evm_circuit, state_circuit)
-pub fn load_randomness_and_circuits() -> (Vec<&'static [Fr]>, impl Circuit<Fr>, impl Circuit<Fr>) {
+pub fn load_randomness_and_circuits() -> (Vec<Box<[Fr]>>, impl Circuit<Fr>, impl Circuit<Fr>) {
     let block_result = mock_block_result();
     let (block, evm_circuit, state_circuit) = block_result_to_circuits::<Fr>(block_result).unwrap();
     let power_of_randomness: Vec<Box<[Fr]>> = (1..32)
@@ -24,8 +24,7 @@ pub fn load_randomness_and_circuits() -> (Vec<&'static [Fr]>, impl Circuit<Fr>, 
             .into_boxed_slice()
         })
         .collect();
-    let randomness = power_of_randomness.iter().map(AsRef::as_ref).collect();
-    (randomness, evm_circuit, state_circuit)
+    (power_of_randomness, evm_circuit, state_circuit)
 }
 
 /// return setup params by reading from file or generate new one

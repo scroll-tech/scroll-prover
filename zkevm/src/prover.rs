@@ -1,11 +1,15 @@
+use crate::circuit::block_result_to_circuits;
 use crate::keygen::{gen_evm_pk, gen_state_pk};
-use crate::utils::{init_params, init_rng, load_randomness_and_circuits};
+use crate::utils::{init_params, init_rng};
 use anyhow::Error;
+use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::transcript::{Blake2bWrite, Challenge255};
-use pairing::bn256::G1Affine;
+use pairing::bn256::{Fr, G1Affine};
 use rand_xorshift::XorShiftRng;
+use types::eth::test::mock_block_result;
+use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 
 pub struct Prover {
     pub params: Params<G1Affine>,
@@ -46,7 +50,8 @@ impl Prover {
     }
 
     pub fn create_evm_proof(&self) -> Result<Vec<u8>, Error> {
-        let circuit = load_randomness_and_circuits().1;
+        let block_result = mock_block_result();
+        let (_, circuit, _) = block_result_to_circuits::<Fr>(block_result)?;
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
@@ -54,22 +59,34 @@ impl Prover {
             &self.evm_pk,
             &[circuit],
             &[&[]],
-            self.rng,
+            self.rng.clone(),
             &mut transacript,
         )?;
         Ok(transacript.finalize())
     }
 
     pub fn create_state_proof(&self) -> Result<Vec<u8>, Error> {
-        let (power_of_randomness, _, circuit) = load_randomness_and_circuits();
+        let block_result = mock_block_result();
+        let (block, _, circuit) = block_result_to_circuits::<Fr>(block_result).unwrap();
+        let power_of_randomness: Vec<Box<[Fr]>> = (1..32)
+            .map(|exp| {
+                vec![
+                    block.randomness.pow(&[exp, 0, 0, 0]);
+                    block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>() * STEP_HEIGHT
+                ]
+                .into_boxed_slice()
+            })
+            .collect();
+        let randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
             &self.params,
             &self.state_pk,
             &[circuit],
-            &[&power_of_randomness],
-            self.rng,
+            &[&randomness],
+            self.rng.clone(),
             &mut transacript,
         )?;
         Ok(transacript.finalize())
