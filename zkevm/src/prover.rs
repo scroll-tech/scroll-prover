@@ -1,4 +1,5 @@
-use crate::utils::load_randomness_and_circuit;
+use crate::keygen::{gen_evm_pk, gen_state_pk};
+use crate::utils::{init_params, init_rng, load_randomness_and_circuits};
 use anyhow::Error;
 use halo2_proofs::plonk::{create_proof, Circuit, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
@@ -31,7 +32,21 @@ impl Prover {
         }
     }
 
-    pub fn create_evm_proof(&self, circuit: impl Circuit<Fr>) -> Result<Vec<u8>, Error> {
+    pub fn with_fpath(params_fpath: &str, seed_fpath: XorShiftRng) -> Self {
+        let params = init_params(params_fpath);
+        let rng = init_rng(seed_fpath);
+        let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm proving key");
+        let state_pk = gen_state_pk(&params).expect("Failed to generate state proving key");
+        Self {
+            params,
+            rng,
+            evm_pk,
+            state_pk,
+        }
+    }
+
+    pub fn create_evm_proof(&self) -> Result<Vec<u8>, Error> {
+        let circuit = load_randomness_and_circuits().1;
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
@@ -45,8 +60,8 @@ impl Prover {
         Ok(transacript.finalize())
     }
 
-    pub fn create_state_proof(&self, circuit: impl Circuit<Fr>) -> Result<Vec<u8>, Error> {
-        let power_of_randomness = load_randomness_and_circuit();
+    pub fn create_state_proof(&self) -> Result<Vec<u8>, Error> {
+        let (power_of_randomness, _, circuit) = load_randomness_and_circuits();
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
