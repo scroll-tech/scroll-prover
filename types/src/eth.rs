@@ -261,7 +261,7 @@ pub struct StorageProofWrapper {
     pub proof: Option<Vec<Bytes>>,
 }
 
-#[cfg(test)]
+#[cfg(any(feature = "test", test))]
 pub mod test {
     use crate::eth::{AccountProofWrapper, BlockResult, BlockResultWrapper};
     use crate::roller::{Msg, Type};
