@@ -234,11 +234,11 @@ pub struct ExtraData {
 }
 
 impl ExtraData {
-    pub(crate) fn get_code_at(&self, i: usize) -> Bytes {
+    pub fn get_code_at(&self, i: usize) -> Bytes {
         self.code_list.as_ref().unwrap().get(i).cloned().unwrap()
     }
 
-    pub(crate) fn get_proof_at(&self, i: usize) -> AccountProofWrapper {
+    pub fn get_proof_at(&self, i: usize) -> AccountProofWrapper {
         self.proof_list.as_ref().unwrap().get(i).cloned().unwrap()
     }
 }

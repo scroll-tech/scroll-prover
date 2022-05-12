@@ -6,3 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256" }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", rev = "a49778f5" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8", features = ["test"] }
+is-even = "1.0.0"
+ethers-core = "0.6.0"
+hex = "0.4.3"
+types = { path = "../types" }
+log = "0.4"
+anyhow = "1.0"
