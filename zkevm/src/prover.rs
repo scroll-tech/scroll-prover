@@ -40,10 +40,10 @@ impl Prover {
         let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm proving key");
         let state_pk = gen_state_pk(&params).expect("Failed to generate state proving key");
         Self {
-            params: params,
+            params,
             rng,
-            evm_pk: evm_pk,
-            state_pk: state_pk,
+            evm_pk,
+            state_pk,
         }
     }
 
