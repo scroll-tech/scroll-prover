@@ -30,7 +30,7 @@ fn test_evm_prove_verify() {
 #[test]
 fn test_state_prove_verify() {
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
-    let _: XorShiftRng = load_or_create_rng(RNG_PATH).unwrap();
+    let _ = load_or_create_rng(RNG_PATH).unwrap();
 
     let block_result = mock_block_result();
 
