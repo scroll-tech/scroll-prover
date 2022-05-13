@@ -1,6 +1,5 @@
-use crate::circuit::{block_result_to_circuits, DEGREE};
+use crate::circuit::DEGREE;
 use halo2_proofs::arithmetic::BaseExt;
-use halo2_proofs::plonk::Circuit;
 use halo2_proofs::poly::commitment::Params;
 use pairing::bn256::{Bn256, Fr, G1Affine};
 use rand::SeedableRng;
@@ -8,13 +7,11 @@ use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
-use types::eth::test::mock_block_result;
 use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
+use zkevm_circuits::evm_circuit::witness::Block;
 
 /// generate (randomness, evm_circuit, state_circuit)
-pub fn load_randomness_and_circuits() -> (Vec<Box<[Fr]>>, impl Circuit<Fr>, impl Circuit<Fr>) {
-    let block_result = mock_block_result();
-    let (block, evm_circuit, state_circuit) = block_result_to_circuits::<Fr>(block_result).unwrap();
+pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
     let power_of_randomness: Vec<Box<[Fr]>> = (1..32)
         .map(|exp| {
             vec![
@@ -24,7 +21,7 @@ pub fn load_randomness_and_circuits() -> (Vec<Box<[Fr]>>, impl Circuit<Fr>, impl
             .into_boxed_slice()
         })
         .collect();
-    (power_of_randomness, evm_circuit, state_circuit)
+    power_of_randomness
 }
 
 /// return setup params by reading from file or generate new one
