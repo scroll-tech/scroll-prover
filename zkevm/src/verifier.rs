@@ -83,13 +83,3 @@ impl Verifier {
         .is_ok()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::verifier::Verifier;
-
-    #[test]
-    fn test_verify_evm_proof() {
-        let verifier = Verifier::with_fpath("./test_params");
-    }
-}
