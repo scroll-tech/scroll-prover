@@ -10,7 +10,7 @@ use std::path::Path;
 use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 use zkevm_circuits::evm_circuit::witness::Block;
 
-/// generate (randomness, evm_circuit, state_circuit)
+/// generate randomness for the block
 pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
     let power_of_randomness: Vec<Box<[Fr]>> = (1..32)
         .map(|exp| {
