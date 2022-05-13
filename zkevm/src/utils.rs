@@ -5,7 +5,7 @@ use pairing::bn256::{Bn256, Fr, G1Affine};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use std::fs::File;
-use std::io::{BufReader, Read, Write};
+use std::io::{BufReader, Read, Result, Write};
 use std::path::Path;
 use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 use zkevm_circuits::evm_circuit::witness::Block;
@@ -25,55 +25,58 @@ pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
 }
 
 /// return setup params by reading from file or generate new one
-pub fn init_params(params_path: &str) -> Params<G1Affine> {
-    log::info!("start init params");
+pub fn load_or_create_params(params_path: &str) -> Result<Params<G1Affine>> {
+    if Path::new(params_path).exists() {
+        load_params(params_path)
+    } else {
+        create_params(params_path)
+    }
+}
 
-    // Create the `params` file if non-existing.
-    let params = match File::open(&params_path) {
-        Ok(fs) => Params::read::<_>(&mut BufReader::new(fs)).expect("Failed to read params"),
-        Err(_) => {
-            let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(DEGREE as u32);
-            let mut params_buf = Vec::new();
-            params
-                .write(&mut params_buf)
-                .expect("Failed to write params");
+pub fn load_params(params_path: &str) -> Result<Params<G1Affine>> {
+    log::info!("start load params");
+    let f = File::open(params_path)?;
+    let p = Params::read::<_>(&mut BufReader::new(f))?;
+    log::info!("load params successfully!");
+    Ok(p)
+}
 
-            let mut params_file =
-                File::create(&params_path).expect("Failed to create sha256_params");
-            params_file
-                .write_all(&params_buf[..])
-                .expect("Failed to write params to file");
+pub fn create_params(params_path: &str) -> Result<Params<G1Affine>> {
+    log::info!("start create params");
+    let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(DEGREE as u32);
+    let mut params_buf = Vec::new();
+    params.write(&mut params_buf)?;
 
-            params
-        }
-    };
-    log::info!("init params successfully!");
-    params
+    let mut params_file = File::create(&params_path)?;
+    params_file.write_all(&params_buf[..])?;
+    log::info!("create params successfully!");
+    Ok(params)
 }
 
 /// return setup rng by reading from file or generate new one
-pub fn init_rng(seed_path: &str) -> XorShiftRng {
+pub fn load_or_create_rng(seed_path: &str) -> Result<XorShiftRng> {
+    if Path::new(seed_path).exists() {
+        load_rng(seed_path)
+    } else {
+        create_rng(seed_path)
+    }
+}
+
+pub fn load_rng(seed_path: &str) -> Result<XorShiftRng> {
+    let mut seed_fs = File::open(seed_path)?;
+    let mut seed = [0_u8; 16];
+    seed_fs.read_exact(&mut seed)?;
+    Ok(XorShiftRng::from_seed(seed))
+}
+
+pub fn create_rng(seed_path: &str) -> Result<XorShiftRng> {
     // TODO: use better randomness source
     const RNG_SEED_BYTES: [u8; 16] = [
         0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
         0xe5,
     ];
 
-    // Create the `seed` file if non-existing.
-    let seed_path = Path::new(seed_path);
-    let rng = if !seed_path.exists() {
-        let mut seed_file = File::create(&seed_path).expect("Failed to create rng seed");
-        seed_file
-            .write_all(RNG_SEED_BYTES.as_slice())
-            .expect("Failed to write rng-seed to file");
-        XorShiftRng::from_seed(RNG_SEED_BYTES)
-    } else {
-        let mut seed_fs = File::open(seed_path).expect("Cannot load seed");
-        let mut seed = [0_u8; 16];
-        seed_fs
-            .read_exact(&mut seed)
-            .expect("Failed read seed from file");
-        XorShiftRng::from_seed(seed)
-    };
-    rng
+    let mut seed_file = File::create(&seed_path)?;
+    seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
+    Ok(XorShiftRng::from_seed(RNG_SEED_BYTES))
 }

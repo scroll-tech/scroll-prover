@@ -1,6 +1,6 @@
 use crate::circuit::block_result_to_circuits;
 use crate::keygen::{gen_evm_vk, gen_state_vk};
-use crate::utils::{init_params, load_randomness};
+use crate::utils::{load_params, load_randomness};
 use halo2_proofs::plonk::verify_proof;
 use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
@@ -10,7 +10,10 @@ use types::eth::test::mock_block_result;
 
 pub struct Verifier {
     params: Params<G1Affine>,
+
+    /// evm circuit vk
     evm_vk: VerifyingKey<G1Affine>,
+    /// evm circuit vk
     state_vk: VerifyingKey<G1Affine>,
 }
 
@@ -27,7 +30,7 @@ impl Verifier {
         }
     }
     pub fn with_fpath(params_path: &str) -> Self {
-        let params = init_params(params_path);
+        let params = load_params(params_path).expect("failed to init params");
         let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm verifier key");
         let state_vk = gen_state_vk(&params).expect("Failed to generate state verifier key");
         Self {
@@ -78,5 +81,15 @@ impl Verifier {
             &mut transcript,
         )
         .is_ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::verifier::Verifier;
+
+    #[test]
+    fn test_verify_evm_proof() {
+        let verifier = Verifier::with_fpath("./test_params");
     }
 }
