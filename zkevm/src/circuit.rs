@@ -30,7 +30,7 @@ pub fn create_state_circuit() -> StateCircuit<Fr> {
 }
 
 pub fn block_result_to_circuits<F: Field>(
-    block_result: BlockResult,
+    block_result: &BlockResult,
 ) -> Result<(Block<Fr>, impl Circuit<Fr>, impl Circuit<Fr>), anyhow::Error> {
     let chain_id = if let Some(tx_trace) = block_result.block_trace.transactions.get(0) {
         tx_trace.chain_id
@@ -47,7 +47,7 @@ pub fn block_result_to_circuits<F: Field>(
 
     // TODO: Get the history_hashes.
     let circuit_block = cBlock::new(chain_id, Vec::new(), &eth_block)?;
-    let (state_db, code_db) = build_statedb_and_codedb(&block_result)?;
+    let (state_db, code_db) = build_statedb_and_codedb(block_result)?;
 
     let mut builder = CircuitInputBuilder::new(state_db, code_db, circuit_block);
     builder.handle_block(&eth_block, geth_trace.as_slice())?;

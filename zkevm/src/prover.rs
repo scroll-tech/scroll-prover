@@ -47,7 +47,7 @@ impl Prover {
         }
     }
 
-    pub fn create_evm_proof(&self, block_result: BlockResult) -> Result<Vec<u8>, Error> {
+    pub fn create_evm_proof(&self, block_result: &BlockResult) -> Result<Vec<u8>, Error> {
         let (_, circuit, _) = block_result_to_circuits::<Fr>(block_result)?;
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
@@ -62,7 +62,7 @@ impl Prover {
         Ok(transacript.finalize())
     }
 
-    pub fn create_state_proof(&self, block_result: BlockResult) -> Result<Vec<u8>, Error> {
+    pub fn create_state_proof(&self, block_result: &BlockResult) -> Result<Vec<u8>, Error> {
         let (block, _, circuit) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
         let randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();

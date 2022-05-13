@@ -23,4 +23,4 @@ blake2 = "0.10.3"
 
 [features]
 default = []
-test = []
+prove_verify = []

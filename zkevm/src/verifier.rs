@@ -6,7 +6,7 @@ use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
 use halo2_proofs::transcript::{Blake2bRead, Challenge255};
 use pairing::bn256::{Bn256, Fr, G1Affine};
-use types::eth::test::mock_block_result;
+use types::eth::BlockResult;
 
 pub struct Verifier {
     params: Params<G1Affine>,
@@ -40,8 +40,7 @@ impl Verifier {
         }
     }
 
-    pub fn verify_evm_proof(&self, proof: Vec<u8>) -> bool {
-        let block_result = mock_block_result();
+    pub fn verify_evm_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
 
@@ -61,8 +60,7 @@ impl Verifier {
         .is_ok()
     }
 
-    pub fn verify_state_proof(&self, proof: Vec<u8>) -> bool {
-        let block_result = mock_block_result();
+    pub fn verify_state_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
         let randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
