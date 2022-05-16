@@ -29,6 +29,13 @@ impl Verifier {
             state_vk,
         }
     }
+
+    pub fn with_params(params: Params<G1Affine>) -> Self {
+        let evm_vk = gen_evm_vk(&params).expect("failed to generate evm vk");
+        let state_vk = gen_state_vk(&params).expect("failed to generate state vk");
+        Self::new(params, evm_vk, state_vk)
+    }
+
     pub fn with_fpath(params_path: &str) -> Self {
         let params = load_params(params_path).expect("failed to init params");
         let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm verifier key");
