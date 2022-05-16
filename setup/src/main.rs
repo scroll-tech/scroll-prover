@@ -1,0 +1,26 @@
+use clap::Parser;
+use zkevm::utils::{load_or_create_params, load_or_create_rng};
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// generate params and write into file
+    #[clap(short, long = "params")]
+    params_path: Option<String>,
+    /// generate seed and write into file
+    #[clap(short, long = "seed")]
+    seed_path: Option<String>,
+}
+
+fn main() {
+    dotenv::dotenv().ok();
+    env_logger::init();
+
+    let args = Args::parse();
+    if let Some(path) = args.params_path {
+        load_or_create_params(&path).expect("failed to load or create params");
+    }
+    if let Some(path) = args.seed_path {
+        load_or_create_rng(&path).expect("failed to load or create rng");
+    }
+}
