@@ -261,43 +261,14 @@ pub struct StorageProofWrapper {
     pub proof: Option<Vec<Bytes>>,
 }
 
-#[cfg(any(feature = "test", test))]
-pub mod test {
-    use crate::eth::{AccountProofWrapper, BlockResult, BlockResultWrapper};
-    use crate::roller::{Msg, Type};
-    use eth_types::{Address, H256, U256};
-
-    #[test]
-    fn codec_traces() {
-        let msg = mock_trace_msg();
-        let msg_str = serde_json::to_string(&msg).unwrap();
-
-        let decoded_msg = serde_json::from_str::<Msg>(&msg_str).unwrap();
-        serde_json::from_slice::<BlockResultWrapper>(&decoded_msg.payload).unwrap();
-        assert_eq!(msg, decoded_msg);
-    }
-
-    pub fn mock_trace_msg() -> Msg {
-        let block_result = BlockResultWrapper {
-            block_result: mock_block_result(),
-            ..Default::default()
-        };
-        let block_result_json = serde_json::to_vec(&block_result).unwrap();
-        Msg {
-            msg_type: Type::EvmTrace,
-            payload: block_result_json,
-        }
-    }
-
-    pub fn mock_block_result() -> BlockResult {
-        let mut block_result = BlockResult::default();
-        block_result.block_trace.coinbase = AccountProofWrapper {
-            address: Some(Address::from_slice("12345678901234567890".as_bytes())),
-            nonce: Some(100),
-            balance: Some(U256::from(100)),
-            code_hash: Some(H256::zero()),
-            ..Default::default()
-        };
-        block_result
-    }
+pub fn mock_block_result() -> BlockResult {
+    let mut block_result = BlockResult::default();
+    block_result.block_trace.coinbase = AccountProofWrapper {
+        address: Some(Address::from_slice("12345678901234567890".as_bytes())),
+        nonce: Some(100),
+        balance: Some(U256::from(100)),
+        code_hash: Some(H256::zero()),
+        ..Default::default()
+    };
+    block_result
 }
