@@ -2,8 +2,6 @@ use crate::circuit::DEGREE;
 use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::poly::commitment::Params;
 use pairing::bn256::{Bn256, Fr, G1Affine};
-use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::{BufReader, Read, Result, Write};
 use std::path::Path;
@@ -54,22 +52,22 @@ pub fn create_params(params_path: &str) -> Result<Params<G1Affine>> {
 }
 
 /// return setup rng by reading from file or generate new one
-pub fn load_or_create_rng(seed_path: &str) -> Result<XorShiftRng> {
+pub fn load_or_create_seed(seed_path: &str) -> Result<[u8; 16]> {
     if Path::new(seed_path).exists() {
-        load_rng(seed_path)
+        load_seed(seed_path)
     } else {
-        create_rng(seed_path)
+        create_seed(seed_path)
     }
 }
 
-pub fn load_rng(seed_path: &str) -> Result<XorShiftRng> {
+pub fn load_seed(seed_path: &str) -> Result<[u8; 16]> {
     let mut seed_fs = File::open(seed_path)?;
     let mut seed = [0_u8; 16];
     seed_fs.read_exact(&mut seed)?;
-    Ok(XorShiftRng::from_seed(seed))
+    Ok(seed)
 }
 
-pub fn create_rng(seed_path: &str) -> Result<XorShiftRng> {
+pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
     // TODO: use better randomness source
     const RNG_SEED_BYTES: [u8; 16] = [
         0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
@@ -78,5 +76,5 @@ pub fn create_rng(seed_path: &str) -> Result<XorShiftRng> {
 
     let mut seed_file = File::create(&seed_path)?;
     seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
-    Ok(XorShiftRng::from_seed(RNG_SEED_BYTES))
+    Ok(RNG_SEED_BYTES)
 }

@@ -1,5 +1,5 @@
 use clap::Parser;
-use zkevm::utils::{load_or_create_params, load_or_create_rng};
+use zkevm::utils::{load_or_create_params, load_or_create_seed};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -21,6 +21,6 @@ fn main() {
         load_or_create_params(&path).expect("failed to load or create params");
     }
     if let Some(path) = args.seed_path {
-        load_or_create_rng(&path).expect("failed to load or create rng");
+        load_or_create_seed(&path).expect("failed to load or create seed");
     }
 }

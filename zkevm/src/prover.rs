@@ -1,11 +1,12 @@
 use crate::circuit::block_result_to_circuits;
 use crate::keygen::{gen_evm_pk, gen_state_pk};
-use crate::utils::{load_params, load_randomness, load_rng};
+use crate::utils::{load_params, load_randomness, load_seed};
 use anyhow::Error;
 use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::transcript::{Blake2bWrite, Challenge255};
 use pairing::bn256::{Fr, G1Affine};
+use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use types::eth::BlockResult;
 
@@ -42,7 +43,8 @@ impl Prover {
 
     pub fn with_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
         let params = load_params(params_fpath).expect("failed to init params");
-        let rng = load_rng(seed_fpath).expect("failed to init rng");
+        let seed = load_seed(seed_fpath).expect("failed to init rng");
+        let rng = XorShiftRng::from_seed(seed);
         let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm proving key");
         let state_pk = gen_state_pk(&params).expect("Failed to generate state proving key");
         Self {
