@@ -9,7 +9,7 @@ use zkevm::utils::{load_or_create_params, load_or_create_rng};
 use zkevm::verifier::Verifier;
 
 const PARAMS_PATH: &str = "./test_params";
-const RNG_PATH: &str = "./test_rng.json";
+const RNG_PATH: &str = "./test_rng";
 
 #[cfg(feature = "prove_verify")]
 #[test]
