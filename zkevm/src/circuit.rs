@@ -140,7 +140,8 @@ fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), an
             }
         }
 
-        trace_proof(&mut sdb, er.sender.clone().unwrap());
+        trace_proof(&mut sdb, er.to.clone().unwrap());
+        trace_proof(&mut sdb, er.from.clone().unwrap());
     }
 
     trace_proof(&mut sdb, block.block_trace.coinbase.clone());

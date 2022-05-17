@@ -143,8 +143,8 @@ pub struct ExecutionResult {
     pub failed: bool,
     #[serde(rename = "returnValue", default)]
     pub return_value: String,
-    #[serde(rename = "sender")]
-    pub sender: Option<AccountProofWrapper>,
+    pub from: Option<AccountProofWrapper>,
+    pub to: Option<AccountProofWrapper>,
     #[serde(rename = "codeHash")]
     pub code_hash: Option<Hash>,
     #[serde(rename = "byteCode")]
