@@ -1,9 +1,4 @@
-use halo2_proofs::plonk::{ProvingKey, VerifyingKey};
-use halo2_proofs::poly::commitment::Params;
-use pairing::bn256::G1Affine;
-use rand_xorshift::XorShiftRng;
 use types::eth::mock_block_result;
-use zkevm::keygen::{gen_evm_pk, gen_evm_vk, gen_state_pk, gen_state_vk};
 use zkevm::prover::Prover;
 use zkevm::utils::{load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
