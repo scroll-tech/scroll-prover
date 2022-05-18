@@ -48,27 +48,19 @@ impl Verifier {
     }
 
     pub fn verify_evm_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
-        let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
-        let power_of_randomness = load_randomness(block);
-        let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
-
-        let verifier_params: ParamsVerifier<Bn256> =
-            self.params.verifier(power_of_randomness[0].len()).unwrap();
-
-        let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
-        let strategy = SingleVerifier::new(&verifier_params);
-
-        verify_proof(
-            &verifier_params,
-            &self.evm_vk,
-            strategy,
-            &[&[]],
-            &mut transcript,
-        )
-        .is_ok()
+        self.verify_proof(&self.evm_vk, proof, block_result)
     }
 
     pub fn verify_state_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
+        self.verify_proof(&self.state_vk, proof, block_result)
+    }
+
+    fn verify_proof(
+        &self,
+        vk: &VerifyingKey<G1Affine>,
+        proof: Vec<u8>,
+        block_result: &BlockResult,
+    ) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
         let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
@@ -81,7 +73,7 @@ impl Verifier {
 
         verify_proof(
             &verifier_params,
-            &self.state_vk,
+            vk,
             strategy,
             &[&power_of_randomness],
             &mut transcript,
