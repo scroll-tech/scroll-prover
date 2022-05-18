@@ -1,3 +1,4 @@
+use std::time::Instant;
 use types::eth::mock_block_result;
 use zkevm::prover::Prover;
 use zkevm::utils::{load_or_create_params, load_or_create_seed};
@@ -34,12 +35,17 @@ fn test_state_prove_verify() {
     let block_result = mock_block_result();
 
     log::info!("start generating state proof");
+    let now = Instant::now();
     let prover = Prover::with_fpath(PARAMS_PATH, SEED_PATH);
     let proof = prover.create_state_proof(&block_result).unwrap();
-    log::info!("finish generating state proof");
+    log::info!(
+        "finish generating state proof, elapsed: {:?}",
+        now.elapsed()
+    );
 
     log::info!("start verifying state proof");
+    let now = Instant::now();
     let verifier = Verifier::with_fpath(PARAMS_PATH);
-    log::info!("finish verifying state proof");
+    log::info!("finish verifying state proof, elapsed: {:?}", now.elapsed());
     assert!(verifier.verify_state_proof(proof, &block_result));
 }
