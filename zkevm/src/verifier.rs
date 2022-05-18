@@ -50,6 +50,7 @@ impl Verifier {
     pub fn verify_evm_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
+        let randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
 
         let verifier_params: ParamsVerifier<Bn256> =
             self.params.verifier(power_of_randomness[0].len()).unwrap();
