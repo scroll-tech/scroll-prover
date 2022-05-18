@@ -2653,6 +2653,7 @@ dependencies = [
  "anyhow",
  "blake2",
  "bus-mapping",
+ "dotenv",
  "eth-types",
  "ethers-core",
  "halo2_proofs",

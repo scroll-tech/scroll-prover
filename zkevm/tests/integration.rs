@@ -10,6 +10,8 @@ const SEED_PATH: &str = "./test_seed";
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_evm_prove_verify() {
+    dotenv::dotenv().ok();
+
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
@@ -31,6 +33,8 @@ fn test_evm_prove_verify() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_prove_verify() {
+    dotenv::dotenv().ok();
+
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
