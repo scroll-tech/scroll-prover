@@ -65,7 +65,7 @@ impl Verifier {
             &[&[]],
             &mut transcript,
         )
-            .is_ok()
+        .is_ok()
     }
 
     pub fn verify_state_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
@@ -86,7 +86,6 @@ impl Verifier {
             &[&power_of_randomness],
             &mut transcript,
         )
-            .is_ok()
+        .is_ok()
     }
-
 }
