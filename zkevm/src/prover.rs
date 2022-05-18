@@ -35,13 +35,13 @@ impl Prover {
         }
     }
 
-    pub fn with_params_and_rng(params: Params<G1Affine>, rng: XorShiftRng) -> Self {
+    pub fn from_params_and_rng(params: Params<G1Affine>, rng: XorShiftRng) -> Self {
         let evm_pk = gen_evm_pk(&params).expect("failed to generate evm pk");
         let state_pk = gen_state_pk(&params).expect("failed to generate state pk");
         Self::new(params, rng, evm_pk, state_pk)
     }
 
-    pub fn with_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
+    pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
         let params = load_params(params_fpath).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         let rng = XorShiftRng::from_seed(seed);

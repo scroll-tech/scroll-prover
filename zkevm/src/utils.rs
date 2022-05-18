@@ -51,7 +51,7 @@ pub fn create_params(params_path: &str) -> Result<Params<G1Affine>> {
     Ok(params)
 }
 
-/// return setup rng by reading from file or generate new one
+/// return random seed by reading from file or generate new one
 pub fn load_or_create_seed(seed_path: &str) -> Result<[u8; 16]> {
     if Path::new(seed_path).exists() {
         load_seed(seed_path)
