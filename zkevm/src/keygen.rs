@@ -24,6 +24,7 @@ pub fn gen_state_vk(params: &Params<G1Affine>) -> Result<VerifyingKey<G1Affine>,
     keygen_vk(params, &state_circuit)
 }
 
+/// generate state proving key
 pub fn gen_state_pk(params: &Params<G1Affine>) -> Result<ProvingKey<G1Affine>, Error> {
     let state_vk = gen_state_vk(params)?;
     let state_circuit = create_state_circuit();
