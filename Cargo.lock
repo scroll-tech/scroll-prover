@@ -2654,6 +2654,7 @@ dependencies = [
  "blake2",
  "bus-mapping",
  "dotenv",
+ "env_logger",
  "eth-types",
  "ethers-core",
  "halo2_proofs",

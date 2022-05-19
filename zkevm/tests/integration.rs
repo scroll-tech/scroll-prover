@@ -11,6 +11,7 @@ const SEED_PATH: &str = "./test_seed";
 #[test]
 fn test_evm_prove_verify() {
     dotenv::dotenv().ok();
+    env_logger::init();
 
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
@@ -34,6 +35,7 @@ fn test_evm_prove_verify() {
 #[test]
 fn test_state_prove_verify() {
     dotenv::dotenv().ok();
+    env_logger::init();
 
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
