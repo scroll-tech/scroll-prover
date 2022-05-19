@@ -2664,6 +2664,8 @@ dependencies = [
  "pairing_bn256",
  "rand",
  "rand_xorshift",
+ "serde",
+ "serde_json",
  "types",
  "zkevm-circuits",
 ]
