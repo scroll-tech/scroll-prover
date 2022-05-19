@@ -75,7 +75,7 @@ fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
 
     #[derive(Deserialize, Serialize, Default)]
     struct RpcJson {
-        result: crate::protocol::eth::BlockResult,
+        result: BlockResult,
     }
 
     let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
