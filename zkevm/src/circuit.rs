@@ -140,11 +140,11 @@ fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), an
             }
         }
 
-        trace_proof(&mut sdb, er.to.clone().unwrap());
-        trace_proof(&mut sdb, er.from.clone().unwrap());
+        trace_proof(&mut sdb, er.to.clone());
+        trace_proof(&mut sdb, er.from.clone());
     }
 
-    trace_proof(&mut sdb, block.block_trace.coinbase.clone());
+    trace_proof(&mut sdb, Some(block.block_trace.coinbase.clone()));
 
     Ok((sdb, cdb))
 }
@@ -153,7 +153,13 @@ fn trace_code(cdb: &mut CodeDB, code: Bytes) {
     cdb.insert(code.to_vec());
 }
 
-fn trace_proof(sdb: &mut StateDB, proof: AccountProofWrapper) {
+fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
+    // `to` may be empty
+    if proof.is_none() {
+        return;
+    }
+    let proof = proof.unwrap();
+
     let (found, acc) = sdb.get_account(&proof.address.unwrap());
     let mut storage = match found {
         true => acc.storage.clone(),

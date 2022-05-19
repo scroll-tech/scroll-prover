@@ -238,8 +238,8 @@ impl ExtraData {
         self.code_list.as_ref().unwrap().get(i).cloned().unwrap()
     }
 
-    pub fn get_proof_at(&self, i: usize) -> AccountProofWrapper {
-        self.proof_list.as_ref().unwrap().get(i).cloned().unwrap()
+    pub fn get_proof_at(&self, i: usize) -> Option<AccountProofWrapper> {
+        self.proof_list.as_ref().unwrap().get(i).cloned()
     }
 }
 
