@@ -190,23 +190,9 @@ pub struct ExecStep {
 
 impl From<&ExecStep> for GethExecStep {
     fn from(e: &ExecStep) -> Self {
-        let stack = if let Some(stack) = e.stack.clone() {
-            Stack::from(stack)
-        } else {
-            Stack::new()
-        };
-
-        let memory = if let Some(memory) = e.memory.clone() {
-            Memory::from(memory)
-        } else {
-            Memory::new()
-        };
-
-        let storage = if let Some(storage) = e.storage.clone() {
-            Storage::from(storage)
-        } else {
-            Storage::empty()
-        };
+        let stack = e.stack.clone().map_or_else(Stack::new, Stack::from);
+        let memory = e.memory.clone().map_or_else(Memory::new, Memory::from);
+        let storage = e.storage.clone().map_or_else(Storage::empty, Storage::from);
 
         GethExecStep {
             pc: ProgramCounter(e.pc as usize),
