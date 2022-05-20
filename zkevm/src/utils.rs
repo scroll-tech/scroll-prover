@@ -2,9 +2,11 @@ use crate::circuit::DEGREE;
 use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::poly::commitment::Params;
 use pairing::bn256::{Bn256, Fr, G1Affine};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, Read, Result, Write};
 use std::path::Path;
+use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 use zkevm_circuits::evm_circuit::witness::Block;
 
@@ -31,6 +33,7 @@ pub fn load_or_create_params(params_path: &str) -> Result<Params<G1Affine>> {
     }
 }
 
+/// load params from file
 pub fn load_params(params_path: &str) -> Result<Params<G1Affine>> {
     log::info!("start load params");
     let f = File::open(params_path)?;
@@ -39,6 +42,7 @@ pub fn load_params(params_path: &str) -> Result<Params<G1Affine>> {
     Ok(p)
 }
 
+/// create params and write it into file
 pub fn create_params(params_path: &str) -> Result<Params<G1Affine>> {
     log::info!("start create params");
     let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(DEGREE as u32);
@@ -60,6 +64,7 @@ pub fn load_or_create_seed(seed_path: &str) -> Result<[u8; 16]> {
     }
 }
 
+/// load seed from the file
 pub fn load_seed(seed_path: &str) -> Result<[u8; 16]> {
     let mut seed_fs = File::open(seed_path)?;
     let mut seed = [0_u8; 16];
@@ -67,6 +72,7 @@ pub fn load_seed(seed_path: &str) -> Result<[u8; 16]> {
     Ok(seed)
 }
 
+/// create the seed and write it into file
 pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
     // TODO: use better randomness source
     const RNG_SEED_BYTES: [u8; 16] = [
@@ -77,4 +83,20 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
     let mut seed_file = File::create(&seed_path)?;
     seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
     Ok(RNG_SEED_BYTES)
+}
+
+/// get a block-result from file
+pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
+    let mut buffer = Vec::new();
+    let mut f = File::open(path).unwrap();
+    f.read_to_end(&mut buffer).unwrap();
+
+    #[derive(Deserialize, Serialize, Default)]
+    struct RpcJson {
+        result: BlockResult,
+    }
+
+    let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
+
+    j.result
 }

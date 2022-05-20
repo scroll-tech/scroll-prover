@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -6,7 +5,7 @@ use std::sync::Once;
 use std::time::Instant;
 use types::eth::BlockResult;
 use zkevm::prover::Prover;
-use zkevm::utils::{load_or_create_params, load_or_create_seed};
+use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
 
 const PARAMS_PATH: &str = "./test_params";
@@ -67,19 +66,4 @@ fn test_state_prove_verify() {
     let verifier = Verifier::from_fpath(PARAMS_PATH);
     log::info!("finish verifying state proof, elapsed: {:?}", now.elapsed());
     assert!(verifier.verify_state_proof(proof, &block_result));
-}
-
-pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
-    let mut buffer = Vec::new();
-    let mut f = File::open(path).unwrap();
-    f.read_to_end(&mut buffer).unwrap();
-
-    #[derive(Deserialize, Serialize, Default)]
-    struct RpcJson {
-        result: BlockResult,
-    }
-
-    let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
-
-    j.result
 }
