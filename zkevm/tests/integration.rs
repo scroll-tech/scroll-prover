@@ -69,7 +69,7 @@ fn test_state_prove_verify() {
     assert!(verifier.verify_state_proof(proof, &block_result));
 }
 
-fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
+pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
     let mut buffer = Vec::new();
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
