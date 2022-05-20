@@ -1,9 +1,5 @@
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
 use std::sync::Once;
 use std::time::Instant;
-use types::eth::BlockResult;
 use zkevm::prover::Prover;
 use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
