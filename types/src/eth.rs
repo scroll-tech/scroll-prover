@@ -32,7 +32,7 @@ pub struct BlockResult {
     pub execution_results: Vec<ExecutionResult>,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTrace {
     pub number: U64,
     pub hash: Hash,
@@ -48,31 +48,31 @@ pub struct BlockTrace {
 
 pub type EthBlock = Block<Transaction>;
 
-impl BlockTrace {
-    pub fn to_eth_block(&self) -> EthBlock {
+impl From<BlockTrace> for EthBlock {
+    fn from(b: BlockTrace) -> Self {
         let mut transactions = Vec::new();
-        for (tx_idx, tx_trace) in self.transactions.iter().enumerate() {
+        for (tx_idx, tx_trace) in b.transactions.iter().enumerate() {
             let tx_idx = Some(U64::from(tx_idx));
-            let block_hash = Some(self.hash);
-            let block_number = Some(self.number);
+            let block_hash = Some(b.hash);
+            let block_number = Some(b.number);
             let tx = tx_trace.to_eth_tx(block_hash, block_number, tx_idx);
             transactions.push(tx)
         }
         EthBlock {
-            hash: Some(self.hash),
+            hash: Some(b.hash),
             parent_hash: Default::default(),
             uncles_hash: Default::default(),
-            author: self.coinbase.address.unwrap(),
+            author: b.coinbase.address.unwrap(),
             state_root: Default::default(),
             transactions_root: Default::default(),
             receipts_root: Default::default(),
-            number: Some(self.number),
+            number: Some(b.number),
             gas_used: Default::default(),
-            gas_limit: U256::from(self.gas_limit),
+            gas_limit: U256::from(b.gas_limit),
             extra_data: Default::default(),
             logs_bloom: None,
-            timestamp: U256::from(self.time),
-            difficulty: self.difficulty,
+            timestamp: U256::from(b.time),
+            difficulty: b.difficulty,
             total_difficulty: None,
             seal_fields: vec![],
             uncles: vec![],
@@ -80,12 +80,12 @@ impl BlockTrace {
             size: None,
             mix_hash: None,
             nonce: None,
-            base_fee_per_gas: self.base_fee,
+            base_fee_per_gas: b.base_fee,
         }
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct TransactionTrace {
     #[serde(rename = "type")]
     pub type_: u8,
@@ -153,18 +153,18 @@ pub struct ExecutionResult {
     pub exec_steps: Vec<ExecStep>,
 }
 
-impl ExecutionResult {
-    pub fn to_geth_exec_trace(&self) -> GethExecTrace {
+impl From<&ExecutionResult> for GethExecTrace {
+    fn from(e: &ExecutionResult) -> Self {
         let mut struct_logs = Vec::new();
-        for exec_step in &self.exec_steps {
-            let step = exec_step.to_geth_exec_step();
+        for exec_step in &e.exec_steps {
+            let step = exec_step.into();
             struct_logs.push(step)
         }
         fix_geth_trace_memory_size(&mut struct_logs);
         GethExecTrace {
-            gas: Gas(self.gas),
-            failed: self.failed,
-            return_value: self.return_value.clone(),
+            gas: Gas(e.gas),
+            failed: e.failed,
+            return_value: e.return_value.clone(),
             struct_logs,
         }
     }
@@ -188,36 +188,35 @@ pub struct ExecStep {
     pub extra_data: Option<ExtraData>,
 }
 
-impl ExecStep {
-    #[allow(dead_code)]
-    fn to_geth_exec_step(&self) -> GethExecStep {
-        let stack = if let Some(stack) = self.stack.clone() {
+impl From<&ExecStep> for GethExecStep {
+    fn from(e: &ExecStep) -> Self {
+        let stack = if let Some(stack) = e.stack.clone() {
             Stack::from(stack)
         } else {
             Stack::new()
         };
 
-        let memory = if let Some(memory) = self.memory.clone() {
+        let memory = if let Some(memory) = e.memory.clone() {
             Memory::from(memory)
         } else {
             Memory::new()
         };
 
-        let storage = if let Some(storage) = self.storage.clone() {
+        let storage = if let Some(storage) = e.storage.clone() {
             Storage::from(storage)
         } else {
             Storage::empty()
         };
 
         GethExecStep {
-            pc: ProgramCounter(self.pc as usize),
+            pc: ProgramCounter(e.pc as usize),
             // FIXME
-            op: self.op,
-            gas: Gas(self.gas),
-            gas_cost: GasCost(self.gas_cost),
-            refund: Gas(self.refund),
-            depth: self.depth as u16,
-            error: self.error.clone(),
+            op: e.op,
+            gas: Gas(e.gas),
+            gas_cost: GasCost(e.gas_cost),
+            refund: Gas(e.refund),
+            depth: e.depth as u16,
+            error: e.error.clone(),
             stack,
             memory,
             storage,

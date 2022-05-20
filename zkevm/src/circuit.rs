@@ -38,11 +38,11 @@ pub fn block_result_to_circuits<F: Field>(
         0i16.into()
     };
 
-    let eth_block = block_result.block_trace.to_eth_block();
+    let eth_block = block_result.block_trace.clone().into();
 
     let mut geth_trace = Vec::new();
     for result in &block_result.execution_results {
-        geth_trace.push(result.to_geth_exec_trace());
+        geth_trace.push(result.into());
     }
 
     // TODO: Get the history_hashes.
