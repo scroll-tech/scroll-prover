@@ -1,5 +1,5 @@
 # scroll-common
-![ci status](https://github.com/scroll-tech/common-rs/workflows/CI/badge.svg)
+[![Unit Test](https://github.com/scroll-tech/common-rs/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/common-rs/actions/workflows/unit_test.yml)
 ![issues](https://img.shields.io/github/issues/scroll-tech/common-rs)
 
 Scroll common rust crates.
