@@ -14,9 +14,9 @@ pub struct Prover {
     pub params: Params<G1Affine>,
     pub rng: XorShiftRng,
 
-    /// evm circuit pk
+    /// evm_circuit pk
     pub evm_pk: ProvingKey<G1Affine>,
-    /// state circuit pk
+    /// state_circuit pk
     pub state_pk: ProvingKey<G1Affine>,
 }
 
@@ -36,8 +36,8 @@ impl Prover {
     }
 
     pub fn from_params_and_rng(params: Params<G1Affine>, rng: XorShiftRng) -> Self {
-        let evm_pk = gen_evm_pk(&params).expect("failed to generate evm pk");
-        let state_pk = gen_state_pk(&params).expect("failed to generate state pk");
+        let evm_pk = gen_evm_pk(&params).expect("failed to generate evm_circuit pk");
+        let state_pk = gen_state_pk(&params).expect("failed to generate state_circuit pk");
         Self::new(params, rng, evm_pk, state_pk)
     }
 
@@ -45,8 +45,8 @@ impl Prover {
         let params = load_params(params_fpath).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         let rng = XorShiftRng::from_seed(seed);
-        let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm proving key");
-        let state_pk = gen_state_pk(&params).expect("Failed to generate state proving key");
+        let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm_circuit proving key");
+        let state_pk = gen_state_pk(&params).expect("Failed to generate state_circuit proving key");
         Self {
             params,
             rng,

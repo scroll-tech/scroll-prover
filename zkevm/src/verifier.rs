@@ -11,9 +11,9 @@ use types::eth::BlockResult;
 pub struct Verifier {
     params: Params<G1Affine>,
 
-    /// evm circuit vk
+    /// evm_circuit circuit vk
     evm_vk: VerifyingKey<G1Affine>,
-    /// evm circuit vk
+    /// evm_circuit circuit vk
     state_vk: VerifyingKey<G1Affine>,
 }
 
@@ -31,15 +31,15 @@ impl Verifier {
     }
 
     pub fn from_params(params: Params<G1Affine>) -> Self {
-        let evm_vk = gen_evm_vk(&params).expect("failed to generate evm vk");
-        let state_vk = gen_state_vk(&params).expect("failed to generate state vk");
+        let evm_vk = gen_evm_vk(&params).expect("failed to generate evm_circuit vk");
+        let state_vk = gen_state_vk(&params).expect("failed to generate state_circuit vk");
         Self::new(params, evm_vk, state_vk)
     }
 
     pub fn from_fpath(params_path: &str) -> Self {
         let params = load_params(params_path).expect("failed to init params");
-        let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm verifier key");
-        let state_vk = gen_state_vk(&params).expect("Failed to generate state verifier key");
+        let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm_circuit verifier key");
+        let state_vk = gen_state_vk(&params).expect("Failed to generate state_circuit verifier key");
         Self {
             params,
             evm_vk,
