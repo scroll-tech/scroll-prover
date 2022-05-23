@@ -19,7 +19,7 @@ cargo build --release --bin setup
 ```
 
 ## Test
-By default, prover tests are disabled due to heavy computations, if you want to run the full test, please run:
+By default, prover tests are disabled due to heavy computations, if you want to run the prover test, please run:
 ```
-RUST_LOG=info cargo test --features prove_verify --release 
+RUST_LOG=info cargo test --features prove_verify --release test_evm_prove_verify
 ```
