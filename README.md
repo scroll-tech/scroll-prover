@@ -23,3 +23,10 @@ By default, prover tests are disabled due to heavy computations, if you want to 
 ```
 RUST_LOG=info cargo test --features prove_verify --release test_evm_prove_verify
 ```
+
+or
+```
+RUST_LOG=info cargo test --features prove_verify --release test_state_prove_verify
+```
+
+(Please don't run `test_evm_prove_verify` and `test_state_prove_verify` concurrently.)
