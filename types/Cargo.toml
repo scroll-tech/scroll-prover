@@ -1,0 +1,18 @@
+[package]
+name = "types"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
+base64 = "0.13.0"
+blake2 = "0.10.3"
+ethers-core = "0.6.0"
+serde = "1.0"
+serde_json = "1.0.66"
+serde_repr = "0.1"
+serde_derive = "1.0"
+
+[features]
+default = []
+test = []

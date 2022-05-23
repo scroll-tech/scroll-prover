@@ -1,0 +1,75 @@
+name: Unit Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  SCCACHE_REGION: ap-northeast-1
+  SCCACHE_BUCKET: ff-building
+  SCCACHE_S3_USE_SSL: true
+  SCCACHE_S3_KEY_PREFIX: sccache-gh-action
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CARGO_INCREMENTAL: false
+
+jobs:
+  linux-test:
+    name: Linux Test on ${{ matrix.rust }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64]
+        rust: [nightly]
+    container:
+      image: ${{ matrix.arch }}/rust
+      env:
+        # Disable full debug symbol generation to speed up CI build and keep memory down
+        # "1" means line tables only, which is useful for panic tracebacks.
+        RUSTFLAGS: "-C debuginfo=1"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Cache Cargo Index
+        uses: actions/cache@v2
+        with:
+          path: /github/home/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.arch }}-index-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Cargo Registry
+        uses: actions/cache@v2
+        with:
+          path: /github/home/.cargo/registry
+          key: ${{ runner.os }}-${{ matrix.arch }}-registry-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Cargo Target
+        uses: actions/cache@v2
+        with:
+          path: /github/home/target
+          key: ${{ runner.os }}-${{ matrix.arch }}-target-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup sccache
+        run: |
+          cd $RUNNER_TEMP
+          export NAME="sccache-v0.2.15-x86_64-unknown-linux-musl"
+          curl -fsSOL https://github.com/mozilla/sccache/releases/download/v0.2.15/$NAME.tar.gz
+          tar xzf $NAME.tar.gz
+          mkdir -p ~/.cargo/bin
+          mv ./$NAME/sccache ~/.cargo/bin
+          chmod +x ~/.cargo/bin/sccache
+          printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
+          ~/.cargo/bin/sccache -s
+      - name: Setup Rust toolchain
+        run: |
+          rustup toolchain install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+          rustup component add rustfmt
+      - name: Run tests
+        run: cargo test
+      - name: Show sccache stats
+        run: ~/.cargo/bin/sccache -s
+        env:
+          CARGO_HOME: "/github/home/.cargo"
+          CARGO_TARGET_DIR: "/github/home/target"
