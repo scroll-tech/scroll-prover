@@ -11,9 +11,9 @@ use types::eth::BlockResult;
 pub struct Verifier {
     params: Params<G1Affine>,
 
-    /// evm_circuit circuit vk
+    /// evm_circuit vk
     evm_vk: VerifyingKey<G1Affine>,
-    /// evm_circuit circuit vk
+    /// state_circuit vk
     state_vk: VerifyingKey<G1Affine>,
 }
 
