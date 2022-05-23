@@ -99,7 +99,7 @@ jobs:
           chmod +x ~/.cargo/bin/sccache
           printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
           ~/.cargo/bin/sccache -s
-      - name: Run cargo fmt
+      - name: Run cargo clippy
         run: |
           cargo build --release
           cargo clippy --release -- -D warnings
