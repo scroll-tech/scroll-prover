@@ -13,7 +13,7 @@ pub struct Verifier {
 
     /// evm circuit vk
     evm_vk: VerifyingKey<G1Affine>,
-    /// evm circuit vk
+    /// state circuit vk
     state_vk: VerifyingKey<G1Affine>,
 }
 
