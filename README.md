@@ -17,3 +17,9 @@ cargo build --release --bin setup
 
 ./target/release/setup --params <params-file-path> --seed <seed-file-path>
 ```
+
+## Test
+By default, prover tests are disabled due to heavy computations, if you want to run the full test, please run:
+```
+RUST_LOG=info cargo test --features prove_verify --release 
+```
