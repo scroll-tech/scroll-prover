@@ -39,7 +39,8 @@ impl Verifier {
     pub fn from_fpath(params_path: &str) -> Self {
         let params = load_params(params_path).expect("failed to init params");
         let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm_circuit verifier key");
-        let state_vk = gen_state_vk(&params).expect("Failed to generate state_circuit verifier key");
+        let state_vk =
+            gen_state_vk(&params).expect("Failed to generate state_circuit verifier key");
         Self {
             params,
             evm_vk,
