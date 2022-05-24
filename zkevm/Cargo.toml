@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256" }
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", rev = "a49778f5" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "7a1e7c8", features = ["test"] }
+halo2_proofs = { git = "https://github.com/appliedzkp/halo2.git", tag = "v2022_05_09" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "a6acbf0aa" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "a6acbf0aa" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits", rev = "a6acbf0aa", features = ["test"] }
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"
@@ -25,6 +25,8 @@ anyhow = "1.0"
 blake2 = "0.10.3"
 dotenv = "0.15.0"
 env_logger = "0.9.0"
+strum = "0.24"
+strum_macros = "0.24"
 
 [features]
 default = []

@@ -1,11 +1,11 @@
 use crate::circuit::block_result_to_circuits;
 use crate::keygen::{gen_evm_vk, gen_state_vk};
 use crate::utils::{load_params, load_randomness};
+use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::verify_proof;
 use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
 use halo2_proofs::transcript::{Blake2bRead, Challenge255};
-use pairing::bn256::{Bn256, Fr, G1Affine};
 use types::eth::BlockResult;
 
 pub struct Verifier {

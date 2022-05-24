@@ -4,12 +4,12 @@ use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::{evm_types::OpcodeId, Field};
 use ethers_core::types::Bytes;
 use halo2_proofs::arithmetic::BaseExt;
+use halo2_proofs::pairing::bn256::Fr;
 use halo2_proofs::plonk::Circuit;
 use is_even::IsEven;
-use pairing::bn256::Fr;
 use std::collections::HashMap;
+use strum::IntoEnumIterator;
 use types::eth::{AccountProofWrapper, BlockResult};
-use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, RwMap};
@@ -53,11 +53,11 @@ pub fn block_result_to_circuits<F: Field>(
     builder.handle_block(&eth_block, geth_trace.as_slice())?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
-    witness_block.step_num_with_pad = ((1 << DEGREE) - 64) / STEP_HEIGHT;
+    witness_block.pad_to = (1 << DEGREE) - 64;
 
     Ok((
         witness_block.clone(),
-        TestCircuit::<Fr>::new(witness_block.clone(), FixedTableTag::iterator().collect()),
+        TestCircuit::<Fr>::new(witness_block.clone(), FixedTableTag::iter().collect()),
         StateCircuit::<Fr>::new(witness_block.randomness, witness_block.rws),
     ))
 }

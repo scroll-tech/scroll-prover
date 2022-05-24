@@ -10,7 +10,7 @@ const TRACE_PATH: &str = "./tests/trace.json";
 static ENV_LOGGER: Once = Once::new();
 
 fn init() {
-    ENV_LOGGER.call_once(|| env_logger::init());
+    ENV_LOGGER.call_once(env_logger::init);
 }
 
 #[cfg(feature = "prove_verify")]

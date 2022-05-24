@@ -1,8 +1,8 @@
 use crate::circuit::{create_state_circuit, DEGREE};
+use halo2_proofs::pairing::bn256::{Fr, G1Affine};
 use halo2_proofs::plonk::{keygen_pk, keygen_vk, Circuit, Error, ProvingKey, VerifyingKey};
 use halo2_proofs::poly::commitment::Params;
-use pairing::bn256::{Fr, G1Affine};
-use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
+use strum::IntoEnumIterator;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit;
 use zkevm_circuits::evm_circuit::witness::Block;
@@ -33,9 +33,9 @@ pub fn gen_state_pk(params: &Params<G1Affine>) -> Result<ProvingKey<G1Affine>, E
 
 fn test_circuit() -> impl Circuit<Fr> {
     let default_block = Block::<Fr> {
-        step_num_with_pad: ((1 << DEGREE) - 64) / STEP_HEIGHT,
+        pad_to: (1 << DEGREE) - 64,
         ..Default::default()
     };
 
-    TestCircuit::new(default_block, FixedTableTag::iterator().collect())
+    TestCircuit::new(default_block, FixedTableTag::iter().collect())
 }

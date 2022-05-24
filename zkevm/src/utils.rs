@@ -1,27 +1,22 @@
 use crate::circuit::DEGREE;
-use halo2_proofs::arithmetic::BaseExt;
+use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::poly::commitment::Params;
-use pairing::bn256::{Bn256, Fr, G1Affine};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, Read, Result, Write};
 use std::path::Path;
 use types::eth::BlockResult;
-use zkevm_circuits::evm_circuit::param::STEP_HEIGHT;
 use zkevm_circuits::evm_circuit::witness::Block;
+use zkevm_circuits::state_circuit::StateCircuit;
 
 /// generate randomness for the block
 pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
-    let power_of_randomness: Vec<Box<[Fr]>> = (1..32)
-        .map(|exp| {
-            vec![
-                block.randomness.pow(&[exp, 0, 0, 0]);
-                block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>() * STEP_HEIGHT
-            ]
-            .into_boxed_slice()
-        })
-        .collect();
-    power_of_randomness
+    let circuit = StateCircuit::<Fr>::new(block.randomness, block.rws);
+    circuit
+        .instance()
+        .into_iter()
+        .map(|col| col.into_boxed_slice())
+        .collect()
 }
 
 /// return setup params by reading from file or generate new one
