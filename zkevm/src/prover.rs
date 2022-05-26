@@ -5,6 +5,7 @@ use anyhow::Error;
 use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::transcript::{Blake2bWrite, Challenge255};
+use log::info;
 use pairing::bn256::{Fr, G1Affine};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
@@ -59,6 +60,10 @@ impl Prover {
         let (_, circuit, _) = block_result_to_circuits::<Fr>(block_result)?;
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
+        info!(
+            "Create evm proof of block {}",
+            block_result.block_trace.hash
+        );
         create_proof(
             &self.params,
             &self.evm_pk,
@@ -67,6 +72,10 @@ impl Prover {
             self.rng.clone(),
             &mut transacript,
         )?;
+        info!(
+            "Create evm proof of block {} Successfully!",
+            block_result.block_trace.hash
+        );
         Ok(transacript.finalize())
     }
 
@@ -77,6 +86,10 @@ impl Prover {
 
         let mut transacript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
+        info!(
+            "Create state proof of block {}",
+            block_result.block_trace.hash
+        );
         create_proof(
             &self.params,
             &self.state_pk,
@@ -85,6 +98,10 @@ impl Prover {
             self.rng.clone(),
             &mut transacript,
         )?;
+        info!(
+            "Create state proof of block {} Successfully!",
+            block_result.block_trace.hash
+        );
         Ok(transacript.finalize())
     }
 }
