@@ -201,7 +201,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=7a1e7c8#7a1e7c890dcf08914fdfb57aa00069b62805b529"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=a6acbf0aa#a6acbf0aa70be581ae341f2f6794da7eb7d916f1"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -210,7 +210,6 @@ dependencies = [
  "keccak256",
  "lazy_static",
  "log",
- "pairing_bn256",
  "serde",
  "serde_json",
 ]
@@ -560,13 +559,14 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=7a1e7c8#7a1e7c890dcf08914fdfb57aa00069b62805b529"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=a6acbf0aa#a6acbf0aa70be581ae341f2f6794da7eb7d916f1"
 dependencies = [
  "ethers-core",
  "ethers-providers",
+ "halo2_proofs",
  "hex",
+ "itertools",
  "lazy_static",
- "pairing_bn256",
  "regex",
  "serde",
  "serde_json",
@@ -827,13 +827,11 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=7a1e7c8#7a1e7c890dcf08914fdfb57aa00069b62805b529"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=a6acbf0aa#a6acbf0aa70be581ae341f2f6794da7eb7d916f1"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
- "ff 0.11.1",
  "halo2_proofs",
- "pairing_bn256",
  "sha3 0.7.3",
 ]
 
@@ -912,14 +910,14 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.1.0-beta.1"
-source = "git+https://github.com/scroll-tech/halo2.git?rev=a49778f5#a49778f586a563b90badec11d41fcc9851f382ec"
+source = "git+https://github.com/appliedzkp/halo2.git?tag=v2022_05_09#bffb83e4d18fe81f4b998c79f9831bd380e1a961"
 dependencies = [
  "blake2b_simd",
  "bumpalo",
  "cfg-if 0.1.10",
  "ff 0.11.1",
  "group 0.11.0",
- "pairing_bn256",
+ "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
  "rand",
  "rand_core",
  "rayon",
@@ -1177,15 +1175,15 @@ checksum = "67c21572b4949434e4fc1e1978b99c5f77064153c59d998bf13ecd96fb5ecba7"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=7a1e7c8#7a1e7c890dcf08914fdfb57aa00069b62805b529"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=a6acbf0aa#a6acbf0aa70be581ae341f2f6794da7eb7d916f1"
 dependencies = [
  "eth-types",
+ "gadgets",
  "halo2_proofs",
  "itertools",
  "lazy_static",
  "num-bigint",
  "num-traits",
- "pairing_bn256",
 ]
 
 [[package]]
@@ -1367,6 +1365,19 @@ name = "os_str_bytes"
 version = "6.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "029d8d0b2f198229de29dca79676f2738ff952edf3fde542eb8bf94d8c21b435"
+
+[[package]]
+name = "pairing_bn256"
+version = "0.1.1"
+source = "git+https://github.com/appliedzkp/pairing?tag=v0.1.1#1da2920e0e0b3de5929111e9d6193b6b4f0d99e3"
+dependencies = [
+ "ff 0.11.1",
+ "group 0.11.0",
+ "rand",
+ "rand_core",
+ "static_assertions",
+ "subtle",
+]
 
 [[package]]
 name = "pairing_bn256"
@@ -2661,12 +2672,14 @@ dependencies = [
  "hex",
  "is-even",
  "log",
- "pairing_bn256",
+ "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing)",
  "rand",
  "rand_xorshift",
  "serde",
  "serde_derive",
  "serde_json",
+ "strum",
+ "strum_macros",
  "types",
  "zkevm-circuits",
 ]
@@ -2674,7 +2687,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=7a1e7c8#7a1e7c890dcf08914fdfb57aa00069b62805b529"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=a6acbf0aa#a6acbf0aa70be581ae341f2f6794da7eb7d916f1"
 dependencies = [
  "array-init",
  "bigint",
@@ -2691,7 +2704,6 @@ dependencies = [
  "lazy_static",
  "log",
  "num",
- "pairing_bn256",
  "paste",
  "rand",
  "rand_xorshift",
