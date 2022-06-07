@@ -6,7 +6,7 @@ use zkevm::verifier::Verifier;
 
 const PARAMS_PATH: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
-const TRACE_PATH: &str = "./tests/trace-multiple-erc20.json";
+const TRACE_PATH: &str = "./tests/trace-greeter.json";
 static ENV_LOGGER: Once = Once::new();
 
 fn init() {
