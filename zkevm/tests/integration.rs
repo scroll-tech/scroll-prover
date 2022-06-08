@@ -6,8 +6,21 @@ use zkevm::verifier::Verifier;
 
 const PARAMS_PATH: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
-const TRACE_PATH: &str = "./tests/trace-greeter.json";
 static ENV_LOGGER: Once = Once::new();
+
+fn parse_trace_path_from_env() -> &'static str {
+    let mode: &str = &std::env::var("MODE").unwrap_or_else(|_| "multiple".to_string());
+    let trace_path = match mode {
+        "empty" => "./tests/trace-empty.json",
+        "greeter" => "./tests/trace-greeter.json",
+        "multiple" => "./tests/trace-multiple-erc20.json",
+        "native" => "./tests/trace-native-transfer.json",
+        "single" => "./tests/trace-single-erc20.json",
+        _ => "./tests/trace-multiple-erc20.json",
+    };
+    log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
+    trace_path
+}
 
 fn init() {
     ENV_LOGGER.call_once(env_logger::init);
@@ -18,11 +31,12 @@ fn init() {
 fn test_evm_prove_verify() {
     dotenv::dotenv().ok();
     init();
+    let trace_path = parse_trace_path_from_env();
 
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_result = get_block_result_from_file(TRACE_PATH);
+    let block_result = get_block_result_from_file(trace_path);
 
     log::info!("start generating evm_circuit proof");
     let now = Instant::now();
@@ -48,11 +62,12 @@ fn test_evm_prove_verify() {
 fn test_state_prove_verify() {
     dotenv::dotenv().ok();
     init();
+    let trace_path = parse_trace_path_from_env();
 
     let _ = load_or_create_params(PARAMS_PATH).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_result = get_block_result_from_file(TRACE_PATH);
+    let block_result = get_block_result_from_file(trace_path);
 
     log::info!("start generating state_circuit proof");
     let now = Instant::now();
