@@ -126,7 +126,7 @@ fn test_state_evm_connect() {
     );
 
     let rw_commitment_state = {
-        let mut transcript = Blake2bRead::<_, _, Challenge255<G1Affine>>::init(&evm_proof[..]);
+        let mut transcript = Blake2bRead::<_, _, Challenge255<G1Affine>>::init(&state_proof[..]);
         transcript.read_point().unwrap()
     };
     println!("rw_commitment_state {:?}", rw_commitment_state);
