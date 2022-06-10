@@ -19,10 +19,10 @@ pub struct BlockResultWrapper {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ZkProof {
     pub id: u64,
-    #[serde(rename = "evmTranscript", with = "base64")]
-    pub evm_transcript: Vec<u8>,
-    #[serde(rename = "stateTranscript", with = "base64")]
-    pub state_transcript: Vec<u8>,
+    #[serde(rename = "evmProof", with = "base64")]
+    pub evm_proof: Vec<u8>,
+    #[serde(rename = "stateProof", with = "base64")]
+    pub state_proof: Vec<u8>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug)]
