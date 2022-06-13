@@ -1,4 +1,4 @@
-use crate::circuit::block_result_to_circuits;
+use crate::circuit::{block_result_to_circuits, DEGREE};
 use crate::keygen::{gen_evm_pk, gen_state_pk};
 use crate::utils::{load_params, load_randomness, load_seed};
 use anyhow::Error;
@@ -43,17 +43,10 @@ impl Prover {
     }
 
     pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
-        let params = load_params(params_fpath).expect("failed to init params");
+        let params = load_params(params_fpath, *DEGREE).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         let rng = XorShiftRng::from_seed(seed);
-        let evm_pk = gen_evm_pk(&params).expect("Failed to generate evm_circuit proving key");
-        let state_pk = gen_state_pk(&params).expect("Failed to generate state_circuit proving key");
-        Self {
-            params,
-            rng,
-            evm_pk,
-            state_pk,
-        }
+        Self::from_params_and_rng(params, rng)
     }
 
     pub fn create_evm_proof(&self, block_result: &BlockResult) -> Result<Vec<u8>, Error> {

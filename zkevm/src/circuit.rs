@@ -7,15 +7,35 @@ use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::pairing::bn256::Fr;
 use halo2_proofs::plonk::Circuit;
 use is_even::IsEven;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use types::eth::{AccountProofWrapper, BlockResult};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, RwMap};
-use zkevm_circuits::state_circuit::StateCircuit;
+use zkevm_circuits::state_circuit::StateCircuitLight as StateCircuit;
 
-pub static DEGREE: usize = 18;
+use crate::utils::read_env_var;
+
+pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
+
+/// For keygen_vk.
+pub fn create_evm_circuit() -> TestCircuit<Fr> {
+    let default_block = Block::<Fr> {
+        pad_to: (1 << *DEGREE) - 64,
+        ..Default::default()
+    };
+
+    // hack but useful
+    let tags = if *DEGREE <= 16 {
+        get_fixed_table_tags_for_block(&default_block)
+    } else {
+        FixedTableTag::iter().collect()
+    };
+    
+    TestCircuit::new(default_block, tags)
+}
 
 /// For keygen_vk.
 pub fn create_state_circuit() -> StateCircuit<Fr> {
@@ -53,7 +73,7 @@ pub fn block_result_to_circuits<F: Field>(
     builder.handle_block(&eth_block, geth_trace.as_slice())?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
-    witness_block.pad_to = (1 << DEGREE) - 64;
+    witness_block.pad_to = (1 << *DEGREE) - 64;
 
     Ok((
         witness_block.clone(),
@@ -179,4 +199,24 @@ fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
             code_hash: proof.code_hash.unwrap(),
         },
     )
+}
+
+fn get_fixed_table_tags_for_block(block: &Block<Fr>) -> Vec<FixedTableTag> {
+    let need_bitwise_lookup = block.txs.iter().any(|tx| {
+        tx.steps.iter().any(|step| {
+            matches!(
+                step.opcode,
+                Some(OpcodeId::AND) | Some(OpcodeId::OR) | Some(OpcodeId::XOR)
+            )
+        })
+    });
+    let fixed_table_tags = FixedTableTag::iter()
+        .filter(|t| {
+            !matches!(
+                t,
+                FixedTableTag::BitwiseAnd | FixedTableTag::BitwiseOr | FixedTableTag::BitwiseXor
+            ) || need_bitwise_lookup
+        })
+        .collect();
+    fixed_table_tags
 }
