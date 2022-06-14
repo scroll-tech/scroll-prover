@@ -186,14 +186,16 @@ fn test_state_evm_connect() {
         circuits_proofs.clone(),
     );
 
-    println!("calc_verify_circuit_instances done ");
+    log::info!("calc_verify_circuit_instances done ");
     let verify_circuit: Halo2VerifierCircuit::<'_, Bn256> = verify_circuit_builder(
         &target_circuit_params_verifier,
         circuits_vks,
         &circuits_instances,
         &circuits_proofs,
         2);
-    let prover = MockProver::<Fr>::run(18, &verify_circuit, vec![instances]).unwrap();
+    log::info!("create prover");
+    let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
+    log::info!("start verify");
     prover.verify().unwrap();
 
     log::info!("Mock proving of verify_circuit done");
