@@ -96,7 +96,7 @@ fn test_state_prove_verify() {
 fn test_state_evm_connect() {
     use halo2_proofs::{
         pairing::bn256::G1Affine,
-        transcript::{Blake2bRead, Challenge255, TranscriptRead},
+        transcript::{Blake2bRead, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead},
     };
     use zkevm::circuit::DEGREE;
 
@@ -146,17 +146,20 @@ fn test_state_evm_connect() {
     );
 
     let rw_commitment_state = {
-        let mut transcript = Blake2bRead::<_, _, Challenge255<G1Affine>>::init(&state_proof[..]);
+        let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(&state_proof[..]);
         transcript.read_point().unwrap()
     };
     log::info!("rw_commitment_state {:?}", rw_commitment_state);
 
     let rw_commitment_evm = {
-        let mut transcript = Blake2bRead::<_, _, Challenge255<G1Affine>>::init(&evm_proof[..]);
+        let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(&evm_proof[..]);
         transcript.read_point().unwrap()
     };
     log::info!("rw_commitment_evm {:?}", rw_commitment_evm);
 
     assert_eq!(rw_commitment_evm, rw_commitment_state);
     log::info!("Same commitment! Test passes!");
+
+    // test recursive
+    //log::info!("start test recursive");
 }

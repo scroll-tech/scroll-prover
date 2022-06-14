@@ -18,7 +18,7 @@ use zkevm_circuits::state_circuit::StateCircuitLight as StateCircuit;
 
 use crate::utils::read_env_var;
 
-pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
+pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 12));
 
 /// For keygen_vk.
 pub fn create_evm_circuit() -> TestCircuit<Fr> {
@@ -33,7 +33,7 @@ pub fn create_evm_circuit() -> TestCircuit<Fr> {
     } else {
         FixedTableTag::iter().collect()
     };
-    
+
     TestCircuit::new(default_block, tags)
 }
 
