@@ -12,9 +12,9 @@ pub struct Verifier {
     params: Params<G1Affine>,
 
     /// evm_circuit vk
-    evm_vk: VerifyingKey<G1Affine>,
+    pub evm_vk: VerifyingKey<G1Affine>,
     /// state_circuit vk
-    state_vk: VerifyingKey<G1Affine>,
+    pub state_vk: VerifyingKey<G1Affine>,
 }
 
 impl Verifier {

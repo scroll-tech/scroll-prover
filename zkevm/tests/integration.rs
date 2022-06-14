@@ -94,17 +94,19 @@ fn test_state_prove_verify() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_evm_connect() {
+    use eth_types::Field;
     use halo2_proofs::{
-        pairing::bn256::G1Affine,
         transcript::{Blake2bRead, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead},
     };
+    use pairing::bn256::{G1Affine, Bn256, Fr};
+    use halo2_snark_aggregator_circuit::verify_circuit::{Halo2VerifierCircuit, SingleProofWitness};
     use zkevm::circuit::DEGREE;
 
     dotenv::dotenv().ok();
     init();
 
     log::info!("loading setup params");
-    let _ = load_or_create_params(PARAMS_PATH, *DEGREE).unwrap();
+    let params = load_or_create_params(PARAMS_PATH, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
     let trace_path = parse_trace_path_from_env("greeter");
@@ -162,4 +164,23 @@ fn test_state_evm_connect() {
 
     // test recursive
     //log::info!("start test recursive");
+    //let evm_instance:  &[&[&[Field]]] = &[&[]];
+    let evm_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
+    //let state_instance:  &[&[&[Fr]]] = &[&[]];
+    let state_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
+    let verify_circuit = Halo2VerifierCircuit::<'_, Fr> {
+        params: &params.verifier(0).unwrap(),
+        vk: vec![verifier.evm_vk, verifier.state_vk],
+        nproofs: 2,
+        proofs: [evm_instance, state_instance]
+            .iter()
+            .zip([evm_proof, state_proof].iter())
+            .map(|(i, t)| SingleProofWitness {
+                instances: i,
+                transcript: t,
+            })
+            .collect(),
+    };
+
+
 }

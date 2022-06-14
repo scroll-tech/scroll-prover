@@ -957,7 +957,7 @@ dependencies = [
  "halo2_proofs",
  "num-bigint",
  "num-integer",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
+ "pairing_bn256",
 ]
 
 [[package]]
@@ -970,7 +970,7 @@ dependencies = [
  "group 0.11.0",
  "halo2_proofs",
  "num-bigint",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
+ "pairing_bn256",
  "poseidon",
  "rand",
  "rand_pcg",
@@ -989,7 +989,7 @@ dependencies = [
  "halo2-snark-aggregator-api",
  "halo2_proofs",
  "log",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
+ "pairing_bn256",
  "rand",
  "rand_core",
  "rand_pcg",
@@ -1009,7 +1009,7 @@ dependencies = [
  "group 0.11.0",
  "num-bigint",
  "num-integer",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
+ "pairing_bn256",
  "poseidon",
  "rand",
  "rand_core",
@@ -1542,19 +1542,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pairing_bn256"
-version = "0.1.1"
-source = "git+https://github.com/appliedzkp/pairing#1da2920e0e0b3de5929111e9d6193b6b4f0d99e3"
-dependencies = [
- "ff 0.11.1",
- "group 0.11.0",
- "rand",
- "rand_core",
- "static_assertions",
- "subtle",
-]
-
-[[package]]
 name = "parity-scale-codec"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1665,7 +1652,7 @@ version = "0.1.0"
 source = "git+https://github.com/appliedzkp/poseidon.git?branch=circuit#1f8609776f64f36b518aac1732f18758d65a2791"
 dependencies = [
  "group 0.11.0",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing?tag=v0.1.1)",
+ "pairing_bn256",
  "rand",
  "subtle",
 ]
@@ -2901,7 +2888,7 @@ dependencies = [
  "is-even",
  "log",
  "once_cell",
- "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing)",
+ "pairing_bn256",
  "rand",
  "rand_xorshift",
  "serde",
