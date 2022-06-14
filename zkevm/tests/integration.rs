@@ -96,10 +96,10 @@ fn test_state_prove_verify() {
 fn test_state_evm_connect() {
     use eth_types::Field;
     use halo2_proofs::{
-        transcript::{Blake2bRead, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead},
+        pairing::bn256::{G1Affine, Bn256, Fr},
+        transcript::{Blake2bRead, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead}, dev::MockProver,
     };
-    use pairing::bn256::{G1Affine, Bn256, Fr};
-    use halo2_snark_aggregator_circuit::verify_circuit::{Halo2VerifierCircuit, SingleProofWitness};
+    use halo2_snark_aggregator_circuit::verify_circuit::{Halo2VerifierCircuit, SingleProofWitness, calc_verify_circuit_instances, verify_circuit_builder, self};
     use zkevm::circuit::DEGREE;
 
     dotenv::dotenv().ok();
@@ -164,23 +164,39 @@ fn test_state_evm_connect() {
 
     // test recursive
     //log::info!("start test recursive");
+    let target_circuit_params_verifier = &params.verifier::<Bn256>(0).unwrap();
     //let evm_instance:  &[&[&[Field]]] = &[&[]];
     let evm_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
     //let state_instance:  &[&[&[Fr]]] = &[&[]];
     let state_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
-    let verify_circuit = Halo2VerifierCircuit::<'_, Fr> {
-        params: &params.verifier(0).unwrap(),
-        vk: vec![verifier.evm_vk, verifier.state_vk],
-        nproofs: 2,
-        proofs: [evm_instance, state_instance]
-            .iter()
-            .zip([evm_proof, state_proof].iter())
-            .map(|(i, t)| SingleProofWitness {
-                instances: i,
-                transcript: t,
-            })
-            .collect(),
-    };
+/* 
+    let circuits_instances = vec![evm_instance, state_instance];
+    let circuits_proofs = vec![evm_proof, state_proof];
+    let circuits_vks = vec![verifier.evm_vk, verifier.state_vk];
+*/
+
+    let circuits_instances = vec![state_instance, evm_instance];
+    let circuits_proofs = vec![state_proof, evm_proof];
+    let circuits_vks = vec![verifier.state_vk, verifier.evm_vk];
+
+    let instances = calc_verify_circuit_instances(
+        &target_circuit_params_verifier,
+        &circuits_vks,
+        circuits_instances.clone(),
+        circuits_proofs.clone(),
+    );
+
+    println!("calc_verify_circuit_instances done ");
+    let verify_circuit: Halo2VerifierCircuit::<'_, Bn256> = verify_circuit_builder(
+        &target_circuit_params_verifier,
+        circuits_vks,
+        &circuits_instances,
+        &circuits_proofs,
+        2);
+    let prover = MockProver::<Fr>::run(18, &verify_circuit, vec![instances]).unwrap();
+    prover.verify().unwrap();
+
+    log::info!("Mock proving of verify_circuit done");
 
 
 }
