@@ -1,4 +1,4 @@
-use crate::circuit::block_result_to_circuits;
+use crate::circuit::{block_result_to_circuits, DEGREE};
 use crate::keygen::{gen_evm_vk, gen_state_vk};
 use crate::utils::{load_params, load_randomness};
 use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
@@ -37,24 +37,19 @@ impl Verifier {
     }
 
     pub fn from_fpath(params_path: &str) -> Self {
-        let params = load_params(params_path).expect("failed to init params");
-        let evm_vk = gen_evm_vk(&params).expect("Failed to generate evm_circuit verifier key");
-        let state_vk =
-            gen_state_vk(&params).expect("Failed to generate state_circuit verifier key");
-        Self {
-            params,
-            evm_vk,
-            state_vk,
-        }
+        let params = load_params(params_path, *DEGREE).expect("failed to init params");
+        Self::from_params(params)
     }
 
     pub fn verify_evm_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
-        let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+        let _power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+        let public_input: &[&[&[Fr]]] = &[&[]];
+        let public_input_len = 0;
 
         let verifier_params: ParamsVerifier<Bn256> =
-            self.params.verifier(power_of_randomness[0].len()).unwrap();
+            self.params.verifier(public_input_len).unwrap();
 
         let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
         let strategy = SingleVerifier::new(&verifier_params);
@@ -63,7 +58,7 @@ impl Verifier {
             &verifier_params,
             &self.evm_vk,
             strategy,
-            &[&[]],
+            public_input,
             &mut transcript,
         )
         .is_ok()
@@ -73,9 +68,10 @@ impl Verifier {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
         let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
-
+        let public_input: &[&[&[Fr]]] = &[&power_of_randomness];
+        let public_input_len = power_of_randomness[0].len();
         let verifier_params: ParamsVerifier<Bn256> =
-            self.params.verifier(power_of_randomness[0].len()).unwrap();
+            self.params.verifier(public_input_len).unwrap();
 
         let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
         let strategy = SingleVerifier::new(&verifier_params);
@@ -84,7 +80,7 @@ impl Verifier {
             &verifier_params,
             &self.state_vk,
             strategy,
-            &[&power_of_randomness],
+            public_input,
             &mut transcript,
         )
         .is_ok()

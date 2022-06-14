@@ -1,5 +1,8 @@
 use clap::Parser;
-use zkevm::utils::{load_or_create_params, load_or_create_seed};
+use zkevm::{
+    circuit::DEGREE,
+    utils::{load_or_create_params, load_or_create_seed},
+};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -18,7 +21,7 @@ fn main() {
 
     let args = Args::parse();
     if let Some(path) = args.params_path {
-        load_or_create_params(&path).expect("failed to load or create params");
+        load_or_create_params(&path, *DEGREE).expect("failed to load or create params");
     }
     if let Some(path) = args.seed_path {
         load_or_create_seed(&path).expect("failed to load or create seed");
