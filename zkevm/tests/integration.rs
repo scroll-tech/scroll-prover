@@ -96,10 +96,18 @@ fn test_state_prove_verify() {
 fn test_state_evm_connect() {
     use eth_types::Field;
     use halo2_proofs::{
-        pairing::bn256::{G1Affine, Bn256, Fr},
-        transcript::{Blake2bRead, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead}, dev::MockProver,
+        dev::MockProver,
+        pairing::bn256::{Bn256, Fr, G1Affine},
+        plonk::{create_proof, keygen_pk, keygen_vk, verify_proof, SingleVerifier},
+        transcript::{
+            Blake2bRead, Blake2bWrite, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead,
+        },
     };
-    use halo2_snark_aggregator_circuit::verify_circuit::{Halo2VerifierCircuit, SingleProofWitness, calc_verify_circuit_instances, verify_circuit_builder, self};
+    use halo2_snark_aggregator_circuit::verify_circuit::{
+        self, calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
+        SingleProofWitness,
+    };
+    use rand::rngs::OsRng;
     use zkevm::circuit::DEGREE;
 
     dotenv::dotenv().ok();
@@ -166,14 +174,14 @@ fn test_state_evm_connect() {
     //log::info!("start test recursive");
     let target_circuit_params_verifier = &params.verifier::<Bn256>(0).unwrap();
     //let evm_instance:  &[&[&[Field]]] = &[&[]];
-    let evm_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
+    let evm_instance: Vec<Vec<Vec<Fr>>> = vec![Default::default()];
     //let state_instance:  &[&[&[Fr]]] = &[&[]];
-    let state_instance:  Vec<Vec<Vec<Fr>>> = vec![Default::default()];
-/* 
-    let circuits_instances = vec![evm_instance, state_instance];
-    let circuits_proofs = vec![evm_proof, state_proof];
-    let circuits_vks = vec![verifier.evm_vk, verifier.state_vk];
-*/
+    let state_instance: Vec<Vec<Vec<Fr>>> = vec![Default::default()];
+    /*
+        let circuits_instances = vec![evm_instance, state_instance];
+        let circuits_proofs = vec![evm_proof, state_proof];
+        let circuits_vks = vec![verifier.evm_vk, verifier.state_vk];
+    */
 
     let circuits_instances = vec![state_instance, evm_instance];
     let circuits_proofs = vec![state_proof, evm_proof];
@@ -187,18 +195,61 @@ fn test_state_evm_connect() {
     );
 
     log::info!("calc_verify_circuit_instances done ");
-    let verify_circuit: Halo2VerifierCircuit::<'_, Bn256> = verify_circuit_builder(
+    let verify_circuit: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
         &target_circuit_params_verifier,
         circuits_vks,
         &circuits_instances,
         &circuits_proofs,
-        2);
+        2,
+    );
     log::info!("create prover");
-    let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
+    let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
     log::info!("start verify");
     prover.verify().unwrap();
 
     log::info!("Mock proving of verify_circuit done");
 
+    log::info!("proving with real prover");
+    log::info!("setup");
 
+    let verify_circuit_params = load_or_create_params("params26", 26).unwrap();
+    log::info!("setup done");
+    let verify_circuit_vk =
+        keygen_vk(&verify_circuit_params, &verify_circuit).expect("keygen_vk should not fail");
+
+    let verify_circuit_pk = keygen_pk(&verify_circuit_params, verify_circuit_vk, &verify_circuit)
+        .expect("keygen_pk should not fail");
+
+    log::info!("pk vk done");
+    let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
+
+    let instances: &[&[&[Fr]]] = &[&[&instances[..]]];
+    create_proof(
+        &verify_circuit_params,
+        &verify_circuit_pk,
+        &[verify_circuit],
+        instances,
+        OsRng,
+        &mut transcript,
+    )
+    .expect("proof generation should not fail");
+    let proof = transcript.finalize();
+    log::info!("proving done");
+
+    let LIMBS = 4;
+    let params = verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
+    let strategy = SingleVerifier::new(&params);
+
+    let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
+
+    let verify_circuit_vk = verify_circuit_pk.get_vk();
+    verify_proof(
+        &params,
+        &verify_circuit_vk,
+        strategy,
+        instances,
+        &mut transcript,
+    )
+    .expect("verify aggregate proof fail");
+    log::info!("verify done");
 }

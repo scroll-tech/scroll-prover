@@ -65,8 +65,6 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine
     params_file.write_all(&params_buf[..])?;
     log::info!("create params successfully!");
 
-params.verifier::<Bn256>(3).unwrap();
-
     Ok(params)
 }
 
