@@ -94,13 +94,15 @@ fn test_state_prove_verify() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_evm_connect() {
+    use std::fs;
+
     use eth_types::Field;
     use halo2_proofs::{
         dev::MockProver,
         pairing::bn256::{Bn256, Fr, G1Affine},
         plonk::{create_proof, keygen_pk, keygen_vk, verify_proof, SingleVerifier},
         transcript::{
-            Blake2bRead, Blake2bWrite, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead,
+            Blake2bRead, Blake2bWrite, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead, self,
         },
     };
     use halo2_snark_aggregator_circuit::verify_circuit::{
@@ -202,17 +204,21 @@ fn test_state_evm_connect() {
         &circuits_proofs,
         2,
     );
-    log::info!("create prover");
-    let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
-    log::info!("start verify");
-    prover.verify().unwrap();
-
-    log::info!("Mock proving of verify_circuit done");
+    if false {
+        log::info!("create mock prover");
+        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
+        log::info!("start mock prover verify");
+        prover.verify().unwrap();
+        log::info!("Mock proving of verify_circuit done");
+    }
 
     log::info!("proving with real prover");
     log::info!("setup");
 
     let verify_circuit_params = load_or_create_params("params26", 26).unwrap();
+    
+    let LIMBS = 4;
+    let verify_circuit_params_verifier = verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
     log::info!("setup done");
     let verify_circuit_vk =
         keygen_vk(&verify_circuit_params, &verify_circuit).expect("keygen_vk should not fail");
@@ -221,35 +227,78 @@ fn test_state_evm_connect() {
         .expect("keygen_pk should not fail");
 
     log::info!("pk vk done");
-    let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
-    let instances: &[&[&[Fr]]] = &[&[&instances[..]]];
-    create_proof(
-        &verify_circuit_params,
-        &verify_circuit_pk,
-        &[verify_circuit],
-        instances,
-        OsRng,
-        &mut transcript,
-    )
-    .expect("proof generation should not fail");
-    let proof = transcript.finalize();
-    log::info!("proving done");
+    let mut proof2 = Vec::<u8>::new();
 
-    let LIMBS = 4;
-    let params = verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
-    let strategy = SingleVerifier::new(&params);
+    if true {
+        let instances_slice: &[&[&[Fr]]] = &[&[&instances[..]]];
+        let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 
-    let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
+        create_proof(
+            &verify_circuit_params,
+            &verify_circuit_pk,
+            &[verify_circuit],
+            instances_slice,
+            OsRng,
+            &mut transcript,
+        )
+        .expect("proof generation should not fail");
+        let proof = transcript.finalize();
+        proof2 = proof.clone();
+        log::info!("proving done");
 
-    let verify_circuit_vk = verify_circuit_pk.get_vk();
-    verify_proof(
-        &params,
-        &verify_circuit_vk,
-        strategy,
-        instances,
-        &mut transcript,
-    )
-    .expect("verify aggregate proof fail");
-    log::info!("verify done");
+        let strategy = SingleVerifier::new(&verify_circuit_params_verifier);
+
+        let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof[..]);
+
+        let verify_circuit_vk = verify_circuit_pk.get_vk();
+        verify_proof(
+            &verify_circuit_params_verifier,
+            &verify_circuit_vk,
+            strategy,
+            instances_slice,
+            &mut transcript,
+        )
+        .expect("verify aggregate proof fail");
+        log::info!("verify done");
+    }
+    fs::write("proof2", proof2.clone()).unwrap();
+    //drop(instances_slice);
+    let transcript2 = vec![proof2.clone()];
+    let ii = vec![instances];
+    let instances2 = vec![vec![ii]];
+    let vks2 = vec![verify_circuit_pk.get_vk().clone()];
+    let verify_circuit2: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
+        &verify_circuit_params_verifier,
+        vks2.clone(),
+        &instances2,
+        &transcript2,
+        1,
+    );
+    log::info!("verify_circuit2 built");
+
+    let instances2 = calc_verify_circuit_instances(
+        &verify_circuit_params_verifier,
+        &vks2,
+        instances2.clone(),
+        transcript2.clone(),
+    );
+
+    if true {
+        for k in [26,25,24,23,22,21,20,19,18] {
+            log::info!("create mock prover {}", k);
+            match MockProver::<Fr>::run(k, &verify_circuit2, vec![instances2.clone()]) {
+                Ok(prover) => {
+
+                    log::info!("start mock prover verify");
+                    let r = prover.verify();
+                    log::info!("Mock proving of verify_circuit done {} {:?}", k, r);
+                },
+                Err(e) => {
+                    log::info!("err {:?} {}", e, k);
+                }
+            }
+        }
+    }
+
 }
