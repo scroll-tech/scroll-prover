@@ -5,7 +5,7 @@ use anyhow::Error;
 use halo2_proofs::pairing::bn256::{Fr, G1Affine};
 use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
-use halo2_proofs::transcript::{Blake2bWrite, Challenge255, PoseidonWrite};
+use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use log::info;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
@@ -75,7 +75,7 @@ impl Prover {
     pub fn create_state_proof(&self, block_result: &BlockResult) -> Result<Vec<u8>, Error> {
         let (block, _, circuit) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
-        let randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+        let _randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
 
         let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 

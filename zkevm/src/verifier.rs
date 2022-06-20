@@ -5,7 +5,7 @@ use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::verify_proof;
 use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
-use halo2_proofs::transcript::{Blake2bRead, Challenge255, PoseidonRead};
+use halo2_proofs::transcript::{Challenge255, PoseidonRead};
 use types::eth::BlockResult;
 
 pub struct Verifier {
@@ -44,7 +44,7 @@ impl Verifier {
     pub fn verify_evm_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
-        let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+        let _power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
         //let public_input_len = power_of_randomness[0].len();
         let public_input_len = 0;
 
@@ -67,7 +67,7 @@ impl Verifier {
     pub fn verify_state_proof(&self, proof: Vec<u8>, block_result: &BlockResult) -> bool {
         let (block, _, _) = block_result_to_circuits::<Fr>(block_result).unwrap();
         let power_of_randomness = load_randomness(block);
-        let power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
+        let _power_of_randomness: Vec<_> = power_of_randomness.iter().map(AsRef::as_ref).collect();
         //let public_input_len = power_of_randomness[0].len();
         let public_input_len = 0;
         let verifier_params: ParamsVerifier<Bn256> =

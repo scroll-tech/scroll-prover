@@ -210,13 +210,13 @@ fn get_fixed_table_tags_for_block(block: &Block<Fr>) -> Vec<FixedTableTag> {
             )
         })
     });
-    let fixed_table_tags = FixedTableTag::iter()
+
+    FixedTableTag::iter()
         .filter(|t| {
             !matches!(
                 t,
                 FixedTableTag::BitwiseAnd | FixedTableTag::BitwiseOr | FixedTableTag::BitwiseXor
             ) || need_bitwise_lookup
         })
-        .collect();
-    fixed_table_tags
+        .collect()
 }

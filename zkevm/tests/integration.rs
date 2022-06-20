@@ -4,6 +4,8 @@ use zkevm::prover::Prover;
 use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
 
+
+
 const PARAMS_PATH: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
 static ENV_LOGGER: Once = Once::new();
@@ -94,22 +96,23 @@ fn test_state_prove_verify() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_evm_connect() {
-    use std::fs;
+    
 
-    use eth_types::Field;
+    
     use halo2_proofs::{
         dev::MockProver,
         pairing::bn256::{Bn256, Fr, G1Affine},
-        plonk::{create_proof, keygen_pk, keygen_vk, verify_proof, SingleVerifier},
         transcript::{
-            Blake2bRead, Blake2bWrite, Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead, self,
+            Challenge255, PoseidonRead,
+            TranscriptRead,
         },
     };
     use halo2_snark_aggregator_circuit::verify_circuit::{
-        self, calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
-        SingleProofWitness,
+        calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
     };
-    use rand::rngs::OsRng;
+
+    use halo2_proofs::plonk::VerifyingKey;
+    
     use zkevm::circuit::DEGREE;
 
     dotenv::dotenv().ok();
@@ -172,53 +175,82 @@ fn test_state_evm_connect() {
     assert_eq!(rw_commitment_evm, rw_commitment_state);
     log::info!("Same commitment! Test passes!");
 
-    // test recursive
-    //log::info!("start test recursive");
-    let target_circuit_params_verifier = &params.verifier::<Bn256>(0).unwrap();
-    //let evm_instance:  &[&[&[Field]]] = &[&[]];
-    let evm_instance: Vec<Vec<Vec<Fr>>> = vec![Default::default()];
-    //let state_instance:  &[&[&[Fr]]] = &[&[]];
-    let state_instance: Vec<Vec<Vec<Fr>>> = vec![Default::default()];
-    /*
-        let circuits_instances = vec![evm_instance, state_instance];
-        let circuits_proofs = vec![evm_proof, state_proof];
-        let circuits_vks = vec![verifier.evm_vk, verifier.state_vk];
-    */
-
-    let circuits_instances = vec![state_instance, evm_instance];
-    let circuits_proofs = vec![state_proof, evm_proof];
-    let circuits_vks = vec![verifier.state_vk, verifier.evm_vk];
-
-    let instances = calc_verify_circuit_instances(
-        &target_circuit_params_verifier,
-        &circuits_vks,
-        circuits_instances.clone(),
-        circuits_proofs.clone(),
-    );
-
-    log::info!("calc_verify_circuit_instances done ");
-    let verify_circuit: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
-        &target_circuit_params_verifier,
-        circuits_vks,
-        &circuits_instances,
-        &circuits_proofs,
-        2,
-    );
-    if false {
-        log::info!("create mock prover");
-        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
-        log::info!("start mock prover verify");
-        prover.verify().unwrap();
-        log::info!("Mock proving of verify_circuit done");
+    #[derive(Clone)]
+    struct CircuitResult {
+        proof: Vec<u8>,
+        vk: VerifyingKey<G1Affine>,
+        instance: Vec<Vec<Vec<Fr>>>,
     }
 
+    //struct VerifierResult {
+    //    circuit: Halo2VerifierCircuit<
+    //}
+    let profile = |name: &str, cs: Vec<CircuitResult>| {
+        // TODO: be careful here
+
+        let target_circuit_params_verifier = params.verifier::<Bn256>(0).unwrap();
+
+        let circuits_instances: Vec<_> = cs.iter().map(|x| x.instance.clone()).collect();
+        let circuits_proofs: Vec<_> = cs.iter().map(|x| x.proof.clone()).collect();
+        let circuits_vks: Vec<_> = cs.iter().map(|x| x.vk.clone()).collect();
+
+        let instances = calc_verify_circuit_instances(
+            &target_circuit_params_verifier,
+            &circuits_vks,
+            circuits_instances.clone(),
+            circuits_proofs.clone(),
+        );
+        //let instances_clone = instances.clone();
+        log::info!("{} calc_verify_circuit_instances done", name);
+        let verify_circuit: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
+            &target_circuit_params_verifier,
+            circuits_vks,
+            &circuits_instances,
+            &circuits_proofs,
+            circuits_proofs.len(),
+        );
+        log::info!("{} create mock prover", name);
+        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
+        log::info!("{} start mock prover verify", name);
+        prover.verify().unwrap();
+        log::info!("{} Mock proving of verify_circuit done", name);
+    };
+    let evm_circuit_r = CircuitResult {
+        proof: evm_proof,
+        vk: verifier.evm_vk,
+        instance: vec![Default::default()],
+    };
+    let state_circuit_r = CircuitResult {
+        proof: state_proof,
+        vk: verifier.state_vk,
+        instance: vec![Default::default()],
+    };
+    let profile_state = true;
+    let profile_evm = true;
+    let profile_both = true;
+    if profile_state {
+        profile("state_circuit", vec![state_circuit_r.clone()]);
+    }
+    if profile_evm {
+        profile("evm_circuit", vec![evm_circuit_r.clone()]);
+    }
+    if profile_both {
+        profile("both", vec![evm_circuit_r, state_circuit_r]);
+    }
+
+    
+    /*
     log::info!("proving with real prover");
     log::info!("setup");
 
     let verify_circuit_params = load_or_create_params("params26", 26).unwrap();
-    
+
+    let (verify_circuit, instances) =
+        build_verifier_circuit("final", vec![state_circuit_r, evm_circuit_r]);
+
     let LIMBS = 4;
-    let verify_circuit_params_verifier = verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
+    let verify_circuit_params_verifier =
+        verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
     log::info!("setup done");
     let verify_circuit_vk =
         keygen_vk(&verify_circuit_params, &verify_circuit).expect("keygen_vk should not fail");
@@ -286,20 +318,19 @@ fn test_state_evm_connect() {
     );
 
     if true {
-        for k in [26,25,24,23,22,21,20,19,18] {
+        for k in [26, 25, 24, 23, 22, 21, 20, 19, 18] {
             log::info!("create mock prover {}", k);
             match MockProver::<Fr>::run(k, &verify_circuit2, vec![instances2.clone()]) {
                 Ok(prover) => {
-
                     log::info!("start mock prover verify");
                     let r = prover.verify();
                     log::info!("Mock proving of verify_circuit done {} {:?}", k, r);
-                },
+                }
                 Err(e) => {
                     log::info!("err {:?} {}", e, k);
                 }
             }
         }
     }
-
+    */
 }
