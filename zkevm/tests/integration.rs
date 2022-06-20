@@ -222,6 +222,7 @@ fn test_state_evm_connect() {
     log::info!("setup done");
     let verify_circuit_vk =
         keygen_vk(&verify_circuit_params, &verify_circuit).expect("keygen_vk should not fail");
+    log::info!("vk done");
 
     let verify_circuit_pk = keygen_pk(&verify_circuit_params, verify_circuit_vk, &verify_circuit)
         .expect("keygen_pk should not fail");
