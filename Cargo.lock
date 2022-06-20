@@ -961,6 +961,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "halo2-mpt-circuits"
+version = "0.1.0"
+dependencies = [
+ "bitvec 0.22.3",
+ "ff 0.11.1",
+ "halo2_proofs",
+ "hex",
+ "lazy_static",
+ "num-bigint",
+ "rand",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "halo2-snark-aggregator-api"
 version = "0.1.0"
 dependencies = [
@@ -2883,6 +2899,7 @@ dependencies = [
  "env_logger",
  "eth-types",
  "ethers-core",
+ "halo2-mpt-circuits",
  "halo2-snark-aggregator-circuit",
  "halo2_proofs",
  "hex",

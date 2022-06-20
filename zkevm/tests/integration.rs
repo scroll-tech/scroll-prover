@@ -95,7 +95,7 @@ fn test_state_prove_verify() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_state_evm_connect() {
+fn test_connect() {
     
 
     
@@ -104,8 +104,8 @@ fn test_state_evm_connect() {
         pairing::bn256::{Bn256, Fr, G1Affine},
         transcript::{
             Challenge255, PoseidonRead,
-            TranscriptRead,
-        },
+            TranscriptRead, PoseidonWrite,
+        }, poly::commitment::Params, plonk::{keygen_vk, keygen_pk, create_proof, Circuit},
     };
     use halo2_snark_aggregator_circuit::verify_circuit::{
         calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
@@ -113,6 +113,8 @@ fn test_state_evm_connect() {
 
     use halo2_proofs::plonk::VerifyingKey;
     
+    use pairing::group::ff::PrimeField;
+    use rand::rngs::OsRng;
     use zkevm::circuit::DEGREE;
 
     dotenv::dotenv().ok();
@@ -158,6 +160,7 @@ fn test_state_evm_connect() {
             &circuits_proofs,
             circuits_proofs.len(),
         );
+        //println!("max offset", verify_circuit.synthesize_impl(), layouter))
         log::info!("{} create mock prover", name);
         let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
         log::info!("{} start mock prover verify", name);
@@ -202,23 +205,23 @@ fn test_state_evm_connect() {
         ];
     
         let k = 8;
-        let circuit = halo2_mpt_circuit::hash::HashCircuit::<3> {
+        let circuit = halo2_mpt_circuits::hash::HashCircuit::<3> {
             inputs: [Some(message1), Some(message2), None],
         };
 
         let vk = keygen_vk(&params8, &circuit).unwrap();
-        let pk = keygen_pk(params8, vk, &circuit);
+        let pk = keygen_pk(&params8, vk, &circuit).unwrap();
 
         let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
-            params8,
-            pk,
+            &params8,
+            &pk,
             &[circuit],
             &[&[]],
-            OsRng
-            &mut transcript,
-        )?;
+            OsRng,
+            &mut transcript
+        ).unwrap();
 
         let poseidon_circuit_r = CircuitResult {
             proof: transcript.finalize(),
@@ -231,21 +234,21 @@ fn test_state_evm_connect() {
     {
     
         let k = 8;
-        let circuit = halo2_mpt_circuit::EthTrie::<Fr>::new(200);
+        let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(200);
 
         let vk = keygen_vk(&params8, &circuit).unwrap();
-        let pk = keygen_pk(params8, vk, &circuit);
+        let pk = keygen_pk(&params8, vk, &circuit).unwrap();
 
         let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         create_proof(
-            params8,
-            pk,
+            &params8,
+            &pk,
             &[circuit],
             &[&[]],
-            OsRng
+            OsRng,
             &mut transcript,
-        )?;
+        ).unwrap();
 
         let zktrie_circuit_r = CircuitResult {
             proof: transcript.finalize(),
