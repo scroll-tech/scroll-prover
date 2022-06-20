@@ -231,15 +231,17 @@ fn test_connect() {
          let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof[..]);
          let strategy = SingleVerifier::new(&verifier_params);
  
-         assert!(verify_proof(
-             &verifier_params,
-             &pk.get_vk(),
-             strategy,
-             //&[&power_of_randomness],
-             &[&[]],
-             &mut transcript,
-         )
-         .is_ok());
+         let vr = verify_proof(
+            &verifier_params,
+            &pk.get_vk(),
+            strategy,
+            //&[&power_of_randomness],
+            &[&[]],
+            &mut transcript,
+        );
+        println!("vr {:#?}", vr);
+         assert!(
+         vr.is_ok());
         }
 
         let zktrie_circuit_r = CircuitResult {
@@ -290,7 +292,7 @@ fn test_connect() {
         };
         profile("poseidon_circuit", vec![poseidon_circuit_r.clone()]);
     };
-    
+
     zktrie_fn();
     poseidon_fn();
 
