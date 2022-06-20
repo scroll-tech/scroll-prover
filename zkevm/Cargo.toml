@@ -12,6 +12,7 @@ halo2_proofs = { path = "../../halo2/halo2_proofs" }
 bus-mapping = { path = "../../zkevm-circuits/bus-mapping" }
 eth-types = { path = "../../zkevm-circuits/eth-types" }
 zkevm-circuits = { path = "../../zkevm-circuits/zkevm-circuits", features = ["test"] }
+halo2-mpt-circuits = { path = "../../mpt-circuit/" }
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"
