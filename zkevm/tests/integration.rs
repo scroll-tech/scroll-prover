@@ -1,9 +1,17 @@
 use std::sync::Once;
 use std::time::Instant;
+use halo2_proofs::plonk::VerifyingKey;
+use halo2_proofs::poly::commitment::Params;
+use halo2_snark_aggregator_circuit::verify_circuit::{calc_verify_circuit_instances, Halo2VerifierCircuit, verify_circuit_builder};
+use pairing::bn256::G1Affine;
 use zkevm::prover::Prover;
 use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
 
+use halo2_proofs::{
+    dev::MockProver,
+    pairing::bn256::{Bn256, Fr},
+};
 
 
 const PARAMS_PATH: &str = "./test_params";
@@ -93,9 +101,49 @@ fn test_state_prove_verify() {
     assert!(verifier.verify_state_proof(proof, &block_result));
 }
 
+#[derive(Clone)]
+struct CircuitResult {
+    proof: Vec<u8>,
+    vk: VerifyingKey<G1Affine>,
+    instance: Vec<Vec<Vec<Fr>>>,
+}
+
+
+fn profile(name: &str, params: &Params::<G1Affine>, cs: Vec<CircuitResult>) {
+    // TODO: be careful here
+
+    let target_circuit_params_verifier = params.verifier::<Bn256>(0).unwrap();
+
+    let circuits_instances: Vec<_> = cs.iter().map(|x| x.instance.clone()).collect();
+    let circuits_proofs: Vec<_> = cs.iter().map(|x| x.proof.clone()).collect();
+    let circuits_vks: Vec<_> = cs.iter().map(|x| x.vk.clone()).collect();
+
+    let instances = calc_verify_circuit_instances(
+        &target_circuit_params_verifier,
+        &circuits_vks,
+        circuits_instances.clone(),
+        circuits_proofs.clone(),
+    );
+    //let instances_clone = instances.clone();
+    log::info!("{} calc_verify_circuit_instances done", name);
+    let verify_circuit: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
+        &target_circuit_params_verifier,
+        circuits_vks,
+        &circuits_instances,
+        &circuits_proofs,
+        circuits_proofs.len(),
+    );
+    //println!("max offset", verify_circuit.synthesize_impl(), layouter))
+    log::info!("{} create mock prover", name);
+    let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
+    log::info!("{} start mock prover verify", name);
+    prover.verify().unwrap();
+    log::info!("{} Mock proving of verify_circuit done", name);
+}
+
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_connect() {
+fn test_zktrie() {
     
 
     
@@ -120,82 +168,9 @@ fn test_connect() {
     dotenv::dotenv().ok();
     init();
 
-    //log::info!("loading setup params");
-    //let params = load_or_create_params(PARAMS_PATH, *DEGREE).unwrap();
-    //let _ = load_or_create_seed(SEED_PATH).unwrap();
-
-
     let kk = 8;
     let params8 = Params::<G1Affine>::unsafe_setup::<Bn256>(8);
 
-    #[derive(Clone)]
-    struct CircuitResult {
-        proof: Vec<u8>,
-        vk: VerifyingKey<G1Affine>,
-        instance: Vec<Vec<Vec<Fr>>>,
-    }
-
-    //struct VerifierResult {
-    //    circuit: Halo2VerifierCircuit<
-    //}
-    let profile = |name: &str, cs: Vec<CircuitResult>| {
-        // TODO: be careful here
-
-        let target_circuit_params_verifier = params8.verifier::<Bn256>(0).unwrap();
-
-        let circuits_instances: Vec<_> = cs.iter().map(|x| x.instance.clone()).collect();
-        let circuits_proofs: Vec<_> = cs.iter().map(|x| x.proof.clone()).collect();
-        let circuits_vks: Vec<_> = cs.iter().map(|x| x.vk.clone()).collect();
-
-        let instances = calc_verify_circuit_instances(
-            &target_circuit_params_verifier,
-            &circuits_vks,
-            circuits_instances.clone(),
-            circuits_proofs.clone(),
-        );
-        //let instances_clone = instances.clone();
-        log::info!("{} calc_verify_circuit_instances done", name);
-        let verify_circuit: Halo2VerifierCircuit<'_, Bn256> = verify_circuit_builder(
-            &target_circuit_params_verifier,
-            circuits_vks,
-            &circuits_instances,
-            &circuits_proofs,
-            circuits_proofs.len(),
-        );
-        //println!("max offset", verify_circuit.synthesize_impl(), layouter))
-        log::info!("{} create mock prover", name);
-        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
-        log::info!("{} start mock prover verify", name);
-        prover.verify().unwrap();
-        log::info!("{} Mock proving of verify_circuit done", name);
-    };
-    /* 
-    let evm_circuit_r = CircuitResult {
-        proof: evm_proof,
-        vk: verifier.evm_vk,
-        instance: vec![Default::default()],
-    };
-    let state_circuit_r = CircuitResult {
-        proof: state_proof,
-        vk: verifier.state_vk,
-        instance: vec![Default::default()],
-    };
-    let profile_state = true;
-    let profile_evm = true;
-    let profile_both = true;
-    */
-    //if profile_state {
-    //    profile("state_circuit", vec![state_circuit_r.clone()]);
-    //}
-    //if profile_evm {
-    //    profile("evm_circuit", vec![evm_circuit_r.clone()]);
-    //}
-    //if profile_both {
-    //    profile("both", vec![evm_circuit_r, state_circuit_r]);
-    //}
-
-    // poseidon hash
-   
     let zktrie_fn = ||{
     
         let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
@@ -249,7 +224,7 @@ fn test_connect() {
             vk: pk.get_vk().clone(),
             instance: vec![Default::default()],
         };
-        profile("zktrie_circuit", vec![zktrie_circuit_r.clone()]);
+        profile("zktrie_circuit", &params8, vec![zktrie_circuit_r.clone()]);
     };
     let poseidon_fn = ||{
         let message1 = [
@@ -290,13 +265,47 @@ fn test_connect() {
             vk: pk.get_vk().clone(),
             instance: vec![Default::default()],
         };
-        profile("poseidon_circuit", vec![poseidon_circuit_r.clone()]);
+        profile("poseidon_circuit", &params8, vec![poseidon_circuit_r.clone()]);
     };
 
     zktrie_fn();
     poseidon_fn();
+}
 
-/* 
+
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_connect() {
+    
+
+    
+    use halo2_proofs::{
+        dev::MockProver,
+        pairing::bn256::{Bn256, Fr, G1Affine},
+        transcript::{
+            Challenge255, PoseidonRead,
+            TranscriptRead, PoseidonWrite,
+        }, poly::commitment::{Params, ParamsVerifier}, plonk::{keygen_vk, keygen_pk, create_proof, Circuit, verify_proof, SingleVerifier},
+    };
+    use halo2_snark_aggregator_circuit::verify_circuit::{
+        calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
+    };
+
+    use halo2_proofs::plonk::VerifyingKey;
+    
+    use pairing::group::ff::PrimeField;
+    use rand::rngs::OsRng;
+    use zkevm::circuit::DEGREE;
+
+    dotenv::dotenv().ok();
+    init();
+
+    log::info!("loading setup params");
+    let params = load_or_create_params(PARAMS_PATH, *DEGREE).unwrap();
+    let _ = load_or_create_seed(SEED_PATH).unwrap();
+
+
+
     let trace_path = parse_trace_path_from_env("greeter");
     let block_result = get_block_result_from_file(trace_path);
 
@@ -349,7 +358,33 @@ fn test_connect() {
 
     assert_eq!(rw_commitment_evm, rw_commitment_state);
     log::info!("Same commitment! Test passes!");
-*/
+     
+    let evm_circuit_r = CircuitResult {
+        proof: evm_proof,
+        vk: verifier.evm_vk,
+        instance: vec![Default::default()],
+    };
+    let state_circuit_r = CircuitResult {
+        proof: state_proof,
+        vk: verifier.state_vk,
+        instance: vec![Default::default()],
+    };
+    let profile_state = true;
+    let profile_evm = true;
+    let profile_both = true;
+    
+    if profile_state {
+        profile("state_circuit", &params,vec![state_circuit_r.clone()]);
+    }
+    if profile_evm {
+        profile("evm_circuit", &params,vec![evm_circuit_r.clone()]);
+    }
+    if profile_both {
+        profile("both", &params,vec![evm_circuit_r, state_circuit_r]);
+    }
+   
+
+
     /*
     log::info!("proving with real prover");
     log::info!("setup");
