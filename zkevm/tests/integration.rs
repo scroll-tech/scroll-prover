@@ -8,12 +8,16 @@ use halo2_snark_aggregator_circuit::verify_circuit::{
 };
 use pairing::bn256::G1Affine;
 use rand::rngs::OsRng;
-use std::fs;
+use std::fs::{self, File};
+use std::io::Read;
+use std::path::PathBuf;
 use std::sync::Once;
 use std::time::Instant;
 use zkevm::prover::Prover;
 use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
+
+use halo2_snark_aggregator_solidity::{SolidityGenerate, SolidityGenerate2};
 
 use halo2_proofs::{
     dev::MockProver,
@@ -168,18 +172,30 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
             let instances_slice: &[&[&[Fr]]] = &[&[&instances[..]]];
             let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
-            create_proof(
-                &verify_circuit_params,
-                &verify_circuit_pk,
-                &[verify_circuit],
-                instances_slice,
-                OsRng,
-                &mut transcript,
-            )
-            .expect("proof generation should not fail");
-            let proof = transcript.finalize();
-            fs::write("proof", proof.clone()).unwrap();
-            log::info!("proving done");
+            let load_proof = true;
+
+            let proof = if load_proof {
+                let mut f = File::open("proof").unwrap();
+                let mut buffer = Vec::new();
+
+                // read the whole file
+                f.read_to_end(&mut buffer).unwrap();
+                buffer
+            } else {
+                create_proof(
+                    &verify_circuit_params,
+                    &verify_circuit_pk,
+                    &[verify_circuit],
+                    instances_slice,
+                    OsRng,
+                    &mut transcript,
+                )
+                .expect("proof generation should not fail");
+                let proof = transcript.finalize();
+                fs::write("proof", proof.clone()).unwrap();
+                log::info!("proving done");
+                proof
+            };
 
             let strategy = SingleVerifier::new(&verify_circuit_params_verifier);
 
@@ -195,6 +211,25 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
             )
             .expect("verify aggregate proof fail");
             log::info!("verify done");
+
+            let soli_gen = true;
+
+            if soli_gen {
+                let request = SolidityGenerate2 {
+                    params: verify_circuit_params_verifier,
+                    verify_circuit_vk: verify_circuit_vk.clone(),
+                    verify_circuit_instance: vec![vec![instances]],
+                    proof: proof,
+                };
+
+                let template_folder = PathBuf::from(
+                    "../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates",
+                );
+                let sol = request.call(template_folder);
+
+                fs::write("verifier.sol", sol.clone()).unwrap();
+                log::info!("write to verifier.sol");
+            }
         }
     }
 }
@@ -294,7 +329,6 @@ fn test_connect() {
         instance: vec![Default::default()],
     };
 
-
     let zktrie_fn = || {
         let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
 
@@ -315,8 +349,7 @@ fn test_connect() {
         {
             //let public_input_len = power_of_randomness[0].len();
             let public_input_len = 0;
-            let verifier_params: ParamsVerifier<Bn256> =
-                params.verifier(public_input_len).unwrap();
+            let verifier_params: ParamsVerifier<Bn256> = params.verifier(public_input_len).unwrap();
 
             let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof[..]);
             let strategy = SingleVerifier::new(&verifier_params);
@@ -375,8 +408,8 @@ fn test_connect() {
             proof: transcript.finalize(),
             vk: pk.get_vk().clone(),
             instance: vec![Default::default()],
-        };poseidon_circuit_r
-        
+        };
+        poseidon_circuit_r
     };
 
     let profile_state = false;
@@ -395,7 +428,12 @@ fn test_connect() {
         profile("evm_circuit", &params, vec![evm_circuit_r.clone()], false);
     }
     if profile_both {
-        profile("both", &params, vec![evm_circuit_r, state_circuit_r, poseidon_fn(), zktrie_fn()], true);
+        profile(
+            "both",
+            &params,
+            vec![evm_circuit_r, state_circuit_r, poseidon_fn(), zktrie_fn()],
+            true,
+        );
     }
 
     /*

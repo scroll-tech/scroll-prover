@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 halo2-snark-aggregator-circuit = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-circuit" }
+halo2-snark-aggregator-solidity = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-solidity" }
 pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256",tag = "v0.1.1" }
 halo2_proofs = { path = "../../halo2/halo2_proofs" }
 bus-mapping = { path = "../../zkevm-circuits/bus-mapping" }
