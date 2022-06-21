@@ -154,7 +154,6 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
 
         log::info!("setup done");
 
-        log::info!("proving with real prover");
         let LIMBS = 4;
         let verify_circuit_params_verifier =
             verify_circuit_params.verifier::<Bn256>(LIMBS * 4).unwrap();
@@ -168,7 +167,7 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
             let instances_slice: &[&[&[Fr]]] = &[&[&instances[..]]];
             let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
 
-            let load_proof = true;
+            let load_proof = false;
 
             let proof = if load_proof {
                 let mut f = File::open("proof").unwrap();
@@ -185,6 +184,7 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
                 )
                 .expect("keygen_pk should not fail");
 
+                log::info!("proving with real prover");
                 create_proof(
                     &verify_circuit_params,
                     &verify_circuit_pk,
