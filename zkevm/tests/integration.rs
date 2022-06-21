@@ -1,13 +1,15 @@
 use halo2_proofs::plonk::{
     create_proof, keygen_pk, keygen_vk, verify_proof, SingleVerifier, VerifyingKey,
 };
-use halo2_proofs::poly::commitment::Params;
-use halo2_proofs::transcript::{Blake2bRead, Blake2bWrite, Challenge255};
+use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
+use halo2_proofs::transcript::{Blake2bRead, Blake2bWrite, Challenge255, PoseidonWrite, PoseidonRead};
 use halo2_snark_aggregator_circuit::verify_circuit::{
     calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
 };
 use pairing::bn256::G1Affine;
+use pairing::group::ff::PrimeField;
 use rand::rngs::OsRng;
+use zkevm::circuit::DEGREE;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::PathBuf;
@@ -118,7 +120,7 @@ struct CircuitResult {
     instance: Vec<Vec<Vec<Fr>>>,
 }
 
-fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: bool) {
+fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: bool) {
     // TODO: be careful here
 
     let target_circuit_params_verifier = params.verifier::<Bn256>(0).unwrap();
@@ -142,13 +144,15 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
         &circuits_proofs,
         circuits_proofs.len(),
     );
-    if !real {
+    let mock = true;
+    if mock {
         log::info!("{} create mock prover", name);
-        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances]).unwrap();
+        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
         log::info!("{} start mock prover verify", name);
         prover.verify().unwrap();
         log::info!("{} Mock proving of verify_circuit done", name);
-    } else {
+    } 
+    if real {
         log::info!("setup");
         let verify_circuit_params = load_or_create_params("params26", 26).unwrap();
 
@@ -235,6 +239,92 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
             }
         }
     }
+}
+
+
+fn zktrie_result(params: &Params<G1Affine>) -> CircuitResult {
+    let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
+
+    let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, vec![]).unwrap();
+    log::info!("{} start mock prover verify", "zktrie");
+    prover.verify().unwrap();
+
+    log::info!("Mock proving of {} done", "zktrie");
+
+    let vk = keygen_vk(&params, &circuit).unwrap();
+    let pk = keygen_pk(&params, vk, &circuit).unwrap();
+
+    let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
+
+    create_proof(&params, &pk, &[circuit], &[&[]], OsRng, &mut transcript).unwrap();
+
+    let proof = transcript.finalize();
+    {
+        //let public_input_len = power_of_randomness[0].len();
+        let public_input_len = 0;
+        let verifier_params: ParamsVerifier<Bn256> = params.verifier(public_input_len).unwrap();
+
+        let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof[..]);
+        let strategy = SingleVerifier::new(&verifier_params);
+
+        let vr = verify_proof(
+            &verifier_params,
+            &pk.get_vk(),
+            strategy,
+            //&[&power_of_randomness],
+            &[&[]],
+            &mut transcript,
+        );
+        println!("vr {:#?}", vr);
+        assert!(vr.is_ok());
+    }
+
+    let zktrie_circuit_r = CircuitResult {
+        proof: proof,
+        vk: pk.get_vk().clone(),
+        instance: vec![Default::default()],
+    };
+    zktrie_circuit_r
+}
+
+
+fn poseidon_result(params: &Params<G1Affine>) -> CircuitResult {
+    let message1 = [
+        Fr::from_str_vartime("1").unwrap(),
+        Fr::from_str_vartime("2").unwrap(),
+    ];
+    let message2 = [
+        Fr::from_str_vartime("0").unwrap(),
+        Fr::from_str_vartime("1").unwrap(),
+    ];
+
+    let circuit = halo2_mpt_circuits::hash::HashCircuit::<3> {
+        inputs: [
+            Some(message1),
+            Some(message2),
+            Some([Fr::one(), Fr::zero()]),
+        ],
+    };
+
+    let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, vec![]).unwrap();
+    log::info!("{} start mock prover verify", "poseidon");
+    prover.verify().unwrap();
+
+    log::info!("Mock proving of {} done", "poseidon");
+
+    let vk = keygen_vk(&params, &circuit).unwrap();
+    let pk = keygen_pk(&params, vk, &circuit).unwrap();
+
+    let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
+
+    create_proof(&params, &pk, &[circuit], &[&[]], OsRng, &mut transcript).unwrap();
+
+    let poseidon_circuit_r = CircuitResult {
+        proof: transcript.finalize(),
+        vk: pk.get_vk().clone(),
+        instance: vec![Default::default()],
+    };
+    poseidon_circuit_r
 }
 
 #[cfg(feature = "prove_verify")]
@@ -331,96 +421,15 @@ fn test_connect() {
         vk: verifier.state_vk,
         instance: vec![Default::default()],
     };
-
-    let zktrie_fn = || {
-        let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
-
-        let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, vec![]).unwrap();
-        log::info!("{} start mock prover verify", "zktrie");
-        prover.verify().unwrap();
-
-        log::info!("Mock proving of {} done", "zktrie");
-
-        let vk = keygen_vk(&params, &circuit).unwrap();
-        let pk = keygen_pk(&params, vk, &circuit).unwrap();
-
-        let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
-
-        create_proof(&params, &pk, &[circuit], &[&[]], OsRng, &mut transcript).unwrap();
-
-        let proof = transcript.finalize();
-        {
-            //let public_input_len = power_of_randomness[0].len();
-            let public_input_len = 0;
-            let verifier_params: ParamsVerifier<Bn256> = params.verifier(public_input_len).unwrap();
-
-            let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof[..]);
-            let strategy = SingleVerifier::new(&verifier_params);
-
-            let vr = verify_proof(
-                &verifier_params,
-                &pk.get_vk(),
-                strategy,
-                //&[&power_of_randomness],
-                &[&[]],
-                &mut transcript,
-            );
-            println!("vr {:#?}", vr);
-            assert!(vr.is_ok());
-        }
-
-        let zktrie_circuit_r = CircuitResult {
-            proof: proof,
-            vk: pk.get_vk().clone(),
-            instance: vec![Default::default()],
-        };
-        zktrie_circuit_r
-    };
-    let poseidon_fn = || {
-        let message1 = [
-            Fr::from_str_vartime("1").unwrap(),
-            Fr::from_str_vartime("2").unwrap(),
-        ];
-        let message2 = [
-            Fr::from_str_vartime("0").unwrap(),
-            Fr::from_str_vartime("1").unwrap(),
-        ];
-
-        let circuit = halo2_mpt_circuits::hash::HashCircuit::<3> {
-            inputs: [
-                Some(message1),
-                Some(message2),
-                Some([Fr::one(), Fr::zero()]),
-            ],
-        };
-
-        let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, vec![]).unwrap();
-        log::info!("{} start mock prover verify", "poseidon");
-        prover.verify().unwrap();
-
-        log::info!("Mock proving of {} done", "poseidon");
-
-        let vk = keygen_vk(&params, &circuit).unwrap();
-        let pk = keygen_pk(&params, vk, &circuit).unwrap();
-
-        let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
-
-        create_proof(&params, &pk, &[circuit], &[&[]], OsRng, &mut transcript).unwrap();
-
-        let poseidon_circuit_r = CircuitResult {
-            proof: transcript.finalize(),
-            vk: pk.get_vk().clone(),
-            instance: vec![Default::default()],
-        };
-        poseidon_circuit_r
-    };
+    let poseidon_result = poseidon_result(&params);
+    let zktrie_result = zktrie_result(&params);
 
     let profile_state = false;
     let profile_evm = false;
     let profile_both = true;
 
     if profile_state {
-        profile(
+        run_verifier_circuit(
             "state_circuit",
             &params,
             vec![state_circuit_r.clone()],
@@ -428,13 +437,13 @@ fn test_connect() {
         );
     }
     if profile_evm {
-        profile("evm_circuit", &params, vec![evm_circuit_r.clone()], false);
+        run_verifier_circuit("evm_circuit", &params, vec![evm_circuit_r.clone()], false);
     }
     if profile_both {
-        profile(
+        run_verifier_circuit(
             "both",
             &params,
-            vec![evm_circuit_r, state_circuit_r, poseidon_fn(), zktrie_fn()],
+            vec![evm_circuit_r, state_circuit_r, poseidon_result, zktrie_result],
             true,
         );
     }
