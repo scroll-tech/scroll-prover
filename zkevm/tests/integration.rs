@@ -162,11 +162,7 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
             keygen_vk(&verify_circuit_params, &verify_circuit).expect("keygen_vk should not fail");
         log::info!("vk done");
 
-        let verify_circuit_pk =
-            keygen_pk(&verify_circuit_params, verify_circuit_vk, &verify_circuit)
-                .expect("keygen_pk should not fail");
-
-        log::info!("pk vk done");
+        log::info!("pk done");
 
         if true {
             let instances_slice: &[&[&[Fr]]] = &[&[&instances[..]]];
@@ -182,6 +178,13 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
                 f.read_to_end(&mut buffer).unwrap();
                 buffer
             } else {
+                let verify_circuit_pk = keygen_pk(
+                    &verify_circuit_params,
+                    verify_circuit_vk.clone(),
+                    &verify_circuit,
+                )
+                .expect("keygen_pk should not fail");
+
                 create_proof(
                     &verify_circuit_params,
                     &verify_circuit_pk,
@@ -201,7 +204,7 @@ fn profile(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitResult>, real: 
 
             let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
 
-            let verify_circuit_vk = verify_circuit_pk.get_vk();
+            //let verify_circuit_vk = verify_circuit_pk.get_vk();
             verify_proof(
                 &verify_circuit_params_verifier,
                 &verify_circuit_vk,
