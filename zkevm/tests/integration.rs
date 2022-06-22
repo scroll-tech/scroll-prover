@@ -174,7 +174,7 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
         &circuits_proofs,
         circuits_proofs.len(),
     );
-    let mock = true;
+    let mock = !real;
     if mock {
         log::info!("{} create mock prover", name);
         let prover =
