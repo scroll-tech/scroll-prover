@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 halo2-snark-aggregator-circuit = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-circuit" }
 halo2-snark-aggregator-solidity = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-solidity" }
+halo2-snark-aggregator-api = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-api" }
 pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256",tag = "v0.1.1" }
 halo2_proofs = { path = "../../halo2/halo2_proofs" }
 bus-mapping = { path = "../../zkevm-circuits/bus-mapping" }
@@ -25,6 +26,7 @@ serde_json = "1.0.66"
 types = { path = "../types", features = ["test"] }
 log = "0.4"
 anyhow = "1.0"
+num-bigint = "0.4.3"
 blake2 = "0.10.3"
 dotenv = "0.15.0"
 env_logger = "0.9.0"

@@ -1,20 +1,24 @@
+use halo2_proofs::arithmetic::BaseExt;
 use halo2_proofs::plonk::{
     create_proof, keygen_pk, keygen_vk, verify_proof, SingleVerifier, VerifyingKey,
 };
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
-use halo2_proofs::transcript::{Blake2bRead, Blake2bWrite, Challenge255, PoseidonWrite, PoseidonRead};
+use halo2_proofs::transcript::{
+    Blake2bRead, Blake2bWrite, Challenge255, PoseidonRead, PoseidonWrite,
+};
 use halo2_snark_aggregator_circuit::verify_circuit::{
     calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit,
 };
-use pairing::bn256::G1Affine;
-use pairing::group::ff::PrimeField;
+use num_bigint::BigUint;
+
+use halo2_snark_aggregator_api::transcript::sha::{ShaRead, ShaWrite};
 use rand::rngs::OsRng;
-use zkevm::circuit::DEGREE;
 use std::fs::{self, File};
-use std::io::Read;
-use std::path::PathBuf;
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
 use std::sync::Once;
 use std::time::Instant;
+use zkevm::circuit::DEGREE;
 use zkevm::prover::Prover;
 use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed};
 use zkevm::verifier::Verifier;
@@ -23,7 +27,9 @@ use halo2_snark_aggregator_solidity::{SolidityGenerate, SolidityGenerate2};
 
 use halo2_proofs::{
     dev::MockProver,
-    pairing::bn256::{Bn256, Fr},
+    pairing::bn256::{Bn256, Fq, Fr, G1Affine},
+    pairing::group::ff::PrimeField,
+    pairing::group::Curve,
 };
 
 const PARAMS_PATH: &str = "./test_params";
@@ -45,6 +51,30 @@ fn parse_trace_path_from_env(mode: &str) -> &'static str {
 
 fn init() {
     ENV_LOGGER.call_once(env_logger::init);
+}
+
+fn field_to_bn(f: &Fq) -> BigUint {
+    let mut bytes: Vec<u8> = Vec::new();
+    f.write(&mut bytes).unwrap();
+    BigUint::from_bytes_le(&bytes[..])
+}
+fn write_verify_circuit_instance_commitments_be(folder: &mut PathBuf, buf: &Vec<Vec<G1Affine>>) {
+    folder.push("verify_circuit_instance_commitments_be.data");
+    let mut fd = std::fs::File::create(folder.as_path()).unwrap();
+    folder.pop();
+
+    for v in buf {
+        for commitment in v {
+            let x = field_to_bn(&commitment.x);
+            let y = field_to_bn(&commitment.y);
+            let be = x
+                .to_bytes_be()
+                .into_iter()
+                .chain(y.to_bytes_be().into_iter())
+                .collect::<Vec<_>>();
+            fd.write_all(&be).unwrap()
+        }
+    }
 }
 
 #[cfg(feature = "prove_verify")]
@@ -129,7 +159,7 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
     let circuits_proofs: Vec<_> = cs.iter().map(|x| x.proof.clone()).collect();
     let circuits_vks: Vec<_> = cs.iter().map(|x| x.vk.clone()).collect();
 
-    let instances = calc_verify_circuit_instances(
+    let verify_circuit_instances = calc_verify_circuit_instances(
         &target_circuit_params_verifier,
         &circuits_vks,
         circuits_instances.clone(),
@@ -147,11 +177,13 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
     let mock = true;
     if mock {
         log::info!("{} create mock prover", name);
-        let prover = MockProver::<Fr>::run(26, &verify_circuit, vec![instances.clone()]).unwrap();
+        let prover =
+            MockProver::<Fr>::run(26, &verify_circuit, vec![verify_circuit_instances.clone()])
+                .unwrap();
         log::info!("{} start mock prover verify", name);
         prover.verify().unwrap();
         log::info!("{} Mock proving of verify_circuit done", name);
-    } 
+    }
     if real {
         log::info!("setup");
         let verify_circuit_params = load_or_create_params("params26", 26).unwrap();
@@ -168,18 +200,23 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
         log::info!("pk done");
 
         if true {
-            let instances_slice: &[&[&[Fr]]] = &[&[&instances[..]]];
-            let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
+            let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];
+            let mut transcript = ShaWrite::<_, _, Challenge255<_>>::init(vec![], vec![]);
 
             let load_proof = false;
 
-            let proof = if load_proof {
+            let (proof, proof_be) = if load_proof {
                 let mut f = File::open("proof").unwrap();
-                let mut buffer = Vec::new();
-
+                let mut proof = Vec::new();
                 // read the whole file
-                f.read_to_end(&mut buffer).unwrap();
-                buffer
+                f.read_to_end(&mut proof).unwrap();
+
+                let mut f = File::open("verify_circuit_proof_be.data").unwrap();
+                let mut proof_be = Vec::new();
+                // read the whole file
+                f.read_to_end(&mut proof_be).unwrap();
+
+                (proof, proof_be)
             } else {
                 let verify_circuit_pk = keygen_pk(
                     &verify_circuit_params,
@@ -198,15 +235,58 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
                     &mut transcript,
                 )
                 .expect("proof generation should not fail");
-                let proof = transcript.finalize();
+                let (proof, proof_be) = transcript.finalize();
                 fs::write("proof", proof.clone()).unwrap();
+                fs::write("verify_circuit_proof_be.data", proof_be.clone()).unwrap();
                 log::info!("proving done");
-                proof
+                (proof, proof_be)
             };
 
+            // public input of solidity verifier
+
+            let instance_commitments: Vec<Vec<G1Affine>> = {
+                let instances: &[&[&[_]]] = &[&[&verify_circuit_instances]];
+                let instance_commitments: Vec<Vec<G1Affine>> = instances
+                    .iter()
+                    .map(|instance| {
+                        instance
+                            .iter()
+                            .map(|instance| {
+                                verify_circuit_params_verifier
+                                    .commit_lagrange(instance.to_vec())
+                                    .to_affine()
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>();
+
+                instance_commitments
+            };
+
+            let mut p = PathBuf::from("./");
+            write_verify_circuit_instance_commitments_be(&mut p, &instance_commitments);
+
+            let instances = instances_slice
+                .iter()
+                .map(|l1| {
+                    l1.iter()
+                        .map(|l2| {
+                            l2.iter()
+                                .map(|c| {
+                                    let mut buf = vec![];
+                                    c.write(&mut buf).unwrap();
+                                    buf
+                                })
+                                .collect()
+                        })
+                        .collect::<Vec<Vec<Vec<u8>>>>()
+                })
+                .collect::<Vec<Vec<Vec<Vec<u8>>>>>();
+
+            /// verify
             let strategy = SingleVerifier::new(&verify_circuit_params_verifier);
 
-            let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
+            let mut transcript = ShaRead::<_, _, Challenge255<_>>::init(&proof[..]);
 
             //let verify_circuit_vk = verify_circuit_pk.get_vk();
             verify_proof(
@@ -225,7 +305,7 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
                 let request = SolidityGenerate2 {
                     params: verify_circuit_params_verifier,
                     verify_circuit_vk: verify_circuit_vk.clone(),
-                    verify_circuit_instance: vec![vec![instances]],
+                    verify_circuit_instance: vec![vec![verify_circuit_instances]],
                     proof: proof,
                 };
 
@@ -240,7 +320,6 @@ fn run_verifier_circuit(name: &str, params: &Params<G1Affine>, cs: Vec<CircuitRe
         }
     }
 }
-
 
 fn zktrie_result(params: &Params<G1Affine>) -> CircuitResult {
     let circuit = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
@@ -286,7 +365,6 @@ fn zktrie_result(params: &Params<G1Affine>) -> CircuitResult {
     };
     zktrie_circuit_r
 }
-
 
 fn poseidon_result(params: &Params<G1Affine>) -> CircuitResult {
     let message1 = [
@@ -443,7 +521,12 @@ fn test_connect() {
         run_verifier_circuit(
             "both",
             &params,
-            vec![evm_circuit_r, state_circuit_r, poseidon_result, zktrie_result],
+            vec![
+                evm_circuit_r,
+                state_circuit_r,
+                poseidon_result,
+                zktrie_result,
+            ],
             true,
         );
     }
