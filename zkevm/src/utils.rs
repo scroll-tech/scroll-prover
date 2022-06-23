@@ -1,10 +1,11 @@
-use crate::circuit::DEGREE;
+use anyhow::Result;
 use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::poly::commitment::Params;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{BufReader, Read, Result, Write};
+use std::io::{BufReader, Read, Write};
 use std::path::Path;
+use std::str::FromStr;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::witness::Block;
 use zkevm_circuits::state_circuit::StateCircuit;
@@ -20,27 +21,43 @@ pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
 }
 
 /// return setup params by reading from file or generate new one
-pub fn load_or_create_params(params_path: &str) -> Result<Params<G1Affine>> {
+pub fn load_or_create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
     if Path::new(params_path).exists() {
-        load_params(params_path)
-    } else {
-        create_params(params_path)
+        match load_params(params_path, degree) {
+            Ok(r) => return Ok(r),
+            Err(e) => {
+                log::error!("load params err: {}. Recreating...", e)
+            }
+        }
     }
+    create_params(params_path, degree)
 }
 
 /// load params from file
-pub fn load_params(params_path: &str) -> Result<Params<G1Affine>> {
-    log::info!("start load params");
+pub fn load_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
+    log::info!("start loading params with degree {}", degree);
     let f = File::open(params_path)?;
+
+    // check params file length:
+    //   len: 4 bytes
+    //   g: 2**DEGREE g1 points, each 32 bytes(256bits)
+    //   g_lagrange: 2**DEGREE g1 points, each 32 bytes(256bits)
+    //   len of additional data: 4 bytes
+    //   additional data: 1 g2 point, 64 bytes
+    let file_size = f.metadata()?.len();
+    if file_size != (1 << degree) * 64 + 72 {
+        return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
+    }
+
     let p = Params::read::<_>(&mut BufReader::new(f))?;
     log::info!("load params successfully!");
     Ok(p)
 }
 
 /// create params and write it into file
-pub fn create_params(params_path: &str) -> Result<Params<G1Affine>> {
-    log::info!("start create params");
-    let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(DEGREE as u32);
+pub fn create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
+    log::info!("start creating params with degree {}", degree);
+    let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(degree as u32);
     let mut params_buf = Vec::new();
     params.write(&mut params_buf)?;
 
@@ -94,4 +111,10 @@ pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
     let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
 
     j.result
+}
+
+pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {
+    std::env::var(var_name)
+        .map(|s| s.parse::<T>().unwrap_or_else(|_| default.clone()))
+        .unwrap_or(default)
 }
