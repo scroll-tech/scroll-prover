@@ -26,6 +26,7 @@ test-evm-trace: ## test evm circuit with real trace
 test-state-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_state_prove_verify
 
+## commented out for now, waiting for halo2 upstream upgrade
 # test-circuit-connect: ## test connect evm circuit & state circuit
 # 	@cargo test --features prove_verify --release test_state_evm_connect
 

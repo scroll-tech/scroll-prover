@@ -91,6 +91,7 @@ fn test_state_prove_verify() {
     assert!(verifier.verify_state_proof(proof, &block_result));
 }
 
+// commented out for now, waiting for halo2 upstream upgrade
 // #[cfg(feature = "prove_verify")]
 // #[test]
 // fn test_state_evm_connect() {
