@@ -31,6 +31,14 @@ new:
 	MODE=nft cargo test --features prove_verify --release test_state_prove_verify >> 0621.txt 2>&1
 	MODE=sushi cargo test --features prove_verify --release test_state_prove_verify >> 0621.txt 2>&1
 
+again:
+	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > 0623.dao.evm.txt 2>&1
+	MODE=dao cargo test --features prove_verify --release test_state_prove_verify > 0623.dao.state.txt 2>&1
+	MODE=nft cargo test --features prove_verify --release test_evm_prove_verify > 0623.nft.evm.txt 2>&1
+	MODE=nft cargo test --features prove_verify --release test_state_prove_verify > 0623.nft.state.txt 2>&1
+	MODE=sushi cargo test --features prove_verify --release test_evm_prove_verify > 0623.sushi.evm.txt 2>&1
+	MODE=sushi cargo test --features prove_verify --release test_state_prove_verify > 0623.sushi.state.txt 2>&1
+
 nft:
 	MODE=nft cargo test --features prove_verify --release test_evm_prove_verify > 0621.nft.txt 2>&1
 	MODE=nft cargo test --features prove_verify --release test_state_prove_verify >> 0621.nft.txt 2>&1
