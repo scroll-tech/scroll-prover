@@ -2672,6 +2672,7 @@ dependencies = [
  "hex",
  "is-even",
  "log",
+ "once_cell",
  "pairing_bn256 0.1.1 (git+https://github.com/appliedzkp/pairing)",
  "rand",
  "rand_xorshift",
