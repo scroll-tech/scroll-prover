@@ -2,6 +2,7 @@ use crate::circuit::{block_result_to_circuits, DEGREE};
 use crate::keygen::{gen_evm_pk, gen_state_pk};
 use crate::utils::{load_params, load_randomness, load_seed};
 use anyhow::Error;
+use halo2_proofs::dev::MockProver;
 use halo2_proofs::pairing::bn256::{Fr, G1Affine};
 use halo2_proofs::plonk::{create_proof, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
@@ -10,6 +11,9 @@ use log::info;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use types::eth::BlockResult;
+
+// mock prove before real prove
+const SANITY_CHECK: bool = true;
 
 pub struct Prover {
     pub params: Params<G1Affine>,
@@ -53,6 +57,11 @@ impl Prover {
         let (_, circuit, _) = block_result_to_circuits::<Fr>(block_result)?;
         let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
         let public_inputs: &[&[&[Fr]]] = &[&[]];
+
+        if SANITY_CHECK {
+            let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, vec![]).unwrap();
+            prover.verify_at_rows(0..4000, 0..4000).unwrap()
+        }
 
         info!(
             "Create evm proof of block {}",
