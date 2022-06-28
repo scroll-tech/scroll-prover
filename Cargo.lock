@@ -201,7 +201,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=4797a964#4797a9649a712245a85d2899e3c920e84c685a72"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=d7dd50a#d7dd50a2f1a581e5b64a32dea266141a49c7eecc"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -559,7 +559,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=4797a964#4797a9649a712245a85d2899e3c920e84c685a72"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=d7dd50a#d7dd50a2f1a581e5b64a32dea266141a49c7eecc"
 dependencies = [
  "ethers-core",
  "ethers-providers",
@@ -827,7 +827,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=4797a964#4797a9649a712245a85d2899e3c920e84c685a72"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=d7dd50a#d7dd50a2f1a581e5b64a32dea266141a49c7eecc"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1175,7 +1175,7 @@ checksum = "67c21572b4949434e4fc1e1978b99c5f77064153c59d998bf13ecd96fb5ecba7"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=4797a964#4797a9649a712245a85d2899e3c920e84c685a72"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=d7dd50a#d7dd50a2f1a581e5b64a32dea266141a49c7eecc"
 dependencies = [
  "eth-types",
  "gadgets",
@@ -2688,7 +2688,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=4797a964#4797a9649a712245a85d2899e3c920e84c685a72"
+source = "git+https://github.com/scroll-tech/zkevm-circuits?rev=d7dd50a#d7dd50a2f1a581e5b64a32dea266141a49c7eecc"
 dependencies = [
  "array-init",
  "bigint",
