@@ -1,6 +1,6 @@
 use clap::Parser;
-use rand_xorshift::XorShiftRng;
 use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::Write;
 use zkevm::{
@@ -38,7 +38,8 @@ fn main() {
     let args = Args::parse();
     let params = load_or_create_params(&args.params_path.unwrap(), *DEGREE)
         .expect("failed to load or create params");
-    let seed = load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
+    let seed =
+        load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
     let rng = XorShiftRng::from_seed(seed);
 
     let prover = Prover::from_params_and_rng(params, rng);
