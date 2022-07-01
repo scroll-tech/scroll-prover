@@ -23,11 +23,11 @@ struct Args {
     trace_path: Option<String>,
     /// Generate evm proof and write into file.
     /// It will generate nothing if it is None.
-    #[clap(short, long = "evm")]
+    #[clap(long = "evm")]
     evm_proof_path: Option<String>,
     /// Generate state proof and write into file.
     /// It will generate nothing if it is None.
-    #[clap(short, long = "state")]
+    #[clap(long = "state")]
     state_proof_path: Option<String>,
 }
 
