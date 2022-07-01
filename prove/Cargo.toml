@@ -1,0 +1,17 @@
+[package]
+name = "prove"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.1.3", features = ["derive"] }
+env_logger = "0.9.0"
+dotenv = "0.15.0"
+rand = "0.8"
+rand_xorshift = "0.3"
+zkevm = { path = "../zkevm" }
+
+[[bin]]
+name = "prove"
