@@ -1560,6 +1560,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "prove"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "dotenv",
+ "env_logger",
+ "rand",
+ "rand_xorshift",
+ "zkevm",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
