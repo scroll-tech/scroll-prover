@@ -26,9 +26,6 @@ test-evm-trace: ## test evm circuit with real trace
 test-state-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_state_prove_verify
 
-prove: ## generate multiple-erc20-trace and write into files.
-	@./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/trace-multiple-erc20.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
-
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > 0624.dao.evm.txt 2>&1; MODE=dao cargo test --features prove_verify --release test_state_prove_verify > 0624.dao.state.txt 2>&1; MODE=nft cargo test --features prove_verify --release test_evm_prove_verify > 0624.nft.evm.txt 2>&1; MODE=nft cargo test --features prove_verify --release test_state_prove_verify > 0624.nft.state.txt 2>&1; MODE=sushi cargo test --features prove_verify --release test_evm_prove_verify > 0624.sushi.evm.txt 2>&1; MODE=sushi cargo test --features prove_verify --release test_state_prove_verify > 0624.sushi.state.txt 2>&1
 
