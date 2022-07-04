@@ -22,24 +22,20 @@ pub struct Prover {
 }
 
 impl Prover {
-    pub fn new(
-        params: Params<G1Affine>,
-        rng: XorShiftRng,
-        evm_pk: ProvingKey<G1Affine>,
-        state_pk: ProvingKey<G1Affine>,
-    ) -> Self {
+    pub fn from_params_and_seed(params: Params<G1Affine>, seed: [u8; 16]) -> Self {
+        let rng = XorShiftRng::from_seed(seed);
+        Self::from_params_and_rng(params, rng)
+    }
+
+    pub fn from_params_and_rng(params: Params<G1Affine>, rng: XorShiftRng) -> Self {
+        let evm_pk = gen_evm_pk(&params).expect("failed to generate evm_circuit pk");
+        let state_pk = gen_state_pk(&params).expect("failed to generate state_circuit pk");
         Self {
             params,
             rng,
             evm_pk,
             state_pk,
         }
-    }
-
-    pub fn from_params_and_rng(params: Params<G1Affine>, rng: XorShiftRng) -> Self {
-        let evm_pk = gen_evm_pk(&params).expect("failed to generate evm_circuit pk");
-        let state_pk = gen_state_pk(&params).expect("failed to generate state_circuit pk");
-        Self::new(params, rng, evm_pk, state_pk)
     }
 
     pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
