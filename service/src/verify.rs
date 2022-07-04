@@ -16,22 +16,22 @@ static VERIFIER: Lazy<Verifier> = Lazy::new(|| {
 pub unsafe extern "C" fn verify_evm_proof(
     trace_char: *const c_char,
     proof: *const c_char,
-) -> *const c_char {
+) -> c_char {
     let trace_str = c_char_to_str(trace_char);
     let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
     let proof = c_char_to_vec(proof);
     let verified = VERIFIER.verify_evm_proof(proof, &trace);
-    verified as *const c_char
+    verified as c_char
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn verify_state_proof(
     trace_char: *const c_char,
     proof: *const c_char,
-) -> *const c_char {
+) -> c_char {
     let trace_str = c_char_to_str(trace_char);
     let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
     let proof = c_char_to_vec(proof);
     let verified = VERIFIER.verify_state_proof(proof, &trace);
-    verified as *const c_char
+    verified as c_char
 }
