@@ -7,7 +7,7 @@ use zkevm::utils::{load_or_create_params, read_env_var};
 use zkevm::verifier::Verifier;
 
 static VERIFIER: Lazy<Verifier> = Lazy::new(|| {
-    let params_path = read_env_var("params_path", "params".to_string());
+    let params_path = read_env_var("params_path", "/tmp/params".to_string());
     let params = load_or_create_params(&params_path, *DEGREE).unwrap();
     Verifier::from_params(params)
 });

@@ -6,8 +6,8 @@ use zkevm::utils::{load_or_create_params, load_or_create_seed, read_env_var};
 use zkevm::{circuit::DEGREE, prover::Prover};
 
 static mut PROVER: Lazy<Prover> = Lazy::new(|| {
-    let params_path = read_env_var("params_path", "params".to_string());
-    let seed_path = read_env_var("seed_path", "seed".to_string());
+    let params_path = read_env_var("params_path", "/tmp/params".to_string());
+    let seed_path = read_env_var("seed_path", "/tmp/seed".to_string());
     let params = load_or_create_params(&params_path, *DEGREE).unwrap();
     let seed = load_or_create_seed(&seed_path).unwrap();
     Prover::from_params_and_seed(params, seed)
