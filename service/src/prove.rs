@@ -13,6 +13,7 @@ static mut PROVER: Lazy<Prover> = Lazy::new(|| {
     Prover::from_params_and_seed(params, seed)
 });
 
+/// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn create_evm_proof(trace_char: *const c_char) -> *const c_char {
     let trace_str = c_char_to_str(trace_char);
@@ -21,6 +22,7 @@ pub unsafe extern "C" fn create_evm_proof(trace_char: *const c_char) -> *const c
     vec_to_c_char(proof)
 }
 
+/// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn create_state_proof(trace_char: *const c_char) -> *const c_char {
     let trace_str = c_char_to_str(trace_char);

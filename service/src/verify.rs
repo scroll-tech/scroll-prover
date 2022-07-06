@@ -12,6 +12,7 @@ static VERIFIER: Lazy<Verifier> = Lazy::new(|| {
     Verifier::from_params(params)
 });
 
+/// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn verify_evm_proof(
     trace_char: *const c_char,
@@ -24,6 +25,7 @@ pub unsafe extern "C" fn verify_evm_proof(
     verified as c_char
 }
 
+/// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn verify_state_proof(
     trace_char: *const c_char,
