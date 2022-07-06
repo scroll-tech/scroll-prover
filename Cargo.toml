@@ -2,9 +2,8 @@
 members = [
     "types",
     "zkevm",
-    "setup",
     "service",
-    "prove",
+    "bin",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

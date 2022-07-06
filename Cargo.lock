@@ -109,6 +109,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bin"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "dotenv",
+ "env_logger",
+ "rand",
+ "rand_xorshift",
+ "zkevm",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1560,18 +1572,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prove"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dotenv",
- "env_logger",
- "rand",
- "rand_xorshift",
- "zkevm",
-]
-
-[[package]]
 name = "quote"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1957,16 +1957,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "types",
- "zkevm",
-]
-
-[[package]]
-name = "setup"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dotenv",
- "env_logger",
  "zkevm",
 ]
 
