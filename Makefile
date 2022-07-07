@@ -15,7 +15,7 @@ fmt: ## Check whether the code is formated correctly
 
 clippy: ## Run clippy checks over all workspace members
 	@cargo check --all-features
-	@cargo clippy --release --all-features --all-targets -- -D warnings
+	@cargo clippy --release --features prove_verify -- -D warnings
 
 test: ## Run tests for all the workspace members
 	@cargo test --release --all

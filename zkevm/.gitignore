@@ -12,5 +12,7 @@ Cargo.lock
 # for jetbrains
 .idea
 
-test_params
+test_params*
 test_seed
+
+output_*
