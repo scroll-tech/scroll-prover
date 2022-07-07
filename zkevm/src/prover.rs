@@ -25,7 +25,6 @@ use log::info;
 use once_cell::sync::Lazy;
 use pairing::bn256::Bn256;
 use pairing::group::Curve;
-use rand::rngs::OsRng;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use types::eth::BlockResult;
