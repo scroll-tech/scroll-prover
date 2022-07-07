@@ -195,7 +195,7 @@ impl Prover {
             self.agg_pk.as_ref().unwrap(),
             &[verify_circuit],
             instances_slice,
-            OsRng,
+            self.rng.clone(),
             &mut transcript,
         )
         .expect("proof generation should not fail");
