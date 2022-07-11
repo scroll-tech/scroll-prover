@@ -112,7 +112,7 @@ fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), an
     }
 
     for er in block.execution_results.iter().rev() {
-        for step in &er.exec_steps {
+        for step in er.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
                 match step.op {
                     OpcodeId::CALL | OpcodeId::CALLCODE => {
