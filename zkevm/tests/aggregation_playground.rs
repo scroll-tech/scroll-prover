@@ -99,6 +99,9 @@ fn verifier_circuit_verify(d: &str) {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_4in1() {
+    use chrono::Utc;
+    use zkevm::utils::{get_block_result_from_file, read_env_var};
+
     init();
     let exp_name = read_env_var("EXP", "".to_string());
     let mode = read_env_var("MODE", "greeter".to_string());
