@@ -11,7 +11,7 @@ use crate::io::{
 };
 use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
-use anyhow::Error;
+use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::pairing::bn256::{Fr, G1Affine};
 use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, Circuit, ProvingKey};
@@ -240,7 +240,7 @@ impl Prover {
     pub fn create_target_circuit_proof<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(
         &mut self,
         block_result: &BlockResult,
-    ) -> Result<TargetCircuitProof, Error> {
+    ) -> anyhow::Result<TargetCircuitProof, Error> {
         let (circuit, instance) = C::from_block_result(block_result)?;
         let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 
@@ -255,7 +255,9 @@ impl Prover {
         );
         if *MOCK_PROVE {
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
-            prover.verify_par()?;
+            if let Err(e) = prover.verify_par() {
+                bail!("{:?}", e);
+            }
             log::info!("mock prove {} done", C::name());
         }
 

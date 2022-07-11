@@ -1,4 +1,3 @@
-use chrono::Utc;
 use halo2_proofs::pairing::bn256::{Bn256, G1Affine};
 use halo2_snark_aggregator_circuit::verify_circuit::ProvedCircuit;
 use halo2_snark_aggregator_solidity::SolidityGenerate;
@@ -9,11 +8,7 @@ use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::prover::AggCircuitProof;
 use zkevm::verifier::Verifier;
-use zkevm::{
-    io::*,
-    prover::Prover,
-    utils::{get_block_result_from_file, read_env_var},
-};
+use zkevm::{io::*, prover::Prover};
 
 const PARAMS_PATH: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
