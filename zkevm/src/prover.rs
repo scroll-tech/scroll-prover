@@ -33,6 +33,7 @@ use types::eth::BlockResult;
 extern crate procfs;
 
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
+pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
 pub struct TargetCircuitProof {
     pub name: String,
@@ -252,14 +253,11 @@ impl Prover {
             C::name(),
             block_result.block_trace.hash
         );
-        let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
-        if let Err(e) = prover.verify_par() {
-            log::error!(
-                "circuit may contain errors. report the log to lispczz. {:?}",
-                e
-            );
+        if *MOCK_PROVE {
+            let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
+            prover.verify_par()?;
+            log::info!("mock prove {} done", C::name());
         }
-        log::info!("mock prove {} done", C::name());
 
         if !self.target_circuit_pks.contains_key(&C::name()) {
             self.init_pk::<C, _>();
