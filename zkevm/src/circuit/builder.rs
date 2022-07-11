@@ -76,7 +76,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     }
 
     for er in block.execution_results.iter().rev() {
-        for step in &er.exec_steps {
+        for step in er.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
                 match step.op {
                     OpcodeId::CALL | OpcodeId::CALLCODE => {
@@ -151,6 +151,12 @@ pub fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
     };
 
     if let Some(s) = &proof.storage {
+        log::trace!(
+            "trace_proof ({:?}, {:?}) => {:?}",
+            &proof.address.unwrap(),
+            s.key.unwrap(),
+            s.value.unwrap()
+        );
         storage.insert(s.key.unwrap(), s.value.unwrap());
     }
 
