@@ -27,6 +27,8 @@ use pairing::bn256::Bn256;
 use pairing::group::Curve;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
+use serde_derive::{Deserialize, Serialize};
+use types::base64;
 use types::eth::BlockResult;
 
 #[cfg(target_os = "linux")]
@@ -41,12 +43,22 @@ pub struct TargetCircuitProof {
     pub instance: Vec<u8>,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct AggCircuitProof {
     // FIXME: tech debt
+    #[serde(with = "base64")]
     pub proof_rust: Vec<u8>,
+
+    #[serde(with = "base64")]
     pub proof_solidity: Vec<u8>,
+
+    #[serde(with = "base64")]
     pub instance: Vec<u8>,
+
+    #[serde(with = "base64")]
     pub instance_commitments: Vec<u8>,
+
+    #[serde(with = "base64")]
     pub vk: Vec<u8>,
 }
 
