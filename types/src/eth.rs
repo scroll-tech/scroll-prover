@@ -15,16 +15,6 @@ pub struct BlockResultWrapper {
     pub block_result: BlockResult,
 }
 
-/// ZkProof is the payload to Scroll.
-#[derive(Deserialize, Serialize, Debug)]
-pub struct ZkProof {
-    pub id: u64,
-    #[serde(rename = "evmProof", with = "base64")]
-    pub evm_proof: Vec<u8>,
-    #[serde(rename = "stateProof", with = "base64")]
-    pub state_proof: Vec<u8>,
-}
-
 #[derive(Deserialize, Serialize, Default, Debug)]
 pub struct BlockResult {
     #[serde(rename = "blockTrace")]
