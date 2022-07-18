@@ -1,8 +1,8 @@
 use bus_mapping::operation::OperationContainer;
 
-use mpt_circuits::{EthTrie, EthTrieCircuit, HashCircuit, operation::AccountOp, hash::Hashable};
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::pairing::bn256::Fr;
+use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit, HashCircuit};
 //use halo2_proofs::pairing::group::ff::PrimeField;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
 
@@ -26,21 +26,22 @@ pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
 
 pub trait TargetCircuit {
-    type Inner : Halo2Circuit<Fr>;
+    type Inner: Halo2Circuit<Fr>;
     fn name() -> String;
     fn empty() -> Self::Inner;
     //fn public_input_len() -> usize { 0 }
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
-    
-    fn estimate_rows(_block_result: &BlockResult) -> usize {0}
+
+    fn estimate_rows(_block_result: &BlockResult) -> usize {
+        0
+    }
 }
 
 pub struct EvmCircuit {}
 
 impl TargetCircuit for EvmCircuit {
-
     type Inner = TestCircuit<Fr>;
 
     fn name() -> String {
@@ -64,9 +65,7 @@ impl TargetCircuit for EvmCircuit {
         TestCircuit::new(default_block, tags)
     }
 
-    fn from_block_result(
-        block_result: &BlockResult,
-    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -77,17 +76,16 @@ impl TargetCircuit for EvmCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result){
+        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result) {
             TestCircuit::<Fr>::get_num_rows_required(&witness_block)
         } else {
             0
-        }  
+        }
     }
 }
 
 pub struct StateCircuit {}
 impl TargetCircuit for StateCircuit {
-
     type Inner = StateCircuitImpl<Fr>;
 
     fn name() -> String {
@@ -107,9 +105,7 @@ impl TargetCircuit for StateCircuit {
         StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map)
     }
 
-    fn from_block_result(
-        block_result: &BlockResult,
-    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -120,27 +116,32 @@ impl TargetCircuit for StateCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result){
-            witness_block.rws.0.iter().fold(0usize, |total, (_, v)| v.len() + total)
+        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result) {
+            witness_block
+                .rws
+                .0
+                .iter()
+                .fold(0usize, |total, (_, v)| v.len() + total)
         } else {
             0
-        }  
-    }    
+        }
+    }
 }
 
-fn mpt_rows() -> usize { ((1<<*DEGREE) - 10) / <Fr as Hashable>::hash_block_size()}
+fn mpt_rows() -> usize {
+    ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
+}
 
 pub struct ZktrieCircuit {}
 
 impl TargetCircuit for ZktrieCircuit {
-
     type Inner = EthTrieCircuit<Fr>;
 
     fn name() -> String {
         "zktrie".to_string()
     }
     fn empty() -> Self::Inner {
-        let dummy_trie : EthTrie<Fr> = Default::default();
+        let dummy_trie: EthTrie<Fr> = Default::default();
         let (circuit, _) = dummy_trie.circuits(mpt_rows());
         circuit
     }
@@ -148,7 +149,11 @@ impl TargetCircuit for ZktrieCircuit {
     where
         Self: Sized,
     {
-        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
         let mut trie_data: EthTrie<Fr> = Default::default();
         trie_data.add_ops(storage_ops);
         let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
@@ -157,35 +162,40 @@ impl TargetCircuit for ZktrieCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
         let mut trie_data: EthTrie<Fr> = Default::default();
         trie_data.add_ops(storage_ops);
         let (mpt_rows, _) = trie_data.use_rows();
         mpt_rows
-    }     
+    }
 }
 
 pub struct PoseidonCircuit {}
 
 impl TargetCircuit for PoseidonCircuit {
-
     type Inner = HashCircuit<Fr>;
 
     fn name() -> String {
         "poseidon".to_string()
     }
     fn empty() -> Self::Inner {
-        let dummy_trie : EthTrie<Fr> = Default::default();
+        let dummy_trie: EthTrie<Fr> = Default::default();
         let (_, circuit) = dummy_trie.circuits(mpt_rows());
         circuit
     }
-    fn from_block_result(
-        block_result: &BlockResult,
-    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
         let mut trie_data: EthTrie<Fr> = Default::default();
         trie_data.add_ops(storage_ops);
         let (_, circuit) = trie_data.circuits(mpt_rows());
@@ -194,10 +204,14 @@ impl TargetCircuit for PoseidonCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
         let mut trie_data: EthTrie<Fr> = Default::default();
         trie_data.add_ops(storage_ops);
-        let (_, hash_rows) =  trie_data.use_rows();
+        let (_, hash_rows) = trie_data.use_rows();
         hash_rows
-    }      
+    }
 }

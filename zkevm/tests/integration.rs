@@ -27,28 +27,39 @@ fn init() {
 
 #[test]
 fn estimate_circuit_rows() {
- 
     use zkevm::{
         circuit::{self, TargetCircuit, DEGREE},
         utils::{
             get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },        
+        },
     };
 
     dotenv::dotenv().ok();
     init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));    
- 
+    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
+
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
     let block_result = get_block_result_from_file(trace_path);
 
     log::info!("estimating used rows for current block");
-    log::info!("evm circuit: {}", circuit::EvmCircuit::estimate_rows(&block_result));
-    log::info!("state circuit: {}", circuit::StateCircuit::estimate_rows(&block_result));
-    log::info!("storage circuit: {}", circuit::ZktrieCircuit::estimate_rows(&block_result));
-    log::info!("hash circuit: {}", circuit::PoseidonCircuit::estimate_rows(&block_result));
+    log::info!(
+        "evm circuit: {}",
+        circuit::EvmCircuit::estimate_rows(&block_result)
+    );
+    log::info!(
+        "state circuit: {}",
+        circuit::StateCircuit::estimate_rows(&block_result)
+    );
+    log::info!(
+        "storage circuit: {}",
+        circuit::ZktrieCircuit::estimate_rows(&block_result)
+    );
+    log::info!(
+        "hash circuit: {}",
+        circuit::PoseidonCircuit::estimate_rows(&block_result)
+    );
 }
 
 #[cfg(feature = "prove_verify")]
@@ -256,7 +267,9 @@ fn test_storage_prove_verify() {
     log::info!("start generating storage_circuit proof");
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let proof = prover.create_target_circuit_proof::<ZktrieCircuit>(&block_result).unwrap();
+    let proof = prover
+        .create_target_circuit_proof::<ZktrieCircuit>(&block_result)
+        .unwrap();
     log::info!(
         "finish generating storage_circuit proof, elapsed: {:?}",
         now.elapsed()
@@ -267,11 +280,11 @@ fn test_storage_prove_verify() {
     let verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier
         .verify_target_circuit_proof::<ZktrieCircuit>(&proof)
-        .is_ok());    
+        .is_ok());
     log::info!(
         "finish verifying storage_circuit proof, elapsed: {:?}",
         now.elapsed()
-    );    
+    );
 }
 
 #[cfg(feature = "prove_verify")]
@@ -300,7 +313,9 @@ fn test_hash_prove_verify() {
     log::info!("start generating hash_circuit proof");
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let proof = prover.create_target_circuit_proof::<PoseidonCircuit>(&block_result).unwrap();
+    let proof = prover
+        .create_target_circuit_proof::<PoseidonCircuit>(&block_result)
+        .unwrap();
     log::info!(
         "finish generating hash_circuit proof, elapsed: {:?}",
         now.elapsed()
@@ -309,10 +324,11 @@ fn test_hash_prove_verify() {
     log::info!("start verifying hash_circuit proof");
     let now = Instant::now();
     let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier.verify_target_circuit_proof::<PoseidonCircuit>(&proof).is_ok());
+    assert!(verifier
+        .verify_target_circuit_proof::<PoseidonCircuit>(&proof)
+        .is_ok());
     log::info!(
         "finish verifying hash_circuit proof, elapsed: {:?}",
         now.elapsed()
     );
-
 }

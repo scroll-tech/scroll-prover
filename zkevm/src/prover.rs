@@ -148,9 +148,7 @@ impl Prover {
         &mut self,
         block_result: &BlockResult,
     ) -> ProvedCircuit<G1Affine, Bn256> {
-        let proof = self
-            .create_target_circuit_proof::<C>(block_result)
-            .unwrap();
+        let proof = self.create_target_circuit_proof::<C>(block_result).unwrap();
 
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..]).unwrap();
         let instances = deserialize_fr_matrix(instances);
