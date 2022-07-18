@@ -14,7 +14,7 @@ use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::pairing::bn256::{Fr, G1Affine};
-use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, Circuit, ProvingKey};
+use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey};
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
@@ -107,7 +107,7 @@ impl Prover {
         );
     }
 
-    fn init_pk<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(&mut self) {
+    fn init_pk<C: TargetCircuit>(&mut self) {
         Self::tick(&format!("before init pk of {}", C::name()));
         let circuit = C::empty();
         let vk = keygen_vk(&self.params, &circuit)
@@ -144,12 +144,12 @@ impl Prover {
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
-    fn prove_circuit<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(
+    fn prove_circuit<C: TargetCircuit>(
         &mut self,
         block_result: &BlockResult,
     ) -> ProvedCircuit<G1Affine, Bn256> {
         let proof = self
-            .create_target_circuit_proof::<C, _>(block_result)
+            .create_target_circuit_proof::<C>(block_result)
             .unwrap();
 
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..]).unwrap();
@@ -171,10 +171,10 @@ impl Prover {
 
     pub fn create_agg_circuit_proof(&mut self, block_result: &BlockResult) -> AggCircuitProof {
         let circuit_results: Vec<ProvedCircuit<_, _>> = vec![
-            self.prove_circuit::<EvmCircuit, _>(block_result),
-            self.prove_circuit::<StateCircuit, _>(block_result),
-            self.prove_circuit::<PoseidonCircuit, _>(block_result),
-            self.prove_circuit::<ZktrieCircuit, _>(block_result),
+            self.prove_circuit::<EvmCircuit>(block_result),
+            self.prove_circuit::<StateCircuit>(block_result),
+            self.prove_circuit::<PoseidonCircuit>(block_result),
+            self.prove_circuit::<ZktrieCircuit>(block_result),
         ];
 
         let target_circuit_public_input_len = circuit_results
@@ -249,7 +249,7 @@ impl Prover {
         }
     }
 
-    pub fn create_target_circuit_proof<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(
+    pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
         block_result: &BlockResult,
     ) -> anyhow::Result<TargetCircuitProof, Error> {
@@ -274,7 +274,7 @@ impl Prover {
         }
 
         if !self.target_circuit_pks.contains_key(&C::name()) {
-            self.init_pk::<C, _>();
+            self.init_pk::<C>();
         }
         let pk = &self.target_circuit_pks[&C::name()];
         create_proof(

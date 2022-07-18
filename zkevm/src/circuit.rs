@@ -1,9 +1,9 @@
 use bus_mapping::operation::OperationContainer;
 
-use halo2_mpt_circuits::EthTrie;
+use mpt_circuits::{EthTrie, EthTrieCircuit, HashCircuit, operation::AccountOp, hash::Hashable};
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::pairing::bn256::Fr;
-use halo2_proofs::pairing::group::ff::PrimeField;
+//use halo2_proofs::pairing::group::ff::PrimeField;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
 
 use once_cell::sync::Lazy;
@@ -25,23 +25,27 @@ use self::builder::block_result_to_witness_block;
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
 
-pub trait TargetCircuit<Inner: Halo2Circuit<Fr>> {
+pub trait TargetCircuit {
+    type Inner : Halo2Circuit<Fr>;
     fn name() -> String;
-    fn empty() -> Inner;
+    fn empty() -> Self::Inner;
     //fn public_input_len() -> usize { 0 }
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
 }
 
 pub struct EvmCircuit {}
 
-impl TargetCircuit<TestCircuit<Fr>> for EvmCircuit {
+impl TargetCircuit for EvmCircuit {
+
+    type Inner = TestCircuit<Fr>;
+
     fn name() -> String {
         "evm".to_string()
     }
 
-    fn empty() -> TestCircuit<Fr> {
+    fn empty() -> Self::Inner {
         let default_block = Block::<Fr> {
             pad_to: (1 << *DEGREE) - 64,
             ..Default::default()
@@ -60,7 +64,7 @@ impl TargetCircuit<TestCircuit<Fr>> for EvmCircuit {
 
     fn from_block_result(
         block_result: &BlockResult,
-    ) -> anyhow::Result<(TestCircuit<Fr>, Vec<Vec<Fr>>)>
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -72,12 +76,15 @@ impl TargetCircuit<TestCircuit<Fr>> for EvmCircuit {
 }
 
 pub struct StateCircuit {}
-impl TargetCircuit<StateCircuitImpl<Fr>> for StateCircuit {
+impl TargetCircuit for StateCircuit {
+
+    type Inner = StateCircuitImpl<Fr>;
+
     fn name() -> String {
         "state".to_string()
     }
 
-    fn empty() -> StateCircuitImpl<Fr> {
+    fn empty() -> Self::Inner {
         let rw_map = RwMap::from(&OperationContainer {
             memory: vec![],
             stack: vec![],
@@ -92,7 +99,7 @@ impl TargetCircuit<StateCircuitImpl<Fr>> for StateCircuit {
 
     fn from_block_result(
         block_result: &BlockResult,
-    ) -> anyhow::Result<(StateCircuitImpl<Fr>, Vec<Vec<Fr>>)>
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -103,61 +110,60 @@ impl TargetCircuit<StateCircuitImpl<Fr>> for StateCircuit {
     }
 }
 
+fn mpt_rows() -> usize { (*DEGREE - 10) / <Fr as Hashable>::hash_block_size()}
+
 pub struct ZktrieCircuit {}
 
-impl TargetCircuit<EthTrie<Fr>> for ZktrieCircuit {
+impl TargetCircuit for ZktrieCircuit {
+
+    type Inner = EthTrieCircuit<Fr>;
+
     fn name() -> String {
         "zktrie".to_string()
     }
-    fn empty() -> EthTrie<Fr> {
-        halo2_mpt_circuits::EthTrie::<Fr>::new(10)
+    fn empty() -> Self::Inner {
+        let dummy_trie : EthTrie<Fr> = Default::default();
+        let (circuit, _) = dummy_trie.circuits(mpt_rows());
+        circuit
     }
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(EthTrie<Fr>, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let _witness_block = block_result_to_witness_block::<Fr>(block_result)?;
-        // TODO: weifan
-        let inner = halo2_mpt_circuits::EthTrie::<Fr>::new(10);
+        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
         let instance = vec![];
-        Ok((inner, instance))
+        Ok((mpt_circuit, instance))
     }
 }
 
 pub struct PoseidonCircuit {}
 
-impl TargetCircuit<halo2_mpt_circuits::hash::HashCircuit<3>> for PoseidonCircuit {
+impl TargetCircuit for PoseidonCircuit {
+
+    type Inner = HashCircuit<Fr>;
+
     fn name() -> String {
         "poseidon".to_string()
     }
-    fn empty() -> halo2_mpt_circuits::hash::HashCircuit<3> {
-        let message1 = [
-            Fr::from_str_vartime("1").unwrap(),
-            Fr::from_str_vartime("2").unwrap(),
-        ];
-        let message2 = [
-            Fr::from_str_vartime("0").unwrap(),
-            Fr::from_str_vartime("1").unwrap(),
-        ];
-
-        halo2_mpt_circuits::hash::HashCircuit::<3> {
-            inputs: [
-                Some(message1),
-                Some(message2),
-                Some([Fr::one(), Fr::zero()]),
-            ],
-        }
+    fn empty() -> Self::Inner {
+        let dummy_trie : EthTrie<Fr> = Default::default();
+        let (_, circuit) = dummy_trie.circuits(mpt_rows());
+        circuit
     }
     fn from_block_result(
         block_result: &BlockResult,
-    ) -> anyhow::Result<(halo2_mpt_circuits::hash::HashCircuit<3>, Vec<Vec<Fr>>)>
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let _witness_block = block_result_to_witness_block::<Fr>(block_result)?;
-        // TODO: weifan
-        let inner = Self::empty();
+        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (_, circuit) = trie_data.circuits(mpt_rows());
         let instance = vec![];
-        Ok((inner, instance))
+        Ok((circuit, instance))
     }
 }
