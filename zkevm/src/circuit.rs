@@ -33,6 +33,8 @@ pub trait TargetCircuit {
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
+    
+    fn estimate_rows(_block_result: &BlockResult) -> usize {0}
 }
 
 pub struct EvmCircuit {}
@@ -73,6 +75,14 @@ impl TargetCircuit for EvmCircuit {
         let instance = vec![];
         Ok((inner, instance))
     }
+
+    fn estimate_rows(block_result: &BlockResult) -> usize {
+        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result){
+            TestCircuit::<Fr>::get_num_rows_required(&witness_block)
+        } else {
+            0
+        }  
+    }
 }
 
 pub struct StateCircuit {}
@@ -108,9 +118,17 @@ impl TargetCircuit for StateCircuit {
         let instance = vec![];
         Ok((inner, instance))
     }
+
+    fn estimate_rows(block_result: &BlockResult) -> usize {
+        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result){
+            witness_block.rws.0.iter().fold(0usize, |total, (_, v)| v.len() + total)
+        } else {
+            0
+        }  
+    }    
 }
 
-fn mpt_rows() -> usize { (*DEGREE - 10) / <Fr as Hashable>::hash_block_size()}
+fn mpt_rows() -> usize { ((1<<*DEGREE) - 10) / <Fr as Hashable>::hash_block_size()}
 
 pub struct ZktrieCircuit {}
 
@@ -137,6 +155,14 @@ impl TargetCircuit for ZktrieCircuit {
         let instance = vec![];
         Ok((mpt_circuit, instance))
     }
+
+    fn estimate_rows(block_result: &BlockResult) -> usize {
+        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (mpt_rows, _) = trie_data.use_rows();
+        mpt_rows
+    }     
 }
 
 pub struct PoseidonCircuit {}
@@ -166,4 +192,12 @@ impl TargetCircuit for PoseidonCircuit {
         let instance = vec![];
         Ok((circuit, instance))
     }
+
+    fn estimate_rows(block_result: &BlockResult) -> usize {
+        let storage_ops: Vec<AccountOp<_>> = block_result.mpt_witness.iter().map(|tr| tr.try_into().unwrap()).collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (_, hash_rows) =  trie_data.use_rows();
+        hash_rows
+    }      
 }
