@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "test/gpu" }
 base64 = "0.13.0"
 blake2 = "0.10.3"
 ethers-core = "0.6.0"

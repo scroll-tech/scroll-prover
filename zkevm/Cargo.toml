@@ -6,19 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-halo2-snark-aggregator-circuit = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0607" }
-halo2-snark-aggregator-solidity = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0607" }
-halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0607" }
-#halo2-snark-aggregator-circuit = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-circuit" }
-#halo2-snark-aggregator-solidity = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-solidity" }
-#halo2-snark-aggregator-api = { path = "../../halo2-snark-aggregator/halo2-snark-aggregator-api" }
+halo2-snark-aggregator-circuit = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "test/gpu" }
+halo2-snark-aggregator-solidity = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "test/gpu" }
+halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "test/gpu" }
 
-pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256",tag = "v0.1.1" }
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-0607" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607", features = ["test"] }
-halo2-mpt-circuits = { git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "scroll-dev-0607" }
+pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256", tag = "v0.1.1" }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2-gpu.git", branch = "common_rs" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "test/gpu" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "test/gpu" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "test/gpu", features = ["test"] }
+halo2-mpt-circuits = { git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "test/gpu" }
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"
