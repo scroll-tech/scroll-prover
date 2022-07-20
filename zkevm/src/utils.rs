@@ -1,10 +1,12 @@
 use anyhow::Result;
+use halo2_proofs::arithmetic::{BaseExt, Field};
 use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::poly::commitment::Params;
+use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::witness::Block;
@@ -21,22 +23,44 @@ pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
 }
 
 /// return setup params by reading from file or generate new one
-pub fn load_or_create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
-    if Path::new(params_path).exists() {
-        match load_params(params_path, degree) {
+pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> {
+    let _path = PathBuf::from(params_dir);
+
+    match metadata(params_dir) {
+        Ok(md) => {
+            if md.is_file() {
+                panic!("{} should be folder", params_dir);
+            }
+        }
+        Err(_) => {
+            // not exist
+            fs::create_dir_all(params_dir)?;
+        }
+    };
+
+    let params_path = format!("{}/params{}", params_dir, degree);
+    log::info!("load_or_create_params {}", params_path);
+    if Path::new(&params_path).exists() {
+        match load_params(&params_path, degree) {
             Ok(r) => return Ok(r),
             Err(e) => {
                 log::error!("load params err: {}. Recreating...", e)
             }
         }
     }
-    create_params(params_path, degree)
+    create_params(&params_path, degree)
 }
 
 /// load params from file
-pub fn load_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
+pub fn load_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> {
     log::info!("start loading params with degree {}", degree);
-    let f = File::open(params_path)?;
+    let params_path = if metadata(params_dir)?.is_dir() {
+        // auto load
+        format!("{}/params{}", params_dir, degree)
+    } else {
+        params_dir.to_string()
+    };
+    let f = File::open(&params_path)?;
 
     // check params file length:
     //   len: 4 bytes
@@ -57,13 +81,24 @@ pub fn load_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>>
 /// create params and write it into file
 pub fn create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
     log::info!("start creating params with degree {}", degree);
-    let params: Params<G1Affine> = Params::<G1Affine>::unsafe_setup::<Bn256>(degree as u32);
+    let seed_str = read_env_var("PARAM_SEED", "".to_string());
+    let seed_fr = if seed_str.is_empty() {
+        log::info!("use OsRng to create params");
+        Fr::random(OsRng)
+    } else {
+        let bytes = &mut [0u8; 64];
+        bytes[..32].clone_from_slice(&seed_str.as_bytes()[..32]);
+        Fr::from_bytes_wide(bytes)
+    };
+    let params: Params<G1Affine> =
+        Params::<G1Affine>::unsafe_setup_with_s::<Bn256>(degree as u32, seed_fr);
     let mut params_buf = Vec::new();
     params.write(&mut params_buf)?;
 
     let mut params_file = File::create(&params_path)?;
     params_file.write_all(&params_buf[..])?;
     log::info!("create params successfully!");
+
     Ok(params)
 }
 

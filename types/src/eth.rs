@@ -1,4 +1,3 @@
-use crate::base64;
 use eth_types::evm_types::{Gas, GasCost, Memory, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{
     fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
@@ -13,16 +12,6 @@ pub struct BlockResultWrapper {
     pub id: u64,
     #[serde(rename = "blockTraces")]
     pub block_result: BlockResult,
-}
-
-/// ZkProof is the payload to Scroll.
-#[derive(Deserialize, Serialize, Debug)]
-pub struct ZkProof {
-    pub id: u64,
-    #[serde(rename = "evmProof", with = "base64")]
-    pub evm_proof: Vec<u8>,
-    #[serde(rename = "stateProof", with = "base64")]
-    pub state_proof: Vec<u8>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug)]

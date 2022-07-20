@@ -4,7 +4,7 @@ use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::Write;
 use zkevm::{
-    circuit::DEGREE,
+    circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
     prover::Prover,
     utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed},
 };
@@ -36,28 +36,30 @@ fn main() {
     env_logger::init();
 
     let args = Args::parse();
-    let params = load_or_create_params(&args.params_path.unwrap(), *DEGREE)
+    let params = load_or_create_params(&args.params_path.clone().unwrap(), *DEGREE)
+        .expect("failed to load or create params");
+    let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
         .expect("failed to load or create params");
     let seed =
         load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
     let rng = XorShiftRng::from_seed(seed);
 
-    let prover = Prover::from_params_and_rng(params, rng);
+    let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
     let trace = get_block_result_from_file(&args.trace_path.unwrap());
 
     if let Some(path) = args.evm_proof_path {
         let evm_proof = prover
-            .create_evm_proof(&trace)
+            .create_target_circuit_proof::<EvmCircuit, _>(&trace)
             .expect("cannot generate evm_proof");
         let mut f = File::create(path).unwrap();
-        f.write_all(evm_proof.as_slice()).unwrap();
+        f.write_all(evm_proof.proof.as_slice()).unwrap();
     }
 
     if let Some(path) = args.state_proof_path {
         let state_proof = prover
-            .create_state_proof(&trace)
+            .create_target_circuit_proof::<StateCircuit, _>(&trace)
             .expect("cannot generate evm_proof");
         let mut f = File::create(path).unwrap();
-        f.write_all(state_proof.as_slice()).unwrap();
+        f.write_all(state_proof.proof.as_slice()).unwrap();
     }
 }
