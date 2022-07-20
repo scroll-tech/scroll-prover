@@ -1,6 +1,4 @@
 use clap::Parser;
-use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::Write;
 use zkevm::{
@@ -42,9 +40,8 @@ fn main() {
         .expect("failed to load or create params");
     let seed =
         load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
-    let rng = XorShiftRng::from_seed(seed);
 
-    let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
+    let mut prover = Prover::from_params_and_seed(params, agg_params, seed);
     let trace = get_block_result_from_file(&args.trace_path.unwrap());
 
     if let Some(path) = args.evm_proof_path {
