@@ -12,5 +12,5 @@ Following shows The cost of each examples
 | native | 21000 | 1 | 0 | 93 | 2280 | "left unimplemented"
 | greeter | 26706 | 909 | 282 | 138 | 2964 |
 | chef | 107647 | 47094 | 19240 | 543 | 8018 |
-| DAO | | | | | |
+| DAO | 156710 | 46398 | 19466 | 262 | 5054 |
 | Empty | 1 | 0 | 0 | 0 | 0 |
