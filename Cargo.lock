@@ -1115,7 +1115,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0607#4edcbb65fc394367da3992dfbed41b5006248491"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?rev=3b8f3b538386a6b6f92c853692dd2d3546852829#3b8f3b538386a6b6f92c853692dd2d3546852829"
 dependencies = [
  "bitvec 0.22.3",
  "ff 0.11.1",
@@ -2938,6 +2938,7 @@ dependencies = [
  "blake2",
  "eth-types",
  "ethers-core",
+ "halo2-mpt-circuits",
  "serde",
  "serde_derive",
  "serde_json",
