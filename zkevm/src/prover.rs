@@ -190,8 +190,11 @@ impl Prover {
         let verify_circuit_instances =
             calc_verify_circuit_instances(&target_circuit_params_verifier, &circuit_results);
 
+        // first advice col of evm circuit == first advice col of state circuit
+        // they are a same RLCed rw table col
+        let coherent = vec![[(0,0), (1,0)]];
         let verify_circuit: Halo2VerifierCircuit<'_, Bn256> =
-            verify_circuit_builder(&target_circuit_params_verifier, &circuit_results);
+            verify_circuit_builder(&target_circuit_params_verifier, &circuit_results, coherent);
 
         if self.agg_pk.is_none() {
             log::info!("init_agg_pk");
