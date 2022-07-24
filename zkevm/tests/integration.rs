@@ -33,6 +33,7 @@ fn parse_trace_path_from_env(mode: &str) -> &'static str {
 }
 
 fn init() {
+    dotenv::dotenv().ok();
     ENV_LOGGER.call_once(|| {
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     });
@@ -45,7 +46,6 @@ fn estimate_circuit_rows() {
         utils::{load_or_create_params, load_or_create_seed},
     };
 
-    dotenv::dotenv().ok();
     init();
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
@@ -116,6 +116,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>() {
 fn test_mock_prove_all_target_circuits() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
+    init();
     test_mock_prove_all_with_circuit::<EvmCircuit>();
     test_mock_prove_all_with_circuit::<StateCircuit>();
     test_mock_prove_all_with_circuit::<ZktrieCircuit>();
@@ -139,7 +140,6 @@ fn test_state_evm_connect() {
         verifier::Verifier,
     };
 
-    dotenv::dotenv().ok();
     init();
 
     log::info!("loading setup params");
@@ -220,7 +220,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
         verifier::Verifier,
     };
 
-    dotenv::dotenv().ok();
     init();
 
     let block_result = load_block_result_for_test();
