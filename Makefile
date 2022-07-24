@@ -29,8 +29,8 @@ test-state-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_state_prove_verify
 
 test-bridge:
-	MODE=brige cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).brige.evm.txt 2>&1; \
-	MODE=brige cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).brige.state.txt 2>&1; \
+	MODE=bridge cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).bridge.evm.txt 2>&1; \
+	MODE=bridge cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).bridge.state.txt 2>&1; \
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
