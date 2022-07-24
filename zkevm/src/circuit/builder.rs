@@ -75,6 +75,8 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         }
     }
 
+    // init
+
     for er in block.execution_results.iter().rev() {
         for step in er.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
