@@ -1,5 +1,11 @@
 use std::sync::Once;
 
+use types::eth::BlockResult;
+use zkevm::{
+    circuit::TargetCircuit,
+    utils::{get_block_result_from_file, read_env_var},
+};
+
 const PARAMS_DIR: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
 static ENV_LOGGER: Once = Once::new();
@@ -22,26 +28,24 @@ fn parse_trace_path_from_env(mode: &str) -> &'static str {
 }
 
 fn init() {
-    ENV_LOGGER.call_once(env_logger::init);
+    ENV_LOGGER.call_once(|| {
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    });
 }
 
 #[test]
 fn estimate_circuit_rows() {
     use zkevm::{
         circuit::{self, TargetCircuit, DEGREE},
-        utils::{
-            get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },
+        utils::{load_or_create_params, load_or_create_seed},
     };
 
     dotenv::dotenv().ok();
     init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
-
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_result = get_block_result_from_file(trace_path);
+    let block_result = load_block_result_for_test();
 
     log::info!("estimating used rows for current block");
     log::info!(
@@ -65,98 +69,35 @@ fn estimate_circuit_rows() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_evm_prove_verify() {
-    use std::time::Instant;
-
-    use zkevm::{
-        circuit::{EvmCircuit, DEGREE},
-        prover::Prover,
-        utils::{
-            get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },
-        verifier::Verifier,
-    };
-
-    dotenv::dotenv().ok();
-    init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
-
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
-
-    let block_result = get_block_result_from_file(trace_path);
-
-    log::info!("start generating evm_circuit proof");
-    let now = Instant::now();
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let proof = prover
-        .create_target_circuit_proof::<EvmCircuit>(&block_result)
-        .unwrap();
-    log::info!(
-        "finish generating evm_circuit proof, cost {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start verifying evm_circuit proof");
-    let now = Instant::now();
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    log::info!(
-        "finish verifying evm_circuit proof, cost {:?}",
-        now.elapsed()
-    );
-    assert!(verifier
-        .verify_target_circuit_proof::<EvmCircuit>(&proof)
-        .is_ok());
+    use zkevm::circuit::EvmCircuit;
+    test_target_circuit_prove_verify::<EvmCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_prove_verify() {
-    use std::time::Instant;
+    use zkevm::circuit::StateCircuit;
+    test_target_circuit_prove_verify::<StateCircuit>();
+}
 
-    use zkevm::{
-        circuit::{StateCircuit, DEGREE},
-        prover::Prover,
-        utils::{
-            get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },
-        verifier::Verifier,
-    };
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_storage_prove_verify() {
+    use zkevm::circuit::ZktrieCircuit;
+    test_target_circuit_prove_verify::<ZktrieCircuit>();
+}
 
-    dotenv::dotenv().ok();
-    init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
-
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
-
-    let block_result = get_block_result_from_file(trace_path);
-
-    log::info!("start generating state_circuit proof");
-    let now = Instant::now();
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let proof = prover
-        .create_target_circuit_proof::<StateCircuit>(&block_result)
-        .unwrap();
-    log::info!(
-        "finish generating state_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start verifying state_circuit proof");
-    let now = Instant::now();
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    log::info!(
-        "finish verifying state_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
-    assert!(verifier
-        .verify_target_circuit_proof::<StateCircuit>(&proof)
-        .is_ok());
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_hash_prove_verify() {
+    use zkevm::circuit::PoseidonCircuit;
+    test_target_circuit_prove_verify::<PoseidonCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_evm_connect() {
+    // TODO: better code reuse
     use std::time::Instant;
 
     use halo2_proofs::{
@@ -241,94 +182,45 @@ fn test_state_evm_connect() {
     log::info!("Same commitment! Test passes!");
 }
 
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_storage_prove_verify() {
+fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
 
     use zkevm::{
-        circuit::{ZktrieCircuit, DEGREE},
+        circuit::DEGREE,
         prover::Prover,
-        utils::{
-            get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },
+        utils::{load_or_create_params, load_or_create_seed},
         verifier::Verifier,
     };
 
     dotenv::dotenv().ok();
     init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
+
+    let block_result = load_block_result_for_test();
+    Prover::mock_prove_target_circuit::<C>(&block_result).unwrap();
 
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_result = get_block_result_from_file(trace_path);
-
-    log::info!("start generating storage_circuit proof");
+    log::info!("start generating {} proof", C::name());
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof::<ZktrieCircuit>(&block_result)
+        .create_target_circuit_proof::<C>(&block_result)
         .unwrap();
-    log::info!(
-        "finish generating storage_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
+    log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
-    log::info!("start verifying storage_circuit proof");
+    log::info!("start verifying proof");
     let now = Instant::now();
     let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier
-        .verify_target_circuit_proof::<ZktrieCircuit>(&proof)
-        .is_ok());
-    log::info!(
-        "finish verifying storage_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
+    assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
+    log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }
 
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_hash_prove_verify() {
-    use std::time::Instant;
-
-    use zkevm::{
-        circuit::{PoseidonCircuit, DEGREE},
-        prover::Prover,
-        utils::{
-            get_block_result_from_file, load_or_create_params, load_or_create_seed, read_env_var,
-        },
-        verifier::Verifier,
-    };
-
-    dotenv::dotenv().ok();
-    init();
-    let trace_path = parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string()));
-
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
-
-    let block_result = get_block_result_from_file(trace_path);
-
-    log::info!("start generating hash_circuit proof");
-    let now = Instant::now();
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let proof = prover
-        .create_target_circuit_proof::<PoseidonCircuit>(&block_result)
-        .unwrap();
-    log::info!(
-        "finish generating hash_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start verifying hash_circuit proof");
-    let now = Instant::now();
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier
-        .verify_target_circuit_proof::<PoseidonCircuit>(&proof)
-        .is_ok());
-    log::info!(
-        "finish verifying hash_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
+fn load_block_result_for_test() -> BlockResult {
+    let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
+    if trace_path.is_empty() {
+        trace_path =
+            parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
+    }
+    get_block_result_from_file(trace_path)
 }

@@ -293,6 +293,25 @@ impl Prover {
         })
     }
 
+    pub fn mock_prove_target_circuit<C: TargetCircuit>(
+        block_result: &BlockResult,
+    ) -> anyhow::Result<()> {
+        log::info!("start mock prove {}", C::name());
+        let (circuit, instance) = C::from_block_result(block_result)?;
+        let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
+        let active_row_num = C::estimate_rows(block_result);
+        log::info!("checking {} active rows", active_row_num);
+        if let Err(e) = prover.verify_at_rows_par(0..active_row_num, 0..active_row_num) {
+            bail!("{:?}", e);
+        }
+        log::info!("mock prove {} using active rows done", C::name());
+        if let Err(e) = prover.verify_par() {
+            bail!("{:?}", e);
+        }
+        log::info!("mock prove {} done", C::name());
+        Ok(())
+    }
+
     pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
         block_result: &BlockResult,

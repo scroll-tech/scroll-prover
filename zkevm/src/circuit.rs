@@ -76,10 +76,12 @@ impl TargetCircuit for EvmCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result) {
-            TestCircuit::<Fr>::get_num_rows_required(&witness_block)
-        } else {
-            0
+        match block_result_to_witness_block::<Fr>(block_result) {
+            Ok(witness_block) => TestCircuit::<Fr>::get_num_rows_required(&witness_block),
+            Err(e) => {
+                log::error!("convert block result to witness block failed: {:?}", e);
+                0
+            }
         }
     }
 }
