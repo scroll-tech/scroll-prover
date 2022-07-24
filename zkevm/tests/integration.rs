@@ -3,11 +3,16 @@ use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
+    prover::Prover,
     utils::{get_block_result_from_file, read_env_var},
 };
 
 const PARAMS_DIR: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
+const ALL_TESTS: &[&str] = &[
+    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
+];
+
 static ENV_LOGGER: Once = Once::new();
 
 fn parse_trace_path_from_env(mode: &str) -> &'static str {
@@ -92,6 +97,29 @@ fn test_storage_prove_verify() {
 fn test_hash_prove_verify() {
     use zkevm::circuit::PoseidonCircuit;
     test_target_circuit_prove_verify::<PoseidonCircuit>();
+}
+
+fn test_mock_prove_all_with_circuit<C: TargetCircuit>() {
+    for test_case_name in ALL_TESTS {
+        log::info!("test {} with circuit {}", test_case_name, C::name());
+        let trace_path = parse_trace_path_from_env(test_case_name);
+        let block_result = get_block_result_from_file(trace_path);
+        log::info!(
+            "result: {:?}",
+            Prover::mock_prove_target_circuit::<C>(&block_result, false)
+        );
+    }
+}
+
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_mock_prove_all_target_circuits() {
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
+
+    test_mock_prove_all_with_circuit::<EvmCircuit>();
+    test_mock_prove_all_with_circuit::<StateCircuit>();
+    test_mock_prove_all_with_circuit::<ZktrieCircuit>();
+    test_mock_prove_all_with_circuit::<PoseidonCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -196,7 +224,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     init();
 
     let block_result = load_block_result_for_test();
-    Prover::mock_prove_target_circuit::<C>(&block_result).unwrap();
 
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
