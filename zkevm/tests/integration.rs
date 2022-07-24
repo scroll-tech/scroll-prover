@@ -14,6 +14,7 @@ fn parse_trace_path_from_env(mode: &str) -> &'static str {
         "dao" => "./tests/trace-dao.json",
         "nft" => "./tests/trace-nft.json",
         "sushi" => "./tests/trace-masterchef.json",
+        "brige" => "./tests/trace-bridge.json",
         _ => "./tests/trace-multiple-erc20.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
