@@ -106,7 +106,8 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>() {
         let block_result = get_block_result_from_file(trace_path);
         log::info!(
             "test {} with circuit {} result: {:?}",
-            test_case_name, C::name(),
+            test_case_name,
+            C::name(),
             Prover::mock_prove_target_circuit::<C>(&block_result, false)
         );
     }
