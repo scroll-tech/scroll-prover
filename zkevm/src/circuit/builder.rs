@@ -75,8 +75,6 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         }
     }
 
-    // init
-
     for er in block.execution_results.iter().rev() {
         for step in er.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
@@ -101,6 +99,9 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                     }
 
                     OpcodeId::CREATE | OpcodeId::CREATE2 => {
+                        let created_code = data.get_code_at(0);
+                        trace_code(&mut sdb, created_code);
+
                         let create_proof = data.get_proof_at(0);
                         trace_proof(&mut sdb, create_proof)
                     }
@@ -121,6 +122,15 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         let proof = data.get_proof_at(0);
                         trace_proof(&mut sdb, proof)
                     }
+
+                    OpcodeId::CODESIZE
+                    | OpcodeId::CODECOPY
+                    | OpcodeId::EXTCODESIZE
+                    | OpcodeId::EXTCODECOPY => {
+                        let code = data.get_code_at(0);
+                        trace_proof(&mut sdb, proof)
+                    }
+
                     _ => {}
                 }
             }
