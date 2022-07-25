@@ -55,7 +55,7 @@ fn verifier_circuit_prove(output_dir: &str, block_result: &BlockResult) {
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
     let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
-    prover.init_agg_pk().unwrap();
+    //prover.init_agg_pk().unwrap();
     let agg_proof = prover.create_agg_circuit_proof(block_result).unwrap();
     agg_proof.write_to_dir(&mut out_dir);
 }
@@ -122,5 +122,8 @@ fn test_4in1() {
 
     verifier_circuit_prove(&output, &block_result);
     verifier_circuit_verify(&output);
-    //verifier_circuit_generate_solidity(&output);
+    let gen_soli: bool = read_env_var("GEN_SOLI", false);
+    if gen_soli {
+        verifier_circuit_generate_solidity(&output);
+    }
 }

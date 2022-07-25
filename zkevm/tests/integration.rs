@@ -99,8 +99,8 @@ fn test_hash_prove_verify() {
     test_target_circuit_prove_verify::<PoseidonCircuit>();
 }
 
-fn test_mock_prove_all_with_circuit<C: TargetCircuit>() {
-    for test_case_name in ALL_TESTS {
+fn test_mock_prove_all_with_circuit<C: TargetCircuit>(cases: &[&str]) {
+    for test_case_name in cases {
         log::info!("test {} with circuit {}", test_case_name, C::name());
         let trace_path = parse_trace_path_from_env(test_case_name);
         let block_result = get_block_result_from_file(trace_path);
@@ -119,10 +119,10 @@ fn test_mock_prove_all_target_circuits() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
-    test_mock_prove_all_with_circuit::<EvmCircuit>();
-    test_mock_prove_all_with_circuit::<StateCircuit>();
-    test_mock_prove_all_with_circuit::<ZktrieCircuit>();
-    test_mock_prove_all_with_circuit::<PoseidonCircuit>();
+    test_mock_prove_all_with_circuit::<EvmCircuit>(ALL_TESTS);
+    //test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
+    test_mock_prove_all_with_circuit::<ZktrieCircuit>(ALL_TESTS);
+    test_mock_prove_all_with_circuit::<PoseidonCircuit>(ALL_TESTS);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -217,7 +217,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     use zkevm::{
         circuit::DEGREE,
-        prover::Prover,
         utils::{load_or_create_params, load_or_create_seed},
         verifier::Verifier,
     };

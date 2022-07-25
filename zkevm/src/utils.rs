@@ -9,18 +9,6 @@ use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use types::eth::BlockResult;
-use zkevm_circuits::evm_circuit::witness::Block;
-use zkevm_circuits::state_circuit::StateCircuit;
-
-/// generate randomness for the block
-pub fn load_randomness(block: Block<Fr>) -> Vec<Box<[Fr]>> {
-    let circuit = StateCircuit::<Fr>::new(block.randomness, block.rws);
-    circuit
-        .instance()
-        .into_iter()
-        .map(|col| col.into_boxed_slice())
-        .collect()
-}
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> {

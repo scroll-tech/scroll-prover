@@ -15,9 +15,9 @@ halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark
 
 pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256",tag = "v0.1.1" }
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-0607" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0607", features = ["test"] }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0714-opt" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0714-opt" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0714-opt", features = ["test"] }
 mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", rev = "3b8f3b538386a6b6f92c853692dd2d3546852829" }
 rand = "0.8"
 rand_xorshift = "0.3"
