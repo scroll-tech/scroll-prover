@@ -6,15 +6,15 @@ static ENV_LOGGER: Once = Once::new();
 
 fn parse_trace_path_from_env(mode: &str) -> &'static str {
     let trace_path = match mode {
-        "empty" => "./tests/trace-empty.json",
-        "greeter" => "./tests/trace-greeter.json",
-        "multiple" => "./tests/trace-multiple-erc20.json",
-        "native" => "./tests/trace-native-transfer.json",
-        "single" => "./tests/trace-single-erc20.json",
-        "dao" => "./tests/trace-dao.json",
-        "nft" => "./tests/trace-nft.json",
-        "sushi" => "./tests/trace-masterchef.json",
-        _ => "./tests/trace-multiple-erc20.json",
+        "empty" => "./tests/traces/empty.json",
+        "greeter" => "./tests/traces/greeter.json",
+        "multiple" => "./tests/traces/multiple-erc20.json",
+        "native" => "./tests/traces/native-transfer.json",
+        "single" => "./tests/traces/single-erc20.json",
+        "dao" => "./tests/traces/dao.json",
+        "nft" => "./tests/traces/nft.json",
+        "sushi" => "./tests/traces/masterchef.json",
+        _ => "./tests/traces/multiple-erc20.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
