@@ -50,12 +50,13 @@ fn _write_vk(output_dir: &str, c: &ProvedCircuit<G1Affine, Bn256>) {
 }
 
 fn verifier_circuit_prove(output_dir: &str, block_result: &BlockResult) {
-    let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
     log::info!("output files to {}", output_dir);
     fs::create_dir_all(output_dir).unwrap();
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
-    let agg_proof = prover.create_agg_circuit_proof(block_result);
+    let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
+    prover.init_agg_pk().unwrap();
+    let agg_proof = prover.create_agg_circuit_proof(block_result).unwrap();
     agg_proof.write_to_dir(&mut out_dir);
 }
 

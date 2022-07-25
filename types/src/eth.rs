@@ -3,6 +3,7 @@ use eth_types::{
     fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
 };
 use ethers_core::types::{Address, Bytes, U256, U64};
+use mpt_circuits::serde::SMTTrace;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -20,6 +21,8 @@ pub struct BlockResult {
     pub block_trace: BlockTrace,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
+    #[serde(rename = "mptwitness", skip_serializing, default)]
+    pub mpt_witness: Vec<SMTTrace>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
