@@ -7,3 +7,6 @@
 
 # for jetbrains
 .idea
+
+# for local config
+.cargo
