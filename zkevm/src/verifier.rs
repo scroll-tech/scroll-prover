@@ -8,7 +8,7 @@ use crate::io::{deserialize_fr_matrix, load_instances};
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
 use crate::utils::load_params;
 use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
-use halo2_proofs::plonk::{keygen_vk, verify_proof, Circuit};
+use halo2_proofs::plonk::{keygen_vk, verify_proof};
 use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
 use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
 use halo2_proofs::transcript::{Challenge255, PoseidonRead};
@@ -47,14 +47,14 @@ impl Verifier {
             raw_agg_vk,
             target_circuit_vks: Default::default(),
         };
-        verifier.init_vk::<EvmCircuit, _>();
-        verifier.init_vk::<StateCircuit, _>();
-        verifier.init_vk::<ZktrieCircuit, _>();
-        verifier.init_vk::<PoseidonCircuit, _>();
+        verifier.init_vk::<EvmCircuit>();
+        verifier.init_vk::<StateCircuit>();
+        verifier.init_vk::<ZktrieCircuit>();
+        verifier.init_vk::<PoseidonCircuit>();
         verifier
     }
 
-    fn init_vk<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(&mut self) {
+    fn init_vk<C: TargetCircuit>(&mut self) {
         let circuit = C::empty();
         let vk = keygen_vk(&self.params, &circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
@@ -114,7 +114,7 @@ impl Verifier {
         Ok(())
     }
 
-    pub fn verify_target_circuit_proof<C: TargetCircuit<Inner>, Inner: Circuit<Fr>>(
+    pub fn verify_target_circuit_proof<C: TargetCircuit>(
         &self,
         proof: &TargetCircuitProof,
     ) -> anyhow::Result<()> {

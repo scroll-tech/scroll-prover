@@ -46,7 +46,7 @@ fn main() {
 
     if let Some(path) = args.evm_proof_path {
         let evm_proof = prover
-            .create_target_circuit_proof::<EvmCircuit, _>(&trace)
+            .create_target_circuit_proof::<EvmCircuit>(&trace)
             .expect("cannot generate evm_proof");
         let mut f = File::create(path).unwrap();
         f.write_all(evm_proof.proof.as_slice()).unwrap();
@@ -54,7 +54,7 @@ fn main() {
 
     if let Some(path) = args.state_proof_path {
         let state_proof = prover
-            .create_target_circuit_proof::<StateCircuit, _>(&trace)
+            .create_target_circuit_proof::<StateCircuit>(&trace)
             .expect("cannot generate evm_proof");
         let mut f = File::create(path).unwrap();
         f.write_all(state_proof.proof.as_slice()).unwrap();

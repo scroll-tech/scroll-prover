@@ -16,15 +16,15 @@ static ENV_LOGGER: Once = Once::new();
 
 fn parse_trace_path_from_env(mode: &str) -> &'static str {
     let trace_path = match mode {
-        "empty" => "./tests/trace-empty.json",
-        "greeter" => "./tests/trace-greeter.json",
-        "multiple" => "./tests/trace-multiple-erc20.json",
-        "native" => "./tests/trace-native-transfer.json",
-        "single" => "./tests/trace-single-erc20.json",
-        "dao" => "./tests/trace-dao.json",
-        "nft" => "./tests/trace-nft.json",
-        "sushi" => "./tests/trace-masterchef.json",
-        _ => "./tests/trace-multiple-erc20.json",
+        "empty" => "./tests/traces/empty.json",
+        "greeter" => "./tests/traces/greeter.json",
+        "multiple" => "./tests/traces/multiple-erc20.json",
+        "native" => "./tests/traces/native-transfer.json",
+        "single" => "./tests/traces/single-erc20.json",
+        "dao" => "./tests/traces/dao.json",
+        "nft" => "./tests/traces/nft.json",
+        "sushi" => "./tests/traces/masterchef.json",
+        _ => "./tests/traces/multiple-erc20.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
@@ -50,12 +50,13 @@ fn _write_vk(output_dir: &str, c: &ProvedCircuit<G1Affine, Bn256>) {
 }
 
 fn verifier_circuit_prove(output_dir: &str, block_result: &BlockResult) {
-    let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
     log::info!("output files to {}", output_dir);
     fs::create_dir_all(output_dir).unwrap();
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
-    let agg_proof = prover.create_agg_circuit_proof(block_result);
+    let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
+    prover.init_agg_pk().unwrap();
+    let agg_proof = prover.create_agg_circuit_proof(block_result).unwrap();
     agg_proof.write_to_dir(&mut out_dir);
 }
 
