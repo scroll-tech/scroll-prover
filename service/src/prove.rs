@@ -30,7 +30,7 @@ pub unsafe extern "C" fn create_evm_proof(trace_char: *const c_char) -> *const c
     let trace_str = c_char_to_str(trace_char);
     let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
     let proof = PROVER
-        .create_target_circuit_proof::<EvmCircuit, _>(&trace)
+        .create_target_circuit_proof::<EvmCircuit>(&trace)
         .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
@@ -42,7 +42,7 @@ pub unsafe extern "C" fn create_state_proof(trace_char: *const c_char) -> *const
     let trace_str = c_char_to_str(trace_char);
     let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
     let proof = PROVER
-        .create_target_circuit_proof::<StateCircuit, _>(&trace)
+        .create_target_circuit_proof::<StateCircuit>(&trace)
         .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)

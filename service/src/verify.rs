@@ -36,7 +36,7 @@ pub unsafe extern "C" fn verify_evm_proof(proof: *const c_char) -> c_char {
     let proof_vec = c_char_to_vec(proof);
     let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
     let verified = VERIFIER
-        .verify_target_circuit_proof::<EvmCircuit, _>(&proof)
+        .verify_target_circuit_proof::<EvmCircuit>(&proof)
         .is_ok();
     verified as c_char
 }
@@ -47,7 +47,7 @@ pub unsafe extern "C" fn verify_state_proof(proof: *const c_char) -> c_char {
     let proof_vec = c_char_to_vec(proof);
     let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
     let verified = VERIFIER
-        .verify_target_circuit_proof::<StateCircuit, _>(&proof)
+        .verify_target_circuit_proof::<StateCircuit>(&proof)
         .is_ok();
     verified as c_char
 }
