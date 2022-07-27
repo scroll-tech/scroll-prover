@@ -69,6 +69,11 @@ impl AggCircuitProof {
         write_verify_circuit_proof(out_dir, &self.proof_rust);
         write_verify_circuit_proof_be(out_dir, &self.proof_solidity);
         write_verify_circuit_vk(out_dir, &self.vk);
+
+        out_dir.push("full_proof.data");
+        let mut fd = std::fs::File::create(out_dir.as_path()).unwrap();
+        out_dir.pop();
+        serde_json::to_writer_pretty(&mut fd, &self).unwrap()
     }
 }
 pub struct Prover {
@@ -301,10 +306,14 @@ impl Prover {
         let (circuit, instance) = C::from_block_result(block_result)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
-            let active_row_num = C::estimate_rows(block_result);
-            log::info!("checking {} active rows", active_row_num);
-            if let Err(e) = prover.verify_at_rows_par(0..active_row_num, 0..active_row_num) {
-                bail!("{:?}", e);
+            let (gate_rows, lookup_rows) = C::get_active_rows(block_result);
+            log::info!("checking {} active rows", gate_rows.len());
+            if !gate_rows.is_empty() || !lookup_rows.is_empty() {
+                if let Err(e) =
+                    prover.verify_at_rows_par(gate_rows.into_iter(), lookup_rows.into_iter())
+                {
+                    bail!("{:?}", e);
+                }
             }
         } else if let Err(e) = prover.verify_par() {
             bail!("{:?}", e);

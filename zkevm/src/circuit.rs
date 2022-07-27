@@ -28,6 +28,7 @@ pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26)
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
     fn name() -> String;
+    /// used to generate vk&pk
     fn empty() -> Self::Inner;
     //fn public_input_len() -> usize { 0 }
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -36,6 +37,12 @@ pub trait TargetCircuit {
 
     fn estimate_rows(_block_result: &BlockResult) -> usize {
         0
+    }
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        (
+            (0..Self::estimate_rows(block_result)).into_iter().collect(),
+            (0..Self::estimate_rows(block_result)).into_iter().collect(),
+        )
     }
 }
 
@@ -50,7 +57,7 @@ impl TargetCircuit for EvmCircuit {
 
     fn empty() -> Self::Inner {
         let default_block = Block::<Fr> {
-            pad_to: (1 << *DEGREE) - 64,
+            evm_circuit_pad_to: (1 << *DEGREE) - 64,
             ..Default::default()
         };
 
@@ -94,6 +101,7 @@ impl TargetCircuit for StateCircuit {
         "state".to_string()
     }
 
+    // TODO: use from_block_result(&Default::default()) ?
     fn empty() -> Self::Inner {
         let rw_map = RwMap::from(&OperationContainer {
             memory: vec![],
@@ -104,7 +112,7 @@ impl TargetCircuit for StateCircuit {
 
         // same with https://github.com/scroll-tech/zkevm-circuits/blob/fceb61d0fb580a04262ebd3556dbc0cab15d16c4/zkevm-circuits/src/util.rs#L75
         const DEFAULT_RAND: u128 = 0x10000;
-        StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map)
+        StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map, 0)
     }
 
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -112,7 +120,11 @@ impl TargetCircuit for StateCircuit {
         Self: Sized,
     {
         let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
-        let inner = StateCircuitImpl::<Fr>::new(witness_block.randomness, witness_block.rws);
+        let inner = StateCircuitImpl::<Fr>::new(
+            witness_block.randomness,
+            witness_block.rws,
+            witness_block.state_circuit_pad_to,
+        );
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -127,6 +139,22 @@ impl TargetCircuit for StateCircuit {
         } else {
             0
         }
+    }
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
+        let rows = witness_block
+            .rws
+            .0
+            .iter()
+            .fold(0usize, |total, (_, v)| v.len() + total);
+        let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
+            0..rows
+        } else {
+            witness_block.state_circuit_pad_to - rows..witness_block.state_circuit_pad_to
+        })
+        .into_iter()
+        .collect();
+        (active_rows.clone(), active_rows)
     }
 }
 

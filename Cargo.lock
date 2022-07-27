@@ -249,11 +249,12 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0607#624ca3c652a4e940cfa4f835741ef97993eb5ee6"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt#4d3c860fee06be377067c6ee351e4b1565714583"
 dependencies = [
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "ethers-core",
  "ethers-providers",
+ "hex",
  "itertools",
  "keccak256",
  "lazy_static",
@@ -718,6 +719,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "eth-types"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt#4d3c860fee06be377067c6ee351e4b1565714583"
+dependencies = [
+ "ethers-core",
+ "ethers-providers",
+ "halo2_proofs",
+ "hex",
+ "itertools",
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_json",
+ "uint",
+]
+
+[[package]]
 name = "ethabi"
 version = "15.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -987,12 +1005,14 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0607#624ca3c652a4e940cfa4f835741ef97993eb5ee6"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt#4d3c860fee06be377067c6ee351e4b1565714583"
 dependencies = [
  "digest 0.7.6",
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "halo2_proofs",
  "sha3 0.7.3",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
@@ -1136,7 +1156,7 @@ source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scrol
 dependencies = [
  "blake2b_simd",
  "chrono",
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0607)",
  "group 0.11.0",
  "halo2_proofs",
  "log",
@@ -1504,15 +1524,17 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0607#624ca3c652a4e940cfa4f835741ef97993eb5ee6"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt#4d3c860fee06be377067c6ee351e4b1565714583"
 dependencies = [
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "gadgets",
  "halo2_proofs",
  "itertools",
  "lazy_static",
  "num-bigint",
  "num-traits",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
@@ -2936,7 +2958,7 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "blake2",
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "ethers-core",
  "halo2-mpt-circuits",
  "serde",
@@ -3367,7 +3389,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "ethers-core",
  "halo2-mpt-circuits",
  "halo2-snark-aggregator-api",
@@ -3395,14 +3417,14 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0607#624ca3c652a4e940cfa4f835741ef97993eb5ee6"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt#4d3c860fee06be377067c6ee351e4b1565714583"
 dependencies = [
  "array-init",
  "bigint",
  "bus-mapping",
  "digest 0.7.6",
  "env_logger",
- "eth-types",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0714-opt)",
  "ethers-core",
  "ff 0.11.1",
  "gadgets",
