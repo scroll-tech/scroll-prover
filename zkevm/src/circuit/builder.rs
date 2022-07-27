@@ -41,7 +41,7 @@ pub fn block_result_to_witness_block<F: Field>(
     builder.handle_block(&eth_block, geth_trace.as_slice())?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
-    witness_block.pad_to = (1 << *DEGREE) - 64;
+    witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
 
     Ok(witness_block)
 }
@@ -67,11 +67,11 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 
-    cdb.insert(decode_bytecode(EMPTY_ACCOUNT_CODE)?);
+    cdb.insert(None, decode_bytecode(EMPTY_ACCOUNT_CODE)?);
 
     for execution_result in &block.execution_results {
         if let Some(bytecode) = execution_result.byte_code.clone() {
-            cdb.insert(decode_bytecode(&bytecode)?);
+            cdb.insert(None, decode_bytecode(&bytecode)?);
         }
     }
 
@@ -146,7 +146,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
 }
 
 pub fn trace_code(cdb: &mut CodeDB, code: Bytes) {
-    cdb.insert(code.to_vec());
+    cdb.insert(None, code.to_vec());
 }
 
 pub fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
