@@ -22,7 +22,7 @@ fn parse_trace_path_from_env(mode: &str) -> &'static str {
         "multiple" => "./tests/traces/multiple-erc20.json",
         "native" => "./tests/traces/native-transfer.json",
         "single" => "./tests/traces/single-erc20.json",
-        "single_legacy" => "./tests/single-erc20-legacy.json",
+        "single_legacy" => "./tests/traces/single-erc20-legacy.json",
         "dao" => "./tests/traces/dao.json",
         "nft" => "./tests/traces/nft.json",
         "sushi" => "./tests/traces/masterchef.json",
