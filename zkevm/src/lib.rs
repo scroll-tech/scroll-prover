@@ -10,6 +10,7 @@ pub mod proof {
 
     #[derive(Serialize, Deserialize, Debug)]
     pub struct ZkProof {
+        pub status: u32,
         pub id: u64,
         pub agg_proof: AggCircuitProof,
     }
