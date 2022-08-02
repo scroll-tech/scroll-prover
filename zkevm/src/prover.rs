@@ -46,7 +46,7 @@ pub struct TargetCircuitProof {
     pub instance: Vec<u8>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct AggCircuitProof {
     // FIXME: tech debt
     #[serde(with = "base64")]
