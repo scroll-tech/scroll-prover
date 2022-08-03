@@ -1,3 +1,4 @@
+use super::mpt::StorageTrace;
 use eth_types::evm_types::{Gas, GasCost, Memory, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{
     fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
@@ -6,7 +7,6 @@ use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use super::mpt::StorageTrace;
 
 /// BlockResultWrapper is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]

@@ -1,14 +1,14 @@
-
-
-use ethers_core::types::{Address, Bytes, H256, U256, U64};
 use eth_types::{Hash, Word};
+use ethers_core::types::{Address, Bytes, H256, U256, U64};
 use serde::{
     de::{Deserializer, Error as DeErr},
     Deserialize,
 };
 use std::collections::HashMap;
-use std::{convert::TryFrom, io::{Error, ErrorKind, Read}};
-
+use std::{
+    convert::TryFrom,
+    io::{Error, ErrorKind, Read},
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct AccountData {
@@ -17,20 +17,19 @@ pub struct AccountData {
     pub code_hash: H256,
 }
 
-pub trait CanRead : Sized {
+pub trait CanRead: Sized {
     fn try_parse(rd: impl Read) -> Result<Self, Error>;
 }
 
 impl CanRead for AccountData {
-
     fn try_parse(mut rd: impl Read) -> Result<Self, Error> {
         let mut uint_buf = [0; 4];
         rd.read_exact(&mut uint_buf)?;
         // check it is 0x04040000
-        if uint_buf != [4,4,0,0] { 
+        if uint_buf != [4, 4, 0, 0] {
             return Err(Error::new(ErrorKind::Other, "unexpected flags"));
         }
-    
+
         let mut byte32_buf = [0; 32];
         rd.read_exact(&mut byte32_buf)?; //nonce
         let nonce = U64::from_big_endian(&byte32_buf[24..]);
@@ -39,34 +38,37 @@ impl CanRead for AccountData {
         rd.read_exact(&mut byte32_buf)?; //codehash
         let code_hash = H256::from(&byte32_buf);
         //rd.read_exact(&mut hash_buf)?; //storage root, not need yet
-    
-        Ok(AccountData{nonce: nonce.as_u64(), balance, code_hash})
+
+        Ok(AccountData {
+            nonce: nonce.as_u64(),
+            balance,
+            code_hash,
+        })
     }
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct StorageData (Word);
+pub struct StorageData(Word);
 
 impl AsRef<Word> for StorageData {
-    fn as_ref(&self) -> &Word { &self.0 }
+    fn as_ref(&self) -> &Word {
+        &self.0
+    }
 }
 
-
 impl CanRead for StorageData {
-
     fn try_parse(mut rd: impl Read) -> Result<Self, Error> {
         let mut uint_buf = [0; 4];
         rd.read_exact(&mut uint_buf)?;
         // check it is 0x01010000
-        if uint_buf != [1,1,0,0] { 
+        if uint_buf != [1, 1, 0, 0] {
             return Err(Error::new(ErrorKind::Other, "unexpected flags"));
         }
         let mut byte32_buf = [0; 32];
-        rd.read_exact(&mut byte32_buf)?;    
+        rd.read_exact(&mut byte32_buf)?;
         Ok(StorageData(Word::from(byte32_buf)))
     }
 }
-
 
 #[derive(Debug, Default, Clone)]
 pub struct TrieProof<T> {
@@ -74,7 +76,7 @@ pub struct TrieProof<T> {
     pub key: Option<H256>,
 }
 
-fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Error>{
+fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Error> {
     let mut byte32_buf = [0; 32];
     rd.read_exact(&mut byte32_buf)?;
     let key = H256::from(byte32_buf);
@@ -82,42 +84,43 @@ fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Er
 }
 
 impl<'d, T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
-
     type Error = Error;
 
     fn try_from(src: &[Bytes]) -> Result<Self, Self::Error> {
-
         for data in src {
             let mut rd = data.as_ref();
-            let mut prefix = [0;1];
+            let mut prefix = [0; 1];
             rd.read_exact(&mut prefix)?;
             match prefix[0] {
                 1 => {
                     let (key, data) = deserialize_trie_leaf(rd)?;
-                    return Ok(Self {key: Some(key), data});
-                },
+                    return Ok(Self {
+                        key: Some(key),
+                        data,
+                    });
+                }
                 2 => {
                     // empty node
                     return Ok(Default::default());
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
 
         Err(Error::new(ErrorKind::UnexpectedEof, "no leaf key found"))
     }
-
 }
 
 pub type AccountTrieProof = TrieProof<AccountData>;
 
 #[derive(Debug, Default, Clone)]
-pub struct AccountTrieProofs (HashMap<Address, AccountTrieProof>);
+pub struct AccountTrieProofs(HashMap<Address, AccountTrieProof>);
 
 impl AsRef<HashMap<Address, AccountTrieProof>> for AccountTrieProofs {
-    fn as_ref(&self) -> &HashMap<Address, AccountTrieProof> { &self.0 }
+    fn as_ref(&self) -> &HashMap<Address, AccountTrieProof> {
+        &self.0
+    }
 }
-
 
 impl<'de> Deserialize<'de> for AccountTrieProofs {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -127,11 +130,10 @@ impl<'de> Deserialize<'de> for AccountTrieProofs {
         let base_data = HashMap::<Address, Vec<Bytes>>::deserialize(deserializer)?;
         let mut ret = HashMap::<Address, AccountTrieProof>::new();
 
-        for (k,v) in base_data.into_iter() {
-            let v_data : AccountTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
+        for (k, v) in base_data.into_iter() {
+            let v_data: AccountTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
             ret.insert(k, v_data);
         }
-
 
         Ok(AccountTrieProofs(ret))
     }
@@ -140,12 +142,13 @@ impl<'de> Deserialize<'de> for AccountTrieProofs {
 pub type StorageTrieProof = TrieProof<StorageData>;
 
 #[derive(Debug, Default, Clone)]
-pub struct StorageTrieProofs (HashMap<Address, HashMap<Word, StorageTrieProof>>);
+pub struct StorageTrieProofs(HashMap<Address, HashMap<Word, StorageTrieProof>>);
 
 impl AsRef<HashMap<Address, HashMap<Word, StorageTrieProof>>> for StorageTrieProofs {
-    fn as_ref(&self) -> &HashMap<Address, HashMap<Word, StorageTrieProof>> { &self.0 }
+    fn as_ref(&self) -> &HashMap<Address, HashMap<Word, StorageTrieProof>> {
+        &self.0
+    }
 }
-
 
 impl<'de> Deserialize<'de> for StorageTrieProofs {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -155,16 +158,15 @@ impl<'de> Deserialize<'de> for StorageTrieProofs {
         let base_data = HashMap::<Address, HashMap<Word, Vec<Bytes>>>::deserialize(deserializer)?;
         let mut ret = HashMap::<Address, HashMap<Word, StorageTrieProof>>::new();
 
-        for (k,stmap) in base_data.into_iter() {
+        for (k, stmap) in base_data.into_iter() {
             let mut data_map = HashMap::<Word, StorageTrieProof>::new();
 
             for (sk, v) in stmap.into_iter() {
-                let v_data : StorageTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
+                let v_data: StorageTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
                 data_map.insert(sk, v_data);
-            }            
+            }
             ret.insert(k, data_map);
         }
-
 
         Ok(StorageTrieProofs(ret))
     }
@@ -186,8 +188,7 @@ mod tests {
 
     use super::*;
     #[test]
-    fn deserialize_example1(){
-
+    fn deserialize_example1() {
         let example = r#"
         {
             "rootBefore": "0x138e9434a520607da9e07013cdb82c3f832191d3bc2cd1b271b2ed9fa7a6a554",
@@ -242,16 +243,14 @@ mod tests {
         }
         "#;
 
-        let ret : StorageTrace = serde_json::from_str(example).unwrap();
+        let ret: StorageTrace = serde_json::from_str(example).unwrap();
         println!("account: {:?}", ret.proofs);
         println!("storage: {:?}", ret.storage_proofs);
         assert_eq!(ret.proofs.unwrap().as_ref().len(), 3);
-
     }
 
     #[test]
-    fn deserialize_example2(){
-
+    fn deserialize_example2() {
         let example = r#"
         {
             "rootBefore": "0x21d23ec063cd5e5049ce308c85579851b3fc00fa16288c74e03154a759b060be",
@@ -302,10 +301,9 @@ mod tests {
         }
         "#;
 
-        let ret : StorageTrace = serde_json::from_str(example).unwrap();
+        let ret: StorageTrace = serde_json::from_str(example).unwrap();
         println!("account: {:?}", ret.proofs);
         println!("storage: {:?}", ret.storage_proofs);
         assert_eq!(ret.proofs.unwrap().as_ref().len(), 3);
-
-    }    
+    }
 }
