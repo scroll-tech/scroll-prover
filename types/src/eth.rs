@@ -6,6 +6,7 @@ use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use super::mpt::StorageTrace;
 
 /// BlockResultWrapper is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
@@ -23,6 +24,8 @@ pub struct BlockResult {
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "mptwitness", skip_serializing, default)]
     pub mpt_witness: Vec<SMTTrace>,
+    #[serde(rename = "storageTrace", skip_serializing)]
+    pub storage_trace: StorageTrace,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
@@ -138,6 +141,8 @@ pub struct ExecutionResult {
     pub return_value: String,
     pub from: Option<AccountProofWrapper>,
     pub to: Option<AccountProofWrapper>,
+    #[serde(rename = "accountCreated")]
+    pub account_created: Option<AccountProofWrapper>,
     #[serde(rename = "codeHash")]
     pub code_hash: Option<Hash>,
     #[serde(rename = "byteCode")]

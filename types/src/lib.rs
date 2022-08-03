@@ -1,3 +1,4 @@
+pub mod mpt;
 pub mod eth;
 
 pub mod base64 {
