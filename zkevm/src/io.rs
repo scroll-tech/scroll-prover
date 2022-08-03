@@ -145,14 +145,19 @@ pub fn field_to_bn(f: &Fq) -> BigUint {
 pub fn serialize_commitments(buf: &[Vec<G1Affine>]) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
     let mut fd = Cursor::new(&mut result);
+    let to_bytes_be = |x: &BigUint| {
+        let mut buf = x.to_bytes_le();
+        buf.resize(32, 0u8);
+        buf.reverse();
+        buf
+    };
     for v in buf {
         for commitment in v {
             let x = field_to_bn(&commitment.x);
             let y = field_to_bn(&commitment.y);
-            let be = x
-                .to_bytes_be()
+            let be = to_bytes_be(&x)
                 .into_iter()
-                .chain(y.to_bytes_be().into_iter())
+                .chain(to_bytes_be(&y).into_iter())
                 .collect::<Vec<_>>();
             fd.write_all(&be).unwrap()
         }
