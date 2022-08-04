@@ -7,6 +7,7 @@
 
 # for jetbrains
 .idea
+.vscode
 
 # for local config
 .cargo

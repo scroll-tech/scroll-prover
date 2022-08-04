@@ -194,18 +194,33 @@ fn test_state_evm_connect() {
         now.elapsed()
     );
 
-    let rw_commitment_state = {
-        let mut transcript =
-            PoseidonRead::<_, _, Challenge255<G1Affine>>::init(&state_proof.proof[..]);
-        transcript.read_point().unwrap()
+    let load_commitments = |proof: &[u8], start, len| {
+        let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
+        let mut points = Vec::new();
+        for _ in 0..start {
+            transcript.read_point().unwrap()
+        }
+        for _ in 0..len {
+            points.push(transcript.read_point().unwrap())
+        }
+        points
     };
+
+    let rw_table_commitments_len = 11;
+    let rw_table_start_evm = 0;
+    let rw_table_start_state = 0;
+    let rw_commitment_state = load_commitments(
+        &state_proof.proof[..],
+        rw_table_start_state,
+        rw_table_commitments_len,
+    );
     log::info!("rw_commitment_state {:?}", rw_commitment_state);
 
-    let rw_commitment_evm = {
-        let mut transcript =
-            PoseidonRead::<_, _, Challenge255<G1Affine>>::init(&evm_proof.proof[..]);
-        transcript.read_point().unwrap()
-    };
+    let rw_commitment_evm = load_commitments(
+        &evm_proof.proof[..],
+        rw_table_start_evm,
+        rw_table_commitments_len,
+    );
     log::info!("rw_commitment_evm {:?}", rw_commitment_evm);
 
     assert_eq!(rw_commitment_evm, rw_commitment_state);

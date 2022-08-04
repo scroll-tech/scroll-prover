@@ -2,9 +2,8 @@ use bus_mapping::operation::OperationContainer;
 
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::pairing::bn256::Fr;
-use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit, HashCircuit};
-//use halo2_proofs::pairing::group::ff::PrimeField;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
+use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit, HashCircuit};
 
 use once_cell::sync::Lazy;
 
