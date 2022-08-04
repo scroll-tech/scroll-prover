@@ -78,7 +78,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     let request = MultiCircuitSolidityGenerate {
         verify_vk: &vk,
         verify_params: &params,
-        verify_circuit_instance: load_instances_flat(&load_verify_circuit_instance(&mut folder)),
+        verify_circuit_instance: load_instances(&load_verify_circuit_instance(&mut folder)),
         proof: load_verify_circuit_proof(&mut folder),
         verify_public_inputs_size: 4,
     };
