@@ -111,6 +111,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(cases: &[&str]) {
             Prover::mock_prove_target_circuit::<C>(&block_result, false)
         );
     }
+    log::info!("ALL {} circuit tests pass: {:?}", C::name(), cases);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -120,9 +121,9 @@ fn test_mock_prove_all_target_circuits() {
 
     init();
     test_mock_prove_all_with_circuit::<EvmCircuit>(ALL_TESTS);
-    //test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
     test_mock_prove_all_with_circuit::<ZktrieCircuit>(ALL_TESTS);
     test_mock_prove_all_with_circuit::<PoseidonCircuit>(ALL_TESTS);
+    test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -198,10 +199,10 @@ fn test_state_evm_connect() {
         let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
         let mut points = Vec::new();
         for _ in 0..start {
-            transcript.read_point().unwrap()
+            transcript.read_point().unwrap();
         }
         for _ in 0..len {
-            points.push(transcript.read_point().unwrap())
+            points.push(transcript.read_point().unwrap());
         }
         points
     };

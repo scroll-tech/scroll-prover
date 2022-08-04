@@ -10,7 +10,7 @@ use once_cell::sync::Lazy;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
-use zkevm_circuits::evm_circuit::test::TestCircuit;
+use zkevm_circuits::evm_circuit::test::EvmTestCircuit;
 use zkevm_circuits::evm_circuit::witness::{Block, RwMap};
 use zkevm_circuits::state_circuit::StateCircuitLight as StateCircuitImpl;
 
@@ -48,7 +48,7 @@ pub trait TargetCircuit {
 pub struct EvmCircuit {}
 
 impl TargetCircuit for EvmCircuit {
-    type Inner = TestCircuit<Fr>;
+    type Inner = EvmTestCircuit<Fr>;
 
     fn name() -> String {
         "evm".to_string()
@@ -68,7 +68,7 @@ impl TargetCircuit for EvmCircuit {
             FixedTableTag::iter().collect()
         };
 
-        TestCircuit::new(default_block, tags)
+        EvmTestCircuit::new(default_block, tags)
     }
 
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -76,14 +76,14 @@ impl TargetCircuit for EvmCircuit {
         Self: Sized,
     {
         let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
-        let inner = TestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
+        let inner = EvmTestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
         let instance = vec![];
         Ok((inner, instance))
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
         match block_result_to_witness_block::<Fr>(block_result) {
-            Ok(witness_block) => TestCircuit::<Fr>::get_num_rows_required(&witness_block),
+            Ok(witness_block) => EvmTestCircuit::<Fr>::get_num_rows_required(&witness_block),
             Err(e) => {
                 log::error!("convert block result to witness block failed: {:?}", e);
                 0
