@@ -127,9 +127,6 @@ impl Prover {
         Self::tick(&format!("after init pk of {}", C::name()));
     }
 
-    ///fn dump_circuit_info(&self, folder: &mut PathBuf) {
-    ///
-    ///}
     fn init_agg_pk_from_verifier_circuit(
         &mut self,
         verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 4>,
@@ -203,7 +200,6 @@ impl Prover {
         block_result: &BlockResult,
     ) -> anyhow::Result<AggCircuitProof> {
         ///////////////////////////// build verifier circuit from block result ///////////////////
-        // TODO: reuse code with `create_agg_circuit_proof`. Lifetime puzzles..
         let circuit_results: Vec<ProvedCircuit> = vec![
             self.prove_circuit::<EvmCircuit>(block_result)?,
             self.prove_circuit::<StateCircuit>(block_result)?,
