@@ -3,6 +3,7 @@ use bus_mapping::operation::OperationContainer;
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::pairing::bn256::Fr;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
+
 use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit, HashCircuit};
 
 use once_cell::sync::Lazy;
@@ -35,6 +36,9 @@ pub trait TargetCircuit {
         Self: Sized;
 
     fn estimate_rows(_block_result: &BlockResult) -> usize {
+        0
+    }
+    fn public_input_len() -> usize {
         0
     }
     fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {

@@ -1,12 +1,15 @@
 use halo2_proofs::pairing::bn256::{Bn256, G1Affine};
-use halo2_snark_aggregator_circuit::verify_circuit::ProvedCircuit;
-use halo2_snark_aggregator_solidity::SolidityGenerate;
+use halo2_proofs::plonk::VerifyingKey;
+use halo2_proofs::poly::commitment::Params;
+use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
+use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use std::fs::{self};
+use std::io::Cursor;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Once;
 use types::eth::BlockResult;
-use zkevm::prover::AggCircuitProof;
+use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
@@ -44,7 +47,7 @@ fn init() {
     eprintln!("STDERR example");
 }
 
-fn _write_vk(output_dir: &str, c: &ProvedCircuit<G1Affine, Bn256>) {
+fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
     let mut fd = std::fs::File::create(&format!("{}/vk_{}", output_dir, c.name)).unwrap();
     c.vk.write(&mut fd).unwrap();
 }
@@ -66,14 +69,20 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     let mut folder = PathBuf::from_str(dir).unwrap();
 
     let params = read_all(&format!("{}/params26", PARAMS_PATH));
-
-    let request = SolidityGenerate {
-        params,
-        vk: load_verify_circuit_vk(&mut folder),
-        instance: load_verify_circuit_instance(&mut folder),
+    let params = Params::<G1Affine>::read(Cursor::new(&params)).unwrap();
+    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+        &mut Cursor::new(load_verify_circuit_vk(&mut folder)),
+        &params,
+    )
+    .unwrap();
+    let request = MultiCircuitSolidityGenerate {
+        verify_vk: &vk,
+        verify_params: &params,
+        verify_circuit_instance: load_instances_flat(&load_verify_circuit_instance(&mut folder)),
         proof: load_verify_circuit_proof(&mut folder),
+        verify_public_inputs_size: 4,
     };
-    let sol = request.call::<G1Affine, Bn256>(template_folder);
+    let sol = request.call::<Bn256>(template_folder);
     write_verify_circuit_solidity(&mut folder, &Vec::<u8>::from(sol.as_bytes()));
     log::info!("write to {}/verifier.sol", dir);
 }
@@ -88,10 +97,9 @@ fn verifier_circuit_verify(d: &str) {
     let instance = load_verify_circuit_instance(&mut folder);
 
     let agg_proof = AggCircuitProof {
-        proof_rust: proof,
-        proof_solidity: vec![], // not used
+        proof,
         instance,
-        instance_commitments: vec![], // not used
+        final_pair: vec![], // not used
         vk,
     };
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
