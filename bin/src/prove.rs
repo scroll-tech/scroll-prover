@@ -29,6 +29,10 @@ struct Args {
     /// It will generate nothing if it is None.
     #[clap(long = "state")]
     state_proof_path: Option<String>,
+    /// Generate aggregator proof and write into file.
+    /// It will generate nothing if it is None.
+    #[clap(long = "agg")]
+    agg_proof_path: Option<String>,
 }
 
 fn main() {
@@ -61,5 +65,13 @@ fn main() {
             .expect("cannot generate evm_proof");
         let mut f = File::create(path).unwrap();
         f.write_all(state_proof.proof.as_slice()).unwrap();
+    }
+
+    if let Some(path) = args.agg_proof_path {
+        let agg_proof = prover
+            .create_agg_circuit_proof(&trace)
+            .expect("cannot generate evm_proof");
+        let mut f = File::create(path).unwrap();
+        f.write_all(agg_proof.proof.as_slice()).unwrap();
     }
 }
