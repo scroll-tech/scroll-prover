@@ -64,7 +64,7 @@ fn main() {
     if let Some(path) = args.state_proof_path {
         let state_proof = prover
             .create_target_circuit_proof::<StateCircuit>(&trace)
-            .expect("cannot generate evm_proof");
+            .expect("cannot generate state_proof");
         let mut f = File::create(path).unwrap();
         f.write_all(state_proof.proof.as_slice()).unwrap();
     }
@@ -72,7 +72,7 @@ fn main() {
     if let Some(path) = args.agg_proof_path {
         let agg_proof = prover
             .create_agg_circuit_proof(&trace)
-            .expect("cannot generate evm_proof");
+            .expect("cannot generate agg_proof");
         let mut path = PathBuf::from_str(&path).unwrap();
         agg_proof.write_to_dir(&mut path);
     }
