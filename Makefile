@@ -34,13 +34,12 @@ test-zktrie-trace: ## test state circuit with real trace
 test-hash-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_hash_prove_verify
 
-<<<<<<< HEAD
 mock-prove-all:
 	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits
 
 test-agg:
 	@cargo test --features prove_verify --release test_4in1
-=======
+
 local-prove:
 	rm -f l2_blocks.json
 	rm -rf ./all_traces
@@ -49,7 +48,6 @@ local-prove:
 
 clear-traces:
 	rm -rf ./all_traces
->>>>>>> script
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
