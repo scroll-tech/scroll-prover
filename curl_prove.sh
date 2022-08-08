@@ -4,17 +4,17 @@
 # sudo apt-get install jq -y
 # sudo yum install jq -y
 curl https://rollupscanapi.scroll.io/api/l2_blocks?per_page=1000 | jq .blocks > l2_blocks.json
-hashes=`jq .[].header_hash l2_blocks.json`
-echo $hashes
 
 mkdir -p all_traces
 
-for i in "${!hashes[@]}";
+i=0
+for hash in `jq .[].header_hash l2_blocks.json`;
 do
-	echo "-------- Downloading $i ${hashes[$i]}"
+	echo "-------- Downloading $hash --------"
 	curl --location --request POST 'https://prealpha.scroll.io/l2' \
-	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":["${hashes[$i]}"],"id": 1}' > ./all_traces/${i}.trace
-	echo "-------- Proving $i ${hashes[$i]}"
+	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":[${hash}],"id": 1}' > ./all_traces/${i}.trace
+	echo "-------- Proving $hash --------"
 	./target/release/prove --agg ./all_traces/${i}.proof --params zkevm/test_params --seed zkevm/test_seed
+	i=$((i+1))
 done
 
