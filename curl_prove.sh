@@ -10,10 +10,10 @@ mkdir -p all_traces
 i=0
 for hash in `jq .[].header_hash l2_blocks.json`;
 do
-	echo "-------- Downloading $hash --------"
+	echo "-------- Downloading $i $hash --------"
 	curl --location --request POST 'https://prealpha.scroll.io/l2' \
 	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":[${hash}],"id": 1}' > ./all_traces/${i}.trace
-	echo "-------- Proving $hash --------"
+	echo "-------- Proving $i $hash --------"
 	./target/release/prove --agg ./all_traces/${i}.proof --params zkevm/test_params --seed zkevm/test_seed
 	i=$((i+1))
 done
