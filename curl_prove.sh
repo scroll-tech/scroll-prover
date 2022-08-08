@@ -7,7 +7,8 @@ hashes=`jq [.[].header_hash] < ./l2_blocks.json`
 
 mkdir -p all_traces
 
-for i in "${!hashes[@]}"; do
+for i in "${!hashes[@]}";
+do
 	echo "-------- Downloading $i ${hashes[$i]}"
 	curl --location --request POST 'https://prealpha.scroll.io/l2' \
 	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":["${hashes[$i]}"],"id": 1}' > ./all_traces/${i}.trace
