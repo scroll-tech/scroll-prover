@@ -1,6 +1,6 @@
 
 # Must install jq on server. (e.g. sudo apt-get install jq)
-hashes=`curl https://rollupscanapi.scroll.io/api/l2_blocks?per_page=1000 | jq [.[].header_hash]`
+hashes=`curl https://rollupscanapi.scroll.io/api/l2_blocks?per_page=1000 | jq [.blocks.[].header_hash]`
 
 mkdir -p all_traces
 
