@@ -1,3 +1,4 @@
+use std::fs;
 use clap::Parser;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
@@ -74,6 +75,7 @@ fn main() {
             .create_agg_circuit_proof(&trace)
             .expect("cannot generate agg_proof");
         let mut path = PathBuf::from_str(&path).unwrap();
+        fs::create_dir_all(&path).unwrap();
         agg_proof.write_to_dir(&mut path);
     }
 }
