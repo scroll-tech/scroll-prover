@@ -36,7 +36,7 @@ test-hash-trace: ## test state circuit with real trace
 
 local-prove:
 	cargo build --release
-	sh ./curl_prove.sh
+	bash ./curl_prove.sh
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
