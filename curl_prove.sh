@@ -16,5 +16,8 @@ do
 	echo "-------- Proving $i $hash --------"
 	./target/release/prove --trace ./all_traces/${i}.trace --agg ./all_traces/${i}.proof --params zkevm/test_params --seed zkevm/test_seed
 	i=$((i+1))
+	if [ $i == 32 ]; then
+	        break
+	fi
 done
 
