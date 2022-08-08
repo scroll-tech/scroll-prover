@@ -3,6 +3,8 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
+use std::str::FromStr;
 use zkevm::{
     circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
     prover::Prover,
@@ -29,6 +31,10 @@ struct Args {
     /// It will generate nothing if it is None.
     #[clap(long = "state")]
     state_proof_path: Option<String>,
+    /// Generate aggregator proof and write into file.
+    /// It will generate nothing if it is None.
+    #[clap(long = "agg")]
+    agg_proof_path: Option<String>,
 }
 
 fn main() {
@@ -58,8 +64,16 @@ fn main() {
     if let Some(path) = args.state_proof_path {
         let state_proof = prover
             .create_target_circuit_proof::<StateCircuit>(&trace)
-            .expect("cannot generate evm_proof");
+            .expect("cannot generate state_proof");
         let mut f = File::create(path).unwrap();
         f.write_all(state_proof.proof.as_slice()).unwrap();
+    }
+
+    if let Some(path) = args.agg_proof_path {
+        let agg_proof = prover
+            .create_agg_circuit_proof(&trace)
+            .expect("cannot generate agg_proof");
+        let mut path = PathBuf::from_str(&path).unwrap();
+        agg_proof.write_to_dir(&mut path);
     }
 }
