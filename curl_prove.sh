@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Must install jq on server. (e.g. sudo apt-get install jq)
 # sudo apt-get install jq -y
