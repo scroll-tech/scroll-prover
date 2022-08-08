@@ -40,6 +40,9 @@ local-prove:
 	cargo build --release
 	bash ./curl_prove.sh
 
+clear-traces:
+	rm -rf ./all_traces
+
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
 	MODE=dao cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).dao.state.txt 2>&1; \

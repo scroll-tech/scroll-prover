@@ -11,7 +11,6 @@ i=0
 for hash in `jq .[].header_hash l2_blocks.json`;
 do
 	echo "-------- Downloading $i $hash --------"
-	echo '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":['${hash}'],"id": 1}'
 	curl --location --request POST 'https://prealpha.scroll.io/l2' \
 	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":['${hash}'],"id": 1}'  > ./all_traces/${i}.trace
 	echo "-------- Proving $i $hash --------"
