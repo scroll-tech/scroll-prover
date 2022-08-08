@@ -35,6 +35,7 @@ test-hash-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_hash_prove_verify
 
 local-prove:
+	rm -f l2_blocks.json
 	rm -rf ./all_traces
 	cargo build --release
 	bash ./curl_prove.sh
