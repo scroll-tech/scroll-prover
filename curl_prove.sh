@@ -14,7 +14,7 @@ do
 	curl --location --request POST 'https://prealpha.scroll.io/l2' \
 	--header 'Content-Type: application/json' --data-raw '{"jsonrpc": "2.0","method": "eth_getBlockResultByHash","params":['${hash}'],"id": 1}'  > ./all_traces/${i}.trace
 	echo "-------- Proving $i $hash --------"
-	./target/release/prove --agg ./all_traces/${i}.proof --params zkevm/test_params --seed zkevm/test_seed
+	./target/release/prove --trace ./all_traces/${i}.trace --agg ./all_traces/${i}.proof --params zkevm/test_params --seed zkevm/test_seed
 	i=$((i+1))
 done
 
