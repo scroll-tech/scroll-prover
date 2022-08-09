@@ -1,7 +1,7 @@
-use std::fs;
 use clap::Parser;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
