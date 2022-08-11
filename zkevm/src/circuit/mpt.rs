@@ -1,6 +1,5 @@
-use eth_types::{Hash, Word};
-use ethers_core::types::{Address, Bytes, H256, U256, U64};
-use std::collections::HashMap;
+use eth_types::Word;
+use ethers_core::types::{Bytes, H256, U256, U64};
 use std::{
     convert::TryFrom,
     io::{Error, ErrorKind, Read},
@@ -82,7 +81,7 @@ fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Er
 pub type AccountProof = TrieProof<AccountData>;
 pub type StorageProof = TrieProof<StorageData>;
 
-impl<'d, T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
+impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
 
     fn try_from(src: &[Bytes]) -> Result<Self, Self::Error> {
@@ -114,6 +113,7 @@ impl<'d, T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
 mod tests {
 
     use super::*;
+    use types::eth::StorageTrace;
     #[test]
     fn deserialize_example1() {
         let example = r#"
@@ -170,10 +170,19 @@ mod tests {
         }
         "#;
 
-        let ret: StorageTrace = serde_json::from_str(example).unwrap();
-        println!("account: {:?}", ret.proofs);
-        println!("storage: {:?}", ret.storage_proofs);
-        assert_eq!(ret.proofs.unwrap().as_ref().len(), 3);
+        let s_trace: StorageTrace = serde_json::from_str(example).unwrap();
+        let proofs = s_trace.proofs.as_ref().unwrap();
+        for (_, proof) in proofs.iter() {
+            let proof: AccountProof = proof.as_slice().try_into().unwrap();
+            println!("proof: {:?}", proof);
+        }
+
+        for (_, s_map) in s_trace.storage_proofs.iter() {
+            for (k, val) in s_map {
+                let val_proof: StorageProof = val.as_slice().try_into().unwrap();
+                println!("k: {}, v: {:?}", k, val_proof);
+            }
+        }
     }
 
     #[test]
@@ -228,9 +237,18 @@ mod tests {
         }
         "#;
 
-        let ret: StorageTrace = serde_json::from_str(example).unwrap();
-        println!("account: {:?}", ret.proofs);
-        println!("storage: {:?}", ret.storage_proofs);
-        assert_eq!(ret.proofs.unwrap().as_ref().len(), 3);
+        let s_trace: StorageTrace = serde_json::from_str(example).unwrap();
+        let proofs = s_trace.proofs.as_ref().unwrap();
+        for (_, proof) in proofs.iter() {
+            let proof: AccountProof = proof.as_slice().try_into().unwrap();
+            println!("proof: {:?}", proof);
+        }
+
+        for (_, s_map) in s_trace.storage_proofs.iter() {
+            for (k, val) in s_map {
+                let val_proof: StorageProof = val.as_slice().try_into().unwrap();
+                println!("k: {}, v: {:?}", k, val_proof);
+            }
+        }
     }
 }

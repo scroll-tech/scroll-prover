@@ -27,8 +27,8 @@ pub struct BlockResult {
     pub mpt_witness: Vec<SMTTrace>,
 }
 
-pub type AccountTrieProofs = HashMap::<Address, Vec<Bytes>>;
-pub type StorageTrieProofs = HashMap::<Address, HashMap<Word, Vec<Bytes>>>;
+pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
+pub type StorageTrieProofs = HashMap<Address, HashMap<Word, Vec<Bytes>>>;
 
 #[derive(Deserialize, Serialize, Default, Debug)]
 pub struct StorageTrace {
