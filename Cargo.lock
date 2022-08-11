@@ -127,6 +127,7 @@ dependencies = [
  "clap",
  "dotenv",
  "env_logger",
+ "log",
  "rand",
  "rand_xorshift",
  "zkevm",
