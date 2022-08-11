@@ -59,9 +59,8 @@ fn main() {
     let trace_path = PathBuf::from(&args.trace_path.unwrap());
     if trace_path.is_dir() {
         for entry in fs::read_dir(trace_path).unwrap() {
-            let entry = entry.unwrap();
-            let path = entry.path();
-            if path.is_file() {
+            let path = entry.unwrap().path();
+            if path.is_file() && path.to_str().unwrap().ends_with(".json") {
                 let block_result = get_block_result_from_file(path.to_str().unwrap());
                 traces.insert(path.file_stem().unwrap().to_os_string(), block_result);
             }
