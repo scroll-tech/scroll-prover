@@ -7,7 +7,6 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::time::Instant;
 use zkevm::{
     circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
