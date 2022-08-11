@@ -9,6 +9,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Once;
 use types::eth::BlockResult;
+use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
@@ -68,7 +69,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         PathBuf::from("../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates");
     let mut folder = PathBuf::from_str(dir).unwrap();
 
-    let params = read_all(&format!("{}/params26", PARAMS_PATH));
+    let params = read_all(&format!("{}/params{}", PARAMS_PATH, *AGG_DEGREE));
     let params = Params::<G1Affine>::read(Cursor::new(&params)).unwrap();
     let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
         &mut Cursor::new(load_verify_circuit_vk(&mut folder)),
