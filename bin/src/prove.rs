@@ -71,6 +71,7 @@ fn main() {
         traces.insert(trace_path.file_stem().unwrap().to_os_string(), block_result);
     }
 
+    let now = Instant::now();
     for (trace_name, trace) in traces {
         if args.evm_proof.is_some() {
             let proof_path = PathBuf::from(&trace_name).join(".evm.proof");
@@ -79,7 +80,11 @@ fn main() {
             let evm_proof = prover
                 .create_target_circuit_proof::<EvmCircuit>(&trace)
                 .expect("cannot generate evm_proof");
-            info!("finish verifying evm proof, elapsed: {:?}", now.elapsed());
+            info!(
+                "finish generating evm proof of {}, elapsed: {:?}",
+                &trace.block_trace.hash,
+                now.elapsed()
+            );
 
             if args.evm_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
@@ -94,7 +99,11 @@ fn main() {
             let state_proof = prover
                 .create_target_circuit_proof::<StateCircuit>(&trace)
                 .expect("cannot generate state_proof");
-            info!("finish verifying state proof, elapsed: {:?}", now.elapsed());
+            info!(
+                "finish generating state proof of {}, elapsed: {:?}",
+                &trace.block_trace.hash,
+                now.elapsed()
+            );
 
             if args.state_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
@@ -109,7 +118,11 @@ fn main() {
             let agg_proof = prover
                 .create_agg_circuit_proof(&trace)
                 .expect("cannot generate agg_proof");
-            info!("finish verifying agg proof, elapsed: {:?}", now.elapsed());
+            info!(
+                "finish generating agg proof of {}, elapsed: {:?}",
+                &trace.block_trace.hash,
+                now.elapsed()
+            );
 
             if args.agg_proof.unwrap() {
                 fs::create_dir_all(&proof_path).unwrap();
@@ -117,4 +130,5 @@ fn main() {
             }
         }
     }
+    info!("finish generating all, elapsed: {:?}", now.elapsed());
 }
