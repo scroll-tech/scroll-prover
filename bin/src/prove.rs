@@ -71,7 +71,7 @@ fn main() {
         traces.insert(trace_path.file_stem().unwrap().to_os_string(), block_result);
     }
 
-    let now = Instant::now();
+    let outer_now = Instant::now();
     for (trace_name, trace) in traces {
         if args.evm_proof.is_some() {
             let proof_path = PathBuf::from(&trace_name).join(".evm.proof");
@@ -130,5 +130,5 @@ fn main() {
             }
         }
     }
-    info!("finish generating all, elapsed: {:?}", now.elapsed());
+    info!("finish generating all, elapsed: {:?}", outer_now.elapsed());
 }
