@@ -34,6 +34,9 @@ test-zktrie-trace: ## test state circuit with real trace
 test-hash-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_hash_prove_verify
 
+bridge-test:
+	cargo build --release
+	./target/release/prove --trace=zkevm/tests/traces/bridge --agg=true
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
