@@ -11,8 +11,8 @@ use is_even::IsEven;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
-use types::mpt;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
+use super::mpt;
 
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
 use mpt_circuits::hash::Hashable;
@@ -109,8 +109,9 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
 
     let storage_trace = &block.storage_trace;
     if let Some(acc_proofs) = &storage_trace.proofs {
-        for (addr, acc) in acc_proofs.as_ref() {
-            let acc = verify_proof_leaf(acc.clone(), &extend_address_to_h256(addr));
+        for (addr, acc) in acc_proofs.iter() {
+            let acc_proof : mpt::AccountProof = acc.as_slice().try_into()?;
+            let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
             if acc.key.is_some() {
                 // a valid leaf
                 sdb.set_account(
@@ -139,7 +140,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         }
     }
 
-    for (addr, s_map) in storage_trace.storage_proofs.as_ref() {
+    for (addr, s_map) in storage_trace.storage_proofs.iter() {
         let (found, acc) = sdb.get_account_mut(addr);
         if !found {
             log::error!("missed address in proof field show in storage: {:?}", addr);
@@ -149,8 +150,8 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         for (k, val) in s_map {
             let mut k_buf: [u8; 32] = [0; 32];
             k.to_big_endian(&mut k_buf[..]);
-
-            let val = verify_proof_leaf(val.clone(), &k_buf);
+            let val_proof : mpt::StorageProof = val.as_slice().try_into()?;
+            let val = verify_proof_leaf(val_proof, &k_buf);
 
             if val.key.is_some() {
                 // a valid leaf

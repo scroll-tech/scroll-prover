@@ -1,9 +1,5 @@
 use eth_types::{Hash, Word};
 use ethers_core::types::{Address, Bytes, H256, U256, U64};
-use serde::{
-    de::{Deserializer, Error as DeErr},
-    Deserialize,
-};
 use std::collections::HashMap;
 use std::{
     convert::TryFrom,
@@ -83,6 +79,9 @@ fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Er
     Ok((key, T::try_parse(rd)?))
 }
 
+pub type AccountProof = TrieProof<AccountData>;
+pub type StorageProof = TrieProof<StorageData>;
+
 impl<'d, T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
 
@@ -109,78 +108,6 @@ impl<'d, T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
 
         Err(Error::new(ErrorKind::UnexpectedEof, "no leaf key found"))
     }
-}
-
-pub type AccountTrieProof = TrieProof<AccountData>;
-
-#[derive(Debug, Default, Clone)]
-pub struct AccountTrieProofs(HashMap<Address, AccountTrieProof>);
-
-impl AsRef<HashMap<Address, AccountTrieProof>> for AccountTrieProofs {
-    fn as_ref(&self) -> &HashMap<Address, AccountTrieProof> {
-        &self.0
-    }
-}
-
-impl<'de> Deserialize<'de> for AccountTrieProofs {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let base_data = HashMap::<Address, Vec<Bytes>>::deserialize(deserializer)?;
-        let mut ret = HashMap::<Address, AccountTrieProof>::new();
-
-        for (k, v) in base_data.into_iter() {
-            let v_data: AccountTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
-            ret.insert(k, v_data);
-        }
-
-        Ok(AccountTrieProofs(ret))
-    }
-}
-
-pub type StorageTrieProof = TrieProof<StorageData>;
-
-#[derive(Debug, Default, Clone)]
-pub struct StorageTrieProofs(HashMap<Address, HashMap<Word, StorageTrieProof>>);
-
-impl AsRef<HashMap<Address, HashMap<Word, StorageTrieProof>>> for StorageTrieProofs {
-    fn as_ref(&self) -> &HashMap<Address, HashMap<Word, StorageTrieProof>> {
-        &self.0
-    }
-}
-
-impl<'de> Deserialize<'de> for StorageTrieProofs {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let base_data = HashMap::<Address, HashMap<Word, Vec<Bytes>>>::deserialize(deserializer)?;
-        let mut ret = HashMap::<Address, HashMap<Word, StorageTrieProof>>::new();
-
-        for (k, stmap) in base_data.into_iter() {
-            let mut data_map = HashMap::<Word, StorageTrieProof>::new();
-
-            for (sk, v) in stmap.into_iter() {
-                let v_data: StorageTrieProof = v.as_slice().try_into().map_err(D::Error::custom)?;
-                data_map.insert(sk, v_data);
-            }
-            ret.insert(k, data_map);
-        }
-
-        Ok(StorageTrieProofs(ret))
-    }
-}
-
-#[derive(Deserialize, Default, Debug)]
-pub struct StorageTrace {
-    #[serde(rename = "rootBefore")]
-    pub root_before: Hash,
-    #[serde(rename = "rootAfter")]
-    pub root_after: Hash,
-    pub proofs: Option<AccountTrieProofs>,
-    #[serde(rename = "storageProofs", default)]
-    pub storage_proofs: StorageTrieProofs,
 }
 
 #[cfg(test)]
