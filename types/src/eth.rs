@@ -1,4 +1,4 @@
-use eth_types::evm_types::{Gas, GasCost, Memory, OpcodeId, ProgramCounter, Stack, Storage};
+use eth_types::evm_types::{Gas, GasCost, Memory,opcode_ids::OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{
     fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
 };

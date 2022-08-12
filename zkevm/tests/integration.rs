@@ -10,7 +10,7 @@ use zkevm::{
 const PARAMS_DIR: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
 const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
+   /*  "empty", "greeter", "multiple", */"native", "single", "dao",  "nft", "sushi" , 
 ];
 
 static ENV_LOGGER: Once = Once::new();
@@ -71,7 +71,7 @@ fn estimate_circuit_rows() {
     );
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_evm_prove_verify() {
     use zkevm::circuit::EvmCircuit;
@@ -83,6 +83,13 @@ fn test_evm_prove_verify() {
 fn test_state_prove_verify() {
     use zkevm::circuit::StateCircuit;
     test_target_circuit_prove_verify::<StateCircuit>();
+}
+
+//#[cfg(feature = "prove_verify")]
+#[test]
+fn test_bytecode_prove_verify() {
+    use zkevm::circuit::ByteCodeCircuit;
+    test_target_circuit_prove_verify::<ByteCodeCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -103,6 +110,9 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(cases: &[&str]) {
     for test_case_name in cases {
         log::info!("test {} with circuit {}", test_case_name, C::name());
         let trace_path = parse_trace_path_from_env(test_case_name);
+        // below is only for debug info: + "/Users/dream/Code/scroll-tech/common-rs"
+        //let trace_path = "/Users/dream/Code/scroll-tech/common-rs/zkevm/tests/traces/masterchef.json";
+       
         let block_result = get_block_result_from_file(trace_path);
         log::info!(
             "test {} with circuit {} result: {:?}",
@@ -113,16 +123,19 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(cases: &[&str]) {
     }
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
+    // use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, ByteCodeCircuit};
+    use zkevm::circuit::{ ByteCodeCircuit, EvmCircuit };
 
     init();
-    test_mock_prove_all_with_circuit::<EvmCircuit>(ALL_TESTS);
-    //test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
-    test_mock_prove_all_with_circuit::<ZktrieCircuit>(ALL_TESTS);
-    test_mock_prove_all_with_circuit::<PoseidonCircuit>(ALL_TESTS);
+    test_mock_prove_all_with_circuit::<ByteCodeCircuit>(ALL_TESTS);
+
+    //test_mock_prove_all_with_circuit::<EvmCircuit>(ALL_TESTS);
+    // //test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
+    // test_mock_prove_all_with_circuit::<ZktrieCircuit>(ALL_TESTS);
+    // test_mock_prove_all_with_circuit::<PoseidonCircuit>(ALL_TESTS);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -244,10 +257,13 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 }
 
 fn load_block_result_for_test() -> BlockResult {
-    let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
-    if trace_path.is_empty() {
-        trace_path =
-            parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
-    }
+    //let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
+    // only deubg info ， dao.json
+    let mut trace_path = "/Users/dream/Code/scroll-tech/common-rs/zkevm/tests/traces/dao.json";
+    println!("trace path {}", trace_path);
+    // if trace_path.is_empty() {
+    //     trace_path =
+    //         parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
+    // }
     get_block_result_from_file(trace_path)
 }

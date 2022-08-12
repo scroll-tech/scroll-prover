@@ -1,7 +1,7 @@
 use bus_mapping::circuit_input_builder::{Block as cBlock, CircuitInputBuilder};
 
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
-use eth_types::{evm_types::OpcodeId, Field};
+use eth_types::{evm_types::opcode_ids::OpcodeId, Field};
 use ethers_core::types::Bytes;
 
 use halo2_proofs::pairing::bn256::Fr;
@@ -67,11 +67,11 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 
-    cdb.insert(None, decode_bytecode(EMPTY_ACCOUNT_CODE)?);
+    cdb.insert(decode_bytecode(EMPTY_ACCOUNT_CODE)?);
 
     for execution_result in &block.execution_results {
         if let Some(bytecode) = execution_result.byte_code.clone() {
-            cdb.insert(None, decode_bytecode(&bytecode)?);
+            cdb.insert(decode_bytecode(&bytecode)?);
         }
     }
 
@@ -146,7 +146,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
 }
 
 pub fn trace_code(cdb: &mut CodeDB, code: Bytes) {
-    cdb.insert(None, code.to_vec());
+    cdb.insert(code.to_vec());
 }
 
 pub fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
