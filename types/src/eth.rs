@@ -1,4 +1,3 @@
-use super::mpt::StorageTrace;
 use eth_types::evm_types::{Gas, GasCost, Memory, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{
     fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
@@ -26,8 +25,6 @@ pub struct BlockResult {
     pub storage_trace: StorageTrace,
     #[serde(rename = "mptwitness", default)]
     pub mpt_witness: Vec<SMTTrace>,
-    #[serde(rename = "storageTrace", skip_serializing)]
-    pub storage_trace: StorageTrace,
 }
 
 pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
