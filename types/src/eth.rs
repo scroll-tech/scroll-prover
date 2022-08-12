@@ -22,10 +22,26 @@ pub struct BlockResult {
     pub block_trace: BlockTrace,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
-    #[serde(rename = "mptwitness", skip_serializing, default)]
+    #[serde(rename = "storageTrace")]
+    pub storage_trace: StorageTrace,
+    #[serde(rename = "mptwitness", default)]
     pub mpt_witness: Vec<SMTTrace>,
     #[serde(rename = "storageTrace", skip_serializing)]
     pub storage_trace: StorageTrace,
+}
+
+pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
+pub type StorageTrieProofs = HashMap<Address, HashMap<Word, Vec<Bytes>>>;
+
+#[derive(Deserialize, Serialize, Default, Debug)]
+pub struct StorageTrace {
+    #[serde(rename = "rootBefore")]
+    pub root_before: Hash,
+    #[serde(rename = "rootAfter")]
+    pub root_after: Hash,
+    pub proofs: Option<AccountTrieProofs>,
+    #[serde(rename = "storageProofs", default)]
+    pub storage_proofs: StorageTrieProofs,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
