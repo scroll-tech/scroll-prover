@@ -12,7 +12,6 @@ use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
-use types::mpt;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
@@ -105,63 +104,6 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     for execution_result in &block.execution_results {
         if let Some(bytecode) = execution_result.byte_code.clone() {
             cdb.insert(decode_bytecode(&bytecode)?);
-        }
-    }
-
-    let storage_trace = &block.storage_trace;
-    if let Some(acc_proofs) = &storage_trace.proofs {
-        for (addr, acc) in acc_proofs.as_ref() {
-            let acc = verify_proof_leaf(acc.clone(), &extend_address_to_h256(addr));
-            if acc.key.is_some() {
-                // a valid leaf
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: acc.data.nonce.into(),
-                        balance: acc.data.balance,
-                        storage: HashMap::new(),
-                        code_hash: acc.data.code_hash,
-                    },
-                );
-            //                log::info!("set account {:?}, {:?}", addr, acc.data);
-            } else {
-                // only
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: Default::default(),
-                        balance: Default::default(),
-                        storage: HashMap::new(),
-                        code_hash: Default::default(),
-                    },
-                );
-                //                log::info!("set empty account {:?}", addr);
-            }
-        }
-    }
-
-    for (addr, s_map) in storage_trace.storage_proofs.as_ref() {
-        let (found, acc) = sdb.get_account_mut(addr);
-        if !found {
-            log::error!("missed address in proof field show in storage: {:?}", addr);
-            continue;
-        }
-
-        for (k, val) in s_map {
-            let mut k_buf: [u8; 32] = [0; 32];
-            k.to_big_endian(&mut k_buf[..]);
-
-            let val = verify_proof_leaf(val.clone(), &k_buf);
-
-            if val.key.is_some() {
-                // a valid leaf
-                acc.storage.insert(*k, *val.data.as_ref());
-            //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
-            } else {
-                // add 0
-                acc.storage.insert(*k, Default::default());
-                //                log::info!("set empty storage {:?} {:?}", addr, k);
-            }
         }
     }
 
