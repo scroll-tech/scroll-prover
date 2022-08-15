@@ -24,7 +24,7 @@ use crate::utils::read_env_var;
 use self::builder::block_result_to_witness_block;
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
-pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
+pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
