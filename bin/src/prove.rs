@@ -73,7 +73,7 @@ fn main() {
     let outer_now = Instant::now();
     for (trace_name, trace) in traces {
         if args.evm_proof.is_some() {
-            let proof_path = PathBuf::from(&trace_name).join(".evm.proof");
+            let proof_path = PathBuf::from(&trace_name).join("evm.proof");
 
             let now = Instant::now();
             let evm_proof = prover
@@ -92,7 +92,7 @@ fn main() {
         }
 
         if args.state_proof.is_some() {
-            let proof_path = PathBuf::from(&trace_name).join(".state.proof");
+            let proof_path = PathBuf::from(&trace_name).join("state.proof");
 
             let now = Instant::now();
             let state_proof = prover
@@ -111,7 +111,7 @@ fn main() {
         }
 
         if args.agg_proof.is_some() {
-            let mut proof_path = PathBuf::from(&trace_name).join(".agg.proof");
+            let mut proof_path = PathBuf::from(&trace_name).join("agg.proof");
 
             let now = Instant::now();
             let agg_proof = prover
