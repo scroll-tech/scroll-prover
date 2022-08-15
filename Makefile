@@ -42,7 +42,7 @@ test-agg:
 
 bridge-test:
 	cargo build --release
-	./target/release/prove --trace=zkevm/tests/traces/bridge --agg=true
+	./target/release/prove --params=./test_params --seed=./test_seed --trace=zkevm/tests/traces/bridge --agg=true
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
