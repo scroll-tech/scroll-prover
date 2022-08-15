@@ -1136,7 +1136,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?rev=5761b8d9382b8865348ae3d4bafd453e0a227808#5761b8d9382b8865348ae3d4bafd453e0a227808"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?rev=3e86c43a90e2a64962e65dd3f8e31b5d6ec7055f#3e86c43a90e2a64962e65dd3f8e31b5d6ec7055f"
 dependencies = [
  "bitvec 0.22.3",
  "ff 0.11.1",
