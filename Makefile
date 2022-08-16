@@ -34,9 +34,15 @@ test-zktrie-trace: ## test state circuit with real trace
 test-hash-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_hash_prove_verify
 
+mock-prove-all:
+	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits
+
+test-agg:
+	@cargo test --features prove_verify --release test_4in1
+
 bridge-test:
 	cargo build --release
-	./target/release/prove --trace=zkevm/tests/traces/bridge --agg=true
+	./target/release/prove --params=./test_params --seed=./test_seed --trace=zkevm/tests/traces/bridge --agg=true
 
 again:
 	MODE=dao cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).dao.evm.txt 2>&1; \
@@ -45,6 +51,7 @@ again:
 	MODE=nft cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).nft.state.txt 2>&1; \
 	MODE=sushi cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).sushi.evm.txt 2>&1; \
 	MODE=sushi cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).sushi.state.txt 2>&1
+
 
 ## commented out for now, waiting for halo2 upstream upgrade
 # test-circuit-connect: ## test connect evm circuit & state circuit
