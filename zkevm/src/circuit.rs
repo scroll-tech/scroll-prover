@@ -11,9 +11,9 @@ use once_cell::sync::Lazy;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
-use zkevm_circuits::evm_circuit::test::EvmTestCircuit;
+use zkevm_circuits::evm_circuit::test::TestCircuit as EvmTestCircuit;
 use zkevm_circuits::evm_circuit::witness::{Block, RwMap};
-use zkevm_circuits::state_circuit::StateCircuitLight as StateCircuitImpl;
+use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 
 mod builder;
 mod mpt;
@@ -134,27 +134,20 @@ impl TargetCircuit for StateCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result) {
-            witness_block
-                .rws
-                .0
-                .iter()
-                .fold(0usize, |total, (_, v)| v.len() + total)
-        } else {
-            0
-        }
-    }
-    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
         let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
-        let rows = witness_block
+        1 + witness_block
             .rws
             .0
             .iter()
-            .fold(0usize, |total, (_, v)| v.len() + total);
+            .fold(0usize, |total, (_, v)| v.len() + total)
+    }
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
+        let rows = Self::estimate_rows(block_result);
         let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
             0..rows
         } else {
-            witness_block.state_circuit_pad_to - rows..witness_block.state_circuit_pad_to
+            (witness_block.state_circuit_pad_to - rows)..witness_block.state_circuit_pad_to
         })
         .into_iter()
         .collect();
