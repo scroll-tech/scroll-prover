@@ -134,8 +134,6 @@ impl TargetCircuit for StateCircuit {
             witness_block.state_circuit_pad_to,
         );
         
-        println!("rows in state circuit is : {}", rows);
-        println!("witness_block.state_circuit_pad_to {}", witness_block.state_circuit_pad_to);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -266,12 +264,9 @@ impl TargetCircuit for ByteCodeCircuit {
         "ByteCode".to_string()
     }
 
-    // TODO: use from_block_result(&Default::default()) ?
     fn empty() -> Self::Inner {
-       //let r = Fr::from(1u64);
        let r = tests::get_randomness();
 
-       
        let bytecodes: Vec<UnrolledBytecode<Fr>> = vec![bytecode_unroller::unroll(vec![], r)];
        let circuit = ByteCodeCircuitImpl::<Fr> {
             bytecodes: bytecodes,
@@ -296,11 +291,11 @@ impl TargetCircuit for ByteCodeCircuit {
 
         let inner = ByteCodeCircuitImpl::<Fr> {
             bytecodes: byte_codes,
-            size:2usize.pow(*DEGREE as u32), // TODO: adjust correct k degree here
+            size:2usize.pow(*DEGREE as u32),
             randomness: r,
         };
 
-        // set proper instance info
+        // skip setting instance info as current aggr circuit don't support instance column
         // let num_rows = 1 << *DEGREE;
         // const NUM_BLINDING_ROWS: usize = 7 - 1;
         // let instance = vec![vec![r; num_rows - NUM_BLINDING_ROWS]];

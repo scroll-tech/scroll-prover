@@ -96,9 +96,9 @@ fn verifier_circuit_verify(d: &str) {
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
 }
 
-//#[cfg(feature = "prove_verify")]
+#[cfg(feature = "prove_verify")]
 #[test]
-fn test_5in1() {
+fn test_aggr_circuit() {
     use chrono::Utc;
     use zkevm::utils::{get_block_result_from_file, read_env_var};
 
