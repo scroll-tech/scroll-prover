@@ -185,10 +185,10 @@ impl Prover {
 
         // TODO: reuse code with `create_agg_circuit_proof`. Lifetime puzzles..
         let circuit_results: Vec<ProvedCircuit<_, _>> = vec![
-            //self.prove_circuit::<EvmCircuit>(block_result)?,
-            // self.prove_circuit::<StateCircuit>(block_result)?,
+            self.prove_circuit::<EvmCircuit>(block_result)?,
+            self.prove_circuit::<StateCircuit>(block_result)?,
             self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            // self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            self.prove_circuit::<ZktrieCircuit>(block_result)?,
             self.prove_circuit::<ByteCodeCircuit>(block_result)?,
         ];
         let target_circuit_public_input_len = circuit_results
@@ -220,10 +220,10 @@ impl Prover {
         block_result: &BlockResult,
     ) -> anyhow::Result<AggCircuitProof> {
         let circuit_results: Vec<ProvedCircuit<_, _>> = vec![
-            // self.prove_circuit::<EvmCircuit>(block_result)?,
-            // self.prove_circuit::<StateCircuit>(block_result)?,
+            self.prove_circuit::<EvmCircuit>(block_result)?,
+            self.prove_circuit::<StateCircuit>(block_result)?,
             self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            // self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            self.prove_circuit::<ZktrieCircuit>(block_result)?,
             self.prove_circuit::<ByteCodeCircuit>(block_result)?,
         ];
         let target_circuit_public_input_len = circuit_results

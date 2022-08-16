@@ -257,13 +257,11 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 }
 
 fn load_block_result_for_test() -> BlockResult {
-    //let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
-    // only deubg info ， dao.json
-    let mut trace_path = "/Users/dream/Code/scroll-tech/common-rs/zkevm/tests/traces/dao.json";
+    let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
+    if trace_path.is_empty() {
+        trace_path =
+            parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
+    }
     println!("trace path {}", trace_path);
-    // if trace_path.is_empty() {
-    //     trace_path =
-    //         parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
-    // }
     get_block_result_from_file(trace_path)
 }

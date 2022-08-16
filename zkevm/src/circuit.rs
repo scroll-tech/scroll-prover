@@ -133,6 +133,9 @@ impl TargetCircuit for StateCircuit {
             witness_block.rws,
             witness_block.state_circuit_pad_to,
         );
+        
+        println!("rows in state circuit is : {}", rows);
+        println!("witness_block.state_circuit_pad_to {}", witness_block.state_circuit_pad_to);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -155,6 +158,7 @@ impl TargetCircuit for StateCircuit {
             .0
             .iter()
             .fold(0usize, |total, (_, v)| v.len() + total);
+            
         let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
             0..rows
         } else {

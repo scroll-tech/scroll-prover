@@ -80,7 +80,6 @@ fn verifier_circuit_generate_solidity(dir: &str) {
 
 fn verifier_circuit_verify(d: &str) {
     let mut folder = PathBuf::from_str(d).unwrap();
-    println!("come to verifier_circuit_verify");
     let vk = load_verify_circuit_vk(&mut folder);
     let verifier = Verifier::from_fpath(PARAMS_PATH, Some(vk.clone()));
 
