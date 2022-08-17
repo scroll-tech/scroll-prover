@@ -357,9 +357,7 @@ impl TargetCircuit for ByteCodeCircuit {
             .into_iter()
             .fold(0usize, |total, v| v.bytes.len() + total);
 
-        let active_rows: Vec<_> = (0..rows)
-        .into_iter()
-        .collect();
+        let active_rows: Vec<_> = (0..rows).into_iter().collect();
         (active_rows.clone(), active_rows)
     }
 }
