@@ -90,7 +90,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
 
 fn verifier_circuit_verify(d: &str) {
     let mut folder = PathBuf::from_str(d).unwrap();
-
+    println!("come to verifier_circuit_verify");
     let vk = load_verify_circuit_vk(&mut folder);
     let verifier = Verifier::from_fpath(PARAMS_PATH, Some(vk.clone()));
 
@@ -106,9 +106,9 @@ fn verifier_circuit_verify(d: &str) {
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
-fn test_4in1() {
+fn test_5in1() {
     use chrono::Utc;
     use zkevm::utils::{get_block_result_from_file, read_env_var};
 

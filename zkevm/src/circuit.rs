@@ -1,3 +1,6 @@
+use std::iter::empty;
+use std::vec;
+
 use bus_mapping::operation::OperationContainer;
 
 use halo2_proofs::arithmetic::FieldExt;
@@ -10,10 +13,14 @@ use once_cell::sync::Lazy;
 
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
+use zkevm_circuits::bytecode_circuit::{bytecode_unroller, dev};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit as EvmTestCircuit;
 use zkevm_circuits::evm_circuit::witness::{Block, RwMap};
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
+use zkevm_circuits::bytecode_circuit::bytecode_unroller::UnrolledBytecode; 
+
+use zkevm_circuits::bytecode_circuit::dev::BytecodeCircuitTester as ByteCodeCircuitImpl; 
 
 mod builder;
 mod mpt;
@@ -25,6 +32,8 @@ use self::builder::{block_result_to_witness_block, block_results_to_witness_bloc
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
+
+const DEFAULT_RAND: u128 = 0x10000;
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -139,7 +148,6 @@ impl TargetCircuit for StateCircuit {
         });
 
         // same with https://github.com/scroll-tech/zkevm-circuits/blob/fceb61d0fb580a04262ebd3556dbc0cab15d16c4/zkevm-circuits/src/util.rs#L75
-        const DEFAULT_RAND: u128 = 0x10000;
         StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map, 0)
     }
 
@@ -280,5 +288,78 @@ impl TargetCircuit for PoseidonCircuit {
         trie_data.add_ops(storage_ops);
         let (_, hash_rows) = trie_data.use_rows();
         hash_rows
+    }
+}
+
+pub struct ByteCodeCircuit {}
+impl TargetCircuit for ByteCodeCircuit {
+    type Inner = ByteCodeCircuitImpl<Fr>;
+
+    fn name() -> String {
+        "ByteCode".to_string()
+    }
+
+    // TODO: use from_block_result(&Default::default()) ?
+    fn empty() -> Self::Inner {
+       let r = Fr::from_u128(DEFAULT_RAND);
+       
+       let bytecodes: Vec<UnrolledBytecode<Fr>> = vec![bytecode_unroller::unroll(vec![], r)];
+       let circuit = ByteCodeCircuitImpl::<Fr> {
+            bytecodes: bytecodes,
+            size: 2usize.pow(*DEGREE as u32), 
+            randomness: r,
+        };
+
+        circuit
+    }
+
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_result_to_witness_block(block_result)?;
+        let r= witness_block.randomness;
+        let byte_codes = witness_block.bytecodes
+            .values()
+            .into_iter()
+            .map(|bytecode| bytecode_unroller::unroll(bytecode.clone().bytes, r))
+            .collect();
+
+        let inner = ByteCodeCircuitImpl::<Fr> {
+            bytecodes: byte_codes,
+            size:2usize.pow(*DEGREE as u32), // TODO: adjust correct k degree here
+            randomness: r,
+        };
+
+        // set proper instance info
+        // let num_rows = 1 << *DEGREE;
+        // const NUM_BLINDING_ROWS: usize = 7 - 1;
+        // let instance = vec![vec![r; num_rows - NUM_BLINDING_ROWS]];
+        Ok((inner, vec![]))
+    }
+
+    fn estimate_rows(block_result: &BlockResult) -> usize {
+        if let Ok(witness_block) = block_result_to_witness_block(block_result) {
+            witness_block
+                .bytecodes
+                .values()
+                .into_iter()
+                .fold(0usize, |total, v| v.bytes.len() + total)
+        } else {
+            0
+        }
+    }
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        let witness_block = block_result_to_witness_block(block_result).unwrap();
+        let rows =   witness_block
+            .bytecodes
+            .values()
+            .into_iter()
+            .fold(0usize, |total, v| v.bytes.len() + total);
+
+        let active_rows: Vec<_> = (0..rows)
+        .into_iter()
+        .collect();
+        (active_rows.clone(), active_rows)
     }
 }

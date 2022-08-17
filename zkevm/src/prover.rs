@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use crate::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
+    EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE, ByteCodeCircuit,
 };
 use crate::io::{
     deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
@@ -133,7 +133,7 @@ impl Prover {
     ) {
         let verify_circuit_vk =
             keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
-
+        println!("come to init_agg_pk_from_verifier_circuit");
         let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, verify_circuit)
             .expect("keygen_pk should not fail");
         self.agg_pk = Some(verify_circuit_pk);
@@ -204,7 +204,8 @@ impl Prover {
             self.prove_circuit::<EvmCircuit>(block_result)?,
             self.prove_circuit::<StateCircuit>(block_result)?,
             self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            // self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            self.prove_circuit::<ByteCodeCircuit>(block_result)?,
         ];
         // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
         let evm_circuit_idx = 0;

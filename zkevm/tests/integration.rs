@@ -9,7 +9,7 @@ use zkevm::{
 const PARAMS_DIR: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
 const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
+   /*  "empty", "greeter", "multiple", */"native", "single", "dao",  "nft", "sushi" , 
 ];
 
 static ENV_LOGGER: Once = Once::new();
@@ -70,7 +70,7 @@ fn estimate_circuit_rows() {
     );
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_evm_prove_verify() {
     use zkevm::circuit::EvmCircuit;
@@ -82,6 +82,13 @@ fn test_evm_prove_verify() {
 fn test_state_prove_verify() {
     use zkevm::circuit::StateCircuit;
     test_target_circuit_prove_verify::<StateCircuit>();
+}
+
+//#[cfg(feature = "prove_verify")]
+#[test]
+fn test_bytecode_prove_verify() {
+    use zkevm::circuit::ByteCodeCircuit;
+    test_target_circuit_prove_verify::<ByteCodeCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -121,7 +128,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
     failed_cases
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits_packing() {
     use zkevm::circuit::EvmCircuit;
@@ -140,7 +147,7 @@ fn test_mock_prove_all_target_circuits_packing() {
 #[test]
 fn test_mock_prove_all_target_circuits() {
     use glob::glob;
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, ByteCodeCircuit};
 
     init();
     let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
@@ -164,6 +171,10 @@ fn test_mock_prove_all_target_circuits() {
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
         paths,
     ));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<ByteCodeCircuit>(
+        paths,
+    ));
+    
     assert_eq!(failed_cases, Vec::new());
 }
 
