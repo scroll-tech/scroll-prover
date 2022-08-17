@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::io::Cursor;
 
 use crate::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE, ByteCodeCircuit,
+    ByteCodeCircuit, EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit,
+    AGG_DEGREE, DEGREE,
 };
 use crate::io::{deserialize_fr_matrix, load_instances};
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
