@@ -105,7 +105,7 @@ fn verifier_circuit_verify(d: &str) {
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_aggregate_circuit() {
     use chrono::Utc;
