@@ -204,7 +204,7 @@ impl Prover {
             self.prove_circuit::<EvmCircuit>(block_result)?,
             self.prove_circuit::<StateCircuit>(block_result)?,
             self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            // self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            self.prove_circuit::<ZktrieCircuit>(block_result)?,
             self.prove_circuit::<ByteCodeCircuit>(block_result)?,
         ];
         // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
