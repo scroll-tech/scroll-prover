@@ -161,6 +161,9 @@ impl TargetCircuit for StateCircuit {
             witness_block.rws,
             witness_block.state_circuit_pad_to,
         );
+        
+        println!("rows in state circuit is : {}", rows);
+        println!("witness_block.state_circuit_pad_to {}", witness_block.state_circuit_pad_to);
         let instance = vec![];
         Ok((inner, instance))
     }
