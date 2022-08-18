@@ -128,10 +128,17 @@ fn test_mock_prove_all_target_circuits() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
-    let paths: Vec<String> = glob("./tests/traces/**/*.json")
-        .unwrap()
-        .map(|p| p.unwrap().to_str().unwrap().to_string())
-        .collect();
+    let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
+
+    let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
+        glob(&format!("{}/**/*.json", test_trace))
+            .unwrap()
+            .map(|p| p.unwrap().to_str().unwrap().to_string())
+            .collect()
+    } else {
+        vec![test_trace.to_string()]
+    };
+    log::info!("test cases traces: {:?}", paths);
     let paths = &paths;
     let mut failed_cases = Vec::new();
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(paths));
