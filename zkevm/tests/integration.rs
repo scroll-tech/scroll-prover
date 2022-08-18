@@ -8,9 +8,6 @@ use zkevm::{
 
 const PARAMS_DIR: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
-const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
-];
 
 static ENV_LOGGER: Once = Once::new();
 
