@@ -34,8 +34,8 @@ test-zktrie-trace: ## test state circuit with real trace
 test-hash-trace: ## test state circuit with real trace
 	@cargo test --features prove_verify --release test_hash_prove_verify
 
-mock-prove-all:
-	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits
+mock:
+	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits -- --nocapture
 
 test-agg:
 	@cargo test --features prove_verify --release test_4in1

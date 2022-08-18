@@ -1,5 +1,5 @@
+use glob::glob;
 use std::sync::Once;
-
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
@@ -99,19 +99,27 @@ fn test_hash_prove_verify() {
     test_target_circuit_prove_verify::<PoseidonCircuit>();
 }
 
-fn test_mock_prove_all_with_circuit<C: TargetCircuit>(cases: &[&str]) {
-    for test_case_name in cases {
-        log::info!("test {} with circuit {}", test_case_name, C::name());
-        let trace_path = parse_trace_path_from_env(test_case_name);
+fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
+    trace_paths: &[String],
+) -> Vec<(String, String)> {
+    let mut failed_cases = Vec::new();
+    for trace_path in trace_paths {
+        log::info!("test {} circuit with {}", C::name(), trace_path);
         let block_result = get_block_result_from_file(trace_path);
+        let full_height_mock_prove = true;
+        let result = Prover::mock_prove_target_circuit::<C>(&block_result, full_height_mock_prove);
         log::info!(
-            "test {} with circuit {} result: {:?}",
-            test_case_name,
+            "test {} circuit with {} result: {:?}",
             C::name(),
-            Prover::mock_prove_target_circuit::<C>(&block_result, false)
+            trace_path,
+            result
         );
+        if result.is_err() {
+            failed_cases.push((C::name(), trace_path.to_string()));
+        }
     }
-    log::info!("ALL {} circuit tests pass: {:?}", C::name(), cases);
+    log::info!("ALL {} circuit tests finished", C::name());
+    failed_cases
 }
 
 #[cfg(feature = "prove_verify")]
@@ -120,10 +128,28 @@ fn test_mock_prove_all_target_circuits() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
-    test_mock_prove_all_with_circuit::<EvmCircuit>(ALL_TESTS);
-    test_mock_prove_all_with_circuit::<ZktrieCircuit>(ALL_TESTS);
-    test_mock_prove_all_with_circuit::<PoseidonCircuit>(ALL_TESTS);
-    test_mock_prove_all_with_circuit::<StateCircuit>(ALL_TESTS);
+    let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
+
+    let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
+        glob(&format!("{}/**/*.json", test_trace))
+            .unwrap()
+            .map(|p| p.unwrap().to_str().unwrap().to_string())
+            .collect()
+    } else {
+        vec![test_trace.to_string()]
+    };
+    log::info!("test cases traces: {:?}", paths);
+    let paths = &paths;
+    let mut failed_cases = Vec::new();
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(paths));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(paths));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<ZktrieCircuit>(
+        paths,
+    ));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
+        paths,
+    ));
+    assert_eq!(failed_cases, Vec::new());
 }
 
 #[cfg(feature = "prove_verify")]
