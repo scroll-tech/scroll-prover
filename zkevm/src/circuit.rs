@@ -31,7 +31,7 @@ use self::builder::{block_result_to_witness_block, block_results_to_witness_bloc
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
-
+// same with https://github.com/scroll-tech/zkevm-circuits/blob/fceb61d0fb580a04262ebd3556dbc0cab15d16c4/zkevm-circuits/src/util.rs#L75
 const DEFAULT_RAND: u128 = 0x10000;
 
 pub trait TargetCircuit {
@@ -296,7 +296,7 @@ impl TargetCircuit for ByteCodeCircuit {
     type Inner = ByteCodeCircuitImpl<Fr>;
 
     fn name() -> String {
-        "ByteCode".to_string()
+        "bytecode".to_string()
     }
 
     fn empty() -> Self::Inner {
@@ -338,25 +338,17 @@ impl TargetCircuit for ByteCodeCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block(block_result) {
-            witness_block
-                .bytecodes
-                .values()
-                .into_iter()
-                .fold(0usize, |total, v| v.bytes.len() + total)
-        } else {
-            0
-        }
-    }
-    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
         let witness_block = block_result_to_witness_block(block_result).unwrap();
-        let rows =   witness_block
+        witness_block
             .bytecodes
             .values()
             .into_iter()
-            .fold(0usize, |total, v| v.bytes.len() + total);
+            .fold(0usize, |total, v| v.bytes.len() + total)
+    }
 
-        let active_rows: Vec<_> = (0..rows).into_iter().collect();
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        // the same rows as estimate_rows for bytecode circuit
+        let active_rows: Vec<_> = (0..Self::estimate_rows(block_result)).into_iter().collect();
         (active_rows.clone(), active_rows)
     }
 }

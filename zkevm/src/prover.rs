@@ -134,7 +134,7 @@ impl Prover {
     ) {
         let verify_circuit_vk =
             keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
-        println!("come to init_agg_pk_from_verifier_circuit");
+        log::info!("enter Prover::init_agg_pk_from_verifier_circuit");
         let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, verify_circuit)
             .expect("keygen_pk should not fail");
         self.agg_pk = Some(verify_circuit_pk);
