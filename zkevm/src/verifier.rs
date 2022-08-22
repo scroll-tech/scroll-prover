@@ -96,7 +96,7 @@ impl Verifier {
         let verify_circuit_instance2: Vec<&[&[Fr]]> =
             verify_circuit_instance1.iter().map(|x| &x[..]).collect();
 
-        let mut transcript = ShaRead::<_, _, Challenge255<_>>::init(&proof.proof_rust[..]);
+        let mut transcript = ShaRead::<_, _, Challenge255<_>, sha2::Sha256>::init(&proof.proof[..]);
 
         // TODO better way to do this?
         let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(

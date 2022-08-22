@@ -145,14 +145,19 @@ pub fn field_to_bn(f: &Fq) -> BigUint {
 pub fn serialize_commitments(buf: &[Vec<G1Affine>]) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
     let mut fd = Cursor::new(&mut result);
+    let to_bytes_be = |x: &BigUint| {
+        let mut buf = x.to_bytes_le();
+        buf.resize(32, 0u8);
+        buf.reverse();
+        buf
+    };
     for v in buf {
         for commitment in v {
             let x = field_to_bn(&commitment.x);
             let y = field_to_bn(&commitment.y);
-            let be = x
-                .to_bytes_be()
+            let be = to_bytes_be(&x)
                 .into_iter()
-                .chain(y.to_bytes_be().into_iter())
+                .chain(to_bytes_be(&y).into_iter())
                 .collect::<Vec<_>>();
             fd.write_all(&be).unwrap()
         }
@@ -160,8 +165,21 @@ pub fn serialize_commitments(buf: &[Vec<G1Affine>]) -> Vec<u8> {
     result
 }
 
-pub fn write_verify_circuit_instance_commitments_be(folder: &mut PathBuf, buf: &[u8]) {
-    folder.push("verify_circuit_instance_commitments_be.data");
+pub fn serialize_verify_circuit_final_pair(pair: &(G1Affine, G1Affine, Vec<Fr>)) -> Vec<u8> {
+    let mut result = Vec::<u8>::new();
+    let mut fd = Cursor::new(&mut result);
+    pair.0.x.write(&mut fd).unwrap();
+    pair.0.y.write(&mut fd).unwrap();
+    pair.1.x.write(&mut fd).unwrap();
+    pair.1.y.write(&mut fd).unwrap();
+    pair.2.iter().for_each(|scalar| {
+        scalar.write(&mut fd).unwrap();
+    });
+    result
+}
+
+pub fn write_verify_circuit_final_pair(folder: &mut PathBuf, buf: &[u8]) {
+    folder.push("verify_circuit_final_pair.data");
     let mut fd = std::fs::File::create(folder.as_path()).unwrap();
     folder.pop();
     fd.write_all(buf).unwrap()
@@ -197,4 +215,15 @@ pub fn load_instances(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
                 .collect()
         })
         .collect()
+}
+
+pub fn load_instances_flat(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
+    let mut ret = vec![];
+    let cursor = &mut std::io::Cursor::new(buf);
+
+    while let Ok(a) = Fr::read(cursor) {
+        ret.push(a);
+    }
+
+    vec![vec![ret]]
 }

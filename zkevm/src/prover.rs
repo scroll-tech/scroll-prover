@@ -5,31 +5,32 @@ use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
-    deserialize_fr_matrix, serialize_commitments, serialize_fr_tensor, serialize_instance,
-    serialize_vk, write_verify_circuit_instance, write_verify_circuit_instance_commitments_be,
-    write_verify_circuit_proof, write_verify_circuit_proof_be, write_verify_circuit_vk,
+    deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
+    serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
+    write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
 use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::pairing::bn256::{Fr, G1Affine};
-use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey};
-use halo2_proofs::poly::commitment::Params;
+use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey, VerifyingKey};
+use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
-    calc_verify_circuit_instances, verify_circuit_builder, Halo2VerifierCircuit, ProvedCircuit,
+    final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
+    Halo2VerifierCircuits, SingleProofWitness,
 };
 use log::info;
 use once_cell::sync::Lazy;
 use pairing::bn256::Bn256;
-use pairing::group::Curve;
+
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
 use types::base64;
-use types::eth::{mock_block_result, BlockResult};
+use types::eth::BlockResult;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
@@ -48,29 +49,32 @@ pub struct TargetCircuitProof {
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 pub struct AggCircuitProof {
-    // FIXME: tech debt
     #[serde(with = "base64")]
-    pub proof_rust: Vec<u8>,
-
-    #[serde(with = "base64")]
-    pub proof_solidity: Vec<u8>,
+    pub proof: Vec<u8>,
 
     #[serde(with = "base64")]
     pub instance: Vec<u8>,
 
     #[serde(with = "base64")]
-    pub instance_commitments: Vec<u8>,
+    pub final_pair: Vec<u8>,
 
     #[serde(with = "base64")]
     pub vk: Vec<u8>,
 }
 
+pub struct ProvedCircuit {
+    pub name: String,
+    pub transcript: Vec<u8>,
+    pub vk: VerifyingKey<G1Affine>,
+    pub instance: Vec<Vec<Vec<Fr>>>,
+    pub params: ParamsVerifier<Bn256>,
+}
+
 impl AggCircuitProof {
     pub fn write_to_dir(&self, out_dir: &mut PathBuf) {
-        write_verify_circuit_instance_commitments_be(out_dir, &self.instance_commitments);
+        write_verify_circuit_final_pair(out_dir, &self.final_pair);
         write_verify_circuit_instance(out_dir, &self.instance);
-        write_verify_circuit_proof(out_dir, &self.proof_rust);
-        write_verify_circuit_proof_be(out_dir, &self.proof_solidity);
+        write_verify_circuit_proof(out_dir, &self.proof);
         write_verify_circuit_vk(out_dir, &self.vk);
 
         out_dir.push("full_proof.data");
@@ -128,7 +132,7 @@ impl Prover {
 
     fn init_agg_pk_from_verifier_circuit(
         &mut self,
-        verify_circuit: &Halo2VerifierCircuit<'_, Bn256>,
+        verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 4>,
     ) {
         let verify_circuit_vk =
             keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
@@ -161,13 +165,22 @@ impl Prover {
             load_or_create_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         let rng = XorShiftRng::from_seed(seed);
+        // FIXME check params
+        {
+            let target_params_verifier: ParamsVerifier<Bn256> = params.verifier(0).unwrap();
+            let agg_params_verifier: ParamsVerifier<Bn256> = agg_params.verifier(0).unwrap();
+            log::info!("target_params_verifier {:?}", target_params_verifier);
+            log::info!("agg_params_verifier {:?}", agg_params_verifier);
+            debug_assert_eq!(target_params_verifier.s_g2, agg_params_verifier.s_g2);
+            debug_assert_eq!(target_params_verifier.g2, agg_params_verifier.g2);
+        }
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
     fn prove_circuit<C: TargetCircuit>(
         &mut self,
         block_result: &BlockResult,
-    ) -> anyhow::Result<ProvedCircuit<G1Affine, Bn256>> {
+    ) -> anyhow::Result<ProvedCircuit> {
         let proof = self.create_target_circuit_proof::<C>(block_result)?;
 
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
@@ -179,90 +192,87 @@ impl Prover {
             self.target_circuit_pks.remove(&C::name());
             Self::tick(&format!("after release pk of {}", &C::name()));
         }
+
+        let target_circuit_public_input_len =
+            instances.iter().map(|col| col.len()).max().unwrap_or(0);
+        let target_circuit_params = self
+            .params
+            .verifier::<Bn256>(target_circuit_public_input_len)?;
         Ok(ProvedCircuit {
             name: proof.name.clone(),
             transcript: proof.proof,
             vk,
             instance: vec![instances],
+            params: target_circuit_params,
         })
-    }
-
-    pub fn init_agg_pk(&mut self) -> anyhow::Result<()> {
-        if self.agg_pk.is_some() {
-            log::warn!("agg_pk is not none, skip re-init");
-            return Ok(());
-        }
-        log::info!("init_agg_pk: creating target circuit results...");
-        let block_result: &BlockResult = &mock_block_result();
-
-        // TODO: reuse code with `create_agg_circuit_proof`. Lifetime puzzles..
-        let circuit_results: Vec<ProvedCircuit<_, _>> = vec![
-            self.prove_circuit::<EvmCircuit>(block_result)?,
-            self.prove_circuit::<StateCircuit>(block_result)?,
-            self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            self.prove_circuit::<ZktrieCircuit>(block_result)?,
-        ];
-        let target_circuit_public_input_len = circuit_results
-            .iter()
-            .map(|c| c.instance[0].iter().map(|col| col.len()).max().unwrap_or(0))
-            .max()
-            .unwrap_or(0);
-        let target_circuit_params_verifier = self
-            .params
-            .verifier::<Bn256>(target_circuit_public_input_len)?;
-
-        let _verify_circuit_instances =
-            calc_verify_circuit_instances(&target_circuit_params_verifier, &circuit_results);
-
-        // first advice col of evm circuit == first advice col of state circuit
-        // they are a same RLCed rw table col
-        let coherent = vec![[(0, 0), (1, 0)]];
-        let verify_circuit: Halo2VerifierCircuit<'_, Bn256> =
-            verify_circuit_builder(&target_circuit_params_verifier, &circuit_results, coherent);
-
-        log::info!("init_agg_pk: init from verifier circuit");
-        self.init_agg_pk_from_verifier_circuit(&verify_circuit);
-        log::info!("init_agg_pk: init done");
-        Ok(())
     }
 
     pub fn create_agg_circuit_proof(
         &mut self,
         block_result: &BlockResult,
     ) -> anyhow::Result<AggCircuitProof> {
-        let circuit_results: Vec<ProvedCircuit<_, _>> = vec![
+        ///////////////////////////// build verifier circuit from block result ///////////////////
+        let circuit_results: Vec<ProvedCircuit> = vec![
             self.prove_circuit::<EvmCircuit>(block_result)?,
             self.prove_circuit::<StateCircuit>(block_result)?,
             self.prove_circuit::<PoseidonCircuit>(block_result)?,
             self.prove_circuit::<ZktrieCircuit>(block_result)?,
         ];
-        let target_circuit_public_input_len = circuit_results
-            .iter()
-            .map(|c| c.instance[0].iter().map(|col| col.len()).max().unwrap_or(0))
-            .max()
-            .unwrap_or(0);
-        let target_circuit_params_verifier = self
-            .params
-            .verifier::<Bn256>(target_circuit_public_input_len)?;
+        // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
+        let evm_circuit_idx = 0;
+        let state_circuit_idx = 1;
+        let rw_table_start_evm = 0;
+        let rw_table_start_state = 0;
+        let rw_table_commitments_len = 11;
 
+        let mut coherent = Vec::new();
+        for i in 0..rw_table_commitments_len {
+            coherent.push([
+                (evm_circuit_idx, rw_table_start_evm + i),
+                (state_circuit_idx, rw_table_start_state + i),
+            ]);
+        }
+
+        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 4> {
+            circuits: [0, 1, 2, 3].map(|i| {
+                let c = &circuit_results[i];
+                Halo2VerifierCircuit::<'_, Bn256> {
+                    nproofs: 1,
+                    proofs: vec![SingleProofWitness::<'_, Bn256> {
+                        instances: &c.instance,
+                        transcript: &c.transcript,
+                    }],
+                    vk: &c.vk,
+                    params: &circuit_results[i].params,
+                }
+            }),
+            coherent,
+        };
+        ///////////////////////////// build verifier circuit from block result done ///////////////////
+        let n_instances = [0, 1, 2, 3].map(|i| vec![circuit_results[i].instance.clone()]);
+        let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
+        let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
+            [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
+                params: &circuit_results[i].params,
+                vk: &circuit_results[i].vk,
+                n_instances: &n_instances[i],
+                n_transcript: &n_transcript[i],
+            });
+        let verify_circuit_final_pair =
+            Halo2CircuitInstances::<'_, Bn256, 4>(instances).calc_verify_circuit_final_pair();
         let verify_circuit_instances =
-            calc_verify_circuit_instances(&target_circuit_params_verifier, &circuit_results);
-
-        // first advice col of evm circuit == first advice col of state circuit
-        // they are a same RLCed rw table col
-        let coherent = vec![[(0, 0), (1, 0)]];
-        let verify_circuit: Halo2VerifierCircuit<'_, Bn256> =
-            verify_circuit_builder(&target_circuit_params_verifier, &circuit_results, coherent);
+            final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
 
         if self.agg_pk.is_none() {
+            log::info!("init_agg_pk: init from verifier circuit");
             self.init_agg_pk_from_verifier_circuit(&verify_circuit);
+            log::info!("init_agg_pk: init done");
         } else {
             log::info!("using existing agg_pk");
         }
 
         let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];
-        let mut transcript = ShaWrite::<_, _, Challenge255<_>>::init(vec![], vec![]);
-
+        let mut transcript = ShaWrite::<_, _, Challenge255<_>, sha2::Sha256>::init(vec![]);
         log::info!("create agg proof");
         create_proof(
             &self.agg_params,
@@ -274,38 +284,16 @@ impl Prover {
         )?;
         log::info!("create agg proof done");
 
-        let (proof, proof_be) = transcript.finalize();
-
-        let instance_commitments: Vec<u8> = {
-            let limbs = 4;
-            let verify_circuit_params_verifier =
-                self.agg_params.verifier::<Bn256>(limbs * 4).unwrap();
-            let instances: &[&[&[_]]] = &[&[&verify_circuit_instances]];
-            let instance_commitments: Vec<Vec<G1Affine>> = instances
-                .iter()
-                .map(|instance| {
-                    instance
-                        .iter()
-                        .map(|instance| {
-                            verify_circuit_params_verifier
-                                .commit_lagrange(instance.to_vec())
-                                .to_affine()
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>();
-
-            serialize_commitments(&instance_commitments)
-        };
+        let proof = transcript.finalize();
 
         let instances_for_serde = serialize_fr_tensor(&[vec![verify_circuit_instances]]);
         let instance_bytes = serde_json::to_vec(&instances_for_serde)?;
         let vk_bytes = serialize_vk(self.agg_pk.as_ref().expect("pk should be inited").get_vk());
+        let final_pair = serialize_verify_circuit_final_pair(&verify_circuit_final_pair);
         Ok(AggCircuitProof {
-            proof_rust: proof,
-            proof_solidity: proof_be,
+            proof,
             instance: instance_bytes,
-            instance_commitments,
+            final_pair,
             vk: vk_bytes,
         })
     }
