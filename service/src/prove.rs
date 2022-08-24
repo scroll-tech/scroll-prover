@@ -1,4 +1,4 @@
-use crate::utils::{c_char_to_str, vec_to_c_char};
+use crate::utils::{c_char_to_vec, vec_to_c_char};
 use libc::c_char;
 use once_cell::sync::Lazy;
 use types::eth::BlockResult;
@@ -17,8 +17,8 @@ static mut PROVER: Lazy<Prover> = Lazy::new(|| {
 
 /// # Safety
 pub unsafe extern "C" fn create_agg_proof(trace_char: *const c_char) -> *const c_char {
-    let trace_str = c_char_to_str(trace_char);
-    let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
+    let trace_vec = c_char_to_vec(trace_char);
+    let trace = serde_json::from_slice::<BlockResult>(&trace_vec).unwrap();
     let proof = PROVER.create_agg_circuit_proof(&trace).unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
@@ -27,8 +27,8 @@ pub unsafe extern "C" fn create_agg_proof(trace_char: *const c_char) -> *const c
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn create_evm_proof(trace_char: *const c_char) -> *const c_char {
-    let trace_str = c_char_to_str(trace_char);
-    let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
+    let trace_vec = c_char_to_vec(trace_char);
+    let trace = serde_json::from_slice::<BlockResult>(&trace_vec).unwrap();
     let proof = PROVER
         .create_target_circuit_proof::<EvmCircuit>(&trace)
         .unwrap();
@@ -39,8 +39,8 @@ pub unsafe extern "C" fn create_evm_proof(trace_char: *const c_char) -> *const c
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn create_state_proof(trace_char: *const c_char) -> *const c_char {
-    let trace_str = c_char_to_str(trace_char);
-    let trace = serde_json::from_str::<BlockResult>(trace_str).unwrap();
+    let trace_vec = c_char_to_vec(trace_char);
+    let trace = serde_json::from_slice::<BlockResult>(&trace_vec).unwrap();
     let proof = PROVER
         .create_target_circuit_proof::<StateCircuit>(&trace)
         .unwrap();
