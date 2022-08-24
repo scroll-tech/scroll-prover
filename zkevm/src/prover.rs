@@ -130,7 +130,7 @@ impl Prover {
 
     fn init_agg_pk_from_verifier_circuit(
         &mut self,
-        verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 4>,
+        verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 5>,
     ) {
         let verify_circuit_vk =
             keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
@@ -223,8 +223,8 @@ impl Prover {
             ]);
         }
 
-        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 4> {
-            circuits: [0, 1, 2, 3].map(|i| {
+        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 5> {
+            circuits: [0, 1, 2, 3, 4].map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
                     nproofs: 1,
@@ -239,17 +239,17 @@ impl Prover {
             coherent,
         };
         ///////////////////////////// build verifier circuit from block result done ///////////////////
-        let n_instances = [0, 1, 2, 3].map(|i| vec![circuit_results[i].instance.clone()]);
-        let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
-        let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
-            [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
+        let n_instances = [0, 1, 2, 3, 4].map(|i| vec![circuit_results[i].instance.clone()]);
+        let n_transcript = [0, 1, 2, 3, 4].map(|i| vec![circuit_results[i].transcript.clone()]);
+        let instances: [Halo2CircuitInstance<'_, Bn256>; 5] =
+            [0, 1, 2, 3, 4].map(|i| Halo2CircuitInstance {
                 params: &circuit_results[i].params,
                 vk: &circuit_results[i].vk,
                 n_instances: &n_instances[i],
                 n_transcript: &n_transcript[i],
             });
         let verify_circuit_final_pair =
-            Halo2CircuitInstances::<'_, Bn256, 4>(instances).calc_verify_circuit_final_pair();
+            Halo2CircuitInstances::<'_, Bn256, 5>(instances).calc_verify_circuit_final_pair();
         let verify_circuit_instances =
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
 
