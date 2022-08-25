@@ -290,11 +290,19 @@ impl Prover {
         block_result: &BlockResult,
         full: bool,
     ) -> anyhow::Result<()> {
+        Self::mock_prove_target_circuit_packing::<C>(&[block_result.clone()], full)
+    }
+
+    pub fn mock_prove_target_circuit_packing<C: TargetCircuit>(
+        block_results: &[BlockResult],
+        full: bool,
+    ) -> anyhow::Result<()> {
         log::info!("start mock prove {}", C::name());
-        let (circuit, instance) = C::from_block_result(block_result)?;
+        let (circuit, instance) = C::from_block_results(block_results)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
-            let (gate_rows, lookup_rows) = C::get_active_rows(block_result);
+            // FIXME for packing
+            let (gate_rows, lookup_rows) = C::get_active_rows(&block_results[0]);
             log::info!("checking {} active rows", gate_rows.len());
             if !gate_rows.is_empty() || !lookup_rows.is_empty() {
                 if let Err(e) =

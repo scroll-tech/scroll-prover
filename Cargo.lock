@@ -267,9 +267,9 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801#bdf8fd3361d49fc6d8110489d744ce202cf022ee"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
 dependencies = [
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ethers-core",
  "ethers-providers",
  "gadgets",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801#bdf8fd3361d49fc6d8110489d744ce202cf022ee"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
 dependencies = [
  "ethers-core",
  "ethers-providers",
@@ -1058,11 +1058,11 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801#bdf8fd3361d49fc6d8110489d744ce202cf022ee"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
 dependencies = [
  "array-init",
  "digest 0.7.6",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ff 0.11.1",
  "halo2_proofs",
  "sha3 0.7.3",
@@ -1198,7 +1198,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?rev=3e86c43a90e2a64962e65dd3f8e31b5d6ec7055f#3e86c43a90e2a64962e65dd3f8e31b5d6ec7055f"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?rev=f12e08c255bb1377b51b325254a764484a8bbdc2#f12e08c255bb1377b51b325254a764484a8bbdc2"
 dependencies = [
  "bitvec 0.22.3",
  "ff 0.11.1",
@@ -1269,7 +1269,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.1.0-beta.1"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0607#94de954abfbff0a74329f6bbfb0f56fc4aefefae"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0607#a7d72c3e89d15178253b2119b0aa4e23f3939b2b"
 dependencies = [
  "blake2b_simd 1.0.0",
  "bumpalo",
@@ -1616,9 +1616,9 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801#bdf8fd3361d49fc6d8110489d744ce202cf022ee"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
 dependencies = [
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "gadgets",
  "halo2_proofs",
  "itertools",
@@ -3083,7 +3083,7 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "blake2",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ethers-core",
  "halo2-mpt-circuits",
  "serde",
@@ -3514,7 +3514,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ethers-core",
  "glob",
  "halo2-mpt-circuits",
@@ -3544,7 +3544,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801#bdf8fd3361d49fc6d8110489d744ce202cf022ee"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
 dependencies = [
  "array-init",
  "bigint",
@@ -3553,7 +3553,7 @@ dependencies = [
  "ecc",
  "ecdsa 0.1.0",
  "env_logger",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0801)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ethers-core",
  "ff 0.11.1",
  "gadgets",

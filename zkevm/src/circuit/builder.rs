@@ -1,7 +1,7 @@
-use bus_mapping::circuit_input_builder::{Block as cBlock, CircuitInputBuilder};
+use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder};
 
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
-use eth_types::{evm_types::OpcodeId, Field};
+use eth_types::evm_types::OpcodeId;
 use ethers_core::types::{Address, Bytes};
 
 use halo2_proofs::pairing::bn256::Fr;
@@ -49,28 +49,36 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     bts.as_slice().try_into().expect("32 bytes")
 }
 
-pub fn block_result_to_witness_block<F: Field>(
+pub fn block_result_to_witness_block(
     block_result: &BlockResult,
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_result.block_trace.transactions.get(0) {
+    block_results_to_witness_block(&[block_result.clone()])
+}
+
+pub fn block_results_to_witness_block(
+    block_results: &[BlockResult],
+) -> Result<Block<Fr>, anyhow::Error> {
+    let chain_id = if let Some(tx_trace) = block_results[0].block_trace.transactions.get(0) {
         tx_trace.chain_id
     } else {
         0i16.into()
     };
 
-    let eth_block = block_result.block_trace.clone().into();
+    let (state_db, code_db) = build_statedb_and_codedb(block_results)?;
 
-    let mut geth_trace = Vec::new();
-    for result in &block_result.execution_results {
-        geth_trace.push(result.into());
+    let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
+    for (idx, block_result) in block_results.iter().enumerate() {
+        let is_last = idx == block_results.len() - 1;
+        let eth_block = block_result.block_trace.clone().into();
+        let mut geth_trace = Vec::new();
+        for result in &block_result.execution_results {
+            geth_trace.push(result.into());
+        }
+        // TODO: Get the history_hashes.
+        let header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        builder.block.headers.insert(header.number.as_u64(), header);
+        builder.handle_block_inner(&eth_block, geth_trace.as_slice(), is_last, is_last)?;
     }
-
-    // TODO: Get the history_hashes.
-    let circuit_block = cBlock::new(chain_id, Vec::new(), &eth_block)?;
-    let (state_db, code_db) = build_statedb_and_codedb(block_result)?;
-
-    let mut builder = CircuitInputBuilder::new(state_db, code_db, circuit_block);
-    builder.handle_block(&eth_block, geth_trace.as_slice())?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
@@ -95,125 +103,107 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     hex::decode(stripped).map_err(|e| e.into())
 }
 
-pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
+pub fn build_statedb_and_codedb(
+    blocks: &[BlockResult],
+) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 
+    // step1: insert code into codedb
     cdb.insert(decode_bytecode(EMPTY_ACCOUNT_CODE)?);
 
-    for execution_result in &block.execution_results {
-        if let Some(bytecode) = execution_result.byte_code.clone() {
-            cdb.insert(decode_bytecode(&bytecode)?);
-        }
-    }
+    for block in blocks {
+        for execution_result in &block.execution_results {
+            if let Some(bytecode) = execution_result.byte_code.clone() {
+                cdb.insert(decode_bytecode(&bytecode)?);
+            }
 
-    let storage_trace = &block.storage_trace;
-    if let Some(acc_proofs) = &storage_trace.proofs {
-        for (addr, acc) in acc_proofs.iter() {
-            let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
-            let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
-            if acc.key.is_some() {
-                // a valid leaf
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: acc.data.nonce.into(),
-                        balance: acc.data.balance,
-                        storage: HashMap::new(),
-                        code_hash: acc.data.code_hash,
-                    },
-                );
-            //                log::info!("set account {:?}, {:?}", addr, acc.data);
-            } else {
-                // only
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: Default::default(),
-                        balance: Default::default(),
-                        storage: HashMap::new(),
-                        code_hash: Default::default(),
-                    },
-                );
-                //                log::info!("set empty account {:?}", addr);
+            for step in execution_result.exec_steps.iter().rev() {
+                if let Some(data) = &step.extra_data {
+                    match step.op {
+                        OpcodeId::CALL | OpcodeId::CALLCODE => {
+                            let caller_code = data.get_code_at(0);
+                            let callee_code = data.get_code_at(1);
+                            trace_code(&mut cdb, caller_code);
+                            trace_code(&mut cdb, callee_code);
+                        }
+
+                        OpcodeId::DELEGATECALL | OpcodeId::STATICCALL => {
+                            let caller_code = data.get_code_at(0);
+                            let callee_code = data.get_code_at(1);
+                            trace_code(&mut cdb, caller_code);
+                            trace_code(&mut cdb, callee_code);
+                        }
+
+                        OpcodeId::CREATE | OpcodeId::CREATE2 => {
+                            let created_code = data.get_code_at(0);
+                            trace_code(&mut cdb, created_code);
+                        }
+                        OpcodeId::CODESIZE
+                        | OpcodeId::CODECOPY
+                        | OpcodeId::EXTCODESIZE
+                        | OpcodeId::EXTCODECOPY => {
+                            let code = data.get_code_at(0);
+                            trace_code(&mut cdb, code)
+                        }
+
+                        _ => {}
+                    }
+                }
             }
         }
     }
 
-    for (addr, s_map) in storage_trace.storage_proofs.iter() {
-        let (found, acc) = sdb.get_account_mut(addr);
-        if !found {
-            log::error!("missed address in proof field show in storage: {:?}", addr);
-            continue;
-        }
+    // step2: insert proof into statedb
 
-        for (k, val) in s_map {
-            let mut k_buf: [u8; 32] = [0; 32];
-            k.to_big_endian(&mut k_buf[..]);
-            let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
-            let val = verify_proof_leaf(val_proof, &k_buf);
-
-            if val.key.is_some() {
-                // a valid leaf
-                acc.storage.insert(*k, *val.data.as_ref());
-            //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
-            } else {
-                // add 0
-                acc.storage.insert(*k, Default::default());
-                //                log::info!("set empty storage {:?} {:?}", addr, k);
+    for block in blocks.iter().rev() {
+        let storage_trace = &block.storage_trace;
+        if let Some(acc_proofs) = &storage_trace.proofs {
+            for (addr, acc) in acc_proofs.iter() {
+                let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
+                let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
+                if acc.key.is_some() {
+                    // a valid leaf
+                    let (_, acc_mut) = sdb.get_account_mut(addr);
+                    acc_mut.nonce = acc.data.nonce.into();
+                    acc_mut.code_hash = acc.data.code_hash;
+                    acc_mut.balance = acc.data.balance;
+                } else {
+                    // only
+                    sdb.set_account(
+                        addr,
+                        Account {
+                            nonce: Default::default(),
+                            balance: Default::default(),
+                            storage: HashMap::new(),
+                            code_hash: Default::default(),
+                        },
+                    );
+                }
             }
         }
-    }
 
-    for er in block.execution_results.iter().rev() {
-        for step in er.exec_steps.iter().rev() {
-            if let Some(data) = &step.extra_data {
-                match step.op {
-                    OpcodeId::CALL | OpcodeId::CALLCODE => {
-                        let caller_code = data.get_code_at(0);
-                        let callee_code = data.get_code_at(1);
-                        trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, callee_code);
-                    }
+        for (addr, s_map) in storage_trace.storage_proofs.iter() {
+            let (found, acc) = sdb.get_account_mut(addr);
+            if !found {
+                log::error!("missed address in proof field show in storage: {:?}", addr);
+                continue;
+            }
 
-                    OpcodeId::DELEGATECALL | OpcodeId::STATICCALL => {
-                        let caller_code = data.get_code_at(0);
-                        let callee_code = data.get_code_at(1);
-                        trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, callee_code);
-                    }
+            for (k, val) in s_map {
+                let mut k_buf: [u8; 32] = [0; 32];
+                k.to_big_endian(&mut k_buf[..]);
+                let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
+                let val = verify_proof_leaf(val_proof, &k_buf);
 
-                    OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                        let created_code = data.get_code_at(0);
-                        trace_code(&mut cdb, created_code);
-                    }
-                    /*
-                                        OpcodeId::SLOAD | OpcodeId::SSTORE | OpcodeId::SELFBALANCE => {
-                                            let contract_proof = data.get_proof_at(0);
-                                            trace_proof(&mut sdb, contract_proof)
-                                        }
-
-                                        OpcodeId::SELFDESTRUCT => {
-                                            let caller_proof = data.get_proof_at(0);
-                                            let callee_proof = data.get_proof_at(1);
-                                            trace_proof(&mut sdb, caller_proof);
-                                            trace_proof(&mut sdb, callee_proof);
-                                        }
-
-                                        OpcodeId::EXTCODEHASH | OpcodeId::BALANCE => {
-                                            let proof = data.get_proof_at(0);
-                                            trace_proof(&mut sdb, proof)
-                                        }
-                    */
-                    OpcodeId::CODESIZE
-                    | OpcodeId::CODECOPY
-                    | OpcodeId::EXTCODESIZE
-                    | OpcodeId::EXTCODECOPY => {
-                        let code = data.get_code_at(0);
-                        trace_code(&mut cdb, code)
-                    }
-
-                    _ => {}
+                if val.key.is_some() {
+                    // a valid leaf
+                    acc.storage.insert(*k, *val.data.as_ref());
+                //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
+                } else {
+                    // add 0
+                    acc.storage.insert(*k, Default::default());
+                    //                log::info!("set empty storage {:?} {:?}", addr, k);
                 }
             }
         }
