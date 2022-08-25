@@ -267,7 +267,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "ethers-core",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
 dependencies = [
  "ethers-core",
  "ethers-providers",
@@ -1058,7 +1058,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
 dependencies = [
  "array-init",
  "digest 0.7.6",
@@ -1616,7 +1616,7 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
  "gadgets",
@@ -3544,7 +3544,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#da718edc93d588aeccc94a4ca5dab690c59f3bc7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
 dependencies = [
  "array-init",
  "bigint",
