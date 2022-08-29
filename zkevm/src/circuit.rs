@@ -1,5 +1,6 @@
 use bus_mapping::operation::OperationContainer;
 
+use ethers_core::k256::elliptic_curve::rand_core::block;
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::pairing::bn256::Fr;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
@@ -8,6 +9,7 @@ use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit
 
 use once_cell::sync::Lazy;
 
+use crate::utils::get_block_result_from_file;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
@@ -25,6 +27,9 @@ use self::builder::{block_result_to_witness_block, block_results_to_witness_bloc
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
+const DEFAULT_RAND: u128 = 0x10000;
+
+const DEFAULT_TRACE: &'static str = "./tests/traces/multiple-erc20.json";
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -72,10 +77,9 @@ impl TargetCircuit for EvmCircuit {
     }
 
     fn empty() -> Self::Inner {
-        let default_block = Block::<Fr> {
-            evm_circuit_pad_to: (1 << *DEGREE) - 64,
-            ..Default::default()
-        };
+        // use multi erc20 transfer trace for default vk generation purpose
+        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let default_block = block_result_to_witness_block(&block_result).unwrap();
 
         // hack but useful
         let tags = if *DEGREE <= 16 {
@@ -131,23 +135,23 @@ impl TargetCircuit for StateCircuit {
 
     // TODO: use from_block_result(&Default::default()) ?
     fn empty() -> Self::Inner {
-        let rw_map = RwMap::from(&OperationContainer {
-            memory: vec![],
-            stack: vec![],
-            storage: vec![],
-            ..Default::default()
-        });
-
-        // same with https://github.com/scroll-tech/zkevm-circuits/blob/fceb61d0fb580a04262ebd3556dbc0cab15d16c4/zkevm-circuits/src/util.rs#L75
-        const DEFAULT_RAND: u128 = 0x10000;
-        StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map, 0)
+        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let mut default_block = block_result_to_witness_block(&block_result).unwrap();
+        //default_block.state_circuit_pad_to = 1 << *DEGREE;
+        println!(
+            "state_circuit_pad_to is {} ",
+            default_block.state_circuit_pad_to
+        );
+        // padding to 1>>17 will be OK
+        StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), default_block.rws, 1 << *DEGREE)
     }
 
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let witness_block = block_result_to_witness_block(block_result)?;
+        let mut witness_block = block_result_to_witness_block(block_result)?;
+        witness_block.state_circuit_pad_to = 1 << *DEGREE;
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
@@ -208,8 +212,15 @@ impl TargetCircuit for ZktrieCircuit {
         "zktrie".to_string()
     }
     fn empty() -> Self::Inner {
-        let dummy_trie: EthTrie<Fr> = Default::default();
-        let (circuit, _) = dummy_trie.circuits(mpt_rows());
+        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (circuit, _) = trie_data.circuits(mpt_rows());
         circuit
     }
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -250,8 +261,15 @@ impl TargetCircuit for PoseidonCircuit {
         "poseidon".to_string()
     }
     fn empty() -> Self::Inner {
-        let dummy_trie: EthTrie<Fr> = Default::default();
-        let (_, circuit) = dummy_trie.circuits(mpt_rows());
+        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
+        let mut trie_data: EthTrie<Fr> = Default::default();
+        trie_data.add_ops(storage_ops);
+        let (_, circuit) = trie_data.circuits(mpt_rows());
         circuit
     }
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>

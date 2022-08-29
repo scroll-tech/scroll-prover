@@ -70,14 +70,14 @@ fn estimate_circuit_rows() {
     );
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_evm_prove_verify() {
     use zkevm::circuit::EvmCircuit;
     test_target_circuit_prove_verify::<EvmCircuit>();
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_state_prove_verify() {
     use zkevm::circuit::StateCircuit;
@@ -86,12 +86,19 @@ fn test_state_prove_verify() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
+fn test_bytecode_prove_verify() {
+    use zkevm::circuit::ByteCodeCircuit;
+    test_target_circuit_prove_verify::<ByteCodeCircuit>();
+}
+
+//#[cfg(feature = "prove_verify")]
+#[test]
 fn test_storage_prove_verify() {
     use zkevm::circuit::ZktrieCircuit;
     test_target_circuit_prove_verify::<ZktrieCircuit>();
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_hash_prove_verify() {
     use zkevm::circuit::PoseidonCircuit;
