@@ -1,4 +1,3 @@
-use glob::glob;
 use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::{
@@ -15,7 +14,7 @@ const ALL_TESTS: &[&str] = &[
 
 static ENV_LOGGER: Once = Once::new();
 
-fn parse_trace_path_from_env(mode: &str) -> &'static str {
+fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {
         "empty" => "./tests/traces/empty.json",
         "greeter" => "./tests/traces/greeter.json",
@@ -124,7 +123,23 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 
 #[cfg(feature = "prove_verify")]
 #[test]
+fn test_mock_prove_all_target_circuits_packing() {
+    use zkevm::circuit::EvmCircuit;
+
+    init();
+    let mut block_results = Vec::new();
+    for block_number in 1..=15 {
+        let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+        let block_result = get_block_result_from_file(trace_path);
+        block_results.push(block_result);
+    }
+    Prover::mock_prove_target_circuit_packing::<EvmCircuit>(&block_results, true).unwrap();
+}
+
+#[cfg(feature = "prove_verify")]
+#[test]
 fn test_mock_prove_all_target_circuits() {
+    use glob::glob;
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
@@ -175,7 +190,7 @@ fn test_state_evm_connect() {
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let trace_path = parse_trace_path_from_env("greeter");
+    let trace_path = parse_trace_path_from_mode("greeter");
     let block_result = get_block_result_from_file(trace_path);
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
@@ -289,7 +304,7 @@ fn load_block_result_for_test() -> BlockResult {
     let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
     if trace_path.is_empty() {
         trace_path =
-            parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
+            parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
     }
     get_block_result_from_file(trace_path)
 }

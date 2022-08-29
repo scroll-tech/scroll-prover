@@ -21,7 +21,7 @@ mod mpt;
 use crate::circuit::builder::get_fixed_table_tags_for_block;
 use crate::utils::read_env_var;
 
-use self::builder::block_result_to_witness_block;
+use self::builder::{block_result_to_witness_block, block_results_to_witness_block};
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
@@ -35,6 +35,18 @@ pub trait TargetCircuit {
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        log::error!(
+            "from_block_results for circuit {} unimplemented, use first block result",
+            Self::name()
+        );
+        Self::from_block_result(&block_results[0])
+    }
 
     fn estimate_rows(_block_result: &BlockResult) -> usize {
         0
@@ -80,14 +92,26 @@ impl TargetCircuit for EvmCircuit {
     where
         Self: Sized,
     {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
+        let witness_block = block_result_to_witness_block(block_result)?;
+        let inner = EvmTestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
+        let instance = vec![];
+        Ok((inner, instance))
+    }
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_results_to_witness_block(block_results)?;
         let inner = EvmTestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
         let instance = vec![];
         Ok((inner, instance))
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        match block_result_to_witness_block::<Fr>(block_result) {
+        match block_result_to_witness_block(block_result) {
             Ok(witness_block) => EvmTestCircuit::<Fr>::get_num_rows_required(&witness_block),
             Err(e) => {
                 log::error!("convert block result to witness block failed: {:?}", e);
@@ -123,7 +147,23 @@ impl TargetCircuit for StateCircuit {
     where
         Self: Sized,
     {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
+        let witness_block = block_result_to_witness_block(block_result)?;
+        let inner = StateCircuitImpl::<Fr>::new(
+            witness_block.randomness,
+            witness_block.rws,
+            witness_block.state_circuit_pad_to,
+        );
+        let instance = vec![];
+        Ok((inner, instance))
+    }
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_results_to_witness_block(block_results)?;
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
@@ -134,7 +174,7 @@ impl TargetCircuit for StateCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
+        let witness_block = block_result_to_witness_block(block_result).unwrap();
         1 + witness_block
             .rws
             .0
@@ -142,7 +182,7 @@ impl TargetCircuit for StateCircuit {
             .fold(0usize, |total, (_, v)| v.len() + total)
     }
     fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
+        let witness_block = block_result_to_witness_block(block_result).unwrap();
         let rows = Self::estimate_rows(block_result);
         let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
             0..rows
