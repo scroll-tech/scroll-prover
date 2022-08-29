@@ -13,57 +13,25 @@ use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
-use git_version::git_version;
 
-const PARAMS_PATH: &str = "./test_params";
-const SEED_PATH: &str = "./test_seed";
-const GIT_VERSION: &str = git_version!();
-static ENV_LOGGER: Once = Once::new();
-
-fn parse_trace_path_from_env(mode: &str) -> &'static str {
-    let trace_path = match mode {
-        "empty" => "./tests/traces/empty.json",
-        "greeter" => "./tests/traces/greeter.json",
-        "multiple" => "./tests/traces/multiple-erc20.json",
-        "native" => "./tests/traces/native-transfer.json",
-        "single" => "./tests/traces/single-erc20.json",
-        "dao" => "./tests/traces/dao.json",
-        "nft" => "./tests/traces/nft.json",
-        "sushi" => "./tests/traces/masterchef.json",
-        _ => "./tests/traces/multiple-erc20.json",
-    };
-    log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
-    trace_path
-}
-
-fn init() {
-    dotenv::dotenv().ok();
-    ENV_LOGGER.call_once(|| {
-        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
-    });
-    log::trace!("TRACE LOG example");
-    log::debug!("DEBUG LOG example");
-    log::info!("INFO LOG example");
-    log::warn!("WARN LOG example");
-    log::error!("ERROR LOG example");
-    println!("STDOUT example");
-    eprintln!("STDERR example");
-    println!("git version {}", GIT_VERSION);
-}
+mod test_util;
+use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
     let mut fd = std::fs::File::create(&format!("{}/vk_{}", output_dir, c.name)).unwrap();
     c.vk.write(&mut fd).unwrap();
 }
 
-fn verifier_circuit_prove(output_dir: &str, block_result: &BlockResult) {
+fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
     log::info!("output files to {}", output_dir);
     fs::create_dir_all(output_dir).unwrap();
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
-    let mut prover = Prover::from_fpath(PARAMS_PATH, SEED_PATH);
+    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     //prover.init_agg_pk().unwrap();
-    let agg_proof = prover.create_agg_circuit_proof(block_result).unwrap();
+    let agg_proof = prover
+        .create_agg_circuit_proof_multi(&block_results)
+        .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
 }
 
@@ -72,7 +40,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         PathBuf::from("../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates");
     let mut folder = PathBuf::from_str(dir).unwrap();
 
-    let params = read_all(&format!("{}/params{}", PARAMS_PATH, *AGG_DEGREE));
+    let params = read_all(&format!("{}/params{}", PARAMS_DIR, *AGG_DEGREE));
     let params = Params::<G1Affine>::read(Cursor::new(&params)).unwrap();
     let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
         &mut Cursor::new(load_verify_circuit_vk(&mut folder)),
@@ -100,7 +68,7 @@ fn verifier_circuit_verify_proof() {
     let proof = read_env_var("PROOF_JSON", "proof.json".to_string());
     let file = fs::File::open(proof).unwrap();
     let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
-    let verifier = Verifier::from_fpath(PARAMS_PATH, None);
+    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
 }
 
@@ -108,7 +76,7 @@ fn verifier_circuit_verify(d: &str) {
     let mut folder = PathBuf::from_str(d).unwrap();
 
     let vk = load_verify_circuit_vk(&mut folder);
-    let verifier = Verifier::from_fpath(PARAMS_PATH, Some(vk.clone()));
+    let verifier = Verifier::from_fpath(PARAMS_DIR, Some(vk.clone()));
 
     let proof = load_verify_circuit_proof(&mut folder);
     let instance = load_verify_circuit_instance(&mut folder);
@@ -142,10 +110,20 @@ fn test_4in1() {
         fs::create_dir_all(output_dir).unwrap();
     }
     log::info!("loading setup params");
-    let trace_path = parse_trace_path_from_env(&mode);
-    let block_result = get_block_result_from_file(trace_path);
+    let block_results = if mode == "PACK" {
+        let mut block_results = Vec::new();
+        for block_number in 1..=15 {
+            let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+            let block_result = get_block_result_from_file(trace_path);
+            block_results.push(block_result);
+        }
+        block_results
+    } else {
+        let trace_path = parse_trace_path_from_mode(&mode);
+        vec![get_block_result_from_file(trace_path)]
+    };
 
-    verifier_circuit_prove(&output, &block_result);
+    verifier_circuit_prove(&output, block_results);
     verifier_circuit_verify(&output);
     let gen_soli: bool = read_env_var("GEN_SOLI", false);
     if gen_soli {

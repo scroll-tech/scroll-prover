@@ -6,37 +6,8 @@ use zkevm::{
     utils::{get_block_result_from_file, read_env_var},
 };
 
-const PARAMS_DIR: &str = "./test_params";
-const SEED_PATH: &str = "./test_seed";
-const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
-];
-
-static ENV_LOGGER: Once = Once::new();
-
-fn parse_trace_path_from_mode(mode: &str) -> &'static str {
-    let trace_path = match mode {
-        "empty" => "./tests/traces/empty.json",
-        "greeter" => "./tests/traces/greeter.json",
-        "multiple" => "./tests/traces/multiple-erc20.json",
-        "native" => "./tests/traces/native-transfer.json",
-        "single" => "./tests/traces/single-erc20.json",
-        "single_legacy" => "./tests/traces/single-erc20-legacy.json",
-        "dao" => "./tests/traces/dao.json",
-        "nft" => "./tests/traces/nft.json",
-        "sushi" => "./tests/traces/masterchef.json",
-        _ => "./tests/traces/multiple-erc20.json",
-    };
-    log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
-    trace_path
-}
-
-fn init() {
-    dotenv::dotenv().ok();
-    ENV_LOGGER.call_once(|| {
-        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    });
-}
+mod test_util;
+use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 #[test]
 fn estimate_circuit_rows() {
@@ -133,9 +104,9 @@ fn test_mock_prove_all_target_circuits_packing() {
         let block_result = get_block_result_from_file(trace_path);
         block_results.push(block_result);
     }
-    Prover::mock_prove_target_circuit_packing::<EvmCircuit>(&block_results, true).unwrap();
-    Prover::mock_prove_target_circuit_packing::<ZktrieCircuit>(&block_results, true).unwrap();
-    Prover::mock_prove_target_circuit_packing::<PoseidonCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_results, true).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
