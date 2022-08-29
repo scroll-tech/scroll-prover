@@ -242,7 +242,10 @@ impl TargetCircuit for ZktrieCircuit {
     where
         Self: Sized,
     {
-        let (mpt_circuit, _) = trie_data_from_blocks(block_results).circuits(mpt_rows());
+        let trie_data = trie_data_from_blocks(block_results);
+        //        let (rows, _) = trie_data.use_rows();
+        //        log::info!("zktrie use rows {}", rows);
+        let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
         let instance = vec![];
         Ok((mpt_circuit, instance))
     }
@@ -257,15 +260,15 @@ impl TargetCircuit for ZktrieCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
-        let (mpt_rows, _) = trie_data.use_rows();
+        let (mpt_rows, _) = trie_data_from_blocks(Some(block_result)).use_rows();
         mpt_rows
+    }
+
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        // we have compare and pick the maxium for lookup and gate rows, here we
+        // just make sure it not less than 64 (so it has contained all constant rows)
+        let ret = Self::estimate_rows(block_result);
+        ((0..ret.max(64)).collect(), (0..ret.max(64)).collect())
     }
 }
 
@@ -289,7 +292,10 @@ impl TargetCircuit for PoseidonCircuit {
     where
         Self: Sized,
     {
-        let (_, circuit) = trie_data_from_blocks(block_results).circuits(mpt_rows());
+        let trie_data = trie_data_from_blocks(block_results);
+        //        let (_, rows) = trie_data.use_rows();
+        //        log::info!("poseidon use rows {}", rows);
+        let (_, circuit) = trie_data.circuits(mpt_rows());
         let instance = vec![];
         Ok((circuit, instance))
     }
@@ -304,14 +310,7 @@ impl TargetCircuit for PoseidonCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
-        let (_, hash_rows) = trie_data.use_rows();
-        hash_rows
+        let (_, rows) = trie_data_from_blocks(Some(block_result)).use_rows();
+        rows
     }
 }
