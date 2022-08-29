@@ -52,6 +52,9 @@ again:
 	MODE=sushi cargo test --features prove_verify --release test_evm_prove_verify > $(CURRENTDATE).sushi.evm.txt 2>&1; \
 	MODE=sushi cargo test --features prove_verify --release test_state_prove_verify > $(CURRENTDATE).sushi.state.txt 2>&1
 
+scroll:
+	cargo build --release
+	cp target/release/libservice.so ../scroll/verifier/lib/libverifier.so
 
 ## commented out for now, waiting for halo2 upstream upgrade
 # test-circuit-connect: ## test connect evm circuit & state circuit
