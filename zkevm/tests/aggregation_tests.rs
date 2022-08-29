@@ -88,12 +88,11 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     log::info!("write to {}/verifier.sol", dir);
 }
 
-
 #[cfg(feature = "prove_verify")]
 #[test]
 fn verifier_circuit_verify_proof() {
     init();
-    use zkevm::utils::{read_env_var};
+    use zkevm::utils::read_env_var;
 
     let proof = read_env_var("PROOF_JSON", "proof.json".to_string());
     let file = fs::File::open(proof).unwrap();
