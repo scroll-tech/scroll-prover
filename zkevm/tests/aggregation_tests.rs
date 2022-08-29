@@ -13,9 +13,11 @@ use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
+use git_version::git_version;
 
 const PARAMS_PATH: &str = "./test_params";
 const SEED_PATH: &str = "./test_seed";
+const GIT_VERSION: &str = git_version!();
 static ENV_LOGGER: Once = Once::new();
 
 fn parse_trace_path_from_env(mode: &str) -> &'static str {
@@ -46,6 +48,7 @@ fn init() {
     log::error!("ERROR LOG example");
     println!("STDOUT example");
     eprintln!("STDERR example");
+    println!("git version {}", GIT_VERSION);
 }
 
 fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
