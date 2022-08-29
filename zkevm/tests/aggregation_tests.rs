@@ -88,6 +88,20 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     log::info!("write to {}/verifier.sol", dir);
 }
 
+
+#[cfg(feature = "prove_verify")]
+#[test]
+fn verifier_circuit_verify_proof() {
+    init();
+    use zkevm::utils::{read_env_var};
+
+    let proof = read_env_var("PROOF_JSON", "proof.json".to_string());
+    let file = fs::File::open(proof).unwrap();
+    let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
+    let verifier = Verifier::from_fpath(PARAMS_PATH, None);
+    assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
+}
+
 fn verifier_circuit_verify(d: &str) {
     let mut folder = PathBuf::from_str(d).unwrap();
 
