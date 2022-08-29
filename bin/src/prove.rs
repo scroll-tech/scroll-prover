@@ -77,7 +77,7 @@ fn main() {
 
             let now = Instant::now();
             let evm_proof = prover
-                .create_target_circuit_proof_multi::<EvmCircuit>(&trace)
+                .create_target_circuit_proof::<EvmCircuit>(&trace)
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
@@ -96,7 +96,7 @@ fn main() {
 
             let now = Instant::now();
             let state_proof = prover
-                .create_target_circuit_proof_multi::<StateCircuit>(&trace)
+                .create_target_circuit_proof::<StateCircuit>(&trace)
                 .expect("cannot generate state_proof");
             info!(
                 "finish generating state proof of {}, elapsed: {:?}",
