@@ -11,6 +11,7 @@ use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
+use zkevm::utils::load_or_create_params;
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
@@ -40,11 +41,10 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         PathBuf::from("../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates");
     let mut folder = PathBuf::from_str(dir).unwrap();
 
-    let params = read_all(&format!("{}/params{}", PARAMS_DIR, *AGG_DEGREE));
-    let params = Params::<G1Affine>::read(Cursor::new(&params)).unwrap();
+    let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let load_full = true;
     let (vk, proof, instance) = if load_full {
-        let file = fs::File::open(&format!("{}/full_proof.json", dir)).unwrap();
+        let file = fs::File::open(&format!("{}/full_proof.data", dir)).unwrap();
         let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
         (agg_proof.vk, agg_proof.proof, agg_proof.instance)
     } else {
