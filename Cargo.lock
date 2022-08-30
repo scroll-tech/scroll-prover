@@ -130,6 +130,9 @@ dependencies = [
  "log",
  "rand",
  "rand_xorshift",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "zkevm",
 ]
 
