@@ -42,16 +42,28 @@ fn verifier_circuit_generate_solidity(dir: &str) {
 
     let params = read_all(&format!("{}/params{}", PARAMS_DIR, *AGG_DEGREE));
     let params = Params::<G1Affine>::read(Cursor::new(&params)).unwrap();
+    let load_full = true;
+    let (vk, proof, instance) = if load_full {
+        let file = fs::File::open(&format!("{}/full_proof.json", dir)).unwrap();
+        let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
+        (agg_proof.vk, agg_proof.proof, agg_proof.instance)
+    } else {
+        (
+            load_verify_circuit_vk(&mut folder),
+            load_verify_circuit_proof(&mut folder),
+            load_verify_circuit_instance(&mut folder),
+        )
+    };
     let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
-        &mut Cursor::new(load_verify_circuit_vk(&mut folder)),
+        &mut Cursor::new(&vk),
         &params,
     )
     .unwrap();
     let request = MultiCircuitSolidityGenerate {
         verify_vk: &vk,
         verify_params: &params,
-        verify_circuit_instance: load_instances(&load_verify_circuit_instance(&mut folder)),
-        proof: load_verify_circuit_proof(&mut folder),
+        verify_circuit_instance: load_instances(&instance),
+        proof,
         verify_public_inputs_size: 4,
     };
     let sol = request.call::<Bn256>(template_folder);
