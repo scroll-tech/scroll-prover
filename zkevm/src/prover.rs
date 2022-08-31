@@ -83,6 +83,8 @@ impl AggCircuitProof {
         serde_json::to_writer_pretty(&mut fd, &self).unwrap()
     }
 }
+
+#[derive(Debug)]
 pub struct Prover {
     pub params: Params<G1Affine>,
     pub agg_params: Params<G1Affine>,

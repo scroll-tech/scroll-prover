@@ -1,3 +1,5 @@
+#![feature(once_cell)]
+
 pub mod prove;
 pub mod verify;
 
