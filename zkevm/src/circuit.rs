@@ -9,7 +9,7 @@ use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit
 
 use once_cell::sync::Lazy;
 
-use crate::utils::get_block_result_from_file;
+use crate::utils::get_default_block_result;
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
@@ -29,7 +29,7 @@ pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
 const DEFAULT_RAND: u128 = 0x10000;
 
-const DEFAULT_TRACE: &'static str = "./tests/traces/multiple-erc20.json";
+//const DEFAULT_TRACE: &'static str = "./tests/traces/multiple-erc20.json";
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -78,7 +78,7 @@ impl TargetCircuit for EvmCircuit {
 
     fn empty() -> Self::Inner {
         // use multi erc20 transfer trace for default vk generation purpose
-        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let block_result = get_default_block_result();
         let default_block = block_result_to_witness_block(&block_result).unwrap();
 
         // hack but useful
@@ -133,17 +133,20 @@ impl TargetCircuit for StateCircuit {
         "state".to_string()
     }
 
-    // TODO: use from_block_result(&Default::default()) ?
     fn empty() -> Self::Inner {
-        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let block_result = get_default_block_result();
         let mut default_block = block_result_to_witness_block(&block_result).unwrap();
-        //default_block.state_circuit_pad_to = 1 << *DEGREE;
+        default_block.state_circuit_pad_to = (1 << *DEGREE) - 256;
         println!(
             "state_circuit_pad_to is {} ",
             default_block.state_circuit_pad_to
         );
-        // padding to 1>>17 will be OK
-        StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), default_block.rws, 1 << *DEGREE)
+
+        StateCircuitImpl::<Fr>::new(
+            Fr::from_u128(DEFAULT_RAND),
+            default_block.rws,
+            default_block.state_circuit_pad_to,
+        )
     }
 
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -151,7 +154,7 @@ impl TargetCircuit for StateCircuit {
         Self: Sized,
     {
         let mut witness_block = block_result_to_witness_block(block_result)?;
-        witness_block.state_circuit_pad_to = 1 << *DEGREE;
+        witness_block.state_circuit_pad_to = (1 << *DEGREE) - 256;
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
@@ -167,7 +170,8 @@ impl TargetCircuit for StateCircuit {
     where
         Self: Sized,
     {
-        let witness_block = block_results_to_witness_block(block_results)?;
+        let mut witness_block = block_results_to_witness_block(block_results)?;
+        witness_block.state_circuit_pad_to = (1 << *DEGREE) - 256;
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
@@ -186,7 +190,8 @@ impl TargetCircuit for StateCircuit {
             .fold(0usize, |total, (_, v)| v.len() + total)
     }
     fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
-        let witness_block = block_result_to_witness_block(block_result).unwrap();
+        let mut witness_block = block_result_to_witness_block(block_result).unwrap();
+        witness_block.state_circuit_pad_to = (1 << *DEGREE) - 256;
         let rows = Self::estimate_rows(block_result);
         let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
             0..rows
@@ -212,7 +217,7 @@ impl TargetCircuit for ZktrieCircuit {
         "zktrie".to_string()
     }
     fn empty() -> Self::Inner {
-        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let block_result = get_default_block_result();
         let storage_ops: Vec<AccountOp<_>> = block_result
             .mpt_witness
             .iter()
@@ -261,7 +266,7 @@ impl TargetCircuit for PoseidonCircuit {
         "poseidon".to_string()
     }
     fn empty() -> Self::Inner {
-        let block_result = get_block_result_from_file(DEFAULT_TRACE);
+        let block_result = get_default_block_result();
         let storage_ops: Vec<AccountOp<_>> = block_result
             .mpt_witness
             .iter()

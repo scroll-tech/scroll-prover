@@ -1,6 +1,7 @@
 pub mod circuit;
 pub mod io;
 pub mod prover;
+pub mod trace_data;
 pub mod utils;
 pub mod verifier;
 

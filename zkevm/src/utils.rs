@@ -1,3 +1,4 @@
+use crate::trace_data;
 use anyhow::Result;
 use halo2_proofs::arithmetic::{BaseExt, Field};
 use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
@@ -134,6 +135,25 @@ pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
     let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
 
     j.result
+}
+
+/// get a block-result from string
+pub fn get_block_result(trace: &str) -> BlockResult {
+    let buffer: Vec<u8> = trace.chars().map(|c| c as u8).collect::<Vec<_>>();
+
+    #[derive(Deserialize, Serialize, Default)]
+    struct RpcJson {
+        result: BlockResult,
+    }
+
+    let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
+
+    j.result
+}
+
+/// get a block-result from default trace
+pub fn get_default_block_result() -> BlockResult {
+    get_block_result(trace_data::MULTI_ERC20)
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {
