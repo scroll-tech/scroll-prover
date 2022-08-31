@@ -1,13 +1,13 @@
 use halo2_proofs::pairing::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
-use halo2_proofs::poly::commitment::Params;
+
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use std::fs::{self};
 use std::io::Cursor;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::Once;
+
 use types::eth::BlockResult;
 use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};

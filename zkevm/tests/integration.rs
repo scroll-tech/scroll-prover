@@ -1,4 +1,3 @@
-use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
@@ -124,7 +123,7 @@ fn test_mock_prove_all_target_circuits() {
             .map(|p| p.unwrap().to_str().unwrap().to_string())
             .collect()
     } else {
-        vec![test_trace.to_string()]
+        vec![test_trace]
     };
     log::info!("test cases traces: {:?}", paths);
     let paths = &paths;
