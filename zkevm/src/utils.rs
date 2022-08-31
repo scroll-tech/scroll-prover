@@ -125,7 +125,11 @@ pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
     let mut buffer = Vec::new();
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
+    get_block_result_from_bytes(&buffer)
+}
 
+/// get a block-result from raw bytes
+pub fn get_block_result_from_bytes(buffer: &[u8]) -> BlockResult {
     #[derive(Deserialize, Serialize, Default)]
     struct RpcJson {
         result: BlockResult,

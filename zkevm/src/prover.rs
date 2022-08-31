@@ -5,7 +5,7 @@ use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
-    deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
+    deserialize_fr_matrix, get_sample_block_result, serialize_fr_tensor, serialize_instance,
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
@@ -118,7 +118,7 @@ impl Prover {
 
     fn init_pk<C: TargetCircuit>(&mut self) {
         Self::tick(&format!("before init pk of {}", C::name()));
-        let circuit = C::empty();
+        let (circuit, _) = C::from_block_result(&get_sample_block_result()).unwrap();
         let vk = keygen_vk(&self.params, &circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
         let pk = keygen_pk(&self.params, vk, &circuit)

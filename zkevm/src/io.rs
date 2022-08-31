@@ -11,6 +11,9 @@ use halo2_proofs::{
 };
 use num_bigint::BigUint;
 use pairing::bn256::Fq;
+use types::eth::BlockResult;
+
+use crate::utils::get_block_result_from_bytes;
 
 pub fn serialize_fr(f: &Fr) -> Vec<u8> {
     let mut buf = vec![];
@@ -226,4 +229,9 @@ pub fn load_instances_flat(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
     }
 
     vec![vec![ret]]
+}
+
+pub fn get_sample_block_result() -> BlockResult {
+    let data: Vec<u8> = include!("../tests/traces/multiple-erc20.json");
+    get_block_result_from_bytes(&data)
 }

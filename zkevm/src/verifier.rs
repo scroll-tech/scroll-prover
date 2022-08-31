@@ -55,7 +55,7 @@ impl Verifier {
     }
 
     fn init_vk<C: TargetCircuit>(&mut self) {
-        let circuit = C::empty();
+        let (circuit, _) = C::from_block_result(&get_sample_block_result()).unwrap();
         let vk = keygen_vk(&self.params, &circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
         self.target_circuit_vks.insert(C::name(), vk);
