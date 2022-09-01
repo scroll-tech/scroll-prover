@@ -3,8 +3,8 @@ use libc::c_char;
 use log::info;
 use std::fs::File;
 use std::io::Read;
-use zkevm::circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE};
-use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
+use zkevm::circuit::{AGG_DEGREE, DEGREE};
+use zkevm::prover::AggCircuitProof;
 use zkevm::utils::load_or_create_params;
 use zkevm::verifier::Verifier;
 
@@ -38,33 +38,5 @@ pub unsafe extern "C" fn verify_agg_proof(proof: *const c_char) -> c_char {
         .verify_agg_circuit_proof(agg_proof)
         .is_ok();
     info!("verify agg-proof result: {}", verified);
-    verified as c_char
-}
-
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn verify_evm_proof(proof: *const c_char) -> c_char {
-    info!("start to verify evm-proof");
-    let proof_vec = c_char_to_vec(proof);
-    let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
-    let verified = VERIFIER
-        .unwrap()
-        .verify_target_circuit_proof::<EvmCircuit>(&proof)
-        .is_ok();
-    info!("verify evm-proof result: {}", verified);
-    verified as c_char
-}
-
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn verify_state_proof(proof: *const c_char) -> c_char {
-    info!("start to verify state-proof");
-    let proof_vec = c_char_to_vec(proof);
-    let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
-    let verified = VERIFIER
-        .unwrap()
-        .verify_target_circuit_proof::<StateCircuit>(&proof)
-        .is_ok();
-    info!("verify state-proof result: {}", verified);
     verified as c_char
 }
