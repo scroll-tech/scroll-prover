@@ -56,6 +56,10 @@ scroll:
 	cargo build --release
 	cp target/release/libservice.so ../scroll/verifier/lib/libverifier.so
 
+roller:
+	cargo build --release
+	cp target/release/libservice.so ../go-roller/roller/prover/lib/libprover.so
+
 ## commented out for now, waiting for halo2 upstream upgrade
 # test-circuit-connect: ## test connect evm circuit & state circuit
 # 	@cargo test --features prove_verify --release test_state_evm_connect
