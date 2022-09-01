@@ -358,11 +358,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818)",
  "ethers-core",
@@ -983,11 +979,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "ethers-core",
  "ethers-providers",
@@ -1131,11 +1123,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818)",
  "geth-utils",
@@ -1312,11 +1300,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "array-init",
  "digest 0.7.6",
@@ -1359,11 +1343,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "gobuild",
 ]
@@ -1911,11 +1891,7 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818)",
  "gadgets",
@@ -2079,11 +2055,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818)",
  "ethbloom",
@@ -3967,11 +3939,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-<<<<<<< HEAD
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#66dfe421695da8d3f0edc46c9e1a0c34b1e29f69"
-=======
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0818#28168188cb79ef61747dcdd093ec27eb858650f7"
->>>>>>> f4d2c6a (remove unused varias)
 dependencies = [
  "array-init",
  "bigint",

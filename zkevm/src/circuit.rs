@@ -12,14 +12,14 @@ use once_cell::sync::Lazy;
 
 use strum::IntoEnumIterator;
 use types::eth::BlockResult;
-use zkevm_circuits::bytecode_circuit::{bytecode_unroller, dev};
+use zkevm_circuits::bytecode_circuit::bytecode_unroller;
+use zkevm_circuits::bytecode_circuit::bytecode_unroller::UnrolledBytecode;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit as EvmTestCircuit;
 use zkevm_circuits::evm_circuit::witness::{Block, RwMap};
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::UnrolledBytecode; 
 
-use zkevm_circuits::bytecode_circuit::dev::BytecodeCircuitTester as ByteCodeCircuitImpl; 
+use zkevm_circuits::bytecode_circuit::dev::BytecodeCircuitTester as ByteCodeCircuitImpl;
 
 mod builder;
 mod mpt;
@@ -160,9 +160,7 @@ impl TargetCircuit for StateCircuit {
             witness_block.rws,
             witness_block.state_circuit_pad_to,
         );
-        
-        println!("rows in state circuit is : {}", rows);
-        println!("witness_block.state_circuit_pad_to {}", witness_block.state_circuit_pad_to);
+
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -303,10 +301,10 @@ impl TargetCircuit for ByteCodeCircuit {
     }
 
     fn empty() -> Self::Inner {
-       let r = Fr::from_u128(DEFAULT_RAND);
-       
-       let bytecodes: Vec<UnrolledBytecode<Fr>> = vec![bytecode_unroller::unroll(vec![], r)];
-       let circuit = ByteCodeCircuitImpl::<Fr> {
+        let r = Fr::from_u128(DEFAULT_RAND);
+
+        let bytecodes: Vec<UnrolledBytecode<Fr>> = vec![bytecode_unroller::unroll(vec![], r)];
+        let circuit = ByteCodeCircuitImpl::<Fr> {
             bytecodes: bytecodes,
             size: 2usize.pow(*DEGREE as u32),
             randomness: r,
@@ -320,8 +318,9 @@ impl TargetCircuit for ByteCodeCircuit {
         Self: Sized,
     {
         let witness_block = block_result_to_witness_block(block_result)?;
-        let r= witness_block.randomness;
-        let byte_codes = witness_block.bytecodes
+        let r = witness_block.randomness;
+        let byte_codes = witness_block
+            .bytecodes
             .values()
             .into_iter()
             .map(|bytecode| bytecode_unroller::unroll(bytecode.clone().bytes, r))

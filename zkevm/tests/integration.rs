@@ -151,7 +151,9 @@ fn test_mock_prove_all_target_circuits_packing() {
 #[test]
 fn test_mock_prove_all_target_circuits() {
     use glob::glob;
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, ByteCodeCircuit};
+    use zkevm::circuit::{
+        ByteCodeCircuit, EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit,
+    };
 
     init();
     let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
