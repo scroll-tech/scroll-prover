@@ -267,9 +267,9 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804#2d67c384f16f0f5d1da8abde4194ae311c5db9c0"
 dependencies = [
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "ethers-core",
  "ethers-providers",
  "gadgets",
@@ -774,7 +774,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804#2d67c384f16f0f5d1da8abde4194ae311c5db9c0"
 dependencies = [
  "ethers-core",
  "ethers-providers",
@@ -1058,11 +1058,11 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804#2d67c384f16f0f5d1da8abde4194ae311c5db9c0"
 dependencies = [
  "array-init",
  "digest 0.7.6",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "ff 0.11.1",
  "halo2_proofs",
  "sha3 0.7.3",
@@ -1291,7 +1291,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.1.0-beta.1"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0607#a7d72c3e89d15178253b2119b0aa4e23f3939b2b"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0607#e06fab23fb743ce5c1c5b5e9d23000f5eba34c56"
 dependencies = [
  "blake2b_simd 1.0.0",
  "bumpalo",
@@ -1638,9 +1638,9 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804#2d67c384f16f0f5d1da8abde4194ae311c5db9c0"
 dependencies = [
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "gadgets",
  "halo2_proofs",
  "itertools",
@@ -3111,7 +3111,7 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "blake2",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "ethers-core",
  "halo2-mpt-circuits",
  "serde",
@@ -3542,7 +3542,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "ethers-core",
  "git-version",
  "glob",
@@ -3573,7 +3573,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805#38c53c08d05ed60f43326f28a9a5cf51087cf7f7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804#2d67c384f16f0f5d1da8abde4194ae311c5db9c0"
 dependencies = [
  "array-init",
  "bigint",
@@ -3582,7 +3582,7 @@ dependencies = [
  "ecc",
  "ecdsa 0.1.0",
  "env_logger",
- "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0805)",
+ "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-0804)",
  "ethers-core",
  "ff 0.11.1",
  "gadgets",
