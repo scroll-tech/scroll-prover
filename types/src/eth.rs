@@ -96,7 +96,8 @@ impl From<BlockTrace> for EthBlock {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct TransactionTrace {
-    #[serde(rename = "txHash")]
+    // FIXME after traces upgraded
+    #[serde(default, rename = "txHash")]
     pub tx_hash: H256,
     #[serde(rename = "type")]
     pub type_: u8,
