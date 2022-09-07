@@ -52,7 +52,7 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
 pub fn block_result_to_witness_block(
     block_result: &BlockResult,
 ) -> Result<Block<Fr>, anyhow::Error> {
-    block_results_to_witness_block(&[block_result.clone()])
+    block_results_to_witness_block(std::slice::from_ref(block_result))
 }
 
 pub fn block_results_to_witness_block(
@@ -114,8 +114,8 @@ pub fn build_statedb_and_codedb(
 
     for block in blocks {
         for execution_result in &block.execution_results {
-            if let Some(bytecode) = execution_result.byte_code.clone() {
-                cdb.insert(decode_bytecode(&bytecode)?);
+            if let Some(bytecode) = &execution_result.byte_code {
+                cdb.insert(decode_bytecode(bytecode)?);
             }
 
             for step in execution_result.exec_steps.iter().rev() {
