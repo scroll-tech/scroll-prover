@@ -241,6 +241,110 @@ fn test_state_evm_connect() {
     log::info!("Same commitment! Test passes!");
 }
 
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_mpt_hash_connect() {
+    // TODO: better code reuse
+    use std::time::Instant;
+
+    use halo2_proofs::{
+        pairing::bn256::Fr as Fp,
+        pairing::bn256::G1Affine,
+        transcript::{Challenge255, PoseidonRead, TranscriptRead},
+    };
+    use zkevm::{
+        circuit::{PoseidonCircuit, ZktrieCircuit, DEGREE},
+        prover::Prover,
+        utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed},
+        verifier::Verifier,
+    };
+
+    init();
+
+    log::info!("loading setup params");
+    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
+    let _ = load_or_create_seed(SEED_PATH).unwrap();
+
+    let trace_path = parse_trace_path_from_mode("greeter");
+    let block_result = get_block_result_from_file(trace_path);
+
+    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
+    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
+
+    log::info!("start generating zktrie_circuit proof");
+    let now = Instant::now();
+    let mpt_proof = prover
+        .create_target_circuit_proof::<ZktrieCircuit>(&block_result)
+        .unwrap();
+    log::info!(
+        "finish generating zktrie_circuit proof, elapsed: {:?}",
+        now.elapsed()
+    );
+
+    log::info!("start verifying zktrie_circuit proof");
+    let now = Instant::now();
+    assert!(verifier
+        .verify_target_circuit_proof::<ZktrieCircuit>(&mpt_proof)
+        .is_ok());
+    log::info!(
+        "finish verifying zktrie_circuit proof, elapsed: {:?}",
+        now.elapsed()
+    );
+
+    log::info!("start generating poseidon_circuit proof");
+    let now = Instant::now();
+    let hash_proof = prover
+        .create_target_circuit_proof::<PoseidonCircuit>(&block_result)
+        .unwrap();
+    log::info!(
+        "finish generating poseidon_circuit proof, cost {:?}",
+        now.elapsed()
+    );
+
+    log::info!("start verifying poseidon_circuit proof");
+    let now = Instant::now();
+    assert!(verifier
+        .verify_target_circuit_proof::<PoseidonCircuit>(&hash_proof)
+        .is_ok());
+    log::info!(
+        "finish verifying poseidon_circuit proof, elapsed: {:?}",
+        now.elapsed()
+    );
+
+    let load_commitments = |proof: &[u8], start, len| {
+        let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
+        let mut points = Vec::new();
+        for _ in 0..start {
+            transcript.read_point().unwrap();
+        }
+        for _ in 0..len {
+            points.push(transcript.read_point().unwrap());
+        }
+        points
+    };
+
+    let hash_table_commitments_len = 3;
+    let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fp>();
+    let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
+
+    let hash_commitment_mpt = load_commitments(
+        &mpt_proof.proof[..],
+        hash_table_start_mpt,
+        hash_table_commitments_len,
+    );
+    log::info!("hash_commitment_mpt {:?}", hash_commitment_mpt);
+
+    let hash_commitment_poseidon = load_commitments(
+        &hash_proof.proof[..],
+        hash_table_start_poseidon,
+        hash_table_commitments_len,
+    );
+    log::info!("hash_commitment_poseidon {:?}", hash_commitment_poseidon);
+
+    assert_eq!(hash_commitment_mpt, hash_commitment_poseidon);
+    log::info!("Same commitment! Test passes!");
+}
+
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
 
