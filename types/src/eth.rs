@@ -246,6 +246,7 @@ pub struct AccountProofWrapper {
     pub balance: Option<U256>,
     #[serde(rename = "codeHash")]
     pub code_hash: Option<H256>,
+    #[deprecated]
     pub proof: Option<Vec<Bytes>>,
     pub storage: Option<StorageProofWrapper>,
 }
@@ -254,6 +255,7 @@ pub struct AccountProofWrapper {
 pub struct StorageProofWrapper {
     pub key: Option<U256>,
     pub value: Option<U256>,
+    #[deprecated]
     pub proof: Option<Vec<Bytes>>,
 }
 
