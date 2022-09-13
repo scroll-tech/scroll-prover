@@ -57,6 +57,7 @@ jobs:
           ~/.cargo/bin/sccache -s
       - name: Run cargo fmt
         run: |
+          cargo clean
           cargo build --release
           cargo fmt --all -- --check
       - name: Show sccache stats

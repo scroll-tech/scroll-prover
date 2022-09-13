@@ -66,6 +66,7 @@ jobs:
           rustup toolchain install ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
           rustup component add rustfmt
+          cargo clean
       - name: Run tests
         run: cargo test
       - name: Show sccache stats
