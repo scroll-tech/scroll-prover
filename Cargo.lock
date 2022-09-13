@@ -2628,20 +2628,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "service"
-version = "0.1.0"
-dependencies = [
- "libc",
- "log",
- "once_cell",
- "serde",
- "serde_derive",
- "serde_json",
- "types",
- "zkevm",
-]
-
-[[package]]
 name = "sha-1"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
