@@ -303,7 +303,8 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
     let output_file = format!(
-        "/tmp/{}_{}.json",
+        "{}/{}_{}.json",
+        read_env_var("PROOF_OUT_DIR", "/tmp".to_string()),
         C::name(),
         Utc::now().format("%Y%m%d_%H%M%S")
     );

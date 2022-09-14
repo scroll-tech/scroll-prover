@@ -19,6 +19,7 @@ bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branc
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220" }
 zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220", features = ["test"] }
 mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "scroll-dev-0902" }
+zktrie = { git = "https://github.com/scroll-tech/zktrie.git" }
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"

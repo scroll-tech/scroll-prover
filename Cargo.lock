@@ -796,7 +796,7 @@ dependencies = [
  "crypto-bigint",
  "der",
  "digest 0.10.3",
- "ff 0.12.0",
+ "ff",
  "generic-array 0.14.5",
  "group",
  "pkcs8",
@@ -1065,17 +1065,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "ff"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "131655483be284720a17d74ff97592b8e76576dc25563148601df2d7c9080924"
-dependencies = [
- "bitvec 0.22.3",
- "rand_core",
- "subtle",
 ]
 
 [[package]]
@@ -1372,7 +1361,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7391856def869c1c81063a03457c676fbcd419709c3dfb33d8d319de484b154d"
 dependencies = [
  "byteorder",
- "ff 0.12.0",
+ "ff",
  "rand_core",
  "subtle",
 ]
@@ -1411,11 +1400,10 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0902#b0ffab97316f9cf4b9e65aba398a047a8d6424a1"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0902#dfaea2c6a55249abf68db60f963e44eb7c1646d6"
 dependencies = [
- "bitvec 0.22.3",
- "ff 0.11.1",
  "halo2_proofs",
+ "hash-circuit",
  "hex",
  "lazy_static",
  "num-bigint",
@@ -1486,7 +1474,7 @@ source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#b4
 dependencies = [
  "blake2b_simd",
  "cfg-if 0.1.10",
- "ff 0.12.0",
+ "ff",
  "group",
  "halo2curves 0.2.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=0.2.1)",
  "log",
@@ -1504,7 +1492,7 @@ name = "halo2curves"
 version = "0.2.0"
 source = "git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.2.0#bbd4cee10dbf9c51e0456ea67ec2b894b49f688c"
 dependencies = [
- "ff 0.12.0",
+ "ff",
  "group",
  "lazy_static",
  "num-bigint",
@@ -1521,7 +1509,7 @@ name = "halo2curves"
 version = "0.2.1"
 source = "git+https://github.com/privacy-scaling-explorations/halo2curves?tag=0.2.1#f75ed26c961179186e9cec02cc3f841ca9e3fec1"
 dependencies = [
- "ff 0.12.0",
+ "ff",
  "group",
  "lazy_static",
  "num-bigint",
@@ -1538,7 +1526,7 @@ name = "halo2curves"
 version = "0.2.1"
 source = "git+https://github.com/privacy-scaling-explorations/halo2curves?tag=0.3.0#83c72d49762343ffc9576ca11a2aa615efe1029b"
 dependencies = [
- "ff 0.12.0",
+ "ff",
  "group",
  "lazy_static",
  "num-bigint",
@@ -1560,6 +1548,17 @@ dependencies = [
  "num-bigint",
  "num-integer",
  "num-traits",
+]
+
+[[package]]
+name = "hash-circuit"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/hash-circuit.git#4d5b291948276bcf0c8636f7722d108a6f3a914f"
+dependencies = [
+ "bitvec 0.22.3",
+ "halo2_proofs",
+ "lazy_static",
+ "thiserror",
 ]
 
 [[package]]
@@ -2271,7 +2270,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "369d7785168ad7ff0cbe467d968ca3e19a927d8536b11ef9c21b4e454b15ba42"
 dependencies = [
  "blake2b_simd",
- "ff 0.12.0",
+ "ff",
  "group",
  "lazy_static",
  "rand",
@@ -3896,6 +3895,7 @@ dependencies = [
  "strum_macros",
  "types",
  "zkevm-circuits",
+ "zktrie",
 ]
 
 [[package]]
@@ -3930,4 +3930,12 @@ dependencies = [
  "strum",
  "strum_macros",
  "subtle",
+]
+
+[[package]]
+name = "zktrie"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/zktrie.git#5eb8ff6aed5c2b3c8a699e6fe0a9fc1afec78b19"
+dependencies = [
+ "gobuild",
 ]

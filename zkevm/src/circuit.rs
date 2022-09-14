@@ -26,6 +26,10 @@ const MAX_RWS: usize = 500_000;
 //pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
+static LEGACY_SMTTRACE: Lazy<bool> = Lazy::new(|| {
+    mpt::witness::WitnessGenerator::init();
+    read_env_var("OLD_SMTTRACE", false)
+});
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -204,14 +208,35 @@ fn mpt_rows() -> usize {
 fn trie_data_from_blocks<'d>(
     block_traces: impl IntoIterator<Item = &'d BlockTrace>,
 ) -> EthTrie<Fr> {
+    use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
-    for block_trace in block_traces.into_iter() {
-        let storage_ops: Vec<AccountOp<_>> = block_trace
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        trie_data.add_ops(storage_ops);
+
+    if *LEGACY_SMTTRACE {
+        for block_trace in block_traces {
+            let storage_ops: Vec<AccountOp<_>> = block_trace
+                .mpt_witness
+                .iter()
+                .map(|tr| tr.try_into().unwrap())
+                .collect();
+            trie_data.add_ops(storage_ops);
+        }    
+    }else if !block_traces.is_empty(){
+        let block_witness = block_results_to_witness_block(block_traces).unwrap();
+        let (sdb, _) = builder::build_statedb_and_codedb(block_traces).unwrap();
+        let entries = mpt::mpt_entries_from_witness_block(sdb, &block_witness);
+
+        let mut w = WitnessGenerator::new(&block_traces[0]);
+
+        for block_more in &block_traces[1..] {
+            w.add_block(block_more);
+        }
+
+        let traces = entries.iter().map(|entry|w.handle_new_state(entry));
+
+        let traces : Vec<_> = traces.collect();
+        println!("smt traces {}", serde_json::to_string(&traces).unwrap());
+
+        trie_data.add_ops(traces.into_iter().map(|tr|TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data

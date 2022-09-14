@@ -19,7 +19,10 @@ use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use anyhow::anyhow;
 
-fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
+pub fn verify_proof_leaf<T: Default>(
+    inp: mpt::TrieProof<T>,
+    key_buf: &[u8; 32],
+) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
     let last_16bytes: [u8; 16] = key_buf[16..].try_into().expect("expect last 16 bytes");
 
@@ -42,7 +45,7 @@ fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> 
     }
 }
 
-fn extend_address_to_h256(src: &Address) -> [u8; 32] {
+pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     let mut bts: Vec<u8> = src.as_bytes().into();
     bts.resize(32, 0);
     bts.as_slice().try_into().expect("32 bytes")
@@ -218,7 +221,7 @@ pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeD
         if let Some(acc_proofs) = &storage_trace.proofs {
             for (addr, acc) in acc_proofs.iter() {
                 let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
-                let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
+                let acc = verify_proof_leaf(acc_proof, &mpt::extend_address_to_h256(addr));
                 if acc.key.is_some() {
                     // a valid leaf
                     let (_, acc_mut) = sdb.get_account_mut(addr);
