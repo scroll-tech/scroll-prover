@@ -4,7 +4,7 @@ use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
 
-use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit, HashCircuit};
+use mpt_circuits::{EthTrie, EthTrieCircuit, hash::Hashable, HashCircuit, operation::AccountOp};
 
 use once_cell::sync::Lazy;
 
@@ -17,6 +17,7 @@ use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 
 mod builder;
 mod mpt;
+mod witness;
 
 use crate::circuit::builder::get_fixed_table_tags_for_block;
 use crate::utils::read_env_var;
