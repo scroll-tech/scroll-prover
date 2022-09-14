@@ -81,6 +81,12 @@ fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Er
 pub type AccountProof = TrieProof<AccountData>;
 pub type StorageProof = TrieProof<StorageData>;
 
+impl<T> TrieProof<T> {
+    const NODE_TYPE_MIDDLE: u8 = 0;
+    const NODE_TYPE_LEAF: u8 = 1;
+    const NODE_TYPE_EMPTY: u8 = 2;
+}
+
 impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
 
@@ -90,15 +96,14 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
             let mut prefix = [0; 1];
             rd.read_exact(&mut prefix)?;
             match prefix[0] {
-                1 => {
+                Self::NODE_TYPE_LEAF => {
                     let (key, data) = deserialize_trie_leaf(rd)?;
                     return Ok(Self {
                         key: Some(key),
                         data,
                     });
                 }
-                2 => {
-                    // empty node
+                Self::NODE_TYPE_EMPTY => {
                     return Ok(Default::default());
                 }
                 _ => (),
