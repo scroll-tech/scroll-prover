@@ -38,9 +38,12 @@ extern crate procfs;
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct TargetCircuitProof {
     pub name: String,
+    #[serde(with = "base64")]
     pub proof: Vec<u8>,
+    #[serde(with = "base64")]
     pub instance: Vec<u8>,
 }
 
@@ -80,6 +83,8 @@ impl AggCircuitProof {
         serde_json::to_writer_pretty(&mut fd, &self).unwrap()
     }
 }
+
+#[derive(Debug)]
 pub struct Prover {
     pub params: Params<G1Affine>,
     pub agg_params: Params<G1Affine>,
@@ -145,6 +150,15 @@ impl Prover {
         rng: XorShiftRng,
     ) -> Self {
         Self::new(params, agg_params, rng)
+    }
+
+    pub fn from_params_and_seed(
+        params: Params<G1Affine>,
+        agg_params: Params<G1Affine>,
+        seed: [u8; 16],
+    ) -> Self {
+        let rng = XorShiftRng::from_seed(seed);
+        Self::from_params_and_rng(params, agg_params, rng)
     }
 
     pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
