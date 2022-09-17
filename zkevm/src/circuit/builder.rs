@@ -3,7 +3,7 @@ use bus_mapping::circuit_input_builder::{Block as cBlock, CircuitInputBuilder};
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::ToAddress;
 use eth_types::{evm_types::OpcodeId, Field};
-use ethers_core::types::{Address, Bytes};
+use ethers_core::types::{Address, Bytes, U256};
 
 use halo2_proofs::pairing::bn256::Fr;
 
@@ -12,12 +12,12 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::{ExecutionResult, ExecStep, BlockResult};
+use types::eth::{BlockResult, ExecStep, ExecutionResult};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
 use mpt_circuits::hash::Hashable;
-use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
+use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use super::DEGREE;
 use anyhow::anyhow;
@@ -77,10 +77,34 @@ pub fn block_result_to_witness_block<F: Field>(
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
 
+    witness_block.bytecodes = builder
+        .block
+        .txs()
+        .iter()
+        .flat_map(|tx| {
+            tx.calls()
+                .iter()
+                .map(|call| call.code_hash)
+                .into_iter()
+                .map(|code_hash| {
+                    let code_hash_u = U256::from_big_endian(code_hash.as_bytes());
+                    let bytecode = Bytecode::new(
+                        builder
+                            .code_db
+                            .0
+                            .get(&code_hash)
+                            .cloned()
+                            .expect("code db should has contain the code"),
+                    );
+                    (code_hash_u, bytecode)
+                })
+        })
+        .collect();
+
     Ok(witness_block)
 }
 
-const EMPTY_ACCOUNT_CODE: &str = "0x0";
+//const EMPTY_ACCOUNT_CODE: &str = "0x0";
 
 pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
@@ -97,33 +121,56 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     hex::decode(stripped).map_err(|e| e.into())
 }
 
-fn get_account_deployed_codehash(execution_result : &ExecutionResult) -> Result<eth_types::H256, anyhow::Error> {
-    let created_acc = execution_result.account_created.as_ref().expect("called when field existed").address.as_ref().unwrap();
+fn get_account_deployed_codehash(
+    execution_result: &ExecutionResult,
+) -> Result<eth_types::H256, anyhow::Error> {
+    let created_acc = execution_result
+        .account_created
+        .as_ref()
+        .expect("called when field existed")
+        .address
+        .as_ref()
+        .unwrap();
     for state in &execution_result.account_after {
         if Some(created_acc) == state.address.as_ref() {
-            return state.code_hash.ok_or_else(||anyhow!("empty code hash"));
+            return state.code_hash.ok_or_else(|| anyhow!("empty code hash"));
         }
     }
 
     Err(anyhow!("can not find created address in account after"))
 }
 
-fn get_account_created_codehash(step : &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
+fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
+    let extra_data = step
+        .extra_data
+        .as_ref()
+        .ok_or_else(|| anyhow!("no extra data in create context"))?;
 
-    let extra_data = step.extra_data.as_ref().ok_or_else(||anyhow!("no extra data in create context"))?;
-
-    let proof_list = extra_data.proof_list.as_ref().expect("should has proof list");
+    let proof_list = extra_data
+        .proof_list
+        .as_ref()
+        .expect("should has proof list");
 
     if proof_list.len() < 2 {
         Err(anyhow!("wrong fields in create context"))
-    }else {
-        proof_list[1].code_hash.ok_or_else(||anyhow!("empty code hash in final state"))
+    } else {
+        proof_list[1]
+            .code_hash
+            .ok_or_else(|| anyhow!("empty code hash in final state"))
     }
 }
 
-fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes) -> Result<(), anyhow::Error>{
-    let stack = step.stack.as_ref().expect("should have stack in call context");
-    let addr = stack[stack.len()-2].to_address(); //stack N-1 
+fn trace_code(
+    cdb: &mut CodeDB,
+    step: &ExecStep,
+    sdb: &StateDB,
+    code: Bytes,
+) -> Result<(), anyhow::Error> {
+    let stack = step
+        .stack
+        .as_ref()
+        .expect("should have stack in call context");
+    let addr = stack[stack.len() - 2].to_address(); //stack N-1
 
     let (existed, data) = sdb.get_account(&addr);
     if !existed {
@@ -134,9 +181,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes) -> 
     Ok(())
 }
 
-pub fn build_statedb_and_codedb(
-    block: &BlockResult,
-) -> Result<(StateDB, CodeDB), anyhow::Error> {
+pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 
@@ -194,15 +239,20 @@ pub fn build_statedb_and_codedb(
 
     // step2: insert code into codedb
     // notice empty codehash always kept as keccak256(nil)
-    cdb.insert(decode_bytecode(EMPTY_ACCOUNT_CODE)?);
+    cdb.insert(Vec::new());
 
     for execution_result in &block.execution_results {
         if let Some(bytecode) = &execution_result.byte_code {
             if execution_result.account_created.is_some() {
                 let code_hash = get_account_deployed_codehash(execution_result)?;
                 cdb.0.insert(code_hash, decode_bytecode(bytecode)?.to_vec());
-            }else {
-                cdb.0.insert(execution_result.code_hash.ok_or_else(||anyhow!("empty code hash in result"))?, decode_bytecode(bytecode)?.to_vec());
+            } else {
+                cdb.0.insert(
+                    execution_result
+                        .code_hash
+                        .ok_or_else(|| anyhow!("empty code hash in result"))?,
+                    decode_bytecode(bytecode)?.to_vec(),
+                );
             }
         }
 
@@ -259,6 +309,10 @@ pub fn build_statedb_and_codedb(
                 code_hash: Default::default(),
             },
         );
+    }
+
+    for k in cdb.0.keys() {
+        log::info!("has key in cdb {:?}", k);
     }
 
     Ok((sdb, cdb))
