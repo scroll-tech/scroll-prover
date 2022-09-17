@@ -87,8 +87,7 @@ pub fn block_result_to_witness_block<F: Field>(
                 .map(|call| call.code_hash)
                 .into_iter()
                 .map(|code_hash| {
-                    let code_hash_u = U256::from_big_endian(code_hash.as_bytes());
-                    let bytecode = Bytecode::new(
+                    let mut bytecode = Bytecode::new(
                         builder
                             .code_db
                             .0
@@ -96,7 +95,8 @@ pub fn block_result_to_witness_block<F: Field>(
                             .cloned()
                             .expect("code db should has contain the code"),
                     );
-                    (code_hash_u, bytecode)
+                    bytecode.hash = U256::from_big_endian(code_hash.as_bytes());
+                    (bytecode.hash, bytecode)
                 })
         })
         .collect();
