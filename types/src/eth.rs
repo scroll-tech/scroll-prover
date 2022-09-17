@@ -154,6 +154,8 @@ pub struct ExecutionResult {
     pub return_value: String,
     pub from: Option<AccountProofWrapper>,
     pub to: Option<AccountProofWrapper>,
+    #[serde(rename = "accountAfter", default)]
+    pub account_after: Vec<AccountProofWrapper>,
     #[serde(rename = "accountCreated")]
     pub account_created: Option<AccountProofWrapper>,
     #[serde(rename = "codeHash")]
