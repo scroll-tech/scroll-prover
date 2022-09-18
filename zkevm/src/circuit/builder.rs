@@ -203,6 +203,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                 acc_mut.code_hash = acc.data.code_hash;
                 acc_mut.balance = acc.data.balance;
             } else {
+                // TODO(@noel2004): please complete the comment below.
                 // only
                 sdb.set_account(
                     addr,
@@ -272,11 +273,8 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         // TODO: need to insert code to codedb with poseidon codehash
                         // if the call is persistent
                     }
-                    //OpcodeId::CODESIZE
-                    //| OpcodeId::CODECOPY
                     OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
                         let code = data.get_code_at(0);
-                        //trace_code(&mut cdb, code)
                         trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err| {
                             log::error!("temporarily skip error in EXTCODE op: {}", err);
                         });
