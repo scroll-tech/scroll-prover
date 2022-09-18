@@ -1,8 +1,9 @@
 use bus_mapping::circuit_input_builder::{Block as cBlock, CircuitInputBuilder};
 
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
+use eth_types::ToAddress;
 use eth_types::{evm_types::OpcodeId, Field};
-use ethers_core::types::{Address, Bytes};
+use ethers_core::types::{Address, Bytes, U256};
 
 use halo2_proofs::pairing::bn256::Fr;
 
@@ -11,14 +12,15 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::BlockResult;
+use types::eth::{BlockResult, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
 use mpt_circuits::hash::Hashable;
-use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
+use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use super::DEGREE;
+use anyhow::anyhow;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
@@ -75,10 +77,33 @@ pub fn block_result_to_witness_block<F: Field>(
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
 
+    // hack bytecodes table in witness
+    witness_block.bytecodes = builder
+        .block
+        .txs()
+        .iter()
+        .flat_map(|tx| {
+            tx.calls()
+                .iter()
+                .map(|call| call.code_hash)
+                .into_iter()
+                .map(|code_hash| {
+                    let mut bytecode = Bytecode::new(
+                        builder
+                            .code_db
+                            .0
+                            .get(&code_hash)
+                            .cloned()
+                            .expect("code db should has contain the code"),
+                    );
+                    bytecode.hash = U256::from_big_endian(code_hash.as_bytes());
+                    (bytecode.hash, bytecode)
+                })
+        })
+        .collect();
+
     Ok(witness_block)
 }
-
-const EMPTY_ACCOUNT_CODE: &str = "0x0";
 
 pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
@@ -94,19 +119,78 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
+/*
+fn get_account_deployed_codehash(
+    execution_result: &ExecutionResult,
+) -> Result<eth_types::H256, anyhow::Error> {
+    let created_acc = execution_result
+        .account_created
+        .as_ref()
+        .expect("called when field existed")
+        .address
+        .as_ref()
+        .unwrap();
+    for state in &execution_result.account_after {
+        if Some(created_acc) == state.address.as_ref() {
+            return state.code_hash.ok_or_else(|| anyhow!("empty code hash"));
+        }
+    }
+
+    Err(anyhow!("can not find created address in account after"))
+}
+
+fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
+    let extra_data = step
+        .extra_data
+        .as_ref()
+        .ok_or_else(|| anyhow!("no extra data in create context"))?;
+
+    let proof_list = extra_data
+        .proof_list
+        .as_ref()
+        .expect("should has proof list");
+
+    if proof_list.len() < 2 {
+        Err(anyhow!("wrong fields in create context"))
+    } else {
+        proof_list[1]
+            .code_hash
+            .ok_or_else(|| anyhow!("empty code hash in final state"))
+    }
+}
+*/
+fn trace_code(
+    cdb: &mut CodeDB,
+    step: &ExecStep,
+    sdb: &StateDB,
+    code: Bytes,
+    stack_pos: usize,
+) -> Result<(), anyhow::Error> {
+    let stack = step
+        .stack
+        .as_ref()
+        .expect("should have stack in call context");
+    let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
+
+    let (existed, data) = sdb.get_account(&addr);
+    if !existed {
+        // we may call non-contract or non-exist address
+        if code.as_ref().is_empty() {
+            Ok(())
+        } else {
+            Err(anyhow!("missed account data for {}", addr))
+        }
+    } else {
+        cdb.0.insert(data.code_hash, code.to_vec());
+        Ok(())
+    }
+}
 
 pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 
-    cdb.insert(decode_bytecode(EMPTY_ACCOUNT_CODE)?);
-
-    for execution_result in &block.execution_results {
-        if let Some(bytecode) = execution_result.byte_code.clone() {
-            cdb.insert(decode_bytecode(&bytecode)?);
-        }
-    }
-
+    // step1: insert proof into statedb
     let storage_trace = &block.storage_trace;
     if let Some(acc_proofs) = &storage_trace.proofs {
         for (addr, acc) in acc_proofs.iter() {
@@ -114,17 +198,12 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
             let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
             if acc.key.is_some() {
                 // a valid leaf
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: acc.data.nonce.into(),
-                        balance: acc.data.balance,
-                        storage: HashMap::new(),
-                        code_hash: acc.data.code_hash,
-                    },
-                );
-            //                log::info!("set account {:?}, {:?}", addr, acc.data);
+                let (_, acc_mut) = sdb.get_account_mut(addr);
+                acc_mut.nonce = acc.data.nonce.into();
+                acc_mut.code_hash = acc.data.code_hash;
+                acc_mut.balance = acc.data.balance;
             } else {
+                // TODO(@noel2004): please complete the comment below.
                 // only
                 sdb.set_account(
                     addr,
@@ -135,7 +214,6 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         code_hash: Default::default(),
                     },
                 );
-                //                log::info!("set empty account {:?}", addr);
             }
         }
     }
@@ -165,52 +243,41 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         }
     }
 
-    for er in block.execution_results.iter().rev() {
-        for step in er.exec_steps.iter().rev() {
+    // step2: insert code into codedb
+    // notice empty codehash always kept as keccak256(nil)
+    cdb.insert(Vec::new());
+
+    for execution_result in &block.execution_results {
+        if let Some(bytecode) = &execution_result.byte_code {
+            if execution_result.account_created.is_none() {
+                cdb.0.insert(
+                    execution_result
+                        .code_hash
+                        .ok_or_else(|| anyhow!("empty code hash in result"))?,
+                    decode_bytecode(bytecode)?.to_vec(),
+                );
+            }
+        }
+
+        for step in execution_result.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
                 match step.op {
-                    OpcodeId::CALL | OpcodeId::CALLCODE => {
-                        let caller_code = data.get_code_at(0);
+                    OpcodeId::CALL
+                    | OpcodeId::CALLCODE
+                    | OpcodeId::DELEGATECALL
+                    | OpcodeId::STATICCALL => {
                         let callee_code = data.get_code_at(1);
-                        trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, callee_code);
+                        trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
-
-                    OpcodeId::DELEGATECALL | OpcodeId::STATICCALL => {
-                        let caller_code = data.get_code_at(0);
-                        let callee_code = data.get_code_at(1);
-                        trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, callee_code);
-                    }
-
                     OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                        let created_code = data.get_code_at(0);
-                        trace_code(&mut cdb, created_code);
+                        // TODO: need to insert code to codedb with poseidon codehash
+                        // if the call is persistent
                     }
-                    /*
-                                        OpcodeId::SLOAD | OpcodeId::SSTORE | OpcodeId::SELFBALANCE => {
-                                            let contract_proof = data.get_proof_at(0);
-                                            trace_proof(&mut sdb, contract_proof)
-                                        }
-
-                                        OpcodeId::SELFDESTRUCT => {
-                                            let caller_proof = data.get_proof_at(0);
-                                            let callee_proof = data.get_proof_at(1);
-                                            trace_proof(&mut sdb, caller_proof);
-                                            trace_proof(&mut sdb, callee_proof);
-                                        }
-
-                                        OpcodeId::EXTCODEHASH | OpcodeId::BALANCE => {
-                                            let proof = data.get_proof_at(0);
-                                            trace_proof(&mut sdb, proof)
-                                        }
-                    */
-                    OpcodeId::CODESIZE
-                    | OpcodeId::CODECOPY
-                    | OpcodeId::EXTCODESIZE
-                    | OpcodeId::EXTCODECOPY => {
+                    OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
                         let code = data.get_code_at(0);
-                        trace_code(&mut cdb, code)
+                        trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err| {
+                            log::error!("temporarily skip error in EXTCODE op: {}", err);
+                        });
                     }
 
                     _ => {}
@@ -241,9 +308,6 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     Ok((sdb, cdb))
 }
 
-pub fn trace_code(cdb: &mut CodeDB, code: Bytes) {
-    cdb.insert(code.to_vec());
-}
 /*
 pub fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
     // `to` may be empty
