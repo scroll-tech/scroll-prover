@@ -268,7 +268,10 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         let callee_code = data.get_code_at(1);
                         trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
-                    OpcodeId::CREATE | OpcodeId::CREATE2 => {}
+                    OpcodeId::CREATE | OpcodeId::CREATE2 => {
+                        // TODO: need to insert code to codedb with poseidon codehash
+                        // if the call is persistent
+                    }
                     //OpcodeId::CODESIZE
                     //| OpcodeId::CODECOPY
                     OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
