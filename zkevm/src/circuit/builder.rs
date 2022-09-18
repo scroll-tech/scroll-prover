@@ -105,8 +105,6 @@ pub fn block_result_to_witness_block<F: Field>(
     Ok(witness_block)
 }
 
-//const EMPTY_ACCOUNT_CODE: &str = "0x0";
-
 pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
         stripped.to_string()
@@ -177,15 +175,15 @@ fn trace_code(
     let (existed, data) = sdb.get_account(&addr);
     if !existed {
         // we may call non-contract or non-exist address
-        return if code.as_ref().is_empty() {
+        if code.as_ref().is_empty() {
             Ok(())
         } else {
             Err(anyhow!("missed account data for {}", addr))
-        };
+        }
+    } else {
+        cdb.0.insert(data.code_hash, code.to_vec());
+        Ok(())
     }
-
-    cdb.0.insert(data.code_hash, code.to_vec());
-    Ok(())
 }
 
 pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
@@ -263,20 +261,13 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
         for step in execution_result.exec_steps.iter().rev() {
             if let Some(data) = &step.extra_data {
                 match step.op {
-                    OpcodeId::CALL | OpcodeId::CALLCODE => {
-                        //let caller_code = data.get_code_at(0);
+                    OpcodeId::CALL
+                    | OpcodeId::CALLCODE
+                    | OpcodeId::DELEGATECALL
+                    | OpcodeId::STATICCALL => {
                         let callee_code = data.get_code_at(1);
-                        //trace_code(&mut cdb, step, &sdb, caller_code);
                         trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
-
-                    OpcodeId::DELEGATECALL | OpcodeId::STATICCALL => {
-                        //let caller_code = data.get_code_at(0);
-                        let callee_code = data.get_code_at(1);
-                        //trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
-                    }
-
                     OpcodeId::CREATE | OpcodeId::CREATE2 => {}
                     //OpcodeId::CODESIZE
                     //| OpcodeId::CODECOPY
