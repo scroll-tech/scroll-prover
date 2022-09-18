@@ -77,6 +77,7 @@ pub fn block_result_to_witness_block<F: Field>(
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
 
+    // hack bytecodes table in witness
     witness_block.bytecodes = builder
         .block
         .txs()
@@ -120,7 +121,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-
+/* 
 fn get_account_deployed_codehash(
     execution_result: &ExecutionResult,
 ) -> Result<eth_types::H256, anyhow::Error> {
@@ -159,22 +160,28 @@ fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyh
             .ok_or_else(|| anyhow!("empty code hash in final state"))
     }
 }
-
+*/
 fn trace_code(
     cdb: &mut CodeDB,
     step: &ExecStep,
     sdb: &StateDB,
     code: Bytes,
+    stack_pos: usize,
 ) -> Result<(), anyhow::Error> {
     let stack = step
         .stack
         .as_ref()
         .expect("should have stack in call context");
-    let addr = stack[stack.len() - 2].to_address(); //stack N-1
+    let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
 
     let (existed, data) = sdb.get_account(&addr);
     if !existed {
-        return Err(anyhow!("missed account data for {}", addr));
+        // we may call non-contract or non-exist address
+        return if code.as_ref().len() == 0 {
+            Ok(())
+        } else {
+            Err(anyhow!("missed account data for {}", addr))
+        };
     }
 
     cdb.0.insert(data.code_hash, code.to_vec());
@@ -243,17 +250,14 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
 
     for execution_result in &block.execution_results {
         if let Some(bytecode) = &execution_result.byte_code {
-            if execution_result.account_created.is_some() {
-                let code_hash = get_account_deployed_codehash(execution_result)?;
-                cdb.0.insert(code_hash, decode_bytecode(bytecode)?.to_vec());
-            } else {
+            if execution_result.account_created.is_none() {
                 cdb.0.insert(
                     execution_result
                         .code_hash
                         .ok_or_else(|| anyhow!("empty code hash in result"))?,
                     decode_bytecode(bytecode)?.to_vec(),
                 );
-            }
+            } 
         }
 
         for step in execution_result.exec_steps.iter().rev() {
@@ -263,27 +267,27 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         //let caller_code = data.get_code_at(0);
                         let callee_code = data.get_code_at(1);
                         //trace_code(&mut cdb, step, &sdb, caller_code);
-                        trace_code(&mut cdb, step, &sdb, callee_code)?;
+                        trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
 
                     OpcodeId::DELEGATECALL | OpcodeId::STATICCALL => {
                         //let caller_code = data.get_code_at(0);
                         let callee_code = data.get_code_at(1);
                         //trace_code(&mut cdb, caller_code);
-                        trace_code(&mut cdb, step, &sdb, callee_code)?;
+                        trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
 
                     OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                        let created_code = data.get_code_at(0);
-                        let code_hash = get_account_created_codehash(step)?;
-                        cdb.0.insert(code_hash, created_code.to_vec());
                     }
-                    OpcodeId::CODESIZE
-                    | OpcodeId::CODECOPY
-                    | OpcodeId::EXTCODESIZE
+                    //OpcodeId::CODESIZE
+                    //| OpcodeId::CODECOPY
+                    OpcodeId::EXTCODESIZE
                     | OpcodeId::EXTCODECOPY => {
-                        //let code = data.get_code_at(0);
+                        let code = data.get_code_at(0);
                         //trace_code(&mut cdb, code)
+                        trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err|{
+                            log::error!("temporarily skip error in EXTCODE op: {}", err);
+                        });
                     }
 
                     _ => {}
@@ -309,10 +313,6 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                 code_hash: Default::default(),
             },
         );
-    }
-
-    for k in cdb.0.keys() {
-        log::info!("has key in cdb {:?}", k);
     }
 
     Ok((sdb, cdb))
