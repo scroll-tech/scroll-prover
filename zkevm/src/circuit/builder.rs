@@ -12,7 +12,7 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::{BlockResult, ExecStep, ExecutionResult};
+use types::eth::{BlockResult, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
@@ -121,7 +121,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-/* 
+/*
 fn get_account_deployed_codehash(
     execution_result: &ExecutionResult,
 ) -> Result<eth_types::H256, anyhow::Error> {
@@ -177,7 +177,7 @@ fn trace_code(
     let (existed, data) = sdb.get_account(&addr);
     if !existed {
         // we may call non-contract or non-exist address
-        return if code.as_ref().len() == 0 {
+        return if code.as_ref().is_empty() {
             Ok(())
         } else {
             Err(anyhow!("missed account data for {}", addr))
@@ -257,7 +257,7 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         .ok_or_else(|| anyhow!("empty code hash in result"))?,
                     decode_bytecode(bytecode)?.to_vec(),
                 );
-            } 
+            }
         }
 
         for step in execution_result.exec_steps.iter().rev() {
@@ -277,15 +277,13 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
                         trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
                     }
 
-                    OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                    }
+                    OpcodeId::CREATE | OpcodeId::CREATE2 => {}
                     //OpcodeId::CODESIZE
                     //| OpcodeId::CODECOPY
-                    OpcodeId::EXTCODESIZE
-                    | OpcodeId::EXTCODECOPY => {
+                    OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
                         let code = data.get_code_at(0);
                         //trace_code(&mut cdb, code)
-                        trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err|{
+                        trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err| {
                             log::error!("temporarily skip error in EXTCODE op: {}", err);
                         });
                     }
