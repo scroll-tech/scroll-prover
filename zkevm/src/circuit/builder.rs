@@ -119,72 +119,6 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-/*
-fn get_account_deployed_codehash(
-    execution_result: &ExecutionResult,
-) -> Result<eth_types::H256, anyhow::Error> {
-    let created_acc = execution_result
-        .account_created
-        .as_ref()
-        .expect("called when field existed")
-        .address
-        .as_ref()
-        .unwrap();
-    for state in &execution_result.account_after {
-        if Some(created_acc) == state.address.as_ref() {
-            return state.code_hash.ok_or_else(|| anyhow!("empty code hash"));
-        }
-    }
-
-    Err(anyhow!("can not find created address in account after"))
-}
-
-fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
-    let extra_data = step
-        .extra_data
-        .as_ref()
-        .ok_or_else(|| anyhow!("no extra data in create context"))?;
-
-    let proof_list = extra_data
-        .proof_list
-        .as_ref()
-        .expect("should has proof list");
-
-    if proof_list.len() < 2 {
-        Err(anyhow!("wrong fields in create context"))
-    } else {
-        proof_list[1]
-            .code_hash
-            .ok_or_else(|| anyhow!("empty code hash in final state"))
-    }
-}
-*/
-fn trace_code(
-    cdb: &mut CodeDB,
-    step: &ExecStep,
-    sdb: &StateDB,
-    code: Bytes,
-    stack_pos: usize,
-) -> Result<(), anyhow::Error> {
-    let stack = step
-        .stack
-        .as_ref()
-        .expect("should have stack in call context");
-    let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
-
-    let (existed, data) = sdb.get_account(&addr);
-    if !existed {
-        // we may call non-contract or non-exist address
-        if code.as_ref().is_empty() {
-            Ok(())
-        } else {
-            Err(anyhow!("missed account data for {}", addr))
-        }
-    } else {
-        cdb.0.insert(data.code_hash, code.to_vec());
-        Ok(())
-    }
-}
 
 pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
@@ -306,6 +240,33 @@ pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB)
     }
 
     Ok((sdb, cdb))
+}
+
+fn trace_code(
+    cdb: &mut CodeDB,
+    step: &ExecStep,
+    sdb: &StateDB,
+    code: Bytes,
+    stack_pos: usize,
+) -> Result<(), anyhow::Error> {
+    let stack = step
+        .stack
+        .as_ref()
+        .expect("should have stack in call context");
+    let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
+
+    let (existed, data) = sdb.get_account(&addr);
+    if !existed {
+        // we may call non-contract or non-exist address
+        if code.as_ref().is_empty() {
+            Ok(())
+        } else {
+            Err(anyhow!("missed account data for {}", addr))
+        }
+    } else {
+        cdb.0.insert(data.code_hash, code.to_vec());
+        Ok(())
+    }
 }
 
 /*
