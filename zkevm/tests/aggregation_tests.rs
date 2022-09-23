@@ -1,4 +1,4 @@
-use halo2_proofs::pairing::bn256::{Bn256, G1Affine};
+use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
@@ -24,7 +24,7 @@ fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
 }
 
 fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
-    log::info!("output files to {}", output_dir);
+    log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
     fs::create_dir_all(output_dir).unwrap();
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
@@ -34,6 +34,7 @@ fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
         .create_agg_circuit_proof_multi(&block_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
+    log::info!("output files to {}", output_dir);
 }
 
 fn verifier_circuit_generate_solidity(dir: &str) {
@@ -54,7 +55,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
             load_verify_circuit_instance(&mut folder),
         )
     };
-    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
         &mut Cursor::new(&vk),
         &params,
     )
@@ -66,7 +67,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         proof,
         verify_public_inputs_size: 4,
     };
-    let sol = request.call::<Bn256>(template_folder);
+    let sol = request.call(template_folder);
     write_verify_circuit_solidity(&mut folder, &Vec::<u8>::from(sol.as_bytes()));
     log::info!("write to {}/verifier.sol", dir);
 }
@@ -85,6 +86,7 @@ fn verifier_circuit_verify_proof() {
 }
 
 fn verifier_circuit_verify(d: &str) {
+    log::info!("start verifier_circuit_verify");
     let mut folder = PathBuf::from_str(d).unwrap();
 
     let vk = load_verify_circuit_vk(&mut folder);
@@ -99,7 +101,7 @@ fn verifier_circuit_verify(d: &str) {
         final_pair: vec![], // not used
         vk,
     };
-    assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
+    verifier.verify_agg_circuit_proof(agg_proof).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]

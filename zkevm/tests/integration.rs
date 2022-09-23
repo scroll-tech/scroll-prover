@@ -146,7 +146,7 @@ fn test_state_evm_connect() {
     use std::time::Instant;
 
     use halo2_proofs::{
-        pairing::bn256::G1Affine,
+        halo2curves::bn256::G1Affine,
         transcript::{Challenge255, PoseidonRead, TranscriptRead},
     };
     use zkevm::{
@@ -166,7 +166,7 @@ fn test_state_evm_connect() {
     let block_result = get_block_result_from_file(trace_path);
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
+    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
 
     log::info!("start generating state_circuit proof");
     let now = Instant::now();
@@ -267,7 +267,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     log::info!("start verifying proof");
     let now = Instant::now();
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
+    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }

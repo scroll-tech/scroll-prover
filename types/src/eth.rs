@@ -1,10 +1,8 @@
-use eth_types::evm_types::{Gas, GasCost, Memory, OpcodeId, ProgramCounter, Stack, Storage};
-use eth_types::{
-    fix_geth_trace_memory_size, Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
-};
+use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
+use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
 use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// BlockResultWrapper is the payload from Scroll.
@@ -71,7 +69,7 @@ impl From<BlockTrace> for EthBlock {
             hash: Some(b.hash),
             parent_hash: Default::default(),
             uncles_hash: Default::default(),
-            author: b.coinbase.address.unwrap(),
+            author: b.coinbase.address,
             state_root: Default::default(),
             transactions_root: Default::default(),
             receipts_root: Default::default(),
@@ -90,6 +88,7 @@ impl From<BlockTrace> for EthBlock {
             mix_hash: None,
             nonce: None,
             base_fee_per_gas: b.base_fee,
+            other: Default::default(),
         }
     }
 }
@@ -145,6 +144,7 @@ impl TransactionTrace {
             max_priority_fee_per_gas: None,
             max_fee_per_gas: None,
             chain_id: Some(self.chain_id),
+            other: Default::default(),
         }
     }
 }
@@ -176,7 +176,6 @@ impl From<&ExecutionResult> for GethExecTrace {
             let step = exec_step.into();
             struct_logs.push(step)
         }
-        fix_geth_trace_memory_size(&mut struct_logs);
         GethExecTrace {
             gas: Gas(e.gas),
             failed: e.failed,
@@ -207,7 +206,6 @@ pub struct ExecStep {
 impl From<&ExecStep> for GethExecStep {
     fn from(e: &ExecStep) -> Self {
         let stack = e.stack.clone().map_or_else(Stack::new, Stack::from);
-        let memory = e.memory.clone().map_or_else(Memory::new, Memory::from);
         let storage = e.storage.clone().map_or_else(Storage::empty, Storage::from);
 
         GethExecStep {
@@ -220,7 +218,7 @@ impl From<&ExecStep> for GethExecStep {
             depth: e.depth as u16,
             error: e.error.clone(),
             stack,
-            memory,
+            memory: Default::default(),
             storage,
         }
     }

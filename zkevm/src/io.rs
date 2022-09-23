@@ -4,22 +4,19 @@ use std::{
 };
 
 use halo2_proofs::{
-    arithmetic::BaseExt,
-    pairing::bn256::{Fr, G1Affine},
+    halo2curves::bn256::{Bn256, Fq, Fr, G1Affine},
     plonk::VerifyingKey,
-    poly::commitment::Params,
+    poly::{commitment::Params, kzg::commitment::ParamsKZG},
 };
 use num_bigint::BigUint;
-use pairing::bn256::Fq;
+use zkevm_circuits::tx_circuit::PrimeField;
 
 pub fn serialize_fr(f: &Fr) -> Vec<u8> {
-    let mut buf = vec![];
-    f.write(&mut buf).unwrap();
-    buf
+    f.to_bytes().to_vec()
 }
 
 pub fn deserialize_fr(buf: Vec<u8>) -> Fr {
-    Fr::read(&mut std::io::Cursor::new(buf)).unwrap()
+    Fr::from_repr(buf.try_into().unwrap()).unwrap()
 }
 pub fn serialize_fr_vec(v: &[Fr]) -> Vec<Vec<u8>> {
     v.iter().map(serialize_fr).collect()
@@ -115,7 +112,7 @@ pub fn load_verify_circuit_proof(folder: &mut PathBuf) -> Vec<u8> {
     read_file(folder, "verify_circuit_proof.data")
 }
 
-pub fn write_verify_circuit_params(folder: &mut PathBuf, verify_circuit_params: &Params<G1Affine>) {
+pub fn write_verify_circuit_params(folder: &mut PathBuf, verify_circuit_params: &ParamsKZG<Bn256>) {
     folder.push("verify_circuit.params");
     let mut fd = std::fs::File::create(folder.as_path()).unwrap();
     folder.pop();
@@ -137,9 +134,7 @@ pub fn write_verify_circuit_vk(folder: &mut PathBuf, verify_circuit_vk: &[u8]) {
 }
 
 pub fn field_to_bn(f: &Fq) -> BigUint {
-    let mut bytes: Vec<u8> = Vec::new();
-    f.write(&mut bytes).unwrap();
-    BigUint::from_bytes_le(&bytes[..])
+    BigUint::from_bytes_le(&f.to_bytes())
 }
 
 pub fn serialize_commitments(buf: &[Vec<G1Affine>]) -> Vec<u8> {
@@ -168,12 +163,12 @@ pub fn serialize_commitments(buf: &[Vec<G1Affine>]) -> Vec<u8> {
 pub fn serialize_verify_circuit_final_pair(pair: &(G1Affine, G1Affine, Vec<Fr>)) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
     let mut fd = Cursor::new(&mut result);
-    pair.0.x.write(&mut fd).unwrap();
-    pair.0.y.write(&mut fd).unwrap();
-    pair.1.x.write(&mut fd).unwrap();
-    pair.1.y.write(&mut fd).unwrap();
+    fd.write_all(&pair.0.x.to_bytes()).unwrap();
+    fd.write_all(&pair.0.y.to_bytes()).unwrap();
+    fd.write_all(&pair.1.x.to_bytes()).unwrap();
+    fd.write_all(&pair.1.y.to_bytes()).unwrap();
     pair.2.iter().for_each(|scalar| {
-        scalar.write(&mut fd).unwrap();
+        fd.write_all(&scalar.to_bytes()).unwrap();
     });
     result
 }
@@ -209,7 +204,7 @@ pub fn load_instances(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
             l1.into_iter()
                 .map(|l2| {
                     l2.into_iter()
-                        .map(|buf| Fr::read(&mut std::io::Cursor::new(buf)).unwrap())
+                        .map(|buf| Fr::from_bytes(&buf.try_into().unwrap()).unwrap())
                         .collect()
                 })
                 .collect()
@@ -220,9 +215,10 @@ pub fn load_instances(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
 pub fn load_instances_flat(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
     let mut ret = vec![];
     let cursor = &mut std::io::Cursor::new(buf);
+    let mut scalar_bytes = <Fr as PrimeField>::Repr::default();
 
-    while let Ok(a) = Fr::read(cursor) {
-        ret.push(a);
+    while cursor.read_exact(scalar_bytes.as_mut()).is_ok() {
+        ret.push(Fr::from_bytes(&scalar_bytes).unwrap());
     }
 
     vec![vec![ret]]
