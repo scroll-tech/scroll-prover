@@ -253,6 +253,7 @@ impl Prover {
             circuits: [0, 1, 2, 3].map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
+                    name: c.name.clone(),
                     nproofs: 1,
                     proofs: vec![SingleProofWitness::<'_, Bn256> {
                         instances: &c.instance,
@@ -269,6 +270,7 @@ impl Prover {
         let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
         let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
             [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
+                name: circuit_results[i].name.clone(),
                 params: &circuit_results[i].params,
                 vk: &circuit_results[i].vk,
                 n_instances: &n_instances[i],
