@@ -21,7 +21,7 @@ mod mpt;
 use crate::circuit::builder::get_fixed_table_tags_for_block;
 use crate::utils::read_env_var;
 
-use self::builder::block_result_to_witness_block;
+use self::builder::{block_result_to_witness_block, block_results_to_witness_block};
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
@@ -35,6 +35,18 @@ pub trait TargetCircuit {
     fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        log::error!(
+            "from_block_results for circuit {} unimplemented, use first block result",
+            Self::name()
+        );
+        Self::from_block_result(&block_results[0])
+    }
 
     fn estimate_rows(_block_result: &BlockResult) -> usize {
         0
@@ -80,14 +92,26 @@ impl TargetCircuit for EvmCircuit {
     where
         Self: Sized,
     {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
+        let witness_block = block_result_to_witness_block(block_result)?;
+        let inner = EvmTestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
+        let instance = vec![];
+        Ok((inner, instance))
+    }
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_results_to_witness_block(block_results)?;
         let inner = EvmTestCircuit::<Fr>::new(witness_block, FixedTableTag::iter().collect());
         let instance = vec![];
         Ok((inner, instance))
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        match block_result_to_witness_block::<Fr>(block_result) {
+        match block_result_to_witness_block(block_result) {
             Ok(witness_block) => EvmTestCircuit::<Fr>::get_num_rows_required(&witness_block),
             Err(e) => {
                 log::error!("convert block result to witness block failed: {:?}", e);
@@ -123,7 +147,23 @@ impl TargetCircuit for StateCircuit {
     where
         Self: Sized,
     {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result)?;
+        let witness_block = block_result_to_witness_block(block_result)?;
+        let inner = StateCircuitImpl::<Fr>::new(
+            witness_block.randomness,
+            witness_block.rws,
+            witness_block.state_circuit_pad_to,
+        );
+        let instance = vec![];
+        Ok((inner, instance))
+    }
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_results_to_witness_block(block_results)?;
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
@@ -134,7 +174,7 @@ impl TargetCircuit for StateCircuit {
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        if let Ok(witness_block) = block_result_to_witness_block::<Fr>(block_result) {
+        if let Ok(witness_block) = block_result_to_witness_block(block_result) {
             witness_block
                 .rws
                 .0
@@ -145,7 +185,7 @@ impl TargetCircuit for StateCircuit {
         }
     }
     fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
-        let witness_block = block_result_to_witness_block::<Fr>(block_result).unwrap();
+        let witness_block = block_result_to_witness_block(block_result).unwrap();
         let rows = witness_block
             .rws
             .0
@@ -166,6 +206,22 @@ fn mpt_rows() -> usize {
     ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
 }
 
+fn trie_data_from_blocks<'d>(
+    block_results: impl IntoIterator<Item = &'d BlockResult>,
+) -> EthTrie<Fr> {
+    let mut trie_data: EthTrie<Fr> = Default::default();
+    for block_result in block_results.into_iter() {
+        let storage_ops: Vec<AccountOp<_>> = block_result
+            .mpt_witness
+            .iter()
+            .map(|tr| tr.try_into().unwrap())
+            .collect();
+        trie_data.add_ops(storage_ops);
+    }
+
+    trie_data
+}
+
 pub struct ZktrieCircuit {}
 
 impl TargetCircuit for ZktrieCircuit {
@@ -179,32 +235,40 @@ impl TargetCircuit for ZktrieCircuit {
         let (circuit, _) = dummy_trie.circuits(mpt_rows());
         circuit
     }
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
+        let trie_data = trie_data_from_blocks(block_results);
+        //        let (rows, _) = trie_data.use_rows();
+        //        log::info!("zktrie use rows {}", rows);
         let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
         let instance = vec![];
         Ok((mpt_circuit, instance))
     }
 
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let (mpt_circuit, _) = trie_data_from_blocks(Some(block_result)).circuits(mpt_rows());
+        let instance = vec![];
+        Ok((mpt_circuit, instance))
+    }
+
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
-        let (mpt_rows, _) = trie_data.use_rows();
+        let (mpt_rows, _) = trie_data_from_blocks(Some(block_result)).use_rows();
         mpt_rows
+    }
+
+    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+        // we have compare and pick the maxium for lookup and gate rows, here we
+        // just make sure it not less than 64 (so it has contained all constant rows)
+        let ret = Self::estimate_rows(block_result);
+        ((0..ret.max(64)).collect(), (0..ret.max(64)).collect())
     }
 }
 
@@ -221,31 +285,32 @@ impl TargetCircuit for PoseidonCircuit {
         let (_, circuit) = dummy_trie.circuits(mpt_rows());
         circuit
     }
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+
+    fn from_block_results(
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
+        let trie_data = trie_data_from_blocks(block_results);
+        //        let (_, rows) = trie_data.use_rows();
+        //        log::info!("poseidon use rows {}", rows);
         let (_, circuit) = trie_data.circuits(mpt_rows());
         let instance = vec![];
         Ok((circuit, instance))
     }
 
+    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let (_, circuit) = trie_data_from_blocks(Some(block_result)).circuits(mpt_rows());
+        let instance = vec![];
+        Ok((circuit, instance))
+    }
+
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        let mut trie_data: EthTrie<Fr> = Default::default();
-        trie_data.add_ops(storage_ops);
-        let (_, hash_rows) = trie_data.use_rows();
-        hash_rows
+        let (_, rows) = trie_data_from_blocks(Some(block_result)).use_rows();
+        rows
     }
 }

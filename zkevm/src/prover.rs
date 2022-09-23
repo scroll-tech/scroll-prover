@@ -181,9 +181,9 @@ impl Prover {
 
     fn prove_circuit<C: TargetCircuit>(
         &mut self,
-        block_result: &BlockResult,
+        block_results: &[BlockResult],
     ) -> anyhow::Result<ProvedCircuit> {
-        let proof = self.create_target_circuit_proof::<C>(block_result)?;
+        let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
 
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);
@@ -213,13 +213,27 @@ impl Prover {
         &mut self,
         block_result: &BlockResult,
     ) -> anyhow::Result<AggCircuitProof> {
-        ///////////////////////////// build verifier circuit from block result ///////////////////
+        self.create_agg_circuit_proof_multi(&[block_result.clone()])
+    }
+
+    pub fn create_agg_circuit_proof_multi(
+        &mut self,
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<AggCircuitProof> {
         let circuit_results: Vec<ProvedCircuit> = vec![
-            self.prove_circuit::<EvmCircuit>(block_result)?,
-            self.prove_circuit::<StateCircuit>(block_result)?,
-            self.prove_circuit::<PoseidonCircuit>(block_result)?,
-            self.prove_circuit::<ZktrieCircuit>(block_result)?,
+            self.prove_circuit::<EvmCircuit>(block_results)?,
+            self.prove_circuit::<StateCircuit>(block_results)?,
+            self.prove_circuit::<PoseidonCircuit>(block_results)?,
+            self.prove_circuit::<ZktrieCircuit>(block_results)?,
         ];
+        self.create_agg_circuit_proof_impl(circuit_results)
+    }
+
+    fn create_agg_circuit_proof_impl(
+        &mut self,
+        circuit_results: Vec<ProvedCircuit>,
+    ) -> anyhow::Result<AggCircuitProof> {
+        ///////////////////////////// build verifier circuit from block result ///////////////////
         // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
         let evm_circuit_idx = 0;
         let state_circuit_idx = 1;
@@ -304,11 +318,19 @@ impl Prover {
         block_result: &BlockResult,
         full: bool,
     ) -> anyhow::Result<()> {
+        Self::mock_prove_target_circuit_multi::<C>(&[block_result.clone()], full)
+    }
+
+    pub fn mock_prove_target_circuit_multi<C: TargetCircuit>(
+        block_results: &[BlockResult],
+        full: bool,
+    ) -> anyhow::Result<()> {
         log::info!("start mock prove {}", C::name());
-        let (circuit, instance) = C::from_block_result(block_result)?;
+        let (circuit, instance) = C::from_block_results(block_results)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
-            let (gate_rows, lookup_rows) = C::get_active_rows(block_result);
+            // FIXME for packing
+            let (gate_rows, lookup_rows) = C::get_active_rows(&block_results[0]);
             log::info!("checking {} active rows", gate_rows.len());
             if !gate_rows.is_empty() || !lookup_rows.is_empty() {
                 if let Err(e) =
@@ -328,7 +350,14 @@ impl Prover {
         &mut self,
         block_result: &BlockResult,
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        let (circuit, instance) = C::from_block_result(block_result)?;
+        self.create_target_circuit_proof_multi::<C>(&[block_result.clone()])
+    }
+
+    pub fn create_target_circuit_proof_multi<C: TargetCircuit>(
+        &mut self,
+        block_results: &[BlockResult],
+    ) -> anyhow::Result<TargetCircuitProof, Error> {
+        let (circuit, instance) = C::from_block_results(block_results)?;
         let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
 
         let instance_slice = instance.iter().map(|x| &x[..]).collect::<Vec<_>>();
@@ -336,9 +365,11 @@ impl Prover {
         let public_inputs: &[&[&[Fr]]] = &[&instance_slice[..]];
 
         info!(
-            "Create {} proof of block {}",
+            "Create {} proof of block {} ... block {}, batch len {}",
             C::name(),
-            block_result.block_trace.hash
+            block_results[0].block_trace.hash,
+            block_results[block_results.len() - 1].block_trace.hash,
+            block_results.len()
         );
         if *MOCK_PROVE {
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
@@ -361,9 +392,10 @@ impl Prover {
             &mut transcript,
         )?;
         info!(
-            "Create {} proof of block {} Successfully!",
+            "Create {} proof of block {} ... block {} Successfully!",
             C::name(),
-            block_result.block_trace.hash
+            block_results[0].block_trace.hash,
+            block_results[block_results.len() - 1].block_trace.hash,
         );
         let instance_bytes = serialize_instance(&instance);
         Ok(TargetCircuitProof {

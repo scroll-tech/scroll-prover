@@ -1,8 +1,8 @@
-use bus_mapping::circuit_input_builder::{Block as cBlock, CircuitInputBuilder};
+use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder};
 
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
+use eth_types::evm_types::OpcodeId;
 use eth_types::ToAddress;
-use eth_types::{evm_types::OpcodeId, Field};
 use ethers_core::types::{Address, Bytes, U256};
 
 use halo2_proofs::pairing::bn256::Fr;
@@ -51,28 +51,36 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     bts.as_slice().try_into().expect("32 bytes")
 }
 
-pub fn block_result_to_witness_block<F: Field>(
+pub fn block_result_to_witness_block(
     block_result: &BlockResult,
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_result.block_trace.transactions.get(0) {
+    block_results_to_witness_block(std::slice::from_ref(block_result))
+}
+
+pub fn block_results_to_witness_block(
+    block_results: &[BlockResult],
+) -> Result<Block<Fr>, anyhow::Error> {
+    let chain_id = if let Some(tx_trace) = block_results[0].block_trace.transactions.get(0) {
         tx_trace.chain_id
     } else {
         0i16.into()
     };
 
-    let eth_block = block_result.block_trace.clone().into();
+    let (state_db, code_db) = build_statedb_and_codedb(block_results)?;
 
-    let mut geth_trace = Vec::new();
-    for result in &block_result.execution_results {
-        geth_trace.push(result.into());
+    let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
+    for (idx, block_result) in block_results.iter().enumerate() {
+        let is_last = idx == block_results.len() - 1;
+        let eth_block = block_result.block_trace.clone().into();
+        let mut geth_trace = Vec::new();
+        for result in &block_result.execution_results {
+            geth_trace.push(result.into());
+        }
+        // TODO: Get the history_hashes.
+        let header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        builder.block.headers.insert(header.number.as_u64(), header);
+        builder.handle_block_inner(&eth_block, geth_trace.as_slice(), is_last, is_last)?;
     }
-
-    // TODO: Get the history_hashes.
-    let circuit_block = cBlock::new(chain_id, Vec::new(), &eth_block)?;
-    let (state_db, code_db) = build_statedb_and_codedb(block_result)?;
-
-    let mut builder = CircuitInputBuilder::new(state_db, code_db, circuit_block);
-    builder.handle_block(&eth_block, geth_trace.as_slice())?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db);
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
@@ -120,128 +128,42 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
     hex::decode(stripped).map_err(|e| e.into())
 }
 
-pub fn build_statedb_and_codedb(block: &BlockResult) -> Result<(StateDB, CodeDB), anyhow::Error> {
-    let mut sdb = StateDB::new();
-    let mut cdb = CodeDB::new();
-
-    // step1: insert proof into statedb
-    let storage_trace = &block.storage_trace;
-    if let Some(acc_proofs) = &storage_trace.proofs {
-        for (addr, acc) in acc_proofs.iter() {
-            let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
-            let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
-            if acc.key.is_some() {
-                // a valid leaf
-                let (_, acc_mut) = sdb.get_account_mut(addr);
-                acc_mut.nonce = acc.data.nonce.into();
-                acc_mut.code_hash = acc.data.code_hash;
-                acc_mut.balance = acc.data.balance;
-            } else {
-                // TODO(@noel2004): please complete the comment below.
-                // only
-                sdb.set_account(
-                    addr,
-                    Account {
-                        nonce: Default::default(),
-                        balance: Default::default(),
-                        storage: HashMap::new(),
-                        code_hash: Default::default(),
-                    },
-                );
-            }
+/*
+fn get_account_deployed_codehash(
+    execution_result: &ExecutionResult,
+) -> Result<eth_types::H256, anyhow::Error> {
+    let created_acc = execution_result
+        .account_created
+        .as_ref()
+        .expect("called when field existed")
+        .address
+        .as_ref()
+        .unwrap();
+    for state in &execution_result.account_after {
+        if Some(created_acc) == state.address.as_ref() {
+            return state.code_hash.ok_or_else(|| anyhow!("empty code hash"));
         }
     }
-
-    for (addr, s_map) in storage_trace.storage_proofs.iter() {
-        let (found, acc) = sdb.get_account_mut(addr);
-        if !found {
-            log::error!("missed address in proof field show in storage: {:?}", addr);
-            continue;
-        }
-
-        for (k, val) in s_map {
-            let mut k_buf: [u8; 32] = [0; 32];
-            k.to_big_endian(&mut k_buf[..]);
-            let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
-            let val = verify_proof_leaf(val_proof, &k_buf);
-
-            if val.key.is_some() {
-                // a valid leaf
-                acc.storage.insert(*k, *val.data.as_ref());
-            //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
-            } else {
-                // add 0
-                acc.storage.insert(*k, Default::default());
-                //                log::info!("set empty storage {:?} {:?}", addr, k);
-            }
-        }
-    }
-
-    // step2: insert code into codedb
-    // notice empty codehash always kept as keccak256(nil)
-    cdb.insert(Vec::new());
-
-    for execution_result in &block.execution_results {
-        if let Some(bytecode) = &execution_result.byte_code {
-            if execution_result.account_created.is_none() {
-                cdb.0.insert(
-                    execution_result
-                        .code_hash
-                        .ok_or_else(|| anyhow!("empty code hash in result"))?,
-                    decode_bytecode(bytecode)?.to_vec(),
-                );
-            }
-        }
-
-        for step in execution_result.exec_steps.iter().rev() {
-            if let Some(data) = &step.extra_data {
-                match step.op {
-                    OpcodeId::CALL
-                    | OpcodeId::CALLCODE
-                    | OpcodeId::DELEGATECALL
-                    | OpcodeId::STATICCALL => {
-                        let callee_code = data.get_code_at(1);
-                        trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
-                    }
-                    OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                        // TODO: need to insert code to codedb with poseidon codehash
-                        // if the call is persistent
-                    }
-                    OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
-                        let code = data.get_code_at(0);
-                        trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err| {
-                            log::error!("temporarily skip error in EXTCODE op: {}", err);
-                        });
-                    }
-
-                    _ => {}
-                }
-            }
-        }
-    }
-
-    // A temporary fix: zkgeth do not trace 0 address if it is only refered as coinbase
-    // (For it is not the "real" coinbase address in PoA) but would still refer it for
-    // other reasons (like being transferred or called), in the other way, busmapping
-    // seems always refer it as coinbase (?)
-    // here we just add it as unexisted account and consider fix it in zkgeth later (always
-    // record 0 addr inside storageTrace field)
-    let (zero_coinbase_exist, _) = sdb.get_account(&Default::default());
-    if !zero_coinbase_exist {
-        sdb.set_account(
-            &Default::default(),
-            Account {
-                nonce: Default::default(),
-                balance: Default::default(),
-                storage: HashMap::new(),
-                code_hash: Default::default(),
-            },
-        );
-    }
-
-    Ok((sdb, cdb))
+    Err(anyhow!("can not find created address in account after"))
 }
-
+fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
+    let extra_data = step
+        .extra_data
+        .as_ref()
+        .ok_or_else(|| anyhow!("no extra data in create context"))?;
+    let proof_list = extra_data
+        .proof_list
+        .as_ref()
+        .expect("should has proof list");
+    if proof_list.len() < 2 {
+        Err(anyhow!("wrong fields in create context"))
+    } else {
+        proof_list[1]
+            .code_hash
+            .ok_or_else(|| anyhow!("empty code hash in final state"))
+    }
+}
+*/
 fn trace_code(
     cdb: &mut CodeDB,
     step: &ExecStep,
@@ -267,6 +189,131 @@ fn trace_code(
         cdb.0.insert(data.code_hash, code.to_vec());
         Ok(())
     }
+}
+pub fn build_statedb_and_codedb(
+    blocks: &[BlockResult],
+) -> Result<(StateDB, CodeDB), anyhow::Error> {
+    let mut sdb = StateDB::new();
+    let mut cdb = CodeDB::new();
+
+    // step1: insert proof into statedb
+    for block in blocks.iter().rev() {
+        let storage_trace = &block.storage_trace;
+        if let Some(acc_proofs) = &storage_trace.proofs {
+            for (addr, acc) in acc_proofs.iter() {
+                let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
+                let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
+                if acc.key.is_some() {
+                    // a valid leaf
+                    let (_, acc_mut) = sdb.get_account_mut(addr);
+                    acc_mut.nonce = acc.data.nonce.into();
+                    acc_mut.code_hash = acc.data.code_hash;
+                    acc_mut.balance = acc.data.balance;
+                } else {
+                    // TODO(@noel2004): please complete the comment below.
+                    // only
+                    sdb.set_account(
+                        addr,
+                        Account {
+                            nonce: Default::default(),
+                            balance: Default::default(),
+                            storage: HashMap::new(),
+                            code_hash: Default::default(),
+                        },
+                    );
+                }
+            }
+        }
+
+        for (addr, s_map) in storage_trace.storage_proofs.iter() {
+            let (found, acc) = sdb.get_account_mut(addr);
+            if !found {
+                log::error!("missed address in proof field show in storage: {:?}", addr);
+                continue;
+            }
+
+            for (k, val) in s_map {
+                let mut k_buf: [u8; 32] = [0; 32];
+                k.to_big_endian(&mut k_buf[..]);
+                let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
+                let val = verify_proof_leaf(val_proof, &k_buf);
+
+                if val.key.is_some() {
+                    // a valid leaf
+                    acc.storage.insert(*k, *val.data.as_ref());
+                //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
+                } else {
+                    // add 0
+                    acc.storage.insert(*k, Default::default());
+                    //                log::info!("set empty storage {:?} {:?}", addr, k);
+                }
+            }
+        }
+
+        // step2: insert code into codedb
+        // notice empty codehash always kept as keccak256(nil)
+        cdb.insert(Vec::new());
+
+        for execution_result in &block.execution_results {
+            if let Some(bytecode) = &execution_result.byte_code {
+                if execution_result.account_created.is_none() {
+                    cdb.0.insert(
+                        execution_result
+                            .code_hash
+                            .ok_or_else(|| anyhow!("empty code hash in result"))?,
+                        decode_bytecode(bytecode)?.to_vec(),
+                    );
+                }
+            }
+
+            for step in execution_result.exec_steps.iter().rev() {
+                if let Some(data) = &step.extra_data {
+                    match step.op {
+                        OpcodeId::CALL
+                        | OpcodeId::CALLCODE
+                        | OpcodeId::DELEGATECALL
+                        | OpcodeId::STATICCALL => {
+                            let callee_code = data.get_code_at(1);
+                            trace_code(&mut cdb, step, &sdb, callee_code, 1)?;
+                        }
+                        OpcodeId::CREATE | OpcodeId::CREATE2 => {
+                            // TODO: need to insert code to codedb with poseidon codehash
+                            // if the call is persistent
+                        }
+                        OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
+                            let code = data.get_code_at(0);
+                            trace_code(&mut cdb, step, &sdb, code, 0).unwrap_or_else(|err| {
+                                log::error!("temporarily skip error in EXTCODE op: {}", err);
+                            });
+                        }
+
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    // A temporary fix: zkgeth do not trace 0 address if it is only refered as coinbase
+    // (For it is not the "real" coinbase address in PoA) but would still refer it for
+    // other reasons (like being transferred or called), in the other way, busmapping
+    // seems always refer it as coinbase (?)
+    // here we just add it as unexisted account and consider fix it in zkgeth later (always
+    // record 0 addr inside storageTrace field)
+    let (zero_coinbase_exist, _) = sdb.get_account(&Default::default());
+    if !zero_coinbase_exist {
+        sdb.set_account(
+            &Default::default(),
+            Account {
+                nonce: Default::default(),
+                balance: Default::default(),
+                storage: HashMap::new(),
+                code_hash: Default::default(),
+            },
+        );
+    }
+
+    Ok((sdb, cdb))
 }
 
 /*
