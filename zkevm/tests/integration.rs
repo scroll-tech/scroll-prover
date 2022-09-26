@@ -94,7 +94,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits_packing() {
-    use zkevm::circuit::{EvmCircuit, StateCircuit, PoseidonCircuit, ZktrieCircuit};
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
     let mut block_results = Vec::new();
