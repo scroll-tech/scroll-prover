@@ -1,5 +1,3 @@
-use glob::glob;
-use std::sync::Once;
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
@@ -7,37 +5,8 @@ use zkevm::{
     utils::{get_block_result_from_file, read_env_var},
 };
 
-const PARAMS_DIR: &str = "./test_params";
-const SEED_PATH: &str = "./test_seed";
-const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
-];
-
-static ENV_LOGGER: Once = Once::new();
-
-fn parse_trace_path_from_env(mode: &str) -> &'static str {
-    let trace_path = match mode {
-        "empty" => "./tests/traces/empty.json",
-        "greeter" => "./tests/traces/greeter.json",
-        "multiple" => "./tests/traces/multiple-erc20.json",
-        "native" => "./tests/traces/native-transfer.json",
-        "single" => "./tests/traces/single-erc20.json",
-        "single_legacy" => "./tests/traces/single-erc20-legacy.json",
-        "dao" => "./tests/traces/dao.json",
-        "nft" => "./tests/traces/nft.json",
-        "sushi" => "./tests/traces/masterchef.json",
-        _ => "./tests/traces/multiple-erc20.json",
-    };
-    log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
-    trace_path
-}
-
-fn init() {
-    dotenv::dotenv().ok();
-    ENV_LOGGER.call_once(|| {
-        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    });
-}
+mod test_util;
+use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 #[test]
 fn estimate_circuit_rows() {
@@ -124,7 +93,25 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 
 #[cfg(feature = "prove_verify")]
 #[test]
+fn test_mock_prove_all_target_circuits_packing() {
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, ZktrieCircuit};
+
+    init();
+    let mut block_results = Vec::new();
+    for block_number in 1..=15 {
+        let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+        let block_result = get_block_result_from_file(trace_path);
+        block_results.push(block_result);
+    }
+    Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_results, true).unwrap();
+}
+
+#[cfg(feature = "prove_verify")]
+#[test]
 fn test_mock_prove_all_target_circuits() {
+    use glob::glob;
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
@@ -136,7 +123,7 @@ fn test_mock_prove_all_target_circuits() {
             .map(|p| p.unwrap().to_str().unwrap().to_string())
             .collect()
     } else {
-        vec![test_trace.to_string()]
+        vec![test_trace]
     };
     log::info!("test cases traces: {:?}", paths);
     let paths = &paths;
@@ -175,7 +162,7 @@ fn test_state_evm_connect() {
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let trace_path = parse_trace_path_from_env("greeter");
+    let trace_path = parse_trace_path_from_mode("greeter");
     let block_result = get_block_result_from_file(trace_path);
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
@@ -289,7 +276,7 @@ fn load_block_result_for_test() -> BlockResult {
     let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
     if trace_path.is_empty() {
         trace_path =
-            parse_trace_path_from_env(&read_env_var("MODE", "multiple".to_string())).to_string();
+            parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
     }
     get_block_result_from_file(trace_path)
 }

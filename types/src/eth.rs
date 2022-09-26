@@ -15,7 +15,7 @@ pub struct BlockResultWrapper {
     pub block_result: BlockResult,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockResult {
     #[serde(rename = "blockTrace")]
     pub block_trace: BlockTrace,
@@ -30,7 +30,7 @@ pub struct BlockResult {
 pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
 pub type StorageTrieProofs = HashMap<Address, HashMap<Word, Vec<Bytes>>>;
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct StorageTrace {
     #[serde(rename = "rootBefore")]
     pub root_before: Hash,
@@ -96,6 +96,9 @@ impl From<BlockTrace> for EthBlock {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct TransactionTrace {
+    // FIXME after traces upgraded
+    #[serde(default, rename = "txHash")]
+    pub tx_hash: H256,
     #[serde(rename = "type")]
     pub type_: u8,
     pub nonce: u64,
@@ -123,7 +126,7 @@ impl TransactionTrace {
         transaction_index: Option<U64>,
     ) -> Transaction {
         Transaction {
-            hash: Default::default(),
+            hash: self.tx_hash,
             nonce: U256::from(self.nonce),
             block_hash,
             block_number,
@@ -146,7 +149,7 @@ impl TransactionTrace {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecutionResult {
     pub gas: u64,
     pub failed: bool,
@@ -183,7 +186,7 @@ impl From<&ExecutionResult> for GethExecTrace {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecStep {
     pub pc: u64,
     pub op: OpcodeId,
@@ -223,7 +226,7 @@ impl From<&ExecStep> for GethExecStep {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ExtraData {
     #[serde(rename = "codeList")]
     pub code_list: Option<Vec<Bytes>>,

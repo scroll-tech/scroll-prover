@@ -16,10 +16,10 @@ sha2 ="0.10.2"
 
 pairing = { git = 'https://github.com/appliedzkp/pairing', package = "pairing_bn256",tag = "v0.1.1" }
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-0607" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0801" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0801" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0801", features = ["test"] }
-mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", rev = "3e86c43a90e2a64962e65dd3f8e31b5d6ec7055f" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0804" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0804" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0804", features = ["test"] }
+mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", rev = "f12e08c255bb1377b51b325254a764484a8bbdc2" }
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"
@@ -48,4 +48,5 @@ default = []
 prove_verify = []
 
 [dev-dependencies]
+git-version = "0.3.5"
 glob = "0.3.0"
