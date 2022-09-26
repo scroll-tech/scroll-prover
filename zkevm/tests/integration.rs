@@ -94,15 +94,16 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits_packing() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, ZktrieCircuit};
+    use zkevm::circuit::{EvmCircuit, StateCircuit, PoseidonCircuit, ZktrieCircuit};
 
     init();
     let mut block_results = Vec::new();
-    for block_number in 1..=15 {
+    for block_number in 1..=16 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
         let block_result = get_block_result_from_file(trace_path);
         block_results.push(block_result);
     }
+    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_results, true).unwrap();
