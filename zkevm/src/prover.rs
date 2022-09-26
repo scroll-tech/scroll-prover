@@ -13,9 +13,11 @@ use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
-use halo2_proofs::pairing::bn256::{Fr, G1Affine};
+use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey, VerifyingKey};
-use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
+use halo2_proofs::poly::commitment::ParamsProver;
+use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
+use halo2_proofs::poly::kzg::multiopen::ProverGWC;
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
@@ -24,7 +26,6 @@ use halo2_snark_aggregator_circuit::verify_circuit::{
 };
 use log::info;
 use once_cell::sync::Lazy;
-use pairing::bn256::Bn256;
 
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
@@ -67,7 +68,6 @@ pub struct ProvedCircuit {
     pub transcript: Vec<u8>,
     pub vk: VerifyingKey<G1Affine>,
     pub instance: Vec<Vec<Vec<Fr>>>,
-    pub params: ParamsVerifier<Bn256>,
 }
 
 impl AggCircuitProof {
@@ -86,8 +86,8 @@ impl AggCircuitProof {
 
 #[derive(Debug)]
 pub struct Prover {
-    pub params: Params<G1Affine>,
-    pub agg_params: Params<G1Affine>,
+    pub params: ParamsKZG<Bn256>,
+    pub agg_params: ParamsKZG<Bn256>,
     pub rng: XorShiftRng,
 
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,
@@ -96,7 +96,7 @@ pub struct Prover {
 }
 
 impl Prover {
-    pub fn new(params: Params<G1Affine>, agg_params: Params<G1Affine>, rng: XorShiftRng) -> Self {
+    pub fn new(params: ParamsKZG<Bn256>, agg_params: ParamsKZG<Bn256>, rng: XorShiftRng) -> Self {
         Self {
             params,
             agg_params,
@@ -132,29 +132,17 @@ impl Prover {
         Self::tick(&format!("after init pk of {}", C::name()));
     }
 
-    fn init_agg_pk_from_verifier_circuit(
-        &mut self,
-        verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 4>,
-    ) {
-        let verify_circuit_vk =
-            keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
-
-        let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, verify_circuit)
-            .expect("keygen_pk should not fail");
-        self.agg_pk = Some(verify_circuit_pk);
-    }
-
     pub fn from_params_and_rng(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         rng: XorShiftRng,
     ) -> Self {
         Self::new(params, agg_params, rng)
     }
 
     pub fn from_params_and_seed(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         seed: [u8; 16],
     ) -> Self {
         let rng = XorShiftRng::from_seed(seed);
@@ -169,12 +157,15 @@ impl Prover {
         let rng = XorShiftRng::from_seed(seed);
         // FIXME check params
         {
-            let target_params_verifier: ParamsVerifier<Bn256> = params.verifier(0).unwrap();
-            let agg_params_verifier: ParamsVerifier<Bn256> = agg_params.verifier(0).unwrap();
-            log::info!("target_params_verifier {:?}", target_params_verifier);
-            log::info!("agg_params_verifier {:?}", agg_params_verifier);
-            debug_assert_eq!(target_params_verifier.s_g2, agg_params_verifier.s_g2);
-            debug_assert_eq!(target_params_verifier.g2, agg_params_verifier.g2);
+            let target_params_verifier: &ParamsVerifierKZG<Bn256> = params.verifier_params();
+            let agg_params_verifier: &ParamsVerifierKZG<Bn256> = agg_params.verifier_params();
+            log::info!(
+                "params g2 {:?} s_g2 {:?}",
+                target_params_verifier.g2(),
+                target_params_verifier.s_g2()
+            );
+            debug_assert_eq!(target_params_verifier.s_g2(), agg_params_verifier.s_g2());
+            debug_assert_eq!(target_params_verifier.g2(), agg_params_verifier.g2());
         }
         Self::from_params_and_rng(params, agg_params, rng)
     }
@@ -195,17 +186,11 @@ impl Prover {
             Self::tick(&format!("after release pk of {}", &C::name()));
         }
 
-        let target_circuit_public_input_len =
-            instances.iter().map(|col| col.len()).max().unwrap_or(0);
-        let target_circuit_params = self
-            .params
-            .verifier::<Bn256>(target_circuit_public_input_len)?;
         Ok(ProvedCircuit {
             name: proof.name.clone(),
             transcript: proof.proof,
             vk,
             instance: vec![instances],
-            params: target_circuit_params,
         })
     }
 
@@ -249,17 +234,19 @@ impl Prover {
             ]);
         }
 
+        let verifier_params = self.params.verifier_params();
         let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 4> {
             circuits: [0, 1, 2, 3].map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
+                    name: c.name.clone(),
                     nproofs: 1,
                     proofs: vec![SingleProofWitness::<'_, Bn256> {
                         instances: &c.instance,
                         transcript: &c.transcript,
                     }],
                     vk: &c.vk,
-                    params: &circuit_results[i].params,
+                    params: verifier_params,
                 }
             }),
             coherent,
@@ -269,7 +256,8 @@ impl Prover {
         let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
         let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
             [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
-                params: &circuit_results[i].params,
+                name: circuit_results[i].name.clone(),
+                params: verifier_params,
                 vk: &circuit_results[i].vk,
                 n_instances: &n_instances[i],
                 n_transcript: &n_transcript[i],
@@ -281,16 +269,36 @@ impl Prover {
 
         if self.agg_pk.is_none() {
             log::info!("init_agg_pk: init from verifier circuit");
-            self.init_agg_pk_from_verifier_circuit(&verify_circuit);
+
+            let verify_circuit_vk =
+                keygen_vk(&self.agg_params, &verify_circuit).expect("keygen_vk should not fail");
+
+            let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, &verify_circuit)
+                .expect("keygen_pk should not fail");
+            self.agg_pk = Some(verify_circuit_pk);
+
             log::info!("init_agg_pk: init done");
         } else {
             log::info!("using existing agg_pk");
         }
 
         let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];
-        let mut transcript = ShaWrite::<_, _, Challenge255<_>, sha2::Sha256>::init(vec![]);
+        let mut transcript = ShaWrite::<_, G1Affine, Challenge255<_>, sha2::Sha256>::init(vec![]);
+
+        if *MOCK_PROVE {
+            log::info!("mock prove agg circuit");
+            let prover = MockProver::<Fr>::run(
+                *AGG_DEGREE as u32,
+                &verify_circuit,
+                vec![verify_circuit_instances.clone()],
+            )?;
+            if let Err(e) = prover.verify_par() {
+                bail!("{:#?}", e);
+            }
+            log::info!("mock prove agg circuit done");
+        }
         log::info!("create agg proof");
-        create_proof(
+        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
             &self.agg_params,
             self.agg_pk.as_ref().unwrap(),
             &[verify_circuit],
@@ -358,7 +366,7 @@ impl Prover {
         block_results: &[BlockResult],
     ) -> anyhow::Result<TargetCircuitProof, Error> {
         let (circuit, instance) = C::from_block_results(block_results)?;
-        let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
+        let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
 
         let instance_slice = instance.iter().map(|x| &x[..]).collect::<Vec<_>>();
 
@@ -383,7 +391,7 @@ impl Prover {
             self.init_pk::<C>();
         }
         let pk = &self.target_circuit_pks[&C::name()];
-        create_proof(
+        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
             &self.params,
             pk,
             &[circuit],

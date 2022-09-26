@@ -1,23 +1,24 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
-use crate::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
-};
+use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::{deserialize_fr_matrix, load_instances};
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
 use crate::utils::load_params;
-use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
+use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
+use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::plonk::{keygen_vk, verify_proof};
-use halo2_proofs::plonk::{SingleVerifier, VerifyingKey};
-use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
+use halo2_proofs::poly::commitment::ParamsProver;
+use halo2_proofs::poly::kzg::commitment::ParamsKZG;
+use halo2_proofs::poly::kzg::multiopen::VerifierGWC;
+use halo2_proofs::poly::kzg::strategy::SingleStrategy;
 use halo2_proofs::transcript::{Challenge255, PoseidonRead};
 use halo2_snark_aggregator_api::transcript::sha::ShaRead;
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 
 pub struct Verifier {
-    params: Params<G1Affine>,
-    agg_params: Params<G1Affine>,
+    params: ParamsKZG<Bn256>,
+    agg_params: ParamsKZG<Bn256>,
     // just for legacy testing code...
     raw_agg_vk: Option<Vec<u8>>,
     agg_vk: Option<VerifyingKey<G1Affine>>,
@@ -26,44 +27,33 @@ pub struct Verifier {
 
 impl Verifier {
     pub fn new(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         raw_agg_vk: Option<Vec<u8>>,
     ) -> Self {
         if raw_agg_vk.is_none() {
             log::error!("Verifier should better have raw_agg_vk to check consistency");
         }
         let agg_vk = raw_agg_vk.as_ref().map(|k| {
-            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
                 &mut Cursor::new(&k),
                 &agg_params,
             )
             .unwrap()
         });
-        let mut verifier = Self {
+
+        Self {
             params,
             agg_params,
             agg_vk,
             raw_agg_vk,
             target_circuit_vks: Default::default(),
-        };
-        verifier.init_vk::<EvmCircuit>();
-        verifier.init_vk::<StateCircuit>();
-        verifier.init_vk::<ZktrieCircuit>();
-        verifier.init_vk::<PoseidonCircuit>();
-        verifier
-    }
-
-    fn init_vk<C: TargetCircuit>(&mut self) {
-        let circuit = C::empty();
-        let vk = keygen_vk(&self.params, &circuit)
-            .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
-        self.target_circuit_vks.insert(C::name(), vk);
+        }
     }
 
     pub fn from_params(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         agg_vk: Option<Vec<u8>>,
     ) -> Self {
         Self::new(params, agg_params, agg_vk)
@@ -85,9 +75,8 @@ impl Verifier {
             let instance = proof.instance;
             load_instances(&instance)
         };
-        let limbs = 4;
-        let params = self.agg_params.verifier::<Bn256>(limbs * 4).unwrap();
-        let strategy = SingleVerifier::new(&params);
+        let params = self.agg_params.verifier_params();
+        let strategy = SingleStrategy::new(params);
 
         let verify_circuit_instance1: Vec<Vec<&[Fr]>> = verify_circuit_instance
             .iter()
@@ -99,13 +88,14 @@ impl Verifier {
         let mut transcript = ShaRead::<_, _, Challenge255<_>, sha2::Sha256>::init(&proof.proof[..]);
 
         // TODO better way to do this?
-        let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
-            &mut Cursor::new(&proof.vk),
-            &self.agg_params,
-        )
-        .unwrap();
-        verify_proof(
-            &params,
+        let vk_in_proof =
+            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
+                &mut Cursor::new(&proof.vk),
+                &self.agg_params,
+            )
+            .unwrap();
+        verify_proof::<_, VerifierGWC<_>, _, _, _>(
+            params,
             self.agg_vk.as_ref().unwrap_or(&vk_in_proof),
             strategy,
             &verify_circuit_instance2[..],
@@ -115,7 +105,7 @@ impl Verifier {
     }
 
     pub fn verify_target_circuit_proof<C: TargetCircuit>(
-        &self,
+        &mut self,
         proof: &TargetCircuitProof,
     ) -> anyhow::Result<()> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
@@ -123,21 +113,19 @@ impl Verifier {
 
         let instance_slice = instances.iter().map(|x| &x[..]).collect::<Vec<_>>();
 
-        // TODO: is this correct? OR MAX?
-        let public_input_len = instance_slice
-            .iter()
-            .map(|col| col.len())
-            .max()
-            .unwrap_or(0);
-
-        let verifier_params: ParamsVerifier<Bn256> =
-            self.params.verifier(public_input_len).unwrap();
+        let verifier_params = self.params.verifier_params();
 
         let mut transcript = PoseidonRead::<_, _, Challenge255<_>>::init(&proof.proof[..]);
-        let strategy = SingleVerifier::new(&verifier_params);
-        let vk = &self.target_circuit_vks[&C::name()];
-        verify_proof(
-            &verifier_params,
+        let strategy = SingleStrategy::new(verifier_params);
+
+        let vk = self.target_circuit_vks.entry(C::name()).or_insert_with(|| {
+            let circuit = C::empty();
+            keygen_vk(&self.params, &circuit)
+                .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()))
+        });
+
+        verify_proof::<_, VerifierGWC<_>, _, _, _>(
+            verifier_params,
             vk,
             strategy,
             &[instance_slice.as_slice()],

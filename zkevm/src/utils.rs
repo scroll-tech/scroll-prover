@@ -1,7 +1,10 @@
 use anyhow::Result;
-use halo2_proofs::arithmetic::{BaseExt, Field};
-use halo2_proofs::pairing::bn256::{Bn256, Fr, G1Affine};
+use halo2_proofs::arithmetic::Field;
+use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
+use halo2_proofs::halo2curves::FieldExt;
+
 use halo2_proofs::poly::commitment::Params;
+use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, metadata, File};
@@ -11,7 +14,7 @@ use std::str::FromStr;
 use types::eth::BlockResult;
 
 /// return setup params by reading from file or generate new one
-pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> {
+pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     let _path = PathBuf::from(params_dir);
 
     match metadata(params_dir) {
@@ -40,7 +43,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<Params<G
 }
 
 /// load params from file
-pub fn load_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> {
+pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
@@ -54,10 +57,10 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> 
     //   len: 4 bytes
     //   g: 2**DEGREE g1 points, each 32 bytes(256bits)
     //   g_lagrange: 2**DEGREE g1 points, each 32 bytes(256bits)
-    //   len of additional data: 4 bytes
-    //   additional data: 1 g2 point, 64 bytes
+    //   g2: g2 point, 64 bytes
+    //   s_g2: g2 point, 64 bytes
     let file_size = f.metadata()?.len();
-    if file_size != (1 << degree) * 64 + 72 {
+    if file_size != (1 << degree) * 64 + 132 {
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
@@ -67,7 +70,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<Params<G1Affine>> 
 }
 
 /// create params and write it into file
-pub fn create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine>> {
+pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     log::info!("start creating params with degree {}", degree);
     let seed_str = read_env_var("PARAM_SEED", "".to_string());
     let seed_fr = if seed_str.is_empty() {
@@ -78,8 +81,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<Params<G1Affine
         bytes[..32].clone_from_slice(&seed_str.as_bytes()[..32]);
         Fr::from_bytes_wide(bytes)
     };
-    let params: Params<G1Affine> =
-        Params::<G1Affine>::unsafe_setup_with_s::<Bn256>(degree as u32, seed_fr);
+    let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
     let mut params_buf = Vec::new();
     params.write(&mut params_buf)?;
 

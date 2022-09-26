@@ -5,7 +5,7 @@ use eth_types::evm_types::OpcodeId;
 use eth_types::ToAddress;
 use ethers_core::types::{Address, Bytes, U256};
 
-use halo2_proofs::pairing::bn256::Fr;
+use halo2_proofs::halo2curves::bn256::Fr;
 
 use is_even::IsEven;
 
@@ -15,7 +15,7 @@ use strum::IntoEnumIterator;
 use types::eth::{BlockResult, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
-use halo2_proofs::arithmetic::{BaseExt, FieldExt};
+use halo2_proofs::arithmetic::FieldExt;
 use mpt_circuits::hash::Hashable;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
@@ -31,7 +31,7 @@ fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> 
 
     if let Some(key) = inp.key {
         let rev_key_bytes: Vec<u8> = key.to_fixed_bytes().into_iter().rev().collect();
-        let key_fr = Fr::read(&mut rev_key_bytes.as_slice()).unwrap();
+        let key_fr = Fr::from_bytes(&rev_key_bytes.try_into().unwrap()).unwrap();
 
         let secure_hash = Fr::hash([bt_high, bt_low]);
 
