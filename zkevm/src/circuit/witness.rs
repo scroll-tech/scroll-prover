@@ -145,7 +145,7 @@ impl WitnessGenerator {
         let account_path_before = decode_proof_for_mpt_path(proofs).unwrap();
         // TODO: verify account for sanity check
         let (account_key, account_update_before) = if account_data_before.key.is_some() {
-            (Some(account_path_before.leaf.unwrap().sibling), Some(account_data_before.data.into()))
+            (Some(account_path_before.leaf.clone().unwrap().sibling), Some(account_data_before.data.into()))
         } else {
             (None, None)
         };
@@ -178,9 +178,9 @@ impl WitnessGenerator {
 
         SMTTrace {
             address: HexBytes(address.0),
+            account_path: [account_path_before.clone(), account_path_after.clone()],
+            account_update: [account_update_before, account_update_after.clone()],
             account_key: account_key.unwrap_or(account_path_after.leaf.unwrap().sibling),
-            account_path: [account_path_before, account_path_after],
-            account_update: [account_update_before, account_update_after],
             state_path: [None, None],
             common_state_root: None,
             state_key: None,
