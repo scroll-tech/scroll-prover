@@ -1,15 +1,18 @@
+use super::trie::{NODE_TYPE_EMPTY, NODE_TYPE_LEAF};
 use eth_types::Word;
 use ethers_core::types::{Bytes, H256, U256, U64};
 use std::{
     convert::TryFrom,
     io::{Error, ErrorKind, Read},
 };
+use num_bigint::BigUint;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct AccountData {
     pub nonce: u64,
     pub balance: U256,
     pub code_hash: H256,
+    pub storage_root: H256,
 }
 
 pub trait CanRead: Sized {
@@ -32,13 +35,30 @@ impl CanRead for AccountData {
         let balance = U256::from_big_endian(&byte32_buf);
         rd.read_exact(&mut byte32_buf)?; //codehash
         let code_hash = H256::from(&byte32_buf);
-        //rd.read_exact(&mut hash_buf)?; //storage root, not need yet
+        rd.read_exact(&mut byte32_buf)?; //storage root, not need yet
+        let storage_root = H256::from(&byte32_buf);
 
         Ok(AccountData {
             nonce: nonce.as_u64(),
             balance,
             code_hash,
+            storage_root,
         })
+    }
+}
+
+impl Into<mpt_circuits::serde::AccountData> for AccountData {
+    fn into(self) -> mpt_circuits::serde::AccountData {
+        let mut balance = Vec::new();
+        self.balance.to_big_endian(balance.as_mut_slice());
+        let balance = BigUint::from_bytes_be(balance.as_slice());
+        let code_hash = BigUint::from_bytes_be(self.code_hash.as_bytes());
+
+        mpt_circuits::serde::AccountData {
+            nonce: self.nonce,
+            balance,
+            code_hash
+        }
     }
 }
 
@@ -71,7 +91,7 @@ pub struct TrieProof<T> {
     pub key: Option<H256>,
 }
 
-fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Error> {
+pub fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Error> {
     let mut byte32_buf = [0; 32];
     rd.read_exact(&mut byte32_buf)?;
     let key = H256::from(byte32_buf);
@@ -80,12 +100,6 @@ fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Er
 
 pub type AccountProof = TrieProof<AccountData>;
 pub type StorageProof = TrieProof<StorageData>;
-
-impl<T> TrieProof<T> {
-    const NODE_TYPE_MIDDLE: u8 = 0;
-    const NODE_TYPE_LEAF: u8 = 1;
-    const NODE_TYPE_EMPTY: u8 = 2;
-}
 
 impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
@@ -96,14 +110,14 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
             let mut prefix = [0; 1];
             rd.read_exact(&mut prefix)?;
             match prefix[0] {
-                Self::NODE_TYPE_LEAF => {
+                NODE_TYPE_LEAF => {
                     let (key, data) = deserialize_trie_leaf(rd)?;
                     return Ok(Self {
                         key: Some(key),
                         data,
                     });
                 }
-                Self::NODE_TYPE_EMPTY => {
+                NODE_TYPE_EMPTY => {
                     return Ok(Default::default());
                 }
                 _ => (),

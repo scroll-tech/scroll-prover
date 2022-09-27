@@ -19,7 +19,7 @@ halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scr
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0818" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0818" }
 zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-0818", features = ["test"] }
-mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", rev = "f12e08c255bb1377b51b325254a764484a8bbdc2" }
+mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", rev = "91454348046445cbb92908c8bd3d9f3efbde7e6a" }
 zktrie = { git = "https://github.com/scroll-tech/zktrie.git", rev = "2e3a7811f14d4751a8573a3ee5f4df9bccec775c" }
 rand = "0.8"
 rand_xorshift = "0.3"
