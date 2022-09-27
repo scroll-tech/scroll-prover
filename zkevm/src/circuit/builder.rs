@@ -22,7 +22,10 @@ use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 use super::DEGREE;
 use anyhow::anyhow;
 
-pub fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
+pub fn verify_proof_leaf<T: Default>(
+    inp: mpt::TrieProof<T>,
+    key_buf: &[u8; 32],
+) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
     let last_16bytes: [u8; 16] = key_buf[16..].try_into().expect("expect last 16 bytes");
 

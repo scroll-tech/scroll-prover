@@ -1,5 +1,4 @@
 use ethers_core::types::H256;
-use mpt_circuits::serde::HexBytes;
 
 pub const NODE_TYPE_MIDDLE: u8 = 0;
 pub const NODE_TYPE_LEAF: u8 = 1;
@@ -29,16 +28,13 @@ pub struct TrieLeafNode {
 #[derive(Debug)]
 pub enum TrieNodeError {
     NodeBytesBadSize,
-    InvalidNodeFound
-}
-
-impl TrieNode {
-
+    InvalidNodeFound,
 }
 
 impl TryFrom<&[u8]> for TrieNode {
     type Error = TrieNodeError;
 
+    // translated from go-ethereum NewNodeFromBytes
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         use TrieNodeError::*;
 
@@ -54,7 +50,7 @@ impl TryFrom<&[u8]> for TrieNode {
                 let child_l = H256::from(&buf[..32].try_into().unwrap());
                 let child_r = H256::from(&buf[32..].try_into().unwrap());
                 Ok(TrieNode::Middle(TrieMiddleNode { child_l, child_r }))
-            },
+            }
             NODE_TYPE_LEAF => {
                 if buf.len() < 32 + 4 {
                     return Err(NodeBytesBadSize);
@@ -66,13 +62,13 @@ impl TryFrom<&[u8]> for TrieNode {
                 let mut value_preimage = vec![[0u8; 32]; preimage_len];
                 let cur_pos = 36;
                 for (i, preimage) in value_preimage.iter_mut().enumerate() {
-                    preimage.copy_from_slice(&buf[i*32+cur_pos..(i+1)*32+cur_pos]);
+                    preimage.copy_from_slice(&buf[i * 32 + cur_pos..(i + 1) * 32 + cur_pos]);
                 }
-                let cur_pos = 36 + preimage_len*32;
+                let cur_pos = 36 + preimage_len * 32;
                 let preimage_size = buf[cur_pos] as usize;
                 let cur_pos = cur_pos + 1;
                 let key_preimage: Option<[u8; 32]> = if preimage_size != 0 {
-                    Some((&buf[cur_pos..cur_pos+preimage_size]).try_into().unwrap())
+                    Some((&buf[cur_pos..cur_pos + preimage_size]).try_into().unwrap())
                 } else {
                     None
                 };
@@ -82,7 +78,7 @@ impl TryFrom<&[u8]> for TrieNode {
                     value_preimage,
                     key_preimage,
                 }))
-            },
+            }
             NODE_TYPE_EMPTY => Ok(TrieNode::Empty),
             _ => Err(InvalidNodeFound),
         }
