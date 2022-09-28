@@ -1,6 +1,6 @@
 use super::trie::{NODE_TYPE_EMPTY, NODE_TYPE_LEAF};
 use eth_types::Word;
-use ethers_core::types::{Bytes, H256, U256, U64};
+use ethers_core::types::{Address, Bytes, H256, U256, U64};
 use std::{
     convert::TryFrom,
     io::{Error, ErrorKind, Read},
@@ -13,6 +13,12 @@ pub struct AccountData {
     pub balance: U256,
     pub code_hash: H256,
     pub storage_root: H256,
+}
+
+pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
+    let mut bts: Vec<u8> = src.as_bytes().into();
+    bts.resize(32, 0);
+    bts.as_slice().try_into().expect("32 bytes")
 }
 
 pub trait CanRead: Sized {

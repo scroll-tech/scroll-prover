@@ -1,15 +1,20 @@
 use super::mpt::AccountProof;
-use crate::circuit::builder::{extend_address_to_h256, verify_proof_leaf};
-use crate::circuit::mpt::StorageProof;
+use crate::circuit::builder::verify_proof_leaf;
+use crate::circuit::mpt::{extend_address_to_h256, StorageProof};
 use eth_types::{Hash, H256, U256};
 use ethers_core::abi::Address;
 use mpt_circuits::hash::Hashable;
-use mpt_circuits::serde::{HexBytes, SMTPath, SMTTrace, StateData};
+use mpt_circuits::serde::{HexBytes, SMTNode, SMTPath, SMTTrace, StateData};
 use std::collections::HashMap;
 use types::eth::{AccountProofWrapper, BlockResult};
 use halo2_proofs::pairing::bn256::Fr;
+// todo: in new halo2 lib we import halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
+use halo2_proofs::pairing::group::ff::{Field, PrimeField};
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
 use zktrie::{ZkMemoryDb, ZkTrie};
+
+use num_bigint::BigUint;
+use std::io::{Error as IoError, Read};
 
 pub struct WitnessGenerator {
     db: ZkMemoryDb,
@@ -65,6 +70,7 @@ impl WitnessGenerator {
         key: &[u8; 32],
         value: &[u8; 32],
     ) -> SMTTrace {
+        let storage_key = hash_zktrie_key(key);
         let key = HexBytes(*key);
         let store_value = HexBytes(*value);
         let trie = self.storages.get_mut(&address).unwrap();
@@ -77,7 +83,7 @@ impl WitnessGenerator {
                 value: HexBytes(v),
             });
         let storage_before_proofs = trie.prove(key.as_ref());
-        let storage_before_path = decode_proof_for_mpt_path(storage_before_proofs);
+        let storage_before_path = decode_proof_for_mpt_path(storage_key, storage_before_proofs);
         let store_after = if value != &Hash::zero().0 {
             Some(StateData {
                 key,
@@ -88,7 +94,7 @@ impl WitnessGenerator {
             None
         };
         let storage_after_proofs = trie.prove(key.as_ref());
-        let storage_after_path = decode_proof_for_mpt_path(storage_after_proofs);
+        let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
 
         let mut out = self.trace_account_update(address, |acc_data| {
             let mut acc = acc_data.data;
@@ -127,7 +133,7 @@ impl WitnessGenerator {
             out.state_key = Some(HexBytes(buf));
         }
 
-        out.state_path = [storage_before_path, storage_after_path];
+        out.state_path = [storage_before_path.ok(), storage_after_path.ok()];
         out.state_update = Some([store_before, store_after]);
         out
     }
@@ -142,7 +148,9 @@ impl WitnessGenerator {
             .expect("todo: handle this");
 
         let proofs = self.trie.prove(address.as_bytes());
-        let account_path_before = decode_proof_for_mpt_path(proofs).unwrap();
+        let address_key = hash_zktrie_key(&extend_address_to_h256(&address));
+
+        let account_path_before = decode_proof_for_mpt_path(address_key, proofs).unwrap();
         // TODO: verify account for sanity check
         let (account_key, account_update_before) = if account_data_before.key.is_some() {
             (Some(account_path_before.leaf.clone().unwrap().sibling), Some(account_data_before.data.into()))
@@ -173,7 +181,7 @@ impl WitnessGenerator {
         }
 
         let proofs = self.trie.prove(address.as_bytes());
-        let account_path_after = decode_proof_for_mpt_path(proofs).unwrap();
+        let account_path_after = decode_proof_for_mpt_path(address_key, proofs).unwrap();
 
 
         SMTTrace {
@@ -191,6 +199,60 @@ impl WitnessGenerator {
     fn handle_new_state(&self, account_proof: &AccountProofWrapper) {}
 }
 
-fn decode_proof_for_mpt_path(proofs: Vec<Vec<u8>>) -> Option<SMTPath> {
-    todo!()
+fn smt_path_from_middle_node(node_data: &[u8], key_bit_one: bool) -> Result<SMTNode, IoError> {
+
+    // we need little-endian represent for output hashes while we have big-endian bytes
+    // so we use a trick to read middle node from end
+    let rev_node_data : Vec<_> = node_data.iter().rev().copied().collect();
+
+    let mut rd = rev_node_data.as_slice();
+    let mut out = SMTNode{
+        value: HexBytes([0;32]),
+        sibling: HexBytes([0;32]),
+    };
+
+    // notice we read right child first from reversed bytes
+    if key_bit_one {
+        rd.read_exact(out.value.0.as_mut_slice())?;
+        rd.read_exact(out.sibling.0.as_mut_slice())?;
+    } else {
+        rd.read_exact(out.sibling.0.as_mut_slice())?;
+        rd.read_exact(out.value.0.as_mut_slice())?;        
+    }
+
+    Ok(out)
+
+}
+
+fn hash_zktrie_key(key_buf: &[u8; 32]) -> Fr {
+
+    let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
+    let last_16bytes: [u8; 16] = key_buf[16..].try_into().expect("expect last 16 bytes");
+
+    let bt_high = Fr::from_u128(u128::from_be_bytes(first_16bytes));
+    let bt_low = Fr::from_u128(u128::from_be_bytes(last_16bytes));
+
+    Fr::hash([bt_high, bt_low])
+}
+
+fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMTPath, IoError> {
+
+    let invert_2 = Fr::one().double().invert().unwrap();
+    let mut out = SMTPath{
+        root: HexBytes::<32>([0; 32]),
+        leaf: None,
+        path: Vec::new(),
+        path_part: Default::default(),
+    };
+    let mut path_bit_now = BigUint::from(1 as u32);
+
+    for proof_bytes in proofs {
+        let is_bit_one : bool = key_fr.is_odd().into();
+        out.path.push(smt_path_from_middle_node(&proof_bytes, is_bit_one)?);
+        key_fr = if is_bit_one {key_fr.mul(&invert_2) - invert_2 } else {key_fr.mul(&invert_2)};
+        if is_bit_one {out.path_part += &path_bit_now};
+        path_bit_now *= 2 as u32;
+    }
+
+    Ok(out)
 }

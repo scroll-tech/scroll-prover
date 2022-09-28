@@ -48,12 +48,6 @@ pub fn verify_proof_leaf<T: Default>(
     }
 }
 
-pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
-    let mut bts: Vec<u8> = src.as_bytes().into();
-    bts.resize(32, 0);
-    bts.as_slice().try_into().expect("32 bytes")
-}
-
 pub fn block_result_to_witness_block(
     block_result: &BlockResult,
 ) -> Result<Block<Fr>, anyhow::Error> {
@@ -205,7 +199,7 @@ pub fn build_statedb_and_codedb(
         if let Some(acc_proofs) = &storage_trace.proofs {
             for (addr, acc) in acc_proofs.iter() {
                 let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
-                let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
+                let acc = verify_proof_leaf(acc_proof, &mpt::extend_address_to_h256(addr));
                 if acc.key.is_some() {
                     // a valid leaf
                     let (_, acc_mut) = sdb.get_account_mut(addr);
