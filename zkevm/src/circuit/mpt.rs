@@ -1,4 +1,3 @@
-use super::trie::{NODE_TYPE_EMPTY, NODE_TYPE_LEAF};
 use eth_types::Word;
 use ethers_core::types::{Address, Bytes, H256, U256, U64};
 use std::{
@@ -6,6 +5,10 @@ use std::{
     io::{Error, ErrorKind, Read},
 };
 use num_bigint::BigUint;
+
+pub const NODE_TYPE_MIDDLE: u8 = 0;
+pub const NODE_TYPE_LEAF: u8 = 1;
+pub const NODE_TYPE_EMPTY: u8 = 2;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct AccountData {
