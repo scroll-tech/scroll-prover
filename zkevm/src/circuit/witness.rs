@@ -1,12 +1,12 @@
 use super::mpt::{CanRead, TrieProof, AccountProof};
 use crate::circuit::builder::verify_proof_leaf;
-use crate::circuit::mpt::{extend_address_to_h256, StorageProof};
+use crate::circuit::mpt::{AccountData, extend_address_to_h256, StorageProof};
 use eth_types::{Hash, Bytes, H256, U256};
 use ethers_core::abi::Address;
 use mpt_circuits::hash::Hashable;
 use mpt_circuits::serde::{HexBytes, Hash as SMTHash, SMTNode, SMTPath, SMTTrace, StateData};
 use std::collections::HashMap;
-use types::eth::{AccountProofWrapper, BlockResult};
+use types::eth::{AccountProofWrapper, BlockResult, StorageProofWrapper};
 use halo2_proofs::pairing::bn256::Fr;
 // todo: in new halo2 lib we import halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
 use halo2_proofs::pairing::group::ff::{Field, PrimeField};
@@ -197,7 +197,39 @@ impl WitnessGenerator {
         }
     }
 
-    fn handle_new_state(&self, account_proof: &AccountProofWrapper) {}
+    fn handle_new_state(&mut self, account_proof: &AccountProofWrapper) -> SMTTrace {
+        match account_proof.storage {
+            Some(ref storage) => {
+                let mut addr = [0u8; 32];
+                storage.key.unwrap().to_big_endian(&mut addr.as_mut_slice());
+                let mut value = [0u8; 32];
+                storage.value.unwrap().to_big_endian(&mut value.as_mut_slice());
+                self.trace_storage_update(
+                    account_proof.address.unwrap(),
+                    &addr,
+                    &value
+                )
+            }
+            None => {
+                let mut acc_data: AccountData = account_proof.into();
+                let mut out = self.trace_account_update(
+                    account_proof.address.unwrap(),
+                    |acc_before| {
+                        if acc_before.key.is_none() {
+                            acc_data.storage_root = acc_before.data.storage_root;
+                        }
+                        AccountProof {
+                            data: acc_data,
+                            key: acc_before.key,
+                            path: vec![], // FIXME: is this correct?
+                        }
+                    }
+                );
+                out.common_state_root = Some(HexBytes(acc_data.storage_root.0));
+                out
+            }
+        }
+    }
 }
 
 fn smt_hash_from_u256(i: &U256) -> SMTHash {

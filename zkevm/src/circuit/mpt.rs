@@ -5,6 +5,7 @@ use std::{
     io::{Error, ErrorKind, Read},
 };
 use num_bigint::BigUint;
+use types::eth::AccountProofWrapper;
 
 pub const NODE_TYPE_MIDDLE: u8 = 0;
 pub const NODE_TYPE_LEAF: u8 = 1;
@@ -16,6 +17,17 @@ pub struct AccountData {
     pub balance: U256,
     pub code_hash: H256,
     pub storage_root: H256,
+}
+
+impl From<&AccountProofWrapper> for AccountData {
+    fn from(w: &AccountProofWrapper) -> Self {
+        AccountData {
+            nonce: w.nonce.unwrap(),
+            balance: w.balance.unwrap(),
+            code_hash: w.code_hash.unwrap(),
+            storage_root: Default::default()
+        }
+    }
 }
 
 pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
