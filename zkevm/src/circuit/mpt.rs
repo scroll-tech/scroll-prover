@@ -23,6 +23,10 @@ pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
 
 pub trait CanRead: Sized {
     fn try_parse(rd: impl Read) -> Result<Self, Error>;
+    fn parse_leaf(data: &[u8]) -> Result<Self, Error>{
+        // notice the first 33 bytes has been read external
+        Self::try_parse(&data[33..])
+    }
 }
 
 impl CanRead for AccountData {
@@ -95,13 +99,8 @@ impl CanRead for StorageData {
 pub struct TrieProof<T> {
     pub data: T,
     pub key: Option<H256>,
-}
-
-pub fn deserialize_trie_leaf<R: Read, T: CanRead>(mut rd: R) -> Result<(H256, T), Error> {
-    let mut byte32_buf = [0; 32];
-    rd.read_exact(&mut byte32_buf)?;
-    let key = H256::from(byte32_buf);
-    Ok((key, T::try_parse(rd)?))
+    // the path from top to bottom, in (left child, right child) form
+    pub path: Vec<(U256, U256)>,
 }
 
 pub type AccountProof = TrieProof<AccountData>;
@@ -111,20 +110,36 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
 
     fn try_from(src: &[Bytes]) -> Result<Self, Self::Error> {
+        let mut path : Vec<(U256, U256)> = Vec::new();
         for data in src {
             let mut rd = data.as_ref();
             let mut prefix = [0; 1];
             rd.read_exact(&mut prefix)?;
             match prefix[0] {
                 NODE_TYPE_LEAF => {
-                    let (key, data) = deserialize_trie_leaf(rd)?;
+                    let mut byte32_buf = [0; 32];
+                    rd.read_exact(&mut byte32_buf)?;
+                    let key = H256::from(byte32_buf);
+                    let data = T::parse_leaf(data.as_ref())?;
                     return Ok(Self {
                         key: Some(key),
                         data,
+                        path,
                     });
                 }
                 NODE_TYPE_EMPTY => {
-                    return Ok(Default::default());
+                    return Ok(Self{
+                        path,
+                        ..Default::default()
+                    });
+                }
+                NODE_TYPE_MIDDLE => {
+                    let mut buf : [u8; 32] = [0; 32];
+                    rd.read_exact(&mut buf)?;
+                    let left = U256::from_big_endian(&buf);
+                    rd.read_exact(&mut buf)?;
+                    let right = U256::from_big_endian(&buf);
+                    path.push((left, right));
                 }
                 _ => (),
             }

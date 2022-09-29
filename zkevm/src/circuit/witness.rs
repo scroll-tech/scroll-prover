@@ -1,17 +1,17 @@
-use super::mpt::AccountProof;
+use super::mpt::{CanRead, TrieProof, AccountProof};
 use crate::circuit::builder::verify_proof_leaf;
 use crate::circuit::mpt::{extend_address_to_h256, StorageProof};
-use eth_types::{Hash, H256, U256};
+use eth_types::{Hash, Bytes, H256, U256};
 use ethers_core::abi::Address;
 use mpt_circuits::hash::Hashable;
-use mpt_circuits::serde::{HexBytes, SMTNode, SMTPath, SMTTrace, StateData};
+use mpt_circuits::serde::{HexBytes, Hash as SMTHash, SMTNode, SMTPath, SMTTrace, StateData};
 use std::collections::HashMap;
 use types::eth::{AccountProofWrapper, BlockResult};
 use halo2_proofs::pairing::bn256::Fr;
 // todo: in new halo2 lib we import halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
 use halo2_proofs::pairing::group::ff::{Field, PrimeField};
 use halo2_proofs::arithmetic::{BaseExt, FieldExt};
-use zktrie::{ZkMemoryDb, ZkTrie};
+use zktrie::{ZkMemoryDb, ZkTrieNode, ZkTrie};
 
 use num_bigint::BigUint;
 use std::io::{Error as IoError, Read};
@@ -101,7 +101,8 @@ impl WitnessGenerator {
             acc.storage_root = H256::from(storage_after_path.as_ref().unwrap().root.as_ref());
             AccountProof {
                 data: acc,
-                key: acc_data.key
+                key: acc_data.key,
+                ..Default::default()
             }
         });
         if store_before.is_some() {
@@ -199,29 +200,16 @@ impl WitnessGenerator {
     fn handle_new_state(&self, account_proof: &AccountProofWrapper) {}
 }
 
-fn smt_path_from_middle_node(node_data: &[u8], key_bit_one: bool) -> Result<SMTNode, IoError> {
+fn smt_hash_from_u256(i: &U256) -> SMTHash {
+    let mut out : [u8; 32] = [0; 32];
+    i.to_little_endian(&mut out);
+    HexBytes(out)
+}
 
-    // we need little-endian represent for output hashes while we have big-endian bytes
-    // so we use a trick to read middle node from end
-    let rev_node_data : Vec<_> = node_data.iter().rev().copied().collect();
-
-    let mut rd = rev_node_data.as_slice();
-    let mut out = SMTNode{
-        value: HexBytes([0;32]),
-        sibling: HexBytes([0;32]),
-    };
-
-    // notice we read right child first from reversed bytes
-    if key_bit_one {
-        rd.read_exact(out.value.0.as_mut_slice())?;
-        rd.read_exact(out.sibling.0.as_mut_slice())?;
-    } else {
-        rd.read_exact(out.sibling.0.as_mut_slice())?;
-        rd.read_exact(out.value.0.as_mut_slice())?;        
-    }
-
-    Ok(out)
-
+fn smt_hash_from_bytes(bt: &[u8]) -> SMTHash {
+    let mut out : Vec<_> = bt.iter().copied().rev().collect();
+    out.resize(32, 0);
+    HexBytes(out.try_into().expect("extract size has been set"))
 }
 
 fn hash_zktrie_key(key_buf: &[u8; 32]) -> Fr {
@@ -235,24 +223,68 @@ fn hash_zktrie_key(key_buf: &[u8; 32]) -> Fr {
     Fr::hash([bt_high, bt_low])
 }
 
+#[derive(Debug, Default, Clone)]
+struct LeafNodeHash (H256);
+
+impl CanRead for LeafNodeHash {
+    fn try_parse(mut _rd: impl Read) -> Result<Self, IoError> {
+        panic!("this entry is not used")
+    }
+    fn parse_leaf(data: &[u8]) -> Result<Self, IoError>{
+        let node = ZkTrieNode::parse(data);
+        Ok(Self(node.value_hash().expect("leaf should has value hash").into()))
+    }
+}
+
+impl AsRef<[u8]> for LeafNodeHash {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+
 fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMTPath, IoError> {
 
-    let invert_2 = Fr::one().double().invert().unwrap();
-    let mut out = SMTPath{
-        root: HexBytes::<32>([0; 32]),
-        leaf: None,
-        path: Vec::new(),
-        path_part: Default::default(),
-    };
-    let mut path_bit_now = BigUint::from(1 as u32);
+    let proof_bytes: Vec<_> = proofs.into_iter().map(Bytes::from).collect();
+    let trie_proof = TrieProof::<LeafNodeHash>::try_from(proof_bytes.as_slice())?;
 
-    for proof_bytes in proofs {
+    // convert path part
+    let invert_2 = Fr::one().double().invert().unwrap();
+    let mut path_bit_now = BigUint::from(1 as u32);
+    let mut path_part : BigUint =  Default::default();
+    let mut path = Vec::new();
+
+    for (left, right) in trie_proof.path.iter() {
         let is_bit_one : bool = key_fr.is_odd().into();
-        out.path.push(smt_path_from_middle_node(&proof_bytes, is_bit_one)?);
+        path.push(
+            if is_bit_one {
+                SMTNode {
+                    value: smt_hash_from_u256(right),
+                    sibling: smt_hash_from_u256(left),
+                }
+            } else {
+                SMTNode {
+                    value: smt_hash_from_u256(left),
+                    sibling: smt_hash_from_u256(right),
+                }
+            }
+        );
         key_fr = if is_bit_one {key_fr.mul(&invert_2) - invert_2 } else {key_fr.mul(&invert_2)};
-        if is_bit_one {out.path_part += &path_bit_now};
+        if is_bit_one {path_part += &path_bit_now};
         path_bit_now *= 2 as u32;
     }
 
-    Ok(out)
+    let leaf = trie_proof.key.as_ref().map(|h| 
+        SMTNode {
+            value: smt_hash_from_bytes(trie_proof.data.as_ref()),
+            sibling: smt_hash_from_bytes(h.as_bytes()),
+        }
+    );
+
+    Ok(SMTPath{
+        root: HexBytes::<32>([0; 32]),
+        leaf,
+        path,
+        path_part,
+    })
 }

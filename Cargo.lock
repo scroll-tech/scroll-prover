@@ -3440,7 +3440,7 @@ dependencies = [
  "blake2",
  "eth-types",
  "ethers-core",
- "halo2-mpt-circuits 0.1.0 (git+https://github.com/scroll-tech/mpt-circuit.git?rev=f12e08c255bb1377b51b325254a764484a8bbdc2)",
+ "halo2-mpt-circuits",
  "serde",
  "serde_derive",
  "serde_json",
@@ -3873,7 +3873,7 @@ dependencies = [
  "ethers-core",
  "git-version",
  "glob",
- "halo2-mpt-circuits 0.1.0 (git+https://github.com/scroll-tech/mpt-circuit.git?rev=91454348046445cbb92908c8bd3d9f3efbde7e6a)",
+ "halo2-mpt-circuits",
  "halo2-snark-aggregator-api",
  "halo2-snark-aggregator-circuit",
  "halo2-snark-aggregator-solidity",
@@ -3933,7 +3933,7 @@ dependencies = [
 [[package]]
 name = "zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zktrie.git?rev=2e3a7811f14d4751a8573a3ee5f4df9bccec775c#2e3a7811f14d4751a8573a3ee5f4df9bccec775c"
+source = "git+https://github.com/scroll-tech/zktrie.git#e1c5b69877b106f00a6959d9fde660cbf18452fc"
 dependencies = [
  "gobuild",
 ]
