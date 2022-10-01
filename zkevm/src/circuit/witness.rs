@@ -23,10 +23,60 @@ pub struct WitnessGenerator {
     storages: HashMap<Address, ZkTrie>,
 }
 
+static FILED_ERROR_READ: &str = "invalid input field";
+static FILED_ERROR_OUT: &str = "output field fail";
+
+extern "C" fn hash_scheme(a: *const u8, b: *const u8, out: *mut u8) -> *const i8 {
+    use std::slice;
+    let mut a = unsafe { slice::from_raw_parts(a, 32) };
+    let mut b = unsafe { slice::from_raw_parts(b, 32) };
+    let mut out = unsafe { slice::from_raw_parts_mut(out, 32) };
+
+    let fa = if let Ok(f) = Fr::read(&mut a) {
+        f
+    } else {
+        return FILED_ERROR_READ.as_ptr().cast();
+    };
+    let fb = if let Ok(f) = Fr::read(&mut b) {
+        f
+    } else {
+        return FILED_ERROR_READ.as_ptr().cast();
+    };
+
+    let h = Fr::hash([fa, fb]);
+
+    if h.write(&mut out).is_err() {
+        FILED_ERROR_OUT.as_ptr().cast()
+    } else {
+        std::ptr::null()
+    }
+}
+
 impl WitnessGenerator {
+
+    pub fn init() {
+        zktrie::init_hash_scheme(hash_scheme);
+    }
+
     pub fn new(block: &BlockResult) -> Self {
         let mut db = ZkMemoryDb::new();
         let storage_trace = &block.storage_trace;
+
+        storage_trace
+        .proofs
+        .iter()
+        .flatten()
+        .flat_map(|(_, proofs)|proofs.iter())
+        .for_each(|bytes| {
+            db.add_node_bytes(bytes.as_ref()).unwrap();
+        });
+
+        storage_trace.storage_proofs.iter()
+            .flat_map(|(_, v_proofs)|v_proofs.iter())
+            .flat_map(|(_, proofs)|proofs.iter())
+            .for_each(|bytes| {
+                db.add_node_bytes(bytes.as_ref()).unwrap();
+            });
 
         let accounts: HashMap<Address, AccountProof> = storage_trace
             .proofs
@@ -331,13 +381,16 @@ mod tests {
 
     #[test]
     fn init_writer() {
-        let trace_path = "./tests/traces/greeter.json";
+
+        WitnessGenerator::init();
+
+        let trace_path = "./tests/traces/greeter_witgen.json";
 
         let block_result = get_block_result_from_file(trace_path);
         let w = WitnessGenerator::new(&block_result);
 
         let root_init = w.trie.root();
 
-        assert_eq!(format!("{}", H256(root_init)), "");
+        assert_eq!(format!("{:?}", H256(root_init)), "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f");
     }
 }
