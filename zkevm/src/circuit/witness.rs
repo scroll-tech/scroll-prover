@@ -320,3 +320,24 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
         path_part,
     })
 }
+
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use types::eth::StorageTrace;
+    use crate::utils::get_block_result_from_file;
+
+    #[test]
+    fn init_writer() {
+        let trace_path = "./tests/traces/greeter.json";
+
+        let block_result = get_block_result_from_file(trace_path);
+        let w = WitnessGenerator::new(&block_result);
+
+        let root_init = w.trie.root();
+
+        assert_eq!(format!("{}", H256(root_init)), "");
+    }
+}
