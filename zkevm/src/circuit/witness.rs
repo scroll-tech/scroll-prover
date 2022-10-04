@@ -247,7 +247,7 @@ impl WitnessGenerator {
         }
     }
 
-    fn handle_new_state(&mut self, account_proof: &AccountProofWrapper) -> SMTTrace {
+    pub fn handle_new_state(&mut self, account_proof: &AccountProofWrapper) -> SMTTrace {
         match account_proof.storage {
             Some(ref storage) => {
                 let mut addr = [0u8; 32];
@@ -393,4 +393,34 @@ mod tests {
 
         assert_eq!(format!("{:?}", H256(root_init)), "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f");
     }
+
+    #[test]
+    fn update_one() {
+
+        WitnessGenerator::init();
+
+        let trace_path = "./tests/traces/greeter_witgen.json";
+
+        let block_result = get_block_result_from_file(trace_path);
+        let mut w = WitnessGenerator::new(&block_result);
+
+        let target_addr = Address::from_slice(hex::decode("4cb1aB63aF5D8931Ce09673EbD8ae2ce16fD6571").unwrap().as_slice());
+        let start_state = w.accounts.get(&target_addr).unwrap();
+
+        let mut_state = AccountProofWrapper {
+            address: Some(target_addr),
+            nonce: Some(start_state.data.nonce),
+            balance: Some(start_state.data.balance + U256::from(1 as u64)),
+            code_hash: Some(start_state.data.code_hash),
+            ..Default::default()
+        };
+        let trace = w.handle_new_state(&mut_state);
+
+        let new_root = w.trie.root();
+
+        let new_acc_root = trace.account_path[1].root;
+        assert_eq!(new_root, new_acc_root.0);
+
+        println!("ret {:?}", trace);
+    }    
 }
