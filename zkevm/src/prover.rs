@@ -18,7 +18,7 @@ use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey, Verify
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
 use halo2_proofs::poly::kzg::multiopen::ProverGWC;
-use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
+use halo2_proofs::transcript::{Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
     final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
@@ -214,24 +214,75 @@ impl Prover {
         self.create_agg_circuit_proof_impl(circuit_results)
     }
 
+    // commitments of columns of shared tables of circuits should be same
+    fn build_coherent() -> Vec<[(usize, usize); 2]> {
+        let mut coherent = Vec::new();
+
+        let evm_circuit_idx = 0;
+        let state_circuit_idx = 1;
+        let poseidon_circuit_idx = 2;
+        let zktrie_circuit_idx = 3;
+
+        let mut connect_table =
+            |circuit_idx_1, table_start_1, circuit_idx_2, table_start_2, table_len: usize| {
+                for i in 0..table_len {
+                    coherent.push([
+                        (circuit_idx_1, table_start_1 + i),
+                        (circuit_idx_2, table_start_2 + i),
+                    ]);
+                }
+            };
+
+        // rw table
+        connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
+
+        // poseidon hash table
+        let hash_table_commitments_len = 3;
+        let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
+        let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
+        connect_table(
+            poseidon_circuit_idx,
+            hash_table_start_poseidon,
+            zktrie_circuit_idx,
+            hash_table_start_mpt,
+            hash_table_commitments_len,
+        );
+
+        coherent
+    }
+
     fn create_agg_circuit_proof_impl(
         &mut self,
         circuit_results: Vec<ProvedCircuit>,
     ) -> anyhow::Result<AggCircuitProof> {
         ///////////////////////////// build verifier circuit from block result ///////////////////
-        // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
-        let evm_circuit_idx = 0;
-        let state_circuit_idx = 1;
-        let rw_table_start_evm = 0;
-        let rw_table_start_state = 0;
-        let rw_table_commitments_len = 11;
 
-        let mut coherent = Vec::new();
-        for i in 0..rw_table_commitments_len {
-            coherent.push([
-                (evm_circuit_idx, rw_table_start_evm + i),
-                (state_circuit_idx, rw_table_start_state + i),
-            ]);
+        let coherent = Self::build_coherent();
+
+        // check commitments equality
+        {
+            let load_commitment = |proof: &[u8], start| {
+                let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
+                for _ in 0..start {
+                    transcript.read_point().unwrap();
+                }
+                transcript.read_point().unwrap()
+            };
+            for [(c1, p1), (c2, p2)] in &coherent {
+                let a = load_commitment(&circuit_results[*c1].transcript, *p1);
+                let b = load_commitment(&circuit_results[*c2].transcript, *p2);
+                if a != b {
+                    bail!(
+                        "fail to connect circuit: {}th point of {}({:?}) != {}th point of {}({:?})",
+                        p1,
+                        circuit_results[*c1].name,
+                        a,
+                        p2,
+                        circuit_results[*c2].name,
+                        b
+                    );
+                }
+            }
         }
 
         let verifier_params = self.params.verifier_params();
