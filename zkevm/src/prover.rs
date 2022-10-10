@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
     deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
-    serialize_verify_circuit_final_pair, serialize_vk, write_file, write_verify_circuit_final_pair,
+    serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
 use crate::utils::load_seed;
@@ -463,15 +462,31 @@ impl Prover {
         let instance_bytes = serialize_instance(&instance);
         let proof = transcript.finalize();
         let name = C::name();
-        log::debug!("{} circuit: proof {:?}, instance len {}", name, &proof[0..15], instance_bytes.len());
-        if !self.debug_dir.is_empty() {
-            let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
-            write_file(&mut folder, &format!("{}.proof", name), &proof);
-        }
-        Ok(TargetCircuitProof {
+        log::debug!(
+            "{} circuit: proof {:?}, instance len {}",
             name,
-            proof,
+            &proof[0..15],
+            instance_bytes.len()
+        );
+        let target_proof = TargetCircuitProof {
+            name: name.clone(),
+            proof: proof.clone(),
             instance: instance_bytes,
-        })
+        };
+        if !self.debug_dir.is_empty() {
+            // write vk
+            let mut fd =
+                std::fs::File::create(&format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
+            pk.get_vk().write(&mut fd).unwrap();
+            drop(fd);
+
+            // write proof
+            //let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
+            //write_file(&mut folder, &format!("{}.proof", name), &proof);
+            let output_file = format!("{}/{}_proof.json", self.debug_dir, name,);
+            let mut fd = std::fs::File::create(&output_file).unwrap();
+            serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
+        }
+        Ok(target_proof)
     }
 }

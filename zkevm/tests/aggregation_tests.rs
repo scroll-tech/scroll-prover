@@ -10,18 +10,13 @@ use std::str::FromStr;
 
 use types::eth::BlockResult;
 use zkevm::circuit::AGG_DEGREE;
-use zkevm::prover::{AggCircuitProof, ProvedCircuit};
+use zkevm::prover::AggCircuitProof;
 use zkevm::utils::load_or_create_params;
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
-
-fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
-    let mut fd = std::fs::File::create(&format!("{}/vk_{}", output_dir, c.name)).unwrap();
-    c.vk.write(&mut fd).unwrap();
-}
 
 fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);

@@ -1,3 +1,4 @@
+use chrono::Utc;
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
@@ -265,6 +266,15 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
         .create_target_circuit_proof::<C>(&block_result)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
+
+    let output_file = format!(
+        "/tmp/{}_{}.json",
+        C::name(),
+        Utc::now().format("%Y%m%d_%H%M%S")
+    );
+    let mut fd = std::fs::File::create(&output_file).unwrap();
+    serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
+    log::info!("write proof to {}", output_file);
 
     log::info!("start verifying proof");
     let now = Instant::now();
