@@ -315,6 +315,7 @@ impl Prover {
             });
         let verify_circuit_final_pair =
             Halo2CircuitInstances::<'_, Bn256, 4>(instances).calc_verify_circuit_final_pair();
+        log::debug!("final pair {:?}", verify_circuit_final_pair);
         let verify_circuit_instances =
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
 
@@ -457,9 +458,12 @@ impl Prover {
             block_results[block_results.len() - 1].block_trace.hash,
         );
         let instance_bytes = serialize_instance(&instance);
+        let proof = transcript.finalize();
+        let name = C::name();
+        log::debug!("{} circuit: proof {:?}", name, &proof[0..15]);
         Ok(TargetCircuitProof {
-            name: C::name(),
-            proof: transcript.finalize(),
+            name,
+            proof,
             instance: instance_bytes,
         })
     }
