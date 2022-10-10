@@ -256,9 +256,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     let block_result = load_block_result_for_test();
 
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
-
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
