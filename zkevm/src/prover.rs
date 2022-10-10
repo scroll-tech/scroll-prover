@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
     deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
-    serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
+    serialize_verify_circuit_final_pair, serialize_vk, write_file, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
 use crate::utils::load_seed;
@@ -92,6 +93,7 @@ pub struct Prover {
 
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,
     pub agg_pk: Option<ProvingKey<G1Affine>>,
+    pub debug_dir: String,
     //pub target_circuit_vks: HashMap<String, ProvingKey<G1Affine>>,
 }
 
@@ -103,6 +105,7 @@ impl Prover {
             rng,
             target_circuit_pks: Default::default(),
             agg_pk: None,
+            debug_dir: Default::default(),
         }
     }
 
@@ -460,7 +463,11 @@ impl Prover {
         let instance_bytes = serialize_instance(&instance);
         let proof = transcript.finalize();
         let name = C::name();
-        log::debug!("{} circuit: proof {:?}", name, &proof[0..15]);
+        log::debug!("{} circuit: proof {:?}, instance len {}", name, &proof[0..15], instance_bytes.len());
+        if !self.debug_dir.is_empty() {
+            let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
+            write_file(&mut folder, &format!("{}.proof", name), &proof);
+        }
         Ok(TargetCircuitProof {
             name,
             proof,

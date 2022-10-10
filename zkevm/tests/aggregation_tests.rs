@@ -29,7 +29,7 @@ fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    //prover.init_agg_pk().unwrap();
+    prover.debug_dir = output_dir.to_string();
     let agg_proof = prover
         .create_agg_circuit_proof_multi(&block_results)
         .unwrap();
