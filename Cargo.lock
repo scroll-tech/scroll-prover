@@ -1397,7 +1397,7 @@ dependencies = [
 [[package]]
 name = "halo2-ecc-circuit-lib"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920#95f9a6e00b864caca16fe96f40247f4e9e79bb4d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#66af45d0bcbec8a1739e03331ba82904347b41d1"
 dependencies = [
  "group",
  "halo2_proofs",
@@ -1426,7 +1426,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-api"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920#95f9a6e00b864caca16fe96f40247f4e9e79bb4d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#66af45d0bcbec8a1739e03331ba82904347b41d1"
 dependencies = [
  "blake2b_simd",
  "chrono",
@@ -1445,7 +1445,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920#95f9a6e00b864caca16fe96f40247f4e9e79bb4d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#66af45d0bcbec8a1739e03331ba82904347b41d1"
 dependencies = [
  "clap",
  "halo2-ecc-circuit-lib",
@@ -1464,7 +1464,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-solidity"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920#95f9a6e00b864caca16fe96f40247f4e9e79bb4d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#66af45d0bcbec8a1739e03331ba82904347b41d1"
 dependencies = [
  "halo2-ecc-circuit-lib",
  "halo2-snark-aggregator-api",
@@ -1480,7 +1480,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#1bd4afde45a11f9ea809f0c407adec91e12ed70d"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#b04667b8faa65694d7c9c601707cf820de9c54bf"
 dependencies = [
  "blake2b_simd",
  "cfg-if 0.1.10",

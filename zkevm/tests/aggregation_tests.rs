@@ -139,8 +139,5 @@ fn test_4in1() {
 
     verifier_circuit_prove(&output, block_results);
     verifier_circuit_verify(&output);
-    let gen_soli: bool = read_env_var("GEN_SOLI", false);
-    if gen_soli {
-        verifier_circuit_generate_solidity(&output);
-    }
+    verifier_circuit_generate_solidity(&output);
 }
