@@ -29,12 +29,16 @@ fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
         .create_agg_circuit_proof_multi(&block_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
+    let sol = prover.create_solidity_verifier(&agg_proof);
+    write_file(
+        &mut out_dir,
+        "verifier2.sol",
+        &Vec::<u8>::from(sol.as_bytes()),
+    );
     log::info!("output files to {}", output_dir);
 }
 
 fn verifier_circuit_generate_solidity(dir: &str) {
-    let template_folder =
-        PathBuf::from("../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates");
     let mut folder = PathBuf::from_str(dir).unwrap();
 
     let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
@@ -62,7 +66,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         proof,
         verify_public_inputs_size: 4,
     };
-    let sol = request.call(template_folder);
+    let sol = request.call("".into());
     write_verify_circuit_solidity(&mut folder, &Vec::<u8>::from(sol.as_bytes()));
     log::info!("write to {}/verifier.sol", dir);
 }

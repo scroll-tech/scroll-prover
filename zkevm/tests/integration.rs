@@ -246,11 +246,7 @@ fn test_state_evm_connect() {
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
 
-    use zkevm::{
-        circuit::DEGREE,
-        utils::{load_or_create_params, load_or_create_seed},
-        verifier::Verifier,
-    };
+    use zkevm::verifier::Verifier;
 
     init();
 

@@ -5,7 +5,7 @@ use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
-    deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
+    deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
@@ -24,6 +24,7 @@ use halo2_snark_aggregator_circuit::verify_circuit::{
     final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
     Halo2VerifierCircuits, SingleProofWitness,
 };
+use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use log::info;
 use once_cell::sync::Lazy;
 
@@ -194,6 +195,17 @@ impl Prover {
             vk,
             instance: vec![instances],
         })
+    }
+
+    pub fn create_solidity_verifier(&self, proof: &AggCircuitProof) -> String {
+        MultiCircuitSolidityGenerate {
+            verify_vk: self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
+            verify_params: &self.agg_params,
+            verify_circuit_instance: load_instances(&proof.instance),
+            proof: proof.proof.clone(),
+            verify_public_inputs_size: 4, // not used now
+        }
+        .call("".into())
     }
 
     pub fn create_agg_circuit_proof(
