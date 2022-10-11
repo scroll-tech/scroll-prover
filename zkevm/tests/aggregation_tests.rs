@@ -11,16 +11,29 @@ use std::str::FromStr;
 use types::eth::BlockResult;
 use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::AggCircuitProof;
-use zkevm::utils::load_or_create_params;
+use zkevm::utils::{load_or_create_params, get_block_result_from_file};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
-fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
+fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
-    fs::create_dir_all(output_dir).unwrap();
+
+    let block_results = if mode == "PACK" {
+        let mut block_results = Vec::new();
+        for block_number in 1..=15 {
+            let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+            let block_result = get_block_result_from_file(trace_path);
+            block_results.push(block_result);
+        }
+        block_results
+    } else {
+        let trace_path = parse_trace_path_from_mode(&mode);
+        vec![get_block_result_from_file(trace_path)]
+    };
+
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
@@ -122,21 +135,8 @@ fn test_4in1() {
         let output_dir = PathBuf::from_str(&output).unwrap();
         fs::create_dir_all(output_dir).unwrap();
     }
-    log::info!("loading setup params");
-    let block_results = if mode == "PACK" {
-        let mut block_results = Vec::new();
-        for block_number in 1..=15 {
-            let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-            let block_result = get_block_result_from_file(trace_path);
-            block_results.push(block_result);
-        }
-        block_results
-    } else {
-        let trace_path = parse_trace_path_from_mode(&mode);
-        vec![get_block_result_from_file(trace_path)]
-    };
 
-    verifier_circuit_prove(&output, block_results);
+    verifier_circuit_prove(&output, &mode);
     verifier_circuit_verify(&output);
     verifier_circuit_generate_solidity(&output);
 }
