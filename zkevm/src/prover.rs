@@ -173,19 +173,20 @@ impl Prover {
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
-    fn debug_load_proved_circuit<C: TargetCircuit>(&mut self) -> anyhow::Result<ProvedCircuit> {
+    pub fn debug_load_proved_circuit<C: TargetCircuit>(&mut self) -> anyhow::Result<ProvedCircuit> {
         assert!(!self.debug_dir.is_empty());
         let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
-        let file = fs::File::open(file_name).unwrap();
-        let proof: TargetCircuitProof = serde_json::from_reader(file);
-        self.convert_target_proof(&proof)
+        let file = std::fs::File::open(file_name)?;
+        let proof: TargetCircuitProof = serde_json::from_reader(file)?;
+        self.convert_target_proof::<C>(&proof)
     }
 
-    fn prove_circuit<C: TargetCircuit>(
+    pub fn prove_circuit<C: TargetCircuit>(
         &mut self,
         block_results: &[BlockResult],
     ) -> anyhow::Result<ProvedCircuit> {
-        self.convert_target_proof(&self.create_target_circuit_proof_multi(block_results)?)
+        let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
+        self.convert_target_proof::<C>(&proof)
     }
 
     fn convert_target_proof<C: TargetCircuit>(
@@ -197,7 +198,7 @@ impl Prover {
         debug_assert!(instances.is_empty(), "instance not supported yet");
         let vk = match self.target_circuit_pks.get(&proof.name) {
             Some(pk) => pk.get_vk().clone(),
-            None => keygen_vk(&self.params, &C::empty()),
+            None => keygen_vk(&self.params, &C::empty()).unwrap(),
         };
         if *OPT_MEM {
             Self::tick(&format!("before release pk of {}", C::name()));
@@ -207,7 +208,7 @@ impl Prover {
 
         Ok(ProvedCircuit {
             name: proof.name.clone(),
-            transcript: proof.proof,
+            transcript: proof.proof.clone(),
             vk,
             instance: vec![instances],
         })
@@ -498,7 +499,7 @@ impl Prover {
         );
         let target_proof = TargetCircuitProof {
             name: name.clone(),
-            proof: proof.clone(),
+            proof,
             instance: instance_bytes,
         };
         if !self.debug_dir.is_empty() {

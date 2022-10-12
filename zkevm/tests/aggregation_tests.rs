@@ -5,12 +5,11 @@ use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use std::fs::{self};
 use std::io::Cursor;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use types::eth::BlockResult;
-use zkevm::circuit::AGG_DEGREE;
-use zkevm::prover::AggCircuitProof;
+use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE};
+use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::utils::{get_block_result_from_file, load_or_create_params};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
@@ -26,14 +25,16 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     prover.debug_dir = output_dir.to_string();
 
     // auto load target proofs
-    let load = Path::new(format!("{}/full_proof.data", output_dir)).exists();
+    let load = Path::new(&format!("{}/zktrie_proof.json", output_dir)).exists();
     let circuit_results: Vec<ProvedCircuit> = if load {
         log::info!("loading cached target proofs");
         vec![
-            prover.debug_load_proved_circuit::<EvmCircuit>(block_results)?,
-            prover.debug_load_proved_circuit::<StateCircuit>(block_results)?,
-            prover.debug_load_proved_circuit::<PoseidonCircuit>(block_results)?,
-            prover.debug_load_proved_circuit::<ZktrieCircuit>(block_results)?,
+            prover.debug_load_proved_circuit::<EvmCircuit>().unwrap(),
+            prover.debug_load_proved_circuit::<StateCircuit>().unwrap(),
+            prover
+                .debug_load_proved_circuit::<PoseidonCircuit>()
+                .unwrap(),
+            prover.debug_load_proved_circuit::<ZktrieCircuit>().unwrap(),
         ]
     } else {
         let block_results = if mode == "PACK" {
@@ -45,19 +46,25 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
             }
             block_results
         } else {
-            let trace_path = parse_trace_path_from_mode(&mode);
+            let trace_path = parse_trace_path_from_mode(mode);
             vec![get_block_result_from_file(trace_path)]
         };
         vec![
-            prover.prove_circuit::<EvmCircuit>(block_results)?,
-            prover.prove_circuit::<StateCircuit>(block_results)?,
-            prover.prove_circuit::<PoseidonCircuit>(block_results)?,
-            prover.prove_circuit::<ZktrieCircuit>(block_results)?,
+            prover.prove_circuit::<EvmCircuit>(&block_results).unwrap(),
+            prover
+                .prove_circuit::<StateCircuit>(&block_results)
+                .unwrap(),
+            prover
+                .prove_circuit::<PoseidonCircuit>(&block_results)
+                .unwrap(),
+            prover
+                .prove_circuit::<ZktrieCircuit>(&block_results)
+                .unwrap(),
         ]
     };
 
     let agg_proof = prover
-        .create_agg_circuit_proof_multi_impl(&circuit_results)
+        .create_agg_circuit_proof_impl(circuit_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
     let sol = prover.create_solidity_verifier(&agg_proof);
@@ -138,7 +145,7 @@ fn verifier_circuit_verify(d: &str) {
 #[test]
 fn test_4in1() {
     use chrono::Utc;
-    use zkevm::utils::{get_block_result_from_file, read_env_var};
+    use zkevm::utils::read_env_var;
 
     init();
     let exp_name = read_env_var("EXP", "".to_string());
