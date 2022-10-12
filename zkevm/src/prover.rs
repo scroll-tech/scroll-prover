@@ -173,16 +173,32 @@ impl Prover {
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
+    fn debug_load_proved_circuit<C: TargetCircuit>(&mut self) -> anyhow::Result<ProvedCircuit> {
+        assert!(!self.debug_dir.is_empty());
+        let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
+        let file = fs::File::open(file_name).unwrap();
+        let proof: TargetCircuitProof = serde_json::from_reader(file);
+        self.convert_target_proof(&proof)
+    }
+
     fn prove_circuit<C: TargetCircuit>(
         &mut self,
         block_results: &[BlockResult],
     ) -> anyhow::Result<ProvedCircuit> {
-        let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
+        self.convert_target_proof(&self.create_target_circuit_proof_multi(block_results)?)
+    }
 
+    fn convert_target_proof<C: TargetCircuit>(
+        &mut self,
+        proof: &TargetCircuitProof,
+    ) -> anyhow::Result<ProvedCircuit> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);
         debug_assert!(instances.is_empty(), "instance not supported yet");
-        let vk = self.target_circuit_pks[&proof.name].get_vk().clone();
+        let vk = match self.target_circuit_pks.get(&proof.name) {
+            Some(pk) => pk.get_vk().clone(),
+            None => keygen_vk(&self.params, &C::empty()),
+        };
         if *OPT_MEM {
             Self::tick(&format!("before release pk of {}", C::name()));
             self.target_circuit_pks.remove(&C::name());
@@ -265,7 +281,7 @@ impl Prover {
         coherent
     }
 
-    fn create_agg_circuit_proof_impl(
+    pub fn create_agg_circuit_proof_impl(
         &mut self,
         circuit_results: Vec<ProvedCircuit>,
     ) -> anyhow::Result<AggCircuitProof> {
@@ -495,9 +511,9 @@ impl Prover {
             // write proof
             //let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
             //write_file(&mut folder, &format!("{}.proof", name), &proof);
-            let output_file = format!("{}/{}_proof.json", self.debug_dir, name,);
+            let output_file = format!("{}/{}_proof.json", self.debug_dir, name);
             let mut fd = std::fs::File::create(&output_file).unwrap();
-            serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
+            serde_json::to_writer_pretty(&mut fd, &target_proof).unwrap();
         }
         Ok(target_proof)
     }

@@ -11,7 +11,7 @@ use std::str::FromStr;
 use types::eth::BlockResult;
 use zkevm::circuit::AGG_DEGREE;
 use zkevm::prover::AggCircuitProof;
-use zkevm::utils::{load_or_create_params, get_block_result_from_file};
+use zkevm::utils::{get_block_result_from_file, load_or_create_params};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
@@ -20,26 +20,44 @@ use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
-
-    let block_results = if mode == "PACK" {
-        let mut block_results = Vec::new();
-        for block_number in 1..=15 {
-            let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-            let block_result = get_block_result_from_file(trace_path);
-            block_results.push(block_result);
-        }
-        block_results
-    } else {
-        let trace_path = parse_trace_path_from_mode(&mode);
-        vec![get_block_result_from_file(trace_path)]
-    };
-
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     prover.debug_dir = output_dir.to_string();
+
+    // auto load target proofs
+    let load = Path::new(format!("{}/full_proof.data", output_dir)).exists();
+    let circuit_results: Vec<ProvedCircuit> = if load {
+        log::info!("loading cached target proofs");
+        vec![
+            prover.debug_load_proved_circuit::<EvmCircuit>(block_results)?,
+            prover.debug_load_proved_circuit::<StateCircuit>(block_results)?,
+            prover.debug_load_proved_circuit::<PoseidonCircuit>(block_results)?,
+            prover.debug_load_proved_circuit::<ZktrieCircuit>(block_results)?,
+        ]
+    } else {
+        let block_results = if mode == "PACK" {
+            let mut block_results = Vec::new();
+            for block_number in 1..=15 {
+                let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+                let block_result = get_block_result_from_file(trace_path);
+                block_results.push(block_result);
+            }
+            block_results
+        } else {
+            let trace_path = parse_trace_path_from_mode(&mode);
+            vec![get_block_result_from_file(trace_path)]
+        };
+        vec![
+            prover.prove_circuit::<EvmCircuit>(block_results)?,
+            prover.prove_circuit::<StateCircuit>(block_results)?,
+            prover.prove_circuit::<PoseidonCircuit>(block_results)?,
+            prover.prove_circuit::<ZktrieCircuit>(block_results)?,
+        ]
+    };
+
     let agg_proof = prover
-        .create_agg_circuit_proof_multi(&block_results)
+        .create_agg_circuit_proof_multi_impl(&circuit_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
     let sol = prover.create_solidity_verifier(&agg_proof);
