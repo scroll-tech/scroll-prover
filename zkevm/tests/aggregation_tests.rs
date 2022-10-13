@@ -27,14 +27,21 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     // auto load target proofs
     let load = Path::new(&format!("{}/zktrie_proof.json", output_dir)).exists();
     let circuit_results: Vec<ProvedCircuit> = if load {
+        let mut v = Verifier::from_fpath(PARAMS_DIR, None);
         log::info!("loading cached target proofs");
         vec![
-            prover.debug_load_proved_circuit::<EvmCircuit>().unwrap(),
-            prover.debug_load_proved_circuit::<StateCircuit>().unwrap(),
             prover
-                .debug_load_proved_circuit::<PoseidonCircuit>()
+                .debug_load_proved_circuit::<EvmCircuit>(Some(&mut v))
                 .unwrap(),
-            prover.debug_load_proved_circuit::<ZktrieCircuit>().unwrap(),
+            prover
+                .debug_load_proved_circuit::<StateCircuit>(Some(&mut v))
+                .unwrap(),
+            prover
+                .debug_load_proved_circuit::<PoseidonCircuit>(Some(&mut v))
+                .unwrap(),
+            prover
+                .debug_load_proved_circuit::<ZktrieCircuit>(Some(&mut v))
+                .unwrap(),
         ]
     } else {
         let block_results = if mode == "PACK" {

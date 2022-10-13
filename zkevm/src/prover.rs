@@ -173,11 +173,17 @@ impl Prover {
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
-    pub fn debug_load_proved_circuit<C: TargetCircuit>(&mut self) -> anyhow::Result<ProvedCircuit> {
+    pub fn debug_load_proved_circuit<C: TargetCircuit>(
+        &mut self,
+        v: Option<&mut crate::verifier::Verifier>,
+    ) -> anyhow::Result<ProvedCircuit> {
         assert!(!self.debug_dir.is_empty());
         let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
         let file = std::fs::File::open(file_name)?;
         let proof: TargetCircuitProof = serde_json::from_reader(file)?;
+        if let Some(v) = v {
+            v.verify_target_circuit_proof::<C>(&proof).unwrap();
+        }
         self.convert_target_proof::<C>(&proof)
     }
 
