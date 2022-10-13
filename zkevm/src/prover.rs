@@ -37,6 +37,12 @@ use types::eth::BlockResult;
 #[cfg(target_os = "linux")]
 extern crate procfs;
 
+pub const ENABLE_COHERENT: bool = false;
+pub const CIRCUIT_NUM: usize = 1;
+fn from_0_to_n<const N: usize>() -> [usize; N] {
+    core::array::from_fn(|i| i)
+}
+
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
@@ -148,17 +154,6 @@ impl Prover {
         agg_params: ParamsKZG<Bn256>,
         seed: [u8; 16],
     ) -> Self {
-        let rng = XorShiftRng::from_seed(seed);
-        Self::from_params_and_rng(params, agg_params, rng)
-    }
-
-    pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
-        let params = load_or_create_params(params_fpath, *DEGREE).expect("failed to init params");
-        let agg_params =
-            load_or_create_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
-        let seed = load_seed(seed_fpath).expect("failed to init rng");
-        let rng = XorShiftRng::from_seed(seed);
-        // FIXME check params
         {
             let target_params_verifier: &ParamsVerifierKZG<Bn256> = params.verifier_params();
             let agg_params_verifier: &ParamsVerifierKZG<Bn256> = agg_params.verifier_params();
@@ -170,7 +165,16 @@ impl Prover {
             debug_assert_eq!(target_params_verifier.s_g2(), agg_params_verifier.s_g2());
             debug_assert_eq!(target_params_verifier.g2(), agg_params_verifier.g2());
         }
+        let rng = XorShiftRng::from_seed(seed);
         Self::from_params_and_rng(params, agg_params, rng)
+    }
+
+    pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
+        let params = load_or_create_params(params_fpath, *DEGREE).expect("failed to init params");
+        let agg_params =
+            load_or_create_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
+        let seed = load_seed(seed_fpath).expect("failed to init rng");
+        Self::from_params_and_seed(params, agg_params, seed)
     }
 
     pub fn debug_load_proved_circuit<C: TargetCircuit>(
@@ -178,6 +182,7 @@ impl Prover {
         v: Option<&mut crate::verifier::Verifier>,
     ) -> anyhow::Result<ProvedCircuit> {
         assert!(!self.debug_dir.is_empty());
+        log::debug!("debug_load_proved_circuit {}", C::name());
         let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
         let file = std::fs::File::open(file_name)?;
         let proof: TargetCircuitProof = serde_json::from_reader(file)?;
@@ -292,12 +297,17 @@ impl Prover {
         &mut self,
         circuit_results: Vec<ProvedCircuit>,
     ) -> anyhow::Result<AggCircuitProof> {
+        let target_circuits = from_0_to_n::<CIRCUIT_NUM>();
         ///////////////////////////// build verifier circuit from block result ///////////////////
 
-        let coherent = Self::build_coherent();
+        let coherent = if ENABLE_COHERENT {
+            Self::build_coherent()
+        } else {
+            Default::default()
+        };
 
-        // check commitments equality
-        {
+        if ENABLE_COHERENT {
+            // check commitments equality
             let load_commitment = |proof: &[u8], start| {
                 let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
                 for _ in 0..start {
@@ -323,8 +333,8 @@ impl Prover {
         }
 
         let verifier_params = self.params.verifier_params();
-        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 4> {
-            circuits: [0, 1, 2, 3].map(|i| {
+        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, CIRCUIT_NUM> {
+            circuits: target_circuits.map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
                     name: c.name.clone(),
@@ -340,18 +350,18 @@ impl Prover {
             coherent,
         };
         ///////////////////////////// build verifier circuit from block result done ///////////////////
-        let n_instances = [0, 1, 2, 3].map(|i| vec![circuit_results[i].instance.clone()]);
-        let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
-        let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
-            [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
+        let n_instances = target_circuits.map(|i| vec![circuit_results[i].instance.clone()]);
+        let n_transcript = target_circuits.map(|i| vec![circuit_results[i].transcript.clone()]);
+        let instances: [Halo2CircuitInstance<'_, Bn256>; CIRCUIT_NUM] =
+            target_circuits.map(|i| Halo2CircuitInstance {
                 name: circuit_results[i].name.clone(),
                 params: verifier_params,
                 vk: &circuit_results[i].vk,
                 n_instances: &n_instances[i],
                 n_transcript: &n_transcript[i],
             });
-        let verify_circuit_final_pair =
-            Halo2CircuitInstances::<'_, Bn256, 4>(instances).calc_verify_circuit_final_pair();
+        let verify_circuit_final_pair = Halo2CircuitInstances::<'_, Bn256, CIRCUIT_NUM>(instances)
+            .calc_verify_circuit_final_pair();
         log::debug!("final pair {:?}", verify_circuit_final_pair);
         let verify_circuit_instances =
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);

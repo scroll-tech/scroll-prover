@@ -8,9 +8,11 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE};
+use zkevm::circuit::{
+    EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
+};
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
-use zkevm::utils::{get_block_result_from_file, load_or_create_params};
+use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
@@ -21,13 +23,17 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
+    let params = load_or_create_params(PARAMS_DIR, *DEGREE).expect("failed to init params");
+    let agg_params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).expect("failed to init params");
+    let seed = load_seed(SEED_PATH).expect("failed to init rng");
+
+    let mut prover = Prover::from_params_and_seed(params.clone(), agg_params.clone(), seed);
     prover.debug_dir = output_dir.to_string();
 
     // auto load target proofs
     let load = Path::new(&format!("{}/zktrie_proof.json", output_dir)).exists();
     let circuit_results: Vec<ProvedCircuit> = if load {
-        let mut v = Verifier::from_fpath(PARAMS_DIR, None);
+        let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
         vec![
             prover
