@@ -37,8 +37,8 @@ use types::eth::BlockResult;
 #[cfg(target_os = "linux")]
 extern crate procfs;
 
-pub const ENABLE_COHERENT: bool = false;
-pub const CIRCUIT_NUM: usize = 1;
+pub const ENABLE_COHERENT: bool = true;
+pub const CIRCUIT_NUM: usize = 4;
 fn from_0_to_n<const N: usize>() -> [usize; N] {
     core::array::from_fn(|i| i)
 }
