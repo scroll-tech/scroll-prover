@@ -1397,7 +1397,7 @@ dependencies = [
 [[package]]
 name = "halo2-ecc-circuit-lib"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#9024b0e014b9734f8ceff86e7ed5b177dfd38246"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#90453a140e9de23ff47bc4c0c683c04c8daf03fc"
 dependencies = [
  "group",
  "halo2_proofs",
@@ -1426,7 +1426,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-api"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#9024b0e014b9734f8ceff86e7ed5b177dfd38246"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#90453a140e9de23ff47bc4c0c683c04c8daf03fc"
 dependencies = [
  "blake2b_simd",
  "chrono",
@@ -1445,7 +1445,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#9024b0e014b9734f8ceff86e7ed5b177dfd38246"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#90453a140e9de23ff47bc4c0c683c04c8daf03fc"
 dependencies = [
  "clap",
  "halo2-ecc-circuit-lib",
@@ -1464,7 +1464,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-solidity"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#9024b0e014b9734f8ceff86e7ed5b177dfd38246"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#90453a140e9de23ff47bc4c0c683c04c8daf03fc"
 dependencies = [
  "halo2-ecc-circuit-lib",
  "halo2-snark-aggregator-api",
@@ -1480,7 +1480,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#a960c7ebe7152ad70d899d8d59b1bcca14bebc4d"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#6f18f38e82d302cd8b6ce8809b59c32350b019a3"
 dependencies = [
  "blake2b_simd",
  "cfg-if 0.1.10",
