@@ -74,7 +74,7 @@ impl CanRead for AccountData {
 
 impl Into<mpt_circuits::serde::AccountData> for AccountData {
     fn into(self) -> mpt_circuits::serde::AccountData {
-        let mut balance = Vec::new();
+        let mut balance : [u8; 32]= [0; 32];
         self.balance.to_big_endian(balance.as_mut_slice());
         let balance = BigUint::from_bytes_be(balance.as_slice());
         let code_hash = BigUint::from_bytes_be(self.code_hash.as_bytes());

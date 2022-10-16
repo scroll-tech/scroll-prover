@@ -1,6 +1,5 @@
-use super::mpt::{CanRead, TrieProof, AccountProof};
+use super::mpt::{CanRead, TrieProof, AccountProof, AccountData, extend_address_to_h256, StorageProof};
 use crate::circuit::builder::verify_proof_leaf;
-use crate::circuit::mpt::{AccountData, extend_address_to_h256, StorageProof};
 use eth_types::{Hash, Bytes, H256, U256};
 use ethers_core::abi::Address;
 use mpt_circuits::hash::Hashable;
@@ -19,7 +18,7 @@ use std::io::{Error as IoError, Read};
 pub struct WitnessGenerator {
     db: ZkMemoryDb,
     trie: ZkTrie,
-    accounts: HashMap<Address, AccountProof>,
+    accounts: HashMap<Address, Option<AccountData>>,
     storages: HashMap<Address, ZkTrie>,
 }
 
@@ -78,30 +77,32 @@ impl WitnessGenerator {
                 db.add_node_bytes(bytes.as_ref()).unwrap();
             });
 
-        let accounts: HashMap<Address, AccountProof> = storage_trace
+        let accounts: HashMap<Address, Option<AccountData>> = storage_trace
             .proofs
             .iter()
             .flatten()
             .map(|(account, proofs)| {
-                let proof = proofs.as_slice().try_into().unwrap();
-                let proof = verify_proof_leaf(proof, &extend_address_to_h256(account));
-                (*account, proof)
+                let proof : AccountProof = verify_proof_leaf(proofs.as_slice().try_into().unwrap(), &extend_address_to_h256(account));
+                (*account, proof.key.as_ref().map(|_|proof.data))
             })
             .collect();
 
         let mut storages = HashMap::new();
         for (account, storage_map) in storage_trace.storage_proofs.iter() {
             assert!(accounts.contains_key(account));
-            if accounts[account].key.is_none() {
-                storages.insert(*account, db.new_trie(&Hash::zero().0).unwrap());
-            }
+            let acc_data = accounts.get(account).unwrap();
+            let mut s_trie = db.new_trie(&acc_data.map(|d|d.storage_root).unwrap_or_else(Hash::zero).0).unwrap();
+            
             for (k, v_proofs) in storage_map {
                 let mut k_buf: [u8; 32] = [0; 32];
                 k.to_big_endian(&mut k_buf[..]);
-                let proof: StorageProof = v_proofs.as_slice().try_into().unwrap();
-                let _ = verify_proof_leaf(proof, &k_buf);
-                storages.insert(*account, db.new_trie(&k_buf).unwrap());
+                let proof: StorageProof = verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
+                let mut data: zktrie::StoreData = [0; 32];
+                proof.data.as_ref().to_big_endian(&mut data);
+                s_trie.update_store(&k_buf, &data).unwrap();
             }
+
+            storages.insert(*account, s_trie);
         }
 
         let trie = db.new_trie(&storage_trace.root_before.0).unwrap();
@@ -146,14 +147,10 @@ impl WitnessGenerator {
         let storage_after_proofs = trie.prove(key.as_ref());
         let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
 
-        let mut out = self.trace_account_update(address, |acc_data| {
-            let mut acc = acc_data.data;
+        let mut out = self.trace_account_update(address, |acc| {
+            let mut acc = acc.clone();
             acc.storage_root = H256::from(storage_after_path.as_ref().unwrap().root.as_ref());
-            AccountProof {
-                data: acc,
-                key: acc_data.key,
-                ..Default::default()
-            }
+            Some(acc)
         });
         if store_before.is_some() {
             out.state_key = Some(
@@ -191,41 +188,31 @@ impl WitnessGenerator {
 
     fn trace_account_update<U>(&mut self, address: Address, update_account_data: U) -> SMTTrace
     where
-        U: FnOnce(&AccountProof) -> AccountProof,
+        U: FnOnce(&AccountData) -> Option<AccountData>,
     {
         let account_data_before = self
             .accounts
             .get(&address)
-            .expect("todo: handle this");
+            .expect("todo: handle this")
+            .clone();
 
         let proofs = self.trie.prove(address.as_bytes());
         let address_key = hash_zktrie_key(&extend_address_to_h256(&address));
 
         let account_path_before = decode_proof_for_mpt_path(address_key, proofs).unwrap();
-        // TODO: verify account for sanity check
-        let (account_key, account_update_before) = if account_data_before.key.is_some() {
-            (Some(account_path_before.leaf.clone().unwrap().sibling), Some(account_data_before.data.into()))
-        } else {
-            (None, None)
-        };
 
-        let account_data_after = update_account_data(account_data_before);
-        let account_update_after = if account_data_after.key.is_some() {
-            Some(account_data_after.data.into())
-        } else {
-            None
-        };
+        let account_data_after = update_account_data(&account_data_before.unwrap_or_default());
 
-        if account_data_after.key.is_some() {
+        if let Some(account_data_after) = account_data_after {
             let mut nonce = [0u8; 32];
-            U256::from(account_data_after.data.nonce).to_big_endian(&mut nonce.as_mut_slice());
+            U256::from(account_data_after.nonce).to_big_endian(&mut nonce.as_mut_slice());
             let mut balance = [0u8; 32];
-            U256::from(account_data_after.data.balance).to_big_endian(&mut balance.as_mut_slice());
+            U256::from(account_data_after.balance).to_big_endian(&mut balance.as_mut_slice());
             let mut code_hash = [0u8; 32];
-            U256::from(account_data_after.data.code_hash.0).to_big_endian(&mut code_hash.as_mut_slice());
+            U256::from(account_data_after.code_hash.0).to_big_endian(&mut code_hash.as_mut_slice());
             let acc_data = [nonce, balance, code_hash, [0; 32]];
             self.trie.update_account(address.as_bytes(), &acc_data).expect("todo: handle this");
-            self.accounts.insert(address, account_data_after);
+            self.accounts.insert(address, Some(account_data_after));
         } else {
             self.trie.delete(address.as_bytes());
             self.accounts.remove(&address);
@@ -238,8 +225,8 @@ impl WitnessGenerator {
         SMTTrace {
             address: HexBytes(address.0),
             account_path: [account_path_before.clone(), account_path_after.clone()],
-            account_update: [account_update_before, account_update_after.clone()],
-            account_key: account_key.unwrap_or(account_path_after.leaf.unwrap().sibling),
+            account_update: [account_data_before.map(Into::into), account_data_after.map(Into::into)],
+            account_key: HexBytes(address_key.to_repr().as_ref().try_into().unwrap()),
             state_path: [None, None],
             common_state_root: None,
             state_key: None,
@@ -265,14 +252,9 @@ impl WitnessGenerator {
                 let mut out = self.trace_account_update(
                     account_proof.address.unwrap(),
                     |acc_before| {
-                        if acc_before.key.is_none() {
-                            acc_data.storage_root = acc_before.data.storage_root;
-                        }
-                        AccountProof {
-                            data: acc_data,
-                            key: acc_before.key,
-                            path: vec![], // FIXME: is this correct?
-                        }
+                        let mut acc = acc_before.clone();
+                        acc.storage_root = acc_before.storage_root;
+                        Some(acc)
                     }
                 );
                 out.common_state_root = Some(HexBytes(acc_data.storage_root.0));
@@ -405,13 +387,13 @@ mod tests {
         let mut w = WitnessGenerator::new(&block_result);
 
         let target_addr = Address::from_slice(hex::decode("4cb1aB63aF5D8931Ce09673EbD8ae2ce16fD6571").unwrap().as_slice());
-        let start_state = w.accounts.get(&target_addr).unwrap();
+        let start_state = w.accounts.get(&target_addr).unwrap().unwrap(); // we pick an existed account
 
         let mut_state = AccountProofWrapper {
             address: Some(target_addr),
-            nonce: Some(start_state.data.nonce),
-            balance: Some(start_state.data.balance + U256::from(1 as u64)),
-            code_hash: Some(start_state.data.code_hash),
+            nonce: Some(start_state.nonce),
+            balance: Some(start_state.balance + U256::from(1 as u64)),
+            code_hash: Some(start_state.code_hash),
             ..Default::default()
         };
         let trace = w.handle_new_state(&mut_state);
