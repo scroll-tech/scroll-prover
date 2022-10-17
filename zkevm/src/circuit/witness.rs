@@ -309,6 +309,13 @@ impl AsRef<[u8]> for LeafNodeHash {
 
 fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMTPath, IoError> {
 
+    let root = if let Some(arr) = proofs.first() {
+        let n = ZkTrieNode::parse(arr.as_slice());
+        HexBytes(n.key())
+    } else {
+        HexBytes::<32>([0; 32])
+    };
+
     let proof_bytes: Vec<_> = proofs.into_iter().map(Bytes::from).collect();
     let trie_proof = TrieProof::<LeafNodeHash>::try_from(proof_bytes.as_slice())?;
 
@@ -346,7 +353,7 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
     );
 
     Ok(SMTPath{
-        root: HexBytes::<32>([0; 32]),
+        root,
         leaf,
         path,
         path_part,
