@@ -254,7 +254,7 @@ pub struct AccountProofWrapper {
     pub storage: Option<StorageProofWrapper>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct StorageProofWrapper {
     pub key: Option<U256>,
     pub value: Option<U256>,

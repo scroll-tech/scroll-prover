@@ -228,7 +228,7 @@ impl WitnessGenerator {
             account_update: [account_data_before.map(Into::into), account_data_after.map(Into::into)],
             account_key: HexBytes(address_key.to_repr().as_ref().try_into().unwrap()),
             state_path: [None, None],
-            common_state_root: None,
+            common_state_root: account_data_before.map(|data| HexBytes(data.storage_root.0)).or_else(||Some(HexBytes([0;32]))),
             state_key: None,
             state_update: None,
         }
@@ -249,16 +249,13 @@ impl WitnessGenerator {
             }
             None => {
                 let mut acc_data: AccountData = account_proof.into();
-                let mut out = self.trace_account_update(
+                self.trace_account_update(
                     account_proof.address.unwrap(),
                     |acc_before| {
-                        let mut acc = acc_before.clone();
-                        acc.storage_root = acc_before.storage_root;
-                        Some(acc)
+                        acc_data.storage_root = acc_before.storage_root;
+                        Some(acc_data)
                     }
-                );
-                out.common_state_root = Some(HexBytes(acc_data.storage_root.0));
-                out
+                )
             }
         }
     }
@@ -365,7 +362,6 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
 mod tests {
 
     use super::*;
-    use types::eth::StorageTrace;
     use crate::utils::get_block_result_from_file;
 
     #[test]
@@ -393,10 +389,10 @@ mod tests {
         let block_result = get_block_result_from_file(trace_path);
         let mut w = WitnessGenerator::new(&block_result);
 
-        let target_addr = Address::from_slice(hex::decode("4cb1aB63aF5D8931Ce09673EbD8ae2ce16fD6571").unwrap().as_slice());
+        let target_addr = Address::from_slice(hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab").unwrap().as_slice());
         let start_state = w.accounts.get(&target_addr).unwrap().unwrap(); // we pick an existed account
 
-        let mut_state = AccountProofWrapper {
+        let mut mut_state = AccountProofWrapper {
             address: Some(target_addr),
             nonce: Some(start_state.nonce),
             balance: Some(start_state.balance + U256::from(1 as u64)),
@@ -411,5 +407,19 @@ mod tests {
         assert_eq!(new_root, new_acc_root.0);
 
         println!("ret {:?}", trace);
-    }    
+
+        mut_state.storage = Some(StorageProofWrapper { key: Some(U256::zero()), value: Some(U256::from(1u32)), ..Default::default() });
+
+        let trace = w.handle_new_state(&mut_state);
+
+        let new_root = w.trie.root();
+
+        let new_acc_root = trace.account_path[1].root;
+        assert_eq!(new_root, new_acc_root.0);
+
+        println!("ret {:?}", trace);
+
+    }
+    
+
 }
