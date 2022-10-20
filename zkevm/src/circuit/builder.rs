@@ -201,26 +201,17 @@ pub fn build_statedb_and_codedb(
         let storage_trace = &block.storage_trace;
         if let Some(acc_proofs) = &storage_trace.proofs {
             for (addr, acc) in acc_proofs.iter() {
-                let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
-                let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
-                if acc.key.is_some() {
-                    // a valid leaf
-                    let (_, acc_mut) = sdb.get_account_mut(addr);
-                    acc_mut.nonce = acc.data.nonce.into();
-                    acc_mut.code_hash = acc.data.code_hash;
-                    acc_mut.balance = acc.data.balance;
-                } else {
-                    // TODO(@noel2004): please complete the comment below.
-                    // only
-                    sdb.set_account(
-                        addr,
-                        Account {
-                            nonce: Default::default(),
-                            balance: Default::default(),
-                            storage: HashMap::new(),
-                            code_hash: Default::default(),
-                        },
-                    );
+                let (existed, acc_mut) = sdb.get_account_mut(addr);
+                if !existed {
+                    let acc_proof: mpt::AccountProof = acc.as_slice().try_into()?;
+                    let acc = verify_proof_leaf(acc_proof, &extend_address_to_h256(addr));
+                    if acc.key.is_some() {
+                        // a valid leaf
+                        acc_mut.nonce = acc.data.nonce.into();
+                        acc_mut.code_hash = acc.data.code_hash;
+                        acc_mut.balance = acc.data.balance;
+                    } // there is no need to insert an zero account because
+                      // `get_account_mut` would create it
                 }
             }
         }
@@ -233,19 +224,21 @@ pub fn build_statedb_and_codedb(
             }
 
             for (k, val) in s_map {
-                let mut k_buf: [u8; 32] = [0; 32];
-                k.to_big_endian(&mut k_buf[..]);
-                let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
-                let val = verify_proof_leaf(val_proof, &k_buf);
+                if acc.storage.get(k).is_none() {
+                    let mut k_buf: [u8; 32] = [0; 32];
+                    k.to_big_endian(&mut k_buf[..]);
+                    let val_proof: mpt::StorageProof = val.as_slice().try_into()?;
+                    let val = verify_proof_leaf(val_proof, &k_buf);
 
-                if val.key.is_some() {
-                    // a valid leaf
-                    acc.storage.insert(*k, *val.data.as_ref());
-                //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
-                } else {
-                    // add 0
-                    acc.storage.insert(*k, Default::default());
-                    //                log::info!("set empty storage {:?} {:?}", addr, k);
+                    if val.key.is_some() {
+                        // a valid leaf
+                        acc.storage.insert(*k, *val.data.as_ref());
+                    //                log::info!("set storage {:?} {:?} {:?}", addr, k, val.data);
+                    } else {
+                        // add 0
+                        acc.storage.insert(*k, Default::default());
+                        //                log::info!("set empty storage {:?} {:?}", addr, k);
+                    }
                 }
             }
         }
