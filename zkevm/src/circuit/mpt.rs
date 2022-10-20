@@ -5,7 +5,10 @@ use std::{
     io::{Error, ErrorKind, Read},
 };
 use num_bigint::BigUint;
-use types::eth::AccountProofWrapper;
+use types::eth::{AccountProofWrapper, StorageProofWrapper};
+use halo2_proofs::pairing::bn256::Fr;
+use bus_mapping::state_db::StateDB;
+use zkevm_circuits::evm_circuit::witness::{Block as BlockWitness, Rw, RwMap};
 
 pub const NODE_TYPE_MIDDLE: u8 = 0;
 pub const NODE_TYPE_LEAF: u8 = 1;
@@ -162,6 +165,111 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
 
         Err(Error::new(ErrorKind::UnexpectedEof, "no leaf key found"))
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct RwAccountId (u64, Address, Word);
+
+impl From<&Rw> for RwAccountId {
+    fn from(rw: &Rw) -> Self {
+        Self(
+            rw.field_tag().expect("should be account rw"), 
+            rw.address().expect("should be account rw"), 
+            rw.storage_key().unwrap_or_else(Word::zero),
+        )
+    }
+}
+
+pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness<Fr>) -> Vec<AccountProofWrapper>{
+
+    use std::collections::HashMap;
+    use zkevm_circuits::table::{AccountFieldTag, RwTableTag};
+
+    let mut out_entries = Vec::new();
+
+    let (rw_acc, rw_storage) = (
+        block_wit.rws.0.get(&RwTableTag::Account),
+        block_wit.rws.0.get(&RwTableTag::AccountStorage),
+    );
+
+    if let Some(rws) = rw_acc {
+        let mut sorter = RwMap(HashMap::new());
+        sorter.0.insert(RwTableTag::Account, rws.clone());
+        let rws = sorter.table_assignments();
+
+        let mut last_addr : Option<RwAccountId> = None;
+        for rw in rws {
+            let rw_id : RwAccountId = From::from(&rw);
+            if Some(rw_id) != last_addr {
+                last_addr = Some(rw_id);
+
+                let addr = rw_id.1;
+                let (existed, acc_data) = sdb.get_account_mut(&addr);
+                assert!(existed, "account must be inited in sdb");
+
+                let (val, _) = rw.account_value_pair();
+
+                match rw_id.0 {
+                    tag if tag == AccountFieldTag::Nonce as u64 => 
+                        {acc_data.nonce = val;},
+                    tag if tag == AccountFieldTag::Balance as u64 =>
+                        {acc_data.balance = val;},
+                    tag if tag == AccountFieldTag::CodeHash as u64 => {
+                        let mut out_bytes : [u8; 32] = [0; 32];
+                        val.to_big_endian(&mut out_bytes);
+                        acc_data.code_hash = H256::from_slice(&out_bytes);
+                    },
+                    _ => unreachable!(),
+                };
+
+                out_entries.push(AccountProofWrapper{
+                    address: Some(addr),
+                    nonce: Some(acc_data.nonce.as_u64()),
+                    balance: Some(acc_data.balance),
+                    code_hash: Some(acc_data.code_hash),
+                    ..Default::default()
+                });
+            }
+        }
+    }
+
+    if let Some(rws) = rw_storage {
+        let mut sorter = RwMap(HashMap::new());
+        sorter.0.insert(RwTableTag::AccountStorage, rws.clone());
+        let rws = sorter.table_assignments();
+
+        let mut last_addr : Option<RwAccountId> = None;
+        for rw in rws {
+            let rw_id : RwAccountId = From::from(&rw);
+            if Some(rw_id) != last_addr {
+                last_addr = Some(rw_id);
+
+                let addr = rw_id.1;
+                let (existed, acc_data) = sdb.get_account(&addr);
+                assert!(existed, "account must be inited in sdb");
+
+                let key = rw.storage_key().expect("should be storage rw");
+                let (val, _, _, _) = rw.storage_value_aux();
+                out_entries.push(AccountProofWrapper{
+                    address: Some(addr),
+                    nonce: Some(acc_data.nonce.as_u64()),
+                    balance: Some(acc_data.balance),
+                    code_hash: Some(acc_data.code_hash),
+                    storage: Some(StorageProofWrapper {
+                        key: Some(key),
+                        value: Some(val),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                });
+
+                sdb.set_storage(&addr, &key, &val);
+            }
+        }
+    }
+
+    
+    out_entries
 }
 
 #[cfg(test)]
