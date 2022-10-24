@@ -17,7 +17,6 @@ use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 
 mod builder;
 mod mpt;
-mod witness;
 
 use crate::circuit::builder::get_fixed_table_tags_for_block;
 use crate::utils::read_env_var;

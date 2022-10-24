@@ -1,4 +1,4 @@
-use super::mpt::{CanRead, TrieProof, AccountProof, AccountData, extend_address_to_h256, StorageProof};
+use super::{CanRead, TrieProof, AccountProof, AccountData, extend_address_to_h256, StorageProof};
 use crate::circuit::builder::verify_proof_leaf;
 use eth_types::{Hash, Bytes, H256, U256};
 use ethers_core::abi::Address;
@@ -16,10 +16,10 @@ use num_bigint::BigUint;
 use std::io::{Error as IoError, Read};
 
 pub struct WitnessGenerator {
-    db: ZkMemoryDb,
-    trie: ZkTrie,
-    accounts: HashMap<Address, Option<AccountData>>,
-    storages: HashMap<Address, ZkTrie>,
+    pub db: ZkMemoryDb,
+    pub trie: ZkTrie,
+    pub accounts: HashMap<Address, Option<AccountData>>,
+    pub storages: HashMap<Address, ZkTrie>,
 }
 
 static FILED_ERROR_READ: &str = "invalid input field";
@@ -357,69 +357,3 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
     })
 }
 
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use crate::utils::get_block_result_from_file;
-
-    #[test]
-    fn init_writer() {
-
-        WitnessGenerator::init();
-
-        let trace_path = "./tests/traces/greeter_witgen.json";
-
-        let block_result = get_block_result_from_file(trace_path);
-        let w = WitnessGenerator::new(&block_result);
-
-        let root_init = w.trie.root();
-
-        assert_eq!(format!("{:?}", H256(root_init)), "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f");
-    }
-
-    #[test]
-    fn update_one() {
-
-        WitnessGenerator::init();
-
-        let trace_path = "./tests/traces/greeter_witgen.json";
-
-        let block_result = get_block_result_from_file(trace_path);
-        let mut w = WitnessGenerator::new(&block_result);
-
-        let target_addr = Address::from_slice(hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab").unwrap().as_slice());
-        let start_state = w.accounts.get(&target_addr).unwrap().unwrap(); // we pick an existed account
-
-        let mut mut_state = AccountProofWrapper {
-            address: Some(target_addr),
-            nonce: Some(start_state.nonce),
-            balance: Some(start_state.balance + U256::from(1 as u64)),
-            code_hash: Some(start_state.code_hash),
-            ..Default::default()
-        };
-        let trace = w.handle_new_state(&mut_state);
-
-        let new_root = w.trie.root();
-
-        let new_acc_root = trace.account_path[1].root;
-        assert_eq!(new_root, new_acc_root.0);
-
-        println!("ret {:?}", trace);
-
-        mut_state.storage = Some(StorageProofWrapper { key: Some(U256::zero()), value: Some(U256::from(1u32)), ..Default::default() });
-
-        let trace = w.handle_new_state(&mut_state);
-
-        let new_root = w.trie.root();
-
-        let new_acc_root = trace.account_path[1].root;
-        assert_eq!(new_root, new_acc_root.0);
-
-        println!("ret {:?}", trace);
-
-    }
-    
-
-}
