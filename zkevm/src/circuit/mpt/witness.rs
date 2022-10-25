@@ -6,10 +6,9 @@ use mpt_circuits::hash::Hashable;
 use mpt_circuits::serde::{HexBytes, Hash as SMTHash, SMTNode, SMTPath, SMTTrace, StateData};
 use std::collections::HashMap;
 use types::eth::{AccountProofWrapper, BlockResult, StorageProofWrapper};
-use halo2_proofs::pairing::bn256::Fr;
-// todo: in new halo2 lib we import halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
-use halo2_proofs::pairing::group::ff::{Field, PrimeField};
-use halo2_proofs::arithmetic::{BaseExt, FieldExt};
+use halo2_proofs::halo2curves::bn256::Fr;
+use halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
+use halo2_proofs::arithmetic::FieldExt;
 use zktrie::{ZkMemoryDb, ZkTrieNode, ZkTrie};
 
 use num_bigint::BigUint;
@@ -27,28 +26,32 @@ static FILED_ERROR_OUT: &str = "output field fail";
 
 extern "C" fn hash_scheme(a: *const u8, b: *const u8, out: *mut u8) -> *const i8 {
     use std::slice;
-    let mut a = unsafe { slice::from_raw_parts(a, 32) };
-    let mut b = unsafe { slice::from_raw_parts(b, 32) };
-    let mut out = unsafe { slice::from_raw_parts_mut(out, 32) };
+    let a : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(a, 32) }).expect("length specified" );
+    let b : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(b, 32) }).expect("length specified" );
+    let mut out : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts_mut(out, 32) }).expect("length specified" );
 
-    let fa = if let Ok(f) = Fr::read(&mut a) {
-        f
+    let fa = Fr::from_bytes(&a);
+    let fa = if fa.is_some().into() {
+        fa.unwrap()
     } else {
         return FILED_ERROR_READ.as_ptr().cast();
     };
-    let fb = if let Ok(f) = Fr::read(&mut b) {
-        f
+    let fb = Fr::from_bytes(&b);
+    let fb = if fb.is_some().into() {
+        fb.unwrap()
     } else {
         return FILED_ERROR_READ.as_ptr().cast();
     };
 
     let h = Fr::hash([fa, fb]);
-
-    if h.write(&mut out).is_err() {
-        FILED_ERROR_OUT.as_ptr().cast()
-    } else {
+    let repr_h = h.to_repr().as_ref();
+    if repr_h.len() == 32 {
+        out.as_mut_slice().copy_from_slice(h.to_repr().as_ref());
         std::ptr::null()
+    }else {
+        FILED_ERROR_OUT.as_ptr().cast()
     }
+
 }
 
 impl WitnessGenerator {
@@ -177,7 +180,7 @@ impl WitnessGenerator {
             let low = Fr::from_u128(u128::from_be_bytes((&key.0[16..]).try_into().unwrap()));
             let hash = Fr::hash([high, low]);
             let mut buf = [0u8; 32];
-            hash.write(&mut buf.as_mut_slice()).unwrap();
+            buf.as_mut_slice().copy_from_slice(hash.to_repr().as_ref());            
             out.state_key = Some(HexBytes(buf));
         }
 
