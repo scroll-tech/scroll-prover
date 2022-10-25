@@ -6,7 +6,7 @@ use std::{
 };
 use num_bigint::BigUint;
 use types::eth::{AccountProofWrapper, StorageProofWrapper};
-use halo2_proofs::pairing::bn256::Fr;
+use halo2_proofs::halo2curves::bn256::Fr;
 use bus_mapping::state_db::StateDB;
 use zkevm_circuits::evm_circuit::witness::{Block as BlockWitness, Rw, RwMap};
 
