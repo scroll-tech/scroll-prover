@@ -199,22 +199,26 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
         let rws = sorter.table_assignments();
 
         let mut last_addr : Option<RwAccountId> = None;
+        let mut write_entry = |last_addr: &RwAccountId, sdb: &StateDB|{
+            let addr = last_addr.1;
+            let (existed, acc_data) = sdb.get_account(&addr);
+            assert!(existed, "account must be set in sdb");
+
+            out_entries.push(AccountProofWrapper{
+                address: Some(addr),
+                nonce: Some(acc_data.nonce.as_u64()),
+                balance: Some(acc_data.balance),
+                code_hash: Some(acc_data.code_hash),
+                ..Default::default()
+            });            
+        };
+
         for rw in rws {
             let rw_id : RwAccountId = From::from(&rw);
             if Some(rw_id) != last_addr {
 
-                if let Some(last_addr) = last_addr {
-                    let addr = last_addr.1;
-                    let (existed, acc_data) = sdb.get_account(&addr);
-                    assert!(existed, "account must be set in sdb");
-    
-                    out_entries.push(AccountProofWrapper{
-                        address: Some(addr),
-                        nonce: Some(acc_data.nonce.as_u64()),
-                        balance: Some(acc_data.balance),
-                        code_hash: Some(acc_data.code_hash),
-                        ..Default::default()
-                    });
+                if let Some(last_addr) = last_addr.as_ref() {
+                    write_entry(last_addr, &sdb);
                 }
 
                 last_addr = Some(rw_id);
@@ -237,6 +241,10 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
                 _ => unreachable!(),
             };            
         }
+
+        if let Some(last_addr) = last_addr.as_ref() {
+            write_entry(last_addr, &sdb);
+        }        
     }
 
     if let Some(rws) = rw_storage {
@@ -246,36 +254,43 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
 
         let mut last_addr : Option<RwAccountId> = None;
         let mut last_rw : Option<Rw> = None;
+
+        let mut write_entry = |last_addr: &RwAccountId, rw: &Rw|{
+            let addr = last_addr.1;
+            let (existed, acc_data) = sdb.get_account(&addr);
+            assert!(existed, "account must be set in sdb");
+
+            let key = rw.storage_key().expect("should be storage rw");
+            let (val, _, _, _) = rw.storage_value_aux();
+            out_entries.push(AccountProofWrapper{
+                address: Some(addr),
+                nonce: Some(acc_data.nonce.as_u64()),
+                balance: Some(acc_data.balance),
+                code_hash: Some(acc_data.code_hash),
+                storage: Some(StorageProofWrapper {
+                    key: Some(key),
+                    value: Some(val),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            });           
+        };
+
         for rw in rws {
             let rw_id : RwAccountId = From::from(&rw);
             if Some(rw_id) != last_addr {
 
-                if let Some(last_addr) = last_addr {
-                    let addr = last_addr.1;
-                    let (existed, acc_data) = sdb.get_account(&addr);
-                    assert!(existed, "account must be set in sdb");
-                    let rw = last_rw.take().expect("should have cached rw");
-    
-                    let key = rw.storage_key().expect("should be storage rw");
-                    let (val, _, _, _) = rw.storage_value_aux();
-                    out_entries.push(AccountProofWrapper{
-                        address: Some(addr),
-                        nonce: Some(acc_data.nonce.as_u64()),
-                        balance: Some(acc_data.balance),
-                        code_hash: Some(acc_data.code_hash),
-                        storage: Some(StorageProofWrapper {
-                            key: Some(key),
-                            value: Some(val),
-                            ..Default::default()
-                        }),
-                        ..Default::default()
-                    });
+                if let Some(last_addr) = last_addr.as_ref() {
+                    write_entry(last_addr, &last_rw.take().expect("should have cached rw"));
                 }
                 last_addr = Some(rw_id);
             }
 
             last_rw = Some(rw);
         }
+        if let Some(last_addr) = last_addr.as_ref() {
+            write_entry(last_addr, &last_rw.take().expect("should have cached rw"));
+        }        
     }
 
     

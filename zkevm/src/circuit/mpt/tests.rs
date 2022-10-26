@@ -220,6 +220,36 @@ fn witgen_build_mpt_table() {
 
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
 
+    assert_eq!(entries.len(), 5);
+    assert_eq!(entries[1].balance, Some(U256::from_dec_str("153249554086588885835834702715030918361873912218360217599949094452706366759").unwrap()));
+    assert_eq!(entries[4].storage.as_ref().unwrap().value, Some(U256::from_dec_str("1660042319298").unwrap()));
+
     println!("entries {:?}", entries);
+
+}
+
+#[test]
+fn witgen_from_file() {
+
+    use witness::WitnessGenerator;
+    WitnessGenerator::init();
+
+    let block_result = get_block_result_from_sample(include_str!("greeter_witgen.json"));
+
+    use crate::circuit::builder::{build_statedb_and_codedb, block_result_to_witness_block};
+
+    let final_root = block_result.storage_trace.root_after;
+    let mut w = WitnessGenerator::new(&block_result);
+    let block_witness = block_result_to_witness_block(&block_result).unwrap();
+    let (sdb, _) = build_statedb_and_codedb(&[block_result]).unwrap();
+
+    let entries = mpt_entries_from_witness_block(sdb, &block_witness);
+    
+    let traces : Vec<_> = entries.iter().map(|entry|w.handle_new_state(entry)).collect();
+    println!("smt traces {:?}", traces);
+
+    let root_after_updated = w.trie.root();
+    
+    assert_eq!(H256::from_slice(&root_after_updated), final_root);
 
 }

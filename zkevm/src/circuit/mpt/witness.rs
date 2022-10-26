@@ -28,7 +28,7 @@ extern "C" fn hash_scheme(a: *const u8, b: *const u8, out: *mut u8) -> *const i8
     use std::slice;
     let a : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(a, 32) }).expect("length specified" );
     let b : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(b, 32) }).expect("length specified" );
-    let mut out = unsafe { slice::from_raw_parts_mut(out, 32) };
+    let out = unsafe { slice::from_raw_parts_mut(out, 32) };
 
     let fa = Fr::from_bytes(&a);
     let fa = if fa.is_some().into() {
