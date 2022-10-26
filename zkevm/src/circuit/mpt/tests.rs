@@ -246,7 +246,7 @@ fn witgen_from_file() {
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
     
     let traces : Vec<_> = entries.iter().map(|entry|w.handle_new_state(entry)).collect();
-    println!("smt traces {:?}", traces);
+    println!("smt traces {}", serde_json::to_string(&traces).unwrap());
 
     let root_after_updated = w.trie.root();
     

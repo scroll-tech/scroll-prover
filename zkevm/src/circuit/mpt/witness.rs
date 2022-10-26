@@ -139,6 +139,7 @@ impl WitnessGenerator {
         let storage_before_proofs = trie.prove(key.as_ref());
         let storage_before_path = decode_proof_for_mpt_path(storage_key, storage_before_proofs);
         let store_after = if value != &Hash::zero().0 {
+            trie.update_store(key.as_ref(), &value).unwrap();
             Some(StateData {
                 key,
                 value: store_value,
@@ -155,34 +156,16 @@ impl WitnessGenerator {
             acc.storage_root = H256::from(storage_after_path.as_ref().unwrap().root.as_ref());
             Some(acc)
         });
-        if store_before.is_some() {
-            out.state_key = Some(
-                storage_before_path
-                    .as_ref()
-                    .unwrap()
-                    .leaf
-                    .as_ref()
-                    .unwrap()
-                    .sibling,
-            );
-        } else if store_after.is_some() {
-            out.state_key = Some(
-                storage_after_path
-                    .as_ref()
-                    .unwrap()
-                    .leaf
-                    .as_ref()
-                    .unwrap()
-                    .sibling,
-            );
-        } else {
+
+        out.common_state_root = None; // clear common state root
+        out.state_key = {
             let high = Fr::from_u128(u128::from_be_bytes((&key.0[..16]).try_into().unwrap()));
             let low = Fr::from_u128(u128::from_be_bytes((&key.0[16..]).try_into().unwrap()));
             let hash = Fr::hash([high, low]);
             let mut buf = [0u8; 32];
             buf.as_mut_slice().copy_from_slice(hash.to_repr().as_ref());            
-            out.state_key = Some(HexBytes(buf));
-        }
+            Some(HexBytes(buf))
+        };
 
         out.state_path = [storage_before_path.ok(), storage_after_path.ok()];
         out.state_update = Some([store_before, store_after]);
@@ -213,7 +196,8 @@ impl WitnessGenerator {
             U256::from(account_data_after.balance).to_big_endian(&mut balance.as_mut_slice());
             let mut code_hash = [0u8; 32];
             U256::from(account_data_after.code_hash.0).to_big_endian(&mut code_hash.as_mut_slice());
-            let acc_data = [nonce, balance, code_hash, [0; 32]];
+
+            let acc_data = [nonce, balance, code_hash, account_data_after.storage_root.0];
             self.trie.update_account(address.as_bytes(), &acc_data).expect("todo: handle this");
             self.accounts.insert(address, Some(account_data_after));
         } else {
