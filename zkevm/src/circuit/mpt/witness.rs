@@ -276,13 +276,13 @@ impl WitnessGenerator {
     }
 }
 
-fn smt_hash_from_u256(i: &U256) -> SMTHash {
+pub(super) fn smt_hash_from_u256(i: &U256) -> SMTHash {
     let mut out : [u8; 32] = [0; 32];
     i.to_little_endian(&mut out);
     HexBytes(out)
 }
 
-fn smt_hash_from_bytes(bt: &[u8]) -> SMTHash {
+pub(super) fn smt_hash_from_bytes(bt: &[u8]) -> SMTHash {
     let mut out : Vec<_> = bt.iter().copied().rev().collect();
     out.resize(32, 0);
     HexBytes(out.try_into().expect("extract size has been set"))

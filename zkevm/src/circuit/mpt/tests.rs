@@ -152,13 +152,15 @@ fn deserialize_example2() {
     }
 }
 
+static TEST_SAMPLE_STR : &str = include_str!("../../../tests/traces/greeter.json");
+
 #[test]
 fn witgen_init_writer() {
 
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(include_str!("greeter_witgen.json"));
+    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
     let w = WitnessGenerator::new(&block_result);
 
     let root_init = w.trie.root();
@@ -172,7 +174,7 @@ fn witgen_update_one() {
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(include_str!("greeter_witgen.json"));
+    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
     let mut w = WitnessGenerator::new(&block_result);
 
     let target_addr = Address::from_slice(hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab").unwrap().as_slice());
@@ -190,7 +192,7 @@ fn witgen_update_one() {
     let new_root = w.trie.root();
 
     let new_acc_root = trace.account_path[1].root;
-    assert_eq!(new_root, new_acc_root.0);
+    assert_eq!(witness::smt_hash_from_bytes(&new_root), new_acc_root);
 
     println!("ret {:?}", trace);
 
@@ -201,7 +203,7 @@ fn witgen_update_one() {
     let new_root = w.trie.root();
 
     let new_acc_root = trace.account_path[1].root;
-    assert_eq!(new_root, new_acc_root.0);
+    assert_eq!(witness::smt_hash_from_bytes(&new_root), new_acc_root);
 
     println!("ret {:?}", trace);
 
@@ -211,7 +213,7 @@ fn witgen_update_one() {
 #[test]
 fn witgen_build_mpt_table() {
 
-    let block_result = get_block_result_from_sample(include_str!("greeter_witgen.json"));
+    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
 
     use crate::circuit::builder::{build_statedb_and_codedb, block_result_to_witness_block};
 
@@ -234,7 +236,7 @@ fn witgen_from_file() {
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(include_str!("greeter_witgen.json"));
+    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
 
     use crate::circuit::builder::{build_statedb_and_codedb, block_result_to_witness_block};
 
