@@ -1,7 +1,6 @@
-
 use super::*;
-use types::eth::{BlockResult, StorageTrace};
 use serde::Deserialize;
+use types::eth::{BlockResult, StorageTrace};
 
 fn get_block_result_from_sample(js_str: &str) -> BlockResult {
     #[derive(Deserialize)]
@@ -152,11 +151,10 @@ fn deserialize_example2() {
     }
 }
 
-static TEST_SAMPLE_STR : &str = include_str!("../../../tests/traces/greeter.json");
+static TEST_SAMPLE_STR: &str = include_str!("../../../tests/traces/greeter.json");
 
 #[test]
 fn witgen_init_writer() {
-
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
@@ -165,19 +163,25 @@ fn witgen_init_writer() {
 
     let root_init = w.trie.root();
 
-    assert_eq!(format!("{:?}", H256(root_init)), "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f");
+    assert_eq!(
+        format!("{:?}", H256(root_init)),
+        "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f"
+    );
 }
 
 #[test]
 fn witgen_update_one() {
-
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
     let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
     let mut w = WitnessGenerator::new(&block_result);
 
-    let target_addr = Address::from_slice(hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab").unwrap().as_slice());
+    let target_addr = Address::from_slice(
+        hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab")
+            .unwrap()
+            .as_slice(),
+    );
     let start_state = w.accounts.get(&target_addr).unwrap().unwrap(); // we pick an existed account
 
     let mut mut_state = AccountProofWrapper {
@@ -196,7 +200,11 @@ fn witgen_update_one() {
 
     println!("ret {:?}", trace);
 
-    mut_state.storage = Some(StorageProofWrapper { key: Some(U256::zero()), value: Some(U256::from(1u32)), ..Default::default() });
+    mut_state.storage = Some(StorageProofWrapper {
+        key: Some(U256::zero()),
+        value: Some(U256::from(1u32)),
+        ..Default::default()
+    });
 
     let trace = w.handle_new_state(&mut_state);
 
@@ -206,16 +214,13 @@ fn witgen_update_one() {
     assert_eq!(witness::smt_hash_from_bytes(&new_root), new_acc_root);
 
     println!("ret {:?}", trace);
-
 }
-
 
 #[test]
 fn witgen_build_mpt_table() {
-
     let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
 
-    use crate::circuit::builder::{build_statedb_and_codedb, block_result_to_witness_block};
+    use crate::circuit::builder::{block_result_to_witness_block, build_statedb_and_codedb};
 
     let block_witness = block_result_to_witness_block(&block_result).unwrap();
     let (sdb, _) = build_statedb_and_codedb(&[block_result]).unwrap();
@@ -223,22 +228,31 @@ fn witgen_build_mpt_table() {
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
 
     assert_eq!(entries.len(), 5);
-    assert_eq!(entries[1].balance, Some(U256::from_dec_str("153249554086588885835834702715030918361873912218360217599949094452706366759").unwrap()));
-    assert_eq!(entries[4].storage.as_ref().unwrap().value, Some(U256::from_dec_str("1660042319298").unwrap()));
+    assert_eq!(
+        entries[1].balance,
+        Some(
+            U256::from_dec_str(
+                "153249554086588885835834702715030918361873912218360217599949094452706366759"
+            )
+            .unwrap()
+        )
+    );
+    assert_eq!(
+        entries[4].storage.as_ref().unwrap().value,
+        Some(U256::from_dec_str("1660042319298").unwrap())
+    );
 
     println!("entries {:?}", entries);
-
 }
 
 #[test]
 fn witgen_from_file() {
-
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
     let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
 
-    use crate::circuit::builder::{build_statedb_and_codedb, block_result_to_witness_block};
+    use crate::circuit::builder::{block_result_to_witness_block, build_statedb_and_codedb};
 
     let final_root = block_result.storage_trace.root_after;
     let mut w = WitnessGenerator::new(&block_result);
@@ -246,16 +260,19 @@ fn witgen_from_file() {
     let (sdb, _) = build_statedb_and_codedb(&[block_result]).unwrap();
 
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
-    
-    let traces : Vec<_> = entries.iter().map(|entry|w.handle_new_state(entry)).collect();
+
+    let traces: Vec<_> = entries
+        .iter()
+        .map(|entry| w.handle_new_state(entry))
+        .collect();
     println!("smt traces {}", serde_json::to_string(&traces).unwrap());
 
     let root_after_updated = w.trie.root();
-    
+
     assert_eq!(H256::from_slice(&root_after_updated), final_root);
-    let mut trace_root : [u8; 32] = [0; 32];
-    U256::from_little_endian(&traces.last().unwrap().account_path[1].root.0).to_big_endian(trace_root.as_mut_slice());
+    let mut trace_root: [u8; 32] = [0; 32];
+    U256::from_little_endian(&traces.last().unwrap().account_path[1].root.0)
+        .to_big_endian(trace_root.as_mut_slice());
 
     assert_eq!(H256(trace_root), final_root);
-
 }

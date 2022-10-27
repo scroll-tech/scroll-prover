@@ -203,8 +203,7 @@ fn mpt_rows() -> usize {
     ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
 }
 
-fn trie_data_from_blocks<'d>(block_results:&[BlockResult]) -> EthTrie<Fr> {
-
+fn trie_data_from_blocks(block_results: &[BlockResult]) -> EthTrie<Fr> {
     use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
 
@@ -216,8 +215,8 @@ fn trie_data_from_blocks<'d>(block_results:&[BlockResult]) -> EthTrie<Fr> {
                 .map(|tr| tr.try_into().unwrap())
                 .collect();
             trie_data.add_ops(storage_ops);
-        }    
-    }else if !block_results.is_empty(){
+        }
+    } else if !block_results.is_empty() {
         let block_witness = block_results_to_witness_block(block_results).unwrap();
         let (sdb, _) = builder::build_statedb_and_codedb(block_results).unwrap();
         let entries = mpt::mpt_entries_from_witness_block(sdb, &block_witness);
@@ -228,12 +227,12 @@ fn trie_data_from_blocks<'d>(block_results:&[BlockResult]) -> EthTrie<Fr> {
             w.add_block(block_more);
         }
 
-        let traces = entries.iter().map(|entry|w.handle_new_state(entry));
+        let traces = entries.iter().map(|entry| w.handle_new_state(entry));
 
-        let traces : Vec<_> = traces.collect();
+        let traces: Vec<_> = traces.collect();
         println!("smt traces {}", serde_json::to_string(&traces).unwrap());
 
-        trie_data.add_ops(traces.into_iter().map(|tr|TryFrom::try_from(&tr).unwrap()));
+        trie_data.add_ops(traces.into_iter().map(|tr| TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data

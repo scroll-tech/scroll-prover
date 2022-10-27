@@ -1,16 +1,15 @@
-use super::{CanRead, TrieProof, AccountProof, AccountData, extend_address_to_h256, StorageProof};
+use super::{extend_address_to_h256, AccountData, AccountProof, CanRead, StorageProof, TrieProof};
 use crate::circuit::builder::verify_proof_leaf;
-use env_logger::filter;
-use eth_types::{Hash, Bytes, H256, U256};
+use eth_types::{Bytes, Hash, H256, U256};
 use ethers_core::abi::Address;
-use mpt_circuits::hash::Hashable;
-use mpt_circuits::serde::{HexBytes, Hash as SMTHash, SMTNode, SMTPath, SMTTrace, StateData};
-use std::collections::{HashSet, HashMap};
-use types::eth::{AccountProofWrapper, BlockResult, StorageProofWrapper};
+use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
-use halo2_proofs::arithmetic::FieldExt;
-use zktrie::{ZkMemoryDb, ZkTrieNode, ZkTrie};
+use mpt_circuits::hash::Hashable;
+use mpt_circuits::serde::{Hash as SMTHash, HexBytes, SMTNode, SMTPath, SMTTrace, StateData};
+use std::collections::{HashMap, HashSet};
+use types::eth::{AccountProofWrapper, BlockResult};
+use zktrie::{ZkMemoryDb, ZkTrie, ZkTrieNode};
 
 use num_bigint::BigUint;
 use std::io::{Error as IoError, Read};
@@ -27,8 +26,10 @@ static FILED_ERROR_OUT: &str = "output field fail";
 
 extern "C" fn hash_scheme(a: *const u8, b: *const u8, out: *mut u8) -> *const i8 {
     use std::slice;
-    let a : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(a, 32) }).expect("length specified" );
-    let b : [u8; 32 ] = TryFrom::try_from(unsafe { slice::from_raw_parts(b, 32) }).expect("length specified" );
+    let a: [u8; 32] =
+        TryFrom::try_from(unsafe { slice::from_raw_parts(a, 32) }).expect("length specified");
+    let b: [u8; 32] =
+        TryFrom::try_from(unsafe { slice::from_raw_parts(b, 32) }).expect("length specified");
     let out = unsafe { slice::from_raw_parts_mut(out, 32) };
 
     let fa = Fr::from_bytes(&a);
@@ -49,59 +50,71 @@ extern "C" fn hash_scheme(a: *const u8, b: *const u8, out: *mut u8) -> *const i8
     if repr_h.len() == 32 {
         out.copy_from_slice(repr_h.as_ref());
         std::ptr::null()
-    }else {
+    } else {
         FILED_ERROR_OUT.as_ptr().cast()
     }
-
 }
 
 impl WitnessGenerator {
-
     pub fn init() {
         zktrie::init_hash_scheme(hash_scheme);
     }
 
     fn set_data_from_block(db: &mut ZkMemoryDb, block: &BlockResult) {
-        block.storage_trace
-        .proofs
-        .iter()
-        .flatten()
-        .flat_map(|(_, proofs)|proofs.iter())
-        .for_each(|bytes| {
-            db.add_node_bytes(bytes.as_ref()).unwrap();
-        });
+        block
+            .storage_trace
+            .proofs
+            .iter()
+            .flatten()
+            .flat_map(|(_, proofs)| proofs.iter())
+            .for_each(|bytes| {
+                db.add_node_bytes(bytes.as_ref()).unwrap();
+            });
 
-        block.storage_trace.storage_proofs.iter()
-            .flat_map(|(_, v_proofs)|v_proofs.iter())
-            .flat_map(|(_, proofs)|proofs.iter())
+        block
+            .storage_trace
+            .storage_proofs
+            .iter()
+            .flat_map(|(_, v_proofs)| v_proofs.iter())
+            .flat_map(|(_, proofs)| proofs.iter())
             .for_each(|bytes| {
                 db.add_node_bytes(bytes.as_ref()).unwrap();
             });
     }
 
-    fn set_accounts_from_block(&mut self , block: &BlockResult) {
-        let filter_map : HashSet<_> = self.accounts.keys().copied().collect();
+    fn set_accounts_from_block(&mut self, block: &BlockResult) {
+        let filter_map: HashSet<_> = self.accounts.keys().copied().collect();
 
-        let new_accs = block.storage_trace
-        .proofs
-        .iter()
-        .flatten()
-        .filter(|(account, _)|!filter_map.contains(account))
-        .map(|(account, proofs)| {
-            let proof : AccountProof = verify_proof_leaf(proofs.as_slice().try_into().unwrap(), &extend_address_to_h256(account));
-            (*account, proof.key.as_ref().map(|_|proof.data))
-        });
-        
+        let new_accs = block
+            .storage_trace
+            .proofs
+            .iter()
+            .flatten()
+            .filter(|(account, _)| !filter_map.contains(account))
+            .map(|(account, proofs)| {
+                let proof: AccountProof = verify_proof_leaf(
+                    proofs.as_slice().try_into().unwrap(),
+                    &extend_address_to_h256(account),
+                );
+                (*account, proof.key.as_ref().map(|_| proof.data))
+            });
+
         self.accounts.extend(new_accs);
     }
 
     fn set_storages_from_block(&mut self, block: &BlockResult) {
-        
         for (account, storage_map) in block.storage_trace.storage_proofs.iter() {
-
             if !self.storages.contains_key(account) {
                 let acc_data = self.accounts.get(account).unwrap();
-                let s_trie = self.db.new_trie(&acc_data.map(|d|d.storage_root).unwrap_or_else(Hash::zero).0).unwrap();                
+                let s_trie = self
+                    .db
+                    .new_trie(
+                        &acc_data
+                            .map(|d| d.storage_root)
+                            .unwrap_or_else(Hash::zero)
+                            .0,
+                    )
+                    .unwrap();
                 self.storages.insert(*account, s_trie);
             }
 
@@ -111,15 +124,15 @@ impl WitnessGenerator {
                 let mut k_buf: [u8; 32] = [0; 32];
                 k.to_big_endian(&mut k_buf[..]);
                 if s_trie.get_store(&k_buf).is_none() {
-                    let proof: StorageProof = verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
+                    let proof: StorageProof =
+                        verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
                     let mut data: zktrie::StoreData = [0; 32];
                     proof.data.as_ref().to_big_endian(&mut data);
-                    s_trie.update_store(&k_buf, &data).unwrap();    
+                    s_trie.update_store(&k_buf, &data).unwrap();
                 }
             }
-        }        
+        }
     }
-
 
     pub fn add_block(&mut self, block: &BlockResult) {
         Self::set_data_from_block(&mut self.db, block);
@@ -158,7 +171,7 @@ impl WitnessGenerator {
 
         let store_before = trie
             .get_store(key.as_ref())
-            .and_then(|v| if &v == &Hash::zero().0 { None } else { Some(v) })
+            .and_then(|v| if v == Hash::zero().0 { None } else { Some(v) })
             .map(|v| StateData {
                 key,
                 value: HexBytes(v),
@@ -166,7 +179,7 @@ impl WitnessGenerator {
         let storage_before_proofs = trie.prove(key.as_ref());
         let storage_before_path = decode_proof_for_mpt_path(storage_key, storage_before_proofs);
         let store_after = if value != &Hash::zero().0 {
-            trie.update_store(key.as_ref(), &value).unwrap();
+            trie.update_store(key.as_ref(), value).unwrap();
             Some(StateData {
                 key,
                 value: store_value,
@@ -180,7 +193,7 @@ impl WitnessGenerator {
         let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
 
         let mut out = self.trace_account_update(address, |acc| {
-            let mut acc = acc.clone();
+            let mut acc = *acc;
             acc.storage_root = storage_root_after;
             Some(acc)
         });
@@ -191,7 +204,7 @@ impl WitnessGenerator {
             let low = Fr::from_u128(u128::from_be_bytes((&key.0[16..]).try_into().unwrap()));
             let hash = Fr::hash([high, low]);
             let mut buf = [0u8; 32];
-            buf.as_mut_slice().copy_from_slice(hash.to_repr().as_ref());            
+            buf.as_mut_slice().copy_from_slice(hash.to_repr().as_ref());
             Some(HexBytes(buf))
         };
 
@@ -204,11 +217,7 @@ impl WitnessGenerator {
     where
         U: FnOnce(&AccountData) -> Option<AccountData>,
     {
-        let account_data_before = self
-            .accounts
-            .get(&address)
-            .expect("todo: handle this")
-            .clone();
+        let account_data_before = *self.accounts.get(&address).expect("todo: handle this");
 
         let proofs = self.trie.prove(address.as_bytes());
         let address_key = hash_zktrie_key(&extend_address_to_h256(&address));
@@ -219,14 +228,18 @@ impl WitnessGenerator {
 
         if let Some(account_data_after) = account_data_after {
             let mut nonce = [0u8; 32];
-            U256::from(account_data_after.nonce).to_big_endian(&mut nonce.as_mut_slice());
+            U256::from(account_data_after.nonce).to_big_endian(nonce.as_mut_slice());
             let mut balance = [0u8; 32];
-            U256::from(account_data_after.balance).to_big_endian(&mut balance.as_mut_slice());
+            account_data_after
+                .balance
+                .to_big_endian(balance.as_mut_slice());
             let mut code_hash = [0u8; 32];
-            U256::from(account_data_after.code_hash.0).to_big_endian(&mut code_hash.as_mut_slice());
+            U256::from(account_data_after.code_hash.0).to_big_endian(code_hash.as_mut_slice());
 
             let acc_data = [nonce, balance, code_hash, account_data_after.storage_root.0];
-            self.trie.update_account(address.as_bytes(), &acc_data).expect("todo: handle this");
+            self.trie
+                .update_account(address.as_bytes(), &acc_data)
+                .expect("todo: handle this");
             self.accounts.insert(address, Some(account_data_after));
         } else {
             self.trie.delete(address.as_bytes());
@@ -236,14 +249,18 @@ impl WitnessGenerator {
         let proofs = self.trie.prove(address.as_bytes());
         let account_path_after = decode_proof_for_mpt_path(address_key, proofs).unwrap();
 
-
         SMTTrace {
             address: HexBytes(address.0),
-            account_path: [account_path_before.clone(), account_path_after.clone()],
-            account_update: [account_data_before.map(Into::into), account_data_after.map(Into::into)],
+            account_path: [account_path_before, account_path_after],
+            account_update: [
+                account_data_before.map(Into::into),
+                account_data_after.map(Into::into),
+            ],
             account_key: HexBytes(address_key.to_repr().as_ref().try_into().unwrap()),
             state_path: [None, None],
-            common_state_root: account_data_before.map(|data| smt_hash_from_bytes(data.storage_root.as_bytes())).or_else(||Some(HexBytes([0;32]))),
+            common_state_root: account_data_before
+                .map(|data| smt_hash_from_bytes(data.storage_root.as_bytes()))
+                .or(Some(HexBytes([0; 32]))),
             state_key: None,
             state_update: None,
         }
@@ -253,43 +270,35 @@ impl WitnessGenerator {
         match account_proof.storage {
             Some(ref storage) => {
                 let mut addr = [0u8; 32];
-                storage.key.unwrap().to_big_endian(&mut addr.as_mut_slice());
+                storage.key.unwrap().to_big_endian(addr.as_mut_slice());
                 let mut value = [0u8; 32];
-                storage.value.unwrap().to_big_endian(&mut value.as_mut_slice());
-                self.trace_storage_update(
-                    account_proof.address.unwrap(),
-                    &addr,
-                    &value
-                )
+                storage.value.unwrap().to_big_endian(value.as_mut_slice());
+                self.trace_storage_update(account_proof.address.unwrap(), &addr, &value)
             }
             None => {
                 let mut acc_data: AccountData = account_proof.into();
-                self.trace_account_update(
-                    account_proof.address.unwrap(),
-                    |acc_before| {
-                        acc_data.storage_root = acc_before.storage_root;
-                        Some(acc_data)
-                    }
-                )
+                self.trace_account_update(account_proof.address.unwrap(), |acc_before| {
+                    acc_data.storage_root = acc_before.storage_root;
+                    Some(acc_data)
+                })
             }
         }
     }
 }
 
 pub(super) fn smt_hash_from_u256(i: &U256) -> SMTHash {
-    let mut out : [u8; 32] = [0; 32];
+    let mut out: [u8; 32] = [0; 32];
     i.to_little_endian(&mut out);
     HexBytes(out)
 }
 
 pub(super) fn smt_hash_from_bytes(bt: &[u8]) -> SMTHash {
-    let mut out : Vec<_> = bt.iter().copied().rev().collect();
+    let mut out: Vec<_> = bt.iter().copied().rev().collect();
     out.resize(32, 0);
     HexBytes(out.try_into().expect("extract size has been set"))
 }
 
 fn hash_zktrie_key(key_buf: &[u8; 32]) -> Fr {
-
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
     let last_16bytes: [u8; 16] = key_buf[16..].try_into().expect("expect last 16 bytes");
 
@@ -300,15 +309,19 @@ fn hash_zktrie_key(key_buf: &[u8; 32]) -> Fr {
 }
 
 #[derive(Debug, Default, Clone)]
-struct LeafNodeHash (H256);
+struct LeafNodeHash(H256);
 
 impl CanRead for LeafNodeHash {
     fn try_parse(mut _rd: impl Read) -> Result<Self, IoError> {
         panic!("this entry is not used")
     }
-    fn parse_leaf(data: &[u8]) -> Result<Self, IoError>{
+    fn parse_leaf(data: &[u8]) -> Result<Self, IoError> {
         let node = ZkTrieNode::parse(data);
-        Ok(Self(node.value_hash().expect("leaf should has value hash").into()))
+        Ok(Self(
+            node.value_hash()
+                .expect("leaf should has value hash")
+                .into(),
+        ))
     }
 }
 
@@ -318,9 +331,7 @@ impl AsRef<[u8]> for LeafNodeHash {
     }
 }
 
-
 fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMTPath, IoError> {
-
     let root = if let Some(arr) = proofs.first() {
         let n = ZkTrieNode::parse(arr.as_slice());
         smt_hash_from_bytes(n.key().as_slice())
@@ -333,42 +344,43 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
 
     // convert path part
     let invert_2 = Fr::one().double().invert().unwrap();
-    let mut path_bit_now = BigUint::from(1 as u32);
-    let mut path_part : BigUint =  Default::default();
+    let mut path_bit_now = BigUint::from(1_u32);
+    let mut path_part: BigUint = Default::default();
     let mut path = Vec::new();
 
     for (left, right) in trie_proof.path.iter() {
-        let is_bit_one : bool = key_fr.is_odd().into();
-        path.push(
-            if is_bit_one {
-                SMTNode {
-                    value: smt_hash_from_u256(right),
-                    sibling: smt_hash_from_u256(left),
-                }
-            } else {
-                SMTNode {
-                    value: smt_hash_from_u256(left),
-                    sibling: smt_hash_from_u256(right),
-                }
+        let is_bit_one: bool = key_fr.is_odd().into();
+        path.push(if is_bit_one {
+            SMTNode {
+                value: smt_hash_from_u256(right),
+                sibling: smt_hash_from_u256(left),
             }
-        );
-        key_fr = if is_bit_one {key_fr.mul(&invert_2) - invert_2 } else {key_fr.mul(&invert_2)};
-        if is_bit_one {path_part += &path_bit_now};
-        path_bit_now *= 2 as u32;
+        } else {
+            SMTNode {
+                value: smt_hash_from_u256(left),
+                sibling: smt_hash_from_u256(right),
+            }
+        });
+        key_fr = if is_bit_one {
+            key_fr.mul(&invert_2) - invert_2
+        } else {
+            key_fr.mul(&invert_2)
+        };
+        if is_bit_one {
+            path_part += &path_bit_now
+        };
+        path_bit_now *= 2_u32;
     }
 
-    let leaf = trie_proof.key.as_ref().map(|h| 
-        SMTNode {
-            value: smt_hash_from_bytes(trie_proof.data.as_ref()),
-            sibling: smt_hash_from_bytes(h.as_bytes()),
-        }
-    );
+    let leaf = trie_proof.key.as_ref().map(|h| SMTNode {
+        value: smt_hash_from_bytes(trie_proof.data.as_ref()),
+        sibling: smt_hash_from_bytes(h.as_bytes()),
+    });
 
-    Ok(SMTPath{
+    Ok(SMTPath {
         root,
         leaf,
         path,
         path_part,
     })
 }
-
