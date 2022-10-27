@@ -25,9 +25,9 @@ use self::builder::{block_result_to_witness_block, block_results_to_witness_bloc
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
-static LEGACY_SMTTRACE: Lazy<bool> = Lazy::new(|| {
+static USE_SMTTRACE: Lazy<bool> = Lazy::new(|| {
     mpt::witness::WitnessGenerator::init();
-    read_env_var("OLD_SMTTRACE", false)
+    read_env_var("LEGACY_SMTTRACE", true)
 });
 
 pub trait TargetCircuit {
@@ -207,7 +207,11 @@ fn trie_data_from_blocks(block_results: &[BlockResult]) -> EthTrie<Fr> {
     use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
 
-    if *LEGACY_SMTTRACE {
+    if *USE_SMTTRACE
+        && block_results
+            .iter()
+            .any(|block| !block.mpt_witness.is_empty())
+    {
         for block_result in block_results {
             let storage_ops: Vec<AccountOp<_>> = block_result
                 .mpt_witness
@@ -228,11 +232,11 @@ fn trie_data_from_blocks(block_results: &[BlockResult]) -> EthTrie<Fr> {
         }
 
         let traces = entries.iter().map(|entry| w.handle_new_state(entry));
+        //let traces: Vec<_> = traces.collect();
+        //println!("smt traces {}", serde_json::to_string(&traces).unwrap());
+        //let traces = traces.into_iter();
 
-        let traces: Vec<_> = traces.collect();
-        println!("smt traces {}", serde_json::to_string(&traces).unwrap());
-
-        trie_data.add_ops(traces.into_iter().map(|tr| TryFrom::try_from(&tr).unwrap()));
+        trie_data.add_ops(traces.map(|tr| TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data
