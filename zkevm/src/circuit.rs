@@ -26,9 +26,9 @@ const MAX_RWS: usize = 500_000;
 //pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
-static LEGACY_SMTTRACE: Lazy<bool> = Lazy::new(|| {
+static USE_SMTTRACE: Lazy<bool> = Lazy::new(|| {
     mpt::witness::WitnessGenerator::init();
-    read_env_var("OLD_SMTTRACE", false)
+    read_env_var("LEGACY_SMTTRACE", true)
 });
 
 pub trait TargetCircuit {
@@ -211,7 +211,11 @@ fn trie_data_from_blocks<'d>(
     use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
 
-    if *LEGACY_SMTTRACE {
+    if *USE_SMTTRACE 
+        && block_results
+            .iter()
+            .any(|block| !block.mpt_witness.is_empty())
+    {
         for block_trace in block_traces {
             let storage_ops: Vec<AccountOp<_>> = block_trace
                 .mpt_witness
@@ -232,11 +236,11 @@ fn trie_data_from_blocks<'d>(
         }
 
         let traces = entries.iter().map(|entry| w.handle_new_state(entry));
+        //let traces: Vec<_> = traces.collect();
+        //println!("smt traces {}", serde_json::to_string(&traces).unwrap());
+        //let traces = traces.into_iter();
 
-        let traces: Vec<_> = traces.collect();
-        println!("smt traces {}", serde_json::to_string(&traces).unwrap());
-
-        trie_data.add_ops(traces.into_iter().map(|tr| TryFrom::try_from(&tr).unwrap()));
+        trie_data.add_ops(traces.map(|tr| TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data

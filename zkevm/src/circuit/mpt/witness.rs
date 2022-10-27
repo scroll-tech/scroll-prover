@@ -1,4 +1,4 @@
-use super::{extend_address_to_h256, AccountData, AccountProof, CanRead, StorageProof, TrieProof};
+use super::{extend_address_to_h256, AccountData, AccountProof, CanRead, TrieProof};
 use crate::circuit::builder::verify_proof_leaf;
 use eth_types::{Bytes, Hash, H256, U256};
 use ethers_core::abi::Address;
@@ -103,7 +103,7 @@ impl WitnessGenerator {
     }
 
     fn set_storages_from_block(&mut self, block: &BlockResult) {
-        for (account, storage_map) in block.storage_trace.storage_proofs.iter() {
+        for (account, _) in block.storage_trace.storage_proofs.iter() {
             if !self.storages.contains_key(account) {
                 let acc_data = self.accounts.get(account).unwrap();
                 let s_trie = self
@@ -116,20 +116,6 @@ impl WitnessGenerator {
                     )
                     .unwrap();
                 self.storages.insert(*account, s_trie);
-            }
-
-            let s_trie = self.storages.get_mut(account).expect("just inserted");
-
-            for (k, v_proofs) in storage_map {
-                let mut k_buf: [u8; 32] = [0; 32];
-                k.to_big_endian(&mut k_buf[..]);
-                if s_trie.get_store(&k_buf).is_none() {
-                    let proof: StorageProof =
-                        verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
-                    let mut data: zktrie::StoreData = [0; 32];
-                    proof.data.as_ref().to_big_endian(&mut data);
-                    s_trie.update_store(&k_buf, &data).unwrap();
-                }
             }
         }
     }
@@ -192,7 +178,24 @@ impl WitnessGenerator {
         let storage_after_proofs = trie.prove(key.as_ref());
         let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
 
+        // sanity check
+        assert_eq!(
+            smt_hash_from_bytes(storage_root_after.as_bytes()),
+            storage_after_path
+                .as_ref()
+                .map(|p| p.root)
+                .unwrap_or(HexBytes([0; 32]))
+        );
+
         let mut out = self.trace_account_update(address, |acc| {
+            // sanity check
+            assert_eq!(
+                smt_hash_from_bytes(acc.storage_root.as_bytes()),
+                storage_before_path
+                    .as_ref()
+                    .map(|p| p.root)
+                    .unwrap_or(HexBytes([0; 32]))
+            );
             let mut acc = *acc;
             acc.storage_root = storage_root_after;
             Some(acc)
