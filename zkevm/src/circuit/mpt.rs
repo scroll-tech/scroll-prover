@@ -1,13 +1,13 @@
+use bus_mapping::state_db::StateDB;
 use eth_types::Word;
 use ethers_core::types::{Address, Bytes, H256, U256, U64};
+use halo2_proofs::halo2curves::bn256::Fr;
+use num_bigint::BigUint;
 use std::{
     convert::TryFrom,
     io::{Error, ErrorKind, Read},
 };
-use num_bigint::BigUint;
-use types::eth::{AccountProofWrapper, StorageProofWrapper, BlockResult};
-use halo2_proofs::halo2curves::bn256::Fr;
-use bus_mapping::state_db::StateDB;
+use types::eth::{AccountProofWrapper, StorageProofWrapper};
 use zkevm_circuits::evm_circuit::witness::{Block as BlockWitness, Rw, RwMap};
 
 pub const NODE_TYPE_MIDDLE: u8 = 0;
@@ -28,7 +28,7 @@ impl From<&AccountProofWrapper> for AccountData {
             nonce: w.nonce.unwrap(),
             balance: w.balance.unwrap(),
             code_hash: w.code_hash.unwrap(),
-            storage_root: Default::default()
+            storage_root: Default::default(),
         }
     }
 }
@@ -41,7 +41,7 @@ pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
 
 pub trait CanRead: Sized {
     fn try_parse(rd: impl Read) -> Result<Self, Error>;
-    fn parse_leaf(data: &[u8]) -> Result<Self, Error>{
+    fn parse_leaf(data: &[u8]) -> Result<Self, Error> {
         // notice the first 33 bytes has been read external
         Self::try_parse(&data[33..])
     }
@@ -75,17 +75,17 @@ impl CanRead for AccountData {
     }
 }
 
-impl Into<mpt_circuits::serde::AccountData> for AccountData {
-    fn into(self) -> mpt_circuits::serde::AccountData {
-        let mut balance : [u8; 32]= [0; 32];
-        self.balance.to_big_endian(balance.as_mut_slice());
+impl From<AccountData> for mpt_circuits::serde::AccountData {
+    fn from(acc: AccountData) -> Self {
+        let mut balance: [u8; 32] = [0; 32];
+        acc.balance.to_big_endian(balance.as_mut_slice());
         let balance = BigUint::from_bytes_be(balance.as_slice());
-        let code_hash = BigUint::from_bytes_be(self.code_hash.as_bytes());
+        let code_hash = BigUint::from_bytes_be(acc.code_hash.as_bytes());
 
-        mpt_circuits::serde::AccountData {
-            nonce: self.nonce,
+        Self {
+            nonce: acc.nonce,
             balance,
-            code_hash
+            code_hash,
         }
     }
 }
@@ -128,7 +128,7 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
     type Error = Error;
 
     fn try_from(src: &[Bytes]) -> Result<Self, Self::Error> {
-        let mut path : Vec<(U256, U256)> = Vec::new();
+        let mut path: Vec<(U256, U256)> = Vec::new();
         for data in src {
             let mut rd = data.as_ref();
             let mut prefix = [0; 1];
@@ -146,13 +146,13 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
                     });
                 }
                 NODE_TYPE_EMPTY => {
-                    return Ok(Self{
+                    return Ok(Self {
                         path,
                         ..Default::default()
                     });
                 }
                 NODE_TYPE_MIDDLE => {
-                    let mut buf : [u8; 32] = [0; 32];
+                    let mut buf: [u8; 32] = [0; 32];
                     rd.read_exact(&mut buf)?;
                     let left = U256::from_big_endian(&buf);
                     rd.read_exact(&mut buf)?;
@@ -168,20 +168,22 @@ impl<T: CanRead + Default> TryFrom<&[Bytes]> for TrieProof<T> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct RwAccountId (u64, Address, Word);
+struct RwAccountId(u64, Address, Word);
 
 impl From<&Rw> for RwAccountId {
     fn from(rw: &Rw) -> Self {
         Self(
-            rw.field_tag().unwrap_or_default(), 
-            rw.address().expect("should be account rw"), 
+            rw.field_tag().unwrap_or_default(),
+            rw.address().expect("should be account rw"),
             rw.storage_key().unwrap_or_else(Word::zero),
         )
     }
 }
 
-pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness<Fr>) -> Vec<AccountProofWrapper>{
-
+pub fn mpt_entries_from_witness_block(
+    mut sdb: StateDB,
+    block_wit: &BlockWitness<Fr>,
+) -> Vec<AccountProofWrapper> {
     use std::collections::HashMap;
     use zkevm_circuits::table::{AccountFieldTag, RwTableTag};
 
@@ -193,30 +195,28 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
     );
 
     if let Some(rws) = rw_acc {
-
         let mut sorter = RwMap(HashMap::new());
         sorter.0.insert(RwTableTag::Account, rws.clone());
         let rws = sorter.table_assignments();
 
-        let mut last_addr : Option<RwAccountId> = None;
-        let mut write_entry = |last_addr: &RwAccountId, sdb: &StateDB|{
+        let mut last_addr: Option<RwAccountId> = None;
+        let mut write_entry = |last_addr: &RwAccountId, sdb: &StateDB| {
             let addr = last_addr.1;
             let (existed, acc_data) = sdb.get_account(&addr);
             assert!(existed, "account must be set in sdb");
 
-            out_entries.push(AccountProofWrapper{
+            out_entries.push(AccountProofWrapper {
                 address: Some(addr),
                 nonce: Some(acc_data.nonce.as_u64()),
                 balance: Some(acc_data.balance),
                 code_hash: Some(acc_data.code_hash),
                 ..Default::default()
-            });            
+            });
         };
 
         for rw in rws {
-            let rw_id : RwAccountId = From::from(&rw);
+            let rw_id: RwAccountId = From::from(&rw);
             if Some(rw_id) != last_addr {
-
                 if let Some(last_addr) = last_addr.as_ref() {
                     write_entry(last_addr, &sdb);
                 }
@@ -229,22 +229,24 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
             assert!(existed, "account must be inited in sdb");
             let (val, _) = rw.account_value_pair();
             match rw_id.0 {
-                tag if tag == AccountFieldTag::Nonce as u64 => 
-                    {acc_data.nonce = val;},
-                tag if tag == AccountFieldTag::Balance as u64 =>
-                    {acc_data.balance = val;},
+                tag if tag == AccountFieldTag::Nonce as u64 => {
+                    acc_data.nonce = val;
+                }
+                tag if tag == AccountFieldTag::Balance as u64 => {
+                    acc_data.balance = val;
+                }
                 tag if tag == AccountFieldTag::CodeHash as u64 => {
-                    let mut out_bytes : [u8; 32] = [0; 32];
+                    let mut out_bytes: [u8; 32] = [0; 32];
                     val.to_big_endian(&mut out_bytes);
                     acc_data.code_hash = H256::from_slice(&out_bytes);
-                },
+                }
                 _ => unreachable!(),
-            };            
+            };
         }
 
         if let Some(last_addr) = last_addr.as_ref() {
             write_entry(last_addr, &sdb);
-        }        
+        }
     }
 
     if let Some(rws) = rw_storage {
@@ -252,17 +254,17 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
         sorter.0.insert(RwTableTag::AccountStorage, rws.clone());
         let rws = sorter.table_assignments();
 
-        let mut last_addr : Option<RwAccountId> = None;
-        let mut last_rw : Option<Rw> = None;
+        let mut last_addr: Option<RwAccountId> = None;
+        let mut last_rw: Option<Rw> = None;
 
-        let mut write_entry = |last_addr: &RwAccountId, rw: &Rw|{
+        let mut write_entry = |last_addr: &RwAccountId, rw: &Rw| {
             let addr = last_addr.1;
             let (existed, acc_data) = sdb.get_account(&addr);
             assert!(existed, "account must be set in sdb");
 
             let key = rw.storage_key().expect("should be storage rw");
             let (val, _, _, _) = rw.storage_value_aux();
-            out_entries.push(AccountProofWrapper{
+            out_entries.push(AccountProofWrapper {
                 address: Some(addr),
                 nonce: Some(acc_data.nonce.as_u64()),
                 balance: Some(acc_data.balance),
@@ -273,13 +275,12 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
                     ..Default::default()
                 }),
                 ..Default::default()
-            });           
+            });
         };
 
         for rw in rws {
-            let rw_id : RwAccountId = From::from(&rw);
+            let rw_id: RwAccountId = From::from(&rw);
             if Some(rw_id) != last_addr {
-
                 if let Some(last_addr) = last_addr.as_ref() {
                     write_entry(last_addr, &last_rw.take().expect("should have cached rw"));
                 }
@@ -290,13 +291,12 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
         }
         if let Some(last_addr) = last_addr.as_ref() {
             write_entry(last_addr, &last_rw.take().expect("should have cached rw"));
-        }        
+        }
     }
 
-    
     out_entries
 }
 
-pub(crate) mod witness;
 #[cfg(test)]
 mod tests;
+pub(crate) mod witness;

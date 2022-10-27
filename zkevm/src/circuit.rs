@@ -231,12 +231,12 @@ fn trie_data_from_blocks<'d>(
             w.add_block(block_more);
         }
 
-        let traces = entries.iter().map(|entry|w.handle_new_state(entry));
+        let traces = entries.iter().map(|entry| w.handle_new_state(entry));
 
-        let traces : Vec<_> = traces.collect();
+        let traces: Vec<_> = traces.collect();
         println!("smt traces {}", serde_json::to_string(&traces).unwrap());
 
-        trie_data.add_ops(traces.into_iter().map(|tr|TryFrom::try_from(&tr).unwrap()));
+        trie_data.add_ops(traces.into_iter().map(|tr| TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data
