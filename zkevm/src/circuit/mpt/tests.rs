@@ -251,5 +251,9 @@ fn witgen_from_file() {
     let root_after_updated = w.trie.root();
     
     assert_eq!(H256::from_slice(&root_after_updated), final_root);
+    let mut trace_root : [u8; 32] = [0; 32];
+    U256::from_little_endian(&traces.last().unwrap().account_path[1].root.0).to_big_endian(trace_root.as_mut_slice());
+
+    assert_eq!(H256(trace_root), final_root);
 
 }

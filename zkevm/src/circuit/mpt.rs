@@ -5,7 +5,7 @@ use std::{
     io::{Error, ErrorKind, Read},
 };
 use num_bigint::BigUint;
-use types::eth::{AccountProofWrapper, StorageProofWrapper};
+use types::eth::{AccountProofWrapper, StorageProofWrapper, BlockResult};
 use halo2_proofs::halo2curves::bn256::Fr;
 use bus_mapping::state_db::StateDB;
 use zkevm_circuits::evm_circuit::witness::{Block as BlockWitness, Rw, RwMap};
@@ -297,6 +297,6 @@ pub fn mpt_entries_from_witness_block(mut sdb: StateDB, block_wit: &BlockWitness
     out_entries
 }
 
-mod witness;
+pub(crate) mod witness;
 #[cfg(test)]
 mod tests;

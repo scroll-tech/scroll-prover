@@ -25,6 +25,10 @@ use self::builder::{block_result_to_witness_block, block_results_to_witness_bloc
 
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 18));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
+static LEGACY_SMTTRACE: Lazy<bool> = Lazy::new(|| {
+    mpt::witness::WitnessGenerator::init();
+    read_env_var("OLD_SMTTRACE", false)
+});
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -199,17 +203,37 @@ fn mpt_rows() -> usize {
     ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
 }
 
-fn trie_data_from_blocks<'d>(
-    block_results: impl IntoIterator<Item = &'d BlockResult>,
-) -> EthTrie<Fr> {
+fn trie_data_from_blocks<'d>(block_results:&[BlockResult]) -> EthTrie<Fr> {
+
+    use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
-    for block_result in block_results.into_iter() {
-        let storage_ops: Vec<AccountOp<_>> = block_result
-            .mpt_witness
-            .iter()
-            .map(|tr| tr.try_into().unwrap())
-            .collect();
-        trie_data.add_ops(storage_ops);
+
+    if *LEGACY_SMTTRACE {
+        for block_result in block_results {
+            let storage_ops: Vec<AccountOp<_>> = block_result
+                .mpt_witness
+                .iter()
+                .map(|tr| tr.try_into().unwrap())
+                .collect();
+            trie_data.add_ops(storage_ops);
+        }    
+    }else if !block_results.is_empty(){
+        let block_witness = block_results_to_witness_block(block_results).unwrap();
+        let (sdb, _) = builder::build_statedb_and_codedb(block_results).unwrap();
+        let entries = mpt::mpt_entries_from_witness_block(sdb, &block_witness);
+
+        let mut w = WitnessGenerator::new(&block_results[0]);
+
+        for block_more in &block_results[1..] {
+            w.add_block(block_more);
+        }
+
+        let traces = entries.iter().map(|entry|w.handle_new_state(entry));
+
+        let traces : Vec<_> = traces.collect();
+        println!("smt traces {}", serde_json::to_string(&traces).unwrap());
+
+        trie_data.add_ops(traces.into_iter().map(|tr|TryFrom::try_from(&tr).unwrap()));
     }
 
     trie_data
@@ -247,13 +271,11 @@ impl TargetCircuit for ZktrieCircuit {
     where
         Self: Sized,
     {
-        let (mpt_circuit, _) = trie_data_from_blocks(Some(block_result)).circuits(mpt_rows());
-        let instance = vec![];
-        Ok((mpt_circuit, instance))
+        Self::from_block_results(&[block_result.clone()])
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let (mpt_rows, _) = trie_data_from_blocks(Some(block_result)).use_rows();
+        let (mpt_rows, _) = trie_data_from_blocks(&[block_result.clone()]).use_rows();
         mpt_rows
     }
 
@@ -297,13 +319,11 @@ impl TargetCircuit for PoseidonCircuit {
     where
         Self: Sized,
     {
-        let (_, circuit) = trie_data_from_blocks(Some(block_result)).circuits(mpt_rows());
-        let instance = vec![];
-        Ok((circuit, instance))
+        Self::from_block_results(&[block_result.clone()])
     }
 
     fn estimate_rows(block_result: &BlockResult) -> usize {
-        let (_, rows) = trie_data_from_blocks(Some(block_result)).use_rows();
+        let (_, rows) = trie_data_from_blocks(&[block_result.clone()]).use_rows();
         rows
     }
 }

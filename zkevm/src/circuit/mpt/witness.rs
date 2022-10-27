@@ -1,10 +1,11 @@
 use super::{CanRead, TrieProof, AccountProof, AccountData, extend_address_to_h256, StorageProof};
 use crate::circuit::builder::verify_proof_leaf;
+use env_logger::filter;
 use eth_types::{Hash, Bytes, H256, U256};
 use ethers_core::abi::Address;
 use mpt_circuits::hash::Hashable;
 use mpt_circuits::serde::{HexBytes, Hash as SMTHash, SMTNode, SMTPath, SMTTrace, StateData};
-use std::collections::HashMap;
+use std::collections::{HashSet, HashMap};
 use types::eth::{AccountProofWrapper, BlockResult, StorageProofWrapper};
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
@@ -60,11 +61,8 @@ impl WitnessGenerator {
         zktrie::init_hash_scheme(hash_scheme);
     }
 
-    pub fn new(block: &BlockResult) -> Self {
-        let mut db = ZkMemoryDb::new();
-        let storage_trace = &block.storage_trace;
-
-        storage_trace
+    fn set_data_from_block(db: &mut ZkMemoryDb, block: &BlockResult) {
+        block.storage_trace
         .proofs
         .iter()
         .flatten()
@@ -73,49 +71,78 @@ impl WitnessGenerator {
             db.add_node_bytes(bytes.as_ref()).unwrap();
         });
 
-        storage_trace.storage_proofs.iter()
+        block.storage_trace.storage_proofs.iter()
             .flat_map(|(_, v_proofs)|v_proofs.iter())
             .flat_map(|(_, proofs)|proofs.iter())
             .for_each(|bytes| {
                 db.add_node_bytes(bytes.as_ref()).unwrap();
             });
+    }
 
-        let accounts: HashMap<Address, Option<AccountData>> = storage_trace
-            .proofs
-            .iter()
-            .flatten()
-            .map(|(account, proofs)| {
-                let proof : AccountProof = verify_proof_leaf(proofs.as_slice().try_into().unwrap(), &extend_address_to_h256(account));
-                (*account, proof.key.as_ref().map(|_|proof.data))
-            })
-            .collect();
+    fn set_accounts_from_block(&mut self , block: &BlockResult) {
+        let filter_map : HashSet<_> = self.accounts.keys().copied().collect();
 
-        let mut storages = HashMap::new();
-        for (account, storage_map) in storage_trace.storage_proofs.iter() {
-            assert!(accounts.contains_key(account));
-            let acc_data = accounts.get(account).unwrap();
-            let mut s_trie = db.new_trie(&acc_data.map(|d|d.storage_root).unwrap_or_else(Hash::zero).0).unwrap();
-            
+        let new_accs = block.storage_trace
+        .proofs
+        .iter()
+        .flatten()
+        .filter(|(account, _)|!filter_map.contains(account))
+        .map(|(account, proofs)| {
+            let proof : AccountProof = verify_proof_leaf(proofs.as_slice().try_into().unwrap(), &extend_address_to_h256(account));
+            (*account, proof.key.as_ref().map(|_|proof.data))
+        });
+        
+        self.accounts.extend(new_accs);
+    }
+
+    fn set_storages_from_block(&mut self, block: &BlockResult) {
+        
+        for (account, storage_map) in block.storage_trace.storage_proofs.iter() {
+
+            if !self.storages.contains_key(account) {
+                let acc_data = self.accounts.get(account).unwrap();
+                let s_trie = self.db.new_trie(&acc_data.map(|d|d.storage_root).unwrap_or_else(Hash::zero).0).unwrap();                
+                self.storages.insert(*account, s_trie);
+            }
+
+            let s_trie = self.storages.get_mut(account).expect("just inserted");
+
             for (k, v_proofs) in storage_map {
                 let mut k_buf: [u8; 32] = [0; 32];
                 k.to_big_endian(&mut k_buf[..]);
-                let proof: StorageProof = verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
-                let mut data: zktrie::StoreData = [0; 32];
-                proof.data.as_ref().to_big_endian(&mut data);
-                s_trie.update_store(&k_buf, &data).unwrap();
+                if s_trie.get_store(&k_buf).is_none() {
+                    let proof: StorageProof = verify_proof_leaf(v_proofs.as_slice().try_into().unwrap(), &k_buf);
+                    let mut data: zktrie::StoreData = [0; 32];
+                    proof.data.as_ref().to_big_endian(&mut data);
+                    s_trie.update_store(&k_buf, &data).unwrap();    
+                }
             }
+        }        
+    }
 
-            storages.insert(*account, s_trie);
-        }
 
-        let trie = db.new_trie(&storage_trace.root_before.0).unwrap();
+    pub fn add_block(&mut self, block: &BlockResult) {
+        Self::set_data_from_block(&mut self.db, block);
+        self.set_accounts_from_block(block);
+        self.set_storages_from_block(block);
+    }
 
-        Self {
+    pub fn new(block: &BlockResult) -> Self {
+        let mut db = ZkMemoryDb::new();
+        Self::set_data_from_block(&mut db, block);
+        let trie = db.new_trie(&block.storage_trace.root_before.0).unwrap();
+
+        let mut out = Self {
             db,
             trie,
-            accounts,
-            storages,
-        }
+            accounts: HashMap::new(),
+            storages: HashMap::new(),
+        };
+
+        out.set_accounts_from_block(block);
+        out.set_storages_from_block(block);
+
+        out
     }
 
     fn trace_storage_update(
@@ -148,12 +175,13 @@ impl WitnessGenerator {
             trie.delete(key.as_ref());
             None
         };
+        let storage_root_after = H256(trie.root());
         let storage_after_proofs = trie.prove(key.as_ref());
         let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
 
         let mut out = self.trace_account_update(address, |acc| {
             let mut acc = acc.clone();
-            acc.storage_root = H256::from(storage_after_path.as_ref().unwrap().root.as_ref());
+            acc.storage_root = storage_root_after;
             Some(acc)
         });
 
@@ -215,7 +243,7 @@ impl WitnessGenerator {
             account_update: [account_data_before.map(Into::into), account_data_after.map(Into::into)],
             account_key: HexBytes(address_key.to_repr().as_ref().try_into().unwrap()),
             state_path: [None, None],
-            common_state_root: account_data_before.map(|data| HexBytes(data.storage_root.0)).or_else(||Some(HexBytes([0;32]))),
+            common_state_root: account_data_before.map(|data| smt_hash_from_bytes(data.storage_root.as_bytes())).or_else(||Some(HexBytes([0;32]))),
             state_key: None,
             state_update: None,
         }
@@ -295,7 +323,7 @@ fn decode_proof_for_mpt_path(mut key_fr: Fr, proofs: Vec<Vec<u8>>) -> Result<SMT
 
     let root = if let Some(arr) = proofs.first() {
         let n = ZkTrieNode::parse(arr.as_slice());
-        HexBytes(n.key())
+        smt_hash_from_bytes(n.key().as_slice())
     } else {
         HexBytes::<32>([0; 32])
     };
