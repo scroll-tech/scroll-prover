@@ -3932,7 +3932,7 @@ dependencies = [
 [[package]]
 name = "zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zktrie.git#5eb8ff6aed5c2b3c8a699e6fe0a9fc1afec78b19"
+source = "git+https://github.com/scroll-tech/zktrie.git#0fa38c971450d1d2d682016c181c3ad6240305ac"
 dependencies = [
  "gobuild",
 ]
