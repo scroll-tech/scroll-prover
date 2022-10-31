@@ -5,9 +5,6 @@ use git_version::git_version;
 pub const GIT_VERSION: &str = git_version!();
 pub const PARAMS_DIR: &str = "./test_params";
 pub const SEED_PATH: &str = "./test_seed";
-pub const ALL_TESTS: &[&str] = &[
-    "empty", "greeter", "multiple", "native", "single", "dao", "nft", "sushi",
-];
 
 pub static ENV_LOGGER: Once = Once::new();
 

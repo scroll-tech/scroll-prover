@@ -40,7 +40,7 @@ fn main() {
         .expect("failed to load or create params");
     let agg_vk = read_from_file(&args.vk_path.unwrap());
 
-    let v = Verifier::from_params(params, agg_params, Some(agg_vk));
+    let mut v = Verifier::from_params(params, agg_params, Some(agg_vk));
     if let Some(path) = args.evm_proof {
         let proof_vec = read_from_file(&path);
         let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();

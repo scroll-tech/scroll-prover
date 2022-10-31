@@ -1,3 +1,4 @@
+use chrono::Utc;
 use types::eth::BlockResult;
 use zkevm::{
     circuit::TargetCircuit,
@@ -94,15 +95,16 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits_packing() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, ZktrieCircuit};
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
     let mut block_results = Vec::new();
-    for block_number in 1..=15 {
+    for block_number in 1..=16 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
         let block_result = get_block_result_from_file(trace_path);
         block_results.push(block_result);
     }
+    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_results, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_results, true).unwrap();
@@ -146,7 +148,7 @@ fn test_state_evm_connect() {
     use std::time::Instant;
 
     use halo2_proofs::{
-        pairing::bn256::G1Affine,
+        halo2curves::bn256::G1Affine,
         transcript::{Challenge255, PoseidonRead, TranscriptRead},
     };
     use zkevm::{
@@ -166,7 +168,7 @@ fn test_state_evm_connect() {
     let block_result = get_block_result_from_file(trace_path);
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
+    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
 
     log::info!("start generating state_circuit proof");
     let now = Instant::now();
@@ -244,18 +246,11 @@ fn test_state_evm_connect() {
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
 
-    use zkevm::{
-        circuit::DEGREE,
-        utils::{load_or_create_params, load_or_create_seed},
-        verifier::Verifier,
-    };
+    use zkevm::verifier::Verifier;
 
     init();
 
     let block_result = load_block_result_for_test();
-
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
 
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
@@ -265,9 +260,18 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
+    let output_file = format!(
+        "/tmp/{}_{}.json",
+        C::name(),
+        Utc::now().format("%Y%m%d_%H%M%S")
+    );
+    let mut fd = std::fs::File::create(&output_file).unwrap();
+    serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
+    log::info!("write proof to {}", output_file);
+
     log::info!("start verifying proof");
     let now = Instant::now();
-    let verifier = Verifier::from_fpath(PARAMS_DIR, None);
+    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }

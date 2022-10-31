@@ -1,44 +1,95 @@
-use halo2_proofs::pairing::bn256::{Bn256, G1Affine};
+use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use std::fs::{self};
 use std::io::Cursor;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use types::eth::BlockResult;
-use zkevm::circuit::AGG_DEGREE;
+use zkevm::circuit::{
+    EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
+};
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
-use zkevm::utils::load_or_create_params;
+use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
-fn _write_vk(output_dir: &str, c: &ProvedCircuit) {
-    let mut fd = std::fs::File::create(&format!("{}/vk_{}", output_dir, c.name)).unwrap();
-    c.vk.write(&mut fd).unwrap();
-}
-
-fn verifier_circuit_prove(output_dir: &str, block_results: Vec<BlockResult>) {
-    log::info!("output files to {}", output_dir);
-    fs::create_dir_all(output_dir).unwrap();
+fn verifier_circuit_prove(output_dir: &str, mode: &str) {
+    log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    //prover.init_agg_pk().unwrap();
+    let params = load_or_create_params(PARAMS_DIR, *DEGREE).expect("failed to init params");
+    let agg_params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).expect("failed to init params");
+    let seed = load_seed(SEED_PATH).expect("failed to init rng");
+
+    let mut prover = Prover::from_params_and_seed(params.clone(), agg_params.clone(), seed);
+    prover.debug_dir = output_dir.to_string();
+
+    // auto load target proofs
+    let load = Path::new(&format!("{}/zktrie_proof.json", output_dir)).exists();
+    let circuit_results: Vec<ProvedCircuit> = if load {
+        let mut v = Verifier::from_params(params, agg_params, None);
+        log::info!("loading cached target proofs");
+        vec![
+            prover
+                .debug_load_proved_circuit::<EvmCircuit>(Some(&mut v))
+                .unwrap(),
+            prover
+                .debug_load_proved_circuit::<StateCircuit>(Some(&mut v))
+                .unwrap(),
+            prover
+                .debug_load_proved_circuit::<PoseidonCircuit>(Some(&mut v))
+                .unwrap(),
+            prover
+                .debug_load_proved_circuit::<ZktrieCircuit>(Some(&mut v))
+                .unwrap(),
+        ]
+    } else {
+        let block_results = if mode == "PACK" {
+            let mut block_results = Vec::new();
+            for block_number in 1..=15 {
+                let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+                let block_result = get_block_result_from_file(trace_path);
+                block_results.push(block_result);
+            }
+            block_results
+        } else {
+            let trace_path = parse_trace_path_from_mode(mode);
+            vec![get_block_result_from_file(trace_path)]
+        };
+        vec![
+            prover.prove_circuit::<EvmCircuit>(&block_results).unwrap(),
+            prover
+                .prove_circuit::<StateCircuit>(&block_results)
+                .unwrap(),
+            prover
+                .prove_circuit::<PoseidonCircuit>(&block_results)
+                .unwrap(),
+            prover
+                .prove_circuit::<ZktrieCircuit>(&block_results)
+                .unwrap(),
+        ]
+    };
+
     let agg_proof = prover
-        .create_agg_circuit_proof_multi(&block_results)
+        .create_agg_circuit_proof_impl(circuit_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
+    let sol = prover.create_solidity_verifier(&agg_proof);
+    write_file(
+        &mut out_dir,
+        "verifier2.sol",
+        &Vec::<u8>::from(sol.as_bytes()),
+    );
+    log::info!("output files to {}", output_dir);
 }
 
 fn verifier_circuit_generate_solidity(dir: &str) {
-    let template_folder =
-        PathBuf::from("../../halo2-snark-aggregator/halo2-snark-aggregator-solidity/templates");
     let mut folder = PathBuf::from_str(dir).unwrap();
 
     let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
@@ -54,7 +105,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
             load_verify_circuit_instance(&mut folder),
         )
     };
-    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
         &mut Cursor::new(&vk),
         &params,
     )
@@ -66,7 +117,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
         proof,
         verify_public_inputs_size: 4,
     };
-    let sol = request.call::<Bn256>(template_folder);
+    let sol = request.call("".into());
     write_verify_circuit_solidity(&mut folder, &Vec::<u8>::from(sol.as_bytes()));
     log::info!("write to {}/verifier.sol", dir);
 }
@@ -85,6 +136,7 @@ fn verifier_circuit_verify_proof() {
 }
 
 fn verifier_circuit_verify(d: &str) {
+    log::info!("start verifier_circuit_verify");
     let mut folder = PathBuf::from_str(d).unwrap();
 
     let vk = load_verify_circuit_vk(&mut folder);
@@ -99,14 +151,14 @@ fn verifier_circuit_verify(d: &str) {
         final_pair: vec![], // not used
         vk,
     };
-    assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
+    verifier.verify_agg_circuit_proof(agg_proof).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_4in1() {
     use chrono::Utc;
-    use zkevm::utils::{get_block_result_from_file, read_env_var};
+    use zkevm::utils::read_env_var;
 
     init();
     let exp_name = read_env_var("EXP", "".to_string());
@@ -121,24 +173,8 @@ fn test_4in1() {
         let output_dir = PathBuf::from_str(&output).unwrap();
         fs::create_dir_all(output_dir).unwrap();
     }
-    log::info!("loading setup params");
-    let block_results = if mode == "PACK" {
-        let mut block_results = Vec::new();
-        for block_number in 1..=15 {
-            let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-            let block_result = get_block_result_from_file(trace_path);
-            block_results.push(block_result);
-        }
-        block_results
-    } else {
-        let trace_path = parse_trace_path_from_mode(&mode);
-        vec![get_block_result_from_file(trace_path)]
-    };
 
-    verifier_circuit_prove(&output, block_results);
+    verifier_circuit_prove(&output, &mode);
     verifier_circuit_verify(&output);
-    let gen_soli: bool = read_env_var("GEN_SOLI", false);
-    if gen_soli {
-        verifier_circuit_generate_solidity(&output);
-    }
+    verifier_circuit_generate_solidity(&output);
 }

@@ -37,6 +37,9 @@ test-hash-trace: ## test state circuit with real trace
 mock:
 	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits -- --exact --nocapture
 
+mock_pack:
+	@cargo test --features prove_verify --release test_mock_prove_all_target_circuits_packing -- --exact --nocapture
+
 test-agg:
 	@cargo test --features prove_verify --release test_4in1
 

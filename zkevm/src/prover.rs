@@ -5,7 +5,7 @@ use crate::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
-    deserialize_fr_matrix, serialize_fr_tensor, serialize_instance,
+    deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
@@ -13,18 +13,20 @@ use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
-use halo2_proofs::pairing::bn256::{Fr, G1Affine};
+use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey, VerifyingKey};
-use halo2_proofs::poly::commitment::{Params, ParamsVerifier};
-use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
+use halo2_proofs::poly::commitment::ParamsProver;
+use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
+use halo2_proofs::poly::kzg::multiopen::ProverGWC;
+use halo2_proofs::transcript::{Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
     final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
     Halo2VerifierCircuits, SingleProofWitness,
 };
+use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use log::info;
 use once_cell::sync::Lazy;
-use pairing::bn256::Bn256;
 
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
@@ -34,6 +36,12 @@ use types::eth::BlockResult;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
+
+pub const ENABLE_COHERENT: bool = true;
+pub const CIRCUIT_NUM: usize = 4;
+fn from_0_to_n<const N: usize>() -> [usize; N] {
+    core::array::from_fn(|i| i)
+}
 
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
@@ -67,7 +75,6 @@ pub struct ProvedCircuit {
     pub transcript: Vec<u8>,
     pub vk: VerifyingKey<G1Affine>,
     pub instance: Vec<Vec<Vec<Fr>>>,
-    pub params: ParamsVerifier<Bn256>,
 }
 
 impl AggCircuitProof {
@@ -86,23 +93,25 @@ impl AggCircuitProof {
 
 #[derive(Debug)]
 pub struct Prover {
-    pub params: Params<G1Affine>,
-    pub agg_params: Params<G1Affine>,
+    pub params: ParamsKZG<Bn256>,
+    pub agg_params: ParamsKZG<Bn256>,
     pub rng: XorShiftRng,
 
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,
     pub agg_pk: Option<ProvingKey<G1Affine>>,
+    pub debug_dir: String,
     //pub target_circuit_vks: HashMap<String, ProvingKey<G1Affine>>,
 }
 
 impl Prover {
-    pub fn new(params: Params<G1Affine>, agg_params: Params<G1Affine>, rng: XorShiftRng) -> Self {
+    pub fn new(params: ParamsKZG<Bn256>, agg_params: ParamsKZG<Bn256>, rng: XorShiftRng) -> Self {
         Self {
             params,
             agg_params,
             rng,
             target_circuit_pks: Default::default(),
             agg_pk: None,
+            debug_dir: Default::default(),
         }
     }
 
@@ -132,31 +141,30 @@ impl Prover {
         Self::tick(&format!("after init pk of {}", C::name()));
     }
 
-    fn init_agg_pk_from_verifier_circuit(
-        &mut self,
-        verify_circuit: &Halo2VerifierCircuits<'_, Bn256, 4>,
-    ) {
-        let verify_circuit_vk =
-            keygen_vk(&self.agg_params, verify_circuit).expect("keygen_vk should not fail");
-
-        let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, verify_circuit)
-            .expect("keygen_pk should not fail");
-        self.agg_pk = Some(verify_circuit_pk);
-    }
-
     pub fn from_params_and_rng(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         rng: XorShiftRng,
     ) -> Self {
         Self::new(params, agg_params, rng)
     }
 
     pub fn from_params_and_seed(
-        params: Params<G1Affine>,
-        agg_params: Params<G1Affine>,
+        params: ParamsKZG<Bn256>,
+        agg_params: ParamsKZG<Bn256>,
         seed: [u8; 16],
     ) -> Self {
+        {
+            let target_params_verifier: &ParamsVerifierKZG<Bn256> = params.verifier_params();
+            let agg_params_verifier: &ParamsVerifierKZG<Bn256> = agg_params.verifier_params();
+            log::info!(
+                "params g2 {:?} s_g2 {:?}",
+                target_params_verifier.g2(),
+                target_params_verifier.s_g2()
+            );
+            debug_assert_eq!(target_params_verifier.s_g2(), agg_params_verifier.s_g2());
+            debug_assert_eq!(target_params_verifier.g2(), agg_params_verifier.g2());
+        }
         let rng = XorShiftRng::from_seed(seed);
         Self::from_params_and_rng(params, agg_params, rng)
     }
@@ -166,47 +174,66 @@ impl Prover {
         let agg_params =
             load_or_create_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
-        let rng = XorShiftRng::from_seed(seed);
-        // FIXME check params
-        {
-            let target_params_verifier: ParamsVerifier<Bn256> = params.verifier(0).unwrap();
-            let agg_params_verifier: ParamsVerifier<Bn256> = agg_params.verifier(0).unwrap();
-            log::info!("target_params_verifier {:?}", target_params_verifier);
-            log::info!("agg_params_verifier {:?}", agg_params_verifier);
-            debug_assert_eq!(target_params_verifier.s_g2, agg_params_verifier.s_g2);
-            debug_assert_eq!(target_params_verifier.g2, agg_params_verifier.g2);
-        }
-        Self::from_params_and_rng(params, agg_params, rng)
+        Self::from_params_and_seed(params, agg_params, seed)
     }
 
-    fn prove_circuit<C: TargetCircuit>(
+    pub fn debug_load_proved_circuit<C: TargetCircuit>(
+        &mut self,
+        v: Option<&mut crate::verifier::Verifier>,
+    ) -> anyhow::Result<ProvedCircuit> {
+        assert!(!self.debug_dir.is_empty());
+        log::debug!("debug_load_proved_circuit {}", C::name());
+        let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
+        let file = std::fs::File::open(file_name)?;
+        let proof: TargetCircuitProof = serde_json::from_reader(file)?;
+        if let Some(v) = v {
+            v.verify_target_circuit_proof::<C>(&proof).unwrap();
+        }
+        self.convert_target_proof::<C>(&proof)
+    }
+
+    pub fn prove_circuit<C: TargetCircuit>(
         &mut self,
         block_results: &[BlockResult],
     ) -> anyhow::Result<ProvedCircuit> {
         let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
+        self.convert_target_proof::<C>(&proof)
+    }
 
+    fn convert_target_proof<C: TargetCircuit>(
+        &mut self,
+        proof: &TargetCircuitProof,
+    ) -> anyhow::Result<ProvedCircuit> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);
         debug_assert!(instances.is_empty(), "instance not supported yet");
-        let vk = self.target_circuit_pks[&proof.name].get_vk().clone();
+        let vk = match self.target_circuit_pks.get(&proof.name) {
+            Some(pk) => pk.get_vk().clone(),
+            None => keygen_vk(&self.params, &C::empty()).unwrap(),
+        };
         if *OPT_MEM {
             Self::tick(&format!("before release pk of {}", C::name()));
             self.target_circuit_pks.remove(&C::name());
             Self::tick(&format!("after release pk of {}", &C::name()));
         }
 
-        let target_circuit_public_input_len =
-            instances.iter().map(|col| col.len()).max().unwrap_or(0);
-        let target_circuit_params = self
-            .params
-            .verifier::<Bn256>(target_circuit_public_input_len)?;
         Ok(ProvedCircuit {
             name: proof.name.clone(),
-            transcript: proof.proof,
+            transcript: proof.proof.clone(),
             vk,
             instance: vec![instances],
-            params: target_circuit_params,
         })
+    }
+
+    pub fn create_solidity_verifier(&self, proof: &AggCircuitProof) -> String {
+        MultiCircuitSolidityGenerate {
+            verify_vk: self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
+            verify_params: &self.agg_params,
+            verify_circuit_instance: load_instances(&proof.instance),
+            proof: proof.proof.clone(),
+            verify_public_inputs_size: 4, // not used now
+        }
+        .call("".into())
     }
 
     pub fn create_agg_circuit_proof(
@@ -229,68 +256,148 @@ impl Prover {
         self.create_agg_circuit_proof_impl(circuit_results)
     }
 
-    fn create_agg_circuit_proof_impl(
+    // commitments of columns of shared tables of circuits should be same
+    fn build_coherent() -> Vec<[(usize, usize); 2]> {
+        let mut coherent = Vec::new();
+
+        let evm_circuit_idx = 0;
+        let state_circuit_idx = 1;
+        let poseidon_circuit_idx = 2;
+        let zktrie_circuit_idx = 3;
+
+        let mut connect_table =
+            |circuit_idx_1, table_start_1, circuit_idx_2, table_start_2, table_len: usize| {
+                for i in 0..table_len {
+                    coherent.push([
+                        (circuit_idx_1, table_start_1 + i),
+                        (circuit_idx_2, table_start_2 + i),
+                    ]);
+                }
+            };
+
+        // rw table
+        connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
+
+        // poseidon hash table
+        let hash_table_commitments_len = 3;
+        let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
+        let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
+        connect_table(
+            poseidon_circuit_idx,
+            hash_table_start_poseidon,
+            zktrie_circuit_idx,
+            hash_table_start_mpt,
+            hash_table_commitments_len,
+        );
+
+        coherent
+    }
+
+    pub fn create_agg_circuit_proof_impl(
         &mut self,
         circuit_results: Vec<ProvedCircuit>,
     ) -> anyhow::Result<AggCircuitProof> {
+        let target_circuits = from_0_to_n::<CIRCUIT_NUM>();
         ///////////////////////////// build verifier circuit from block result ///////////////////
-        // commitments of rw table columns of evm circuit should be same as commitments of rw table columns of state circuit
-        let evm_circuit_idx = 0;
-        let state_circuit_idx = 1;
-        let rw_table_start_evm = 0;
-        let rw_table_start_state = 0;
-        let rw_table_commitments_len = 11;
 
-        let mut coherent = Vec::new();
-        for i in 0..rw_table_commitments_len {
-            coherent.push([
-                (evm_circuit_idx, rw_table_start_evm + i),
-                (state_circuit_idx, rw_table_start_state + i),
-            ]);
+        let coherent = if ENABLE_COHERENT {
+            Self::build_coherent()
+        } else {
+            Default::default()
+        };
+
+        if ENABLE_COHERENT {
+            // check commitments equality
+            let load_commitment = |proof: &[u8], start| {
+                let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
+                for _ in 0..start {
+                    transcript.read_point().unwrap();
+                }
+                transcript.read_point().unwrap()
+            };
+            for [(c1, p1), (c2, p2)] in &coherent {
+                let a = load_commitment(&circuit_results[*c1].transcript, *p1);
+                let b = load_commitment(&circuit_results[*c2].transcript, *p2);
+                if a != b {
+                    bail!(
+                        "fail to connect circuit: {}th point of {}({:?}) != {}th point of {}({:?})",
+                        p1,
+                        circuit_results[*c1].name,
+                        a,
+                        p2,
+                        circuit_results[*c2].name,
+                        b
+                    );
+                }
+            }
         }
 
-        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 4> {
-            circuits: [0, 1, 2, 3].map(|i| {
+        let verifier_params = self.params.verifier_params();
+        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, CIRCUIT_NUM> {
+            circuits: target_circuits.map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
+                    name: c.name.clone(),
                     nproofs: 1,
                     proofs: vec![SingleProofWitness::<'_, Bn256> {
                         instances: &c.instance,
                         transcript: &c.transcript,
                     }],
                     vk: &c.vk,
-                    params: &circuit_results[i].params,
+                    params: verifier_params,
                 }
             }),
             coherent,
         };
         ///////////////////////////// build verifier circuit from block result done ///////////////////
-        let n_instances = [0, 1, 2, 3].map(|i| vec![circuit_results[i].instance.clone()]);
-        let n_transcript = [0, 1, 2, 3].map(|i| vec![circuit_results[i].transcript.clone()]);
-        let instances: [Halo2CircuitInstance<'_, Bn256>; 4] =
-            [0, 1, 2, 3].map(|i| Halo2CircuitInstance {
-                params: &circuit_results[i].params,
+        let n_instances = target_circuits.map(|i| vec![circuit_results[i].instance.clone()]);
+        let n_transcript = target_circuits.map(|i| vec![circuit_results[i].transcript.clone()]);
+        let instances: [Halo2CircuitInstance<'_, Bn256>; CIRCUIT_NUM] =
+            target_circuits.map(|i| Halo2CircuitInstance {
+                name: circuit_results[i].name.clone(),
+                params: verifier_params,
                 vk: &circuit_results[i].vk,
                 n_instances: &n_instances[i],
                 n_transcript: &n_transcript[i],
             });
-        let verify_circuit_final_pair =
-            Halo2CircuitInstances::<'_, Bn256, 4>(instances).calc_verify_circuit_final_pair();
+        let verify_circuit_final_pair = Halo2CircuitInstances::<'_, Bn256, CIRCUIT_NUM>(instances)
+            .calc_verify_circuit_final_pair();
+        log::debug!("final pair {:?}", verify_circuit_final_pair);
         let verify_circuit_instances =
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
 
         if self.agg_pk.is_none() {
             log::info!("init_agg_pk: init from verifier circuit");
-            self.init_agg_pk_from_verifier_circuit(&verify_circuit);
+
+            let verify_circuit_vk =
+                keygen_vk(&self.agg_params, &verify_circuit).expect("keygen_vk should not fail");
+
+            let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, &verify_circuit)
+                .expect("keygen_pk should not fail");
+            self.agg_pk = Some(verify_circuit_pk);
+
             log::info!("init_agg_pk: init done");
         } else {
             log::info!("using existing agg_pk");
         }
 
         let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];
-        let mut transcript = ShaWrite::<_, _, Challenge255<_>, sha2::Sha256>::init(vec![]);
+        let mut transcript = ShaWrite::<_, G1Affine, Challenge255<_>, sha2::Sha256>::init(vec![]);
+
+        if *MOCK_PROVE {
+            log::info!("mock prove agg circuit");
+            let prover = MockProver::<Fr>::run(
+                *AGG_DEGREE as u32,
+                &verify_circuit,
+                vec![verify_circuit_instances.clone()],
+            )?;
+            if let Err(e) = prover.verify_par() {
+                bail!("{:#?}", e);
+            }
+            log::info!("mock prove agg circuit done");
+        }
         log::info!("create agg proof");
-        create_proof(
+        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
             &self.agg_params,
             self.agg_pk.as_ref().unwrap(),
             &[verify_circuit],
@@ -358,7 +465,7 @@ impl Prover {
         block_results: &[BlockResult],
     ) -> anyhow::Result<TargetCircuitProof, Error> {
         let (circuit, instance) = C::from_block_results(block_results)?;
-        let mut transcript = PoseidonWrite::<_, _, Challenge255<_>>::init(vec![]);
+        let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
 
         let instance_slice = instance.iter().map(|x| &x[..]).collect::<Vec<_>>();
 
@@ -383,7 +490,7 @@ impl Prover {
             self.init_pk::<C>();
         }
         let pk = &self.target_circuit_pks[&C::name()];
-        create_proof(
+        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
             &self.params,
             pk,
             &[circuit],
@@ -398,10 +505,33 @@ impl Prover {
             block_results[block_results.len() - 1].block_trace.hash,
         );
         let instance_bytes = serialize_instance(&instance);
-        Ok(TargetCircuitProof {
-            name: C::name(),
-            proof: transcript.finalize(),
+        let proof = transcript.finalize();
+        let name = C::name();
+        log::debug!(
+            "{} circuit: proof {:?}, instance len {}",
+            name,
+            &proof[0..15],
+            instance_bytes.len()
+        );
+        let target_proof = TargetCircuitProof {
+            name: name.clone(),
+            proof,
             instance: instance_bytes,
-        })
+        };
+        if !self.debug_dir.is_empty() {
+            // write vk
+            let mut fd =
+                std::fs::File::create(&format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
+            pk.get_vk().write(&mut fd).unwrap();
+            drop(fd);
+
+            // write proof
+            //let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
+            //write_file(&mut folder, &format!("{}.proof", name), &proof);
+            let output_file = format!("{}/{}_proof.json", self.debug_dir, name);
+            let mut fd = std::fs::File::create(&output_file).unwrap();
+            serde_json::to_writer_pretty(&mut fd, &target_proof).unwrap();
+        }
+        Ok(target_proof)
     }
 }
