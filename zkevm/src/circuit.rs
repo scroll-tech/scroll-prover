@@ -155,7 +155,7 @@ impl TargetCircuit for StateCircuit {
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
-            witness_block.state_circuit_pad_to,
+            witness_block.circuits_params.max_rws,
         );
         let instance = vec![];
         Ok((inner, instance))
@@ -171,7 +171,7 @@ impl TargetCircuit for StateCircuit {
         let inner = StateCircuitImpl::<Fr>::new(
             witness_block.randomness,
             witness_block.rws,
-            witness_block.state_circuit_pad_to,
+            witness_block.circuits_params.max_rws,
         );
         let instance = vec![];
         Ok((inner, instance))
@@ -188,10 +188,10 @@ impl TargetCircuit for StateCircuit {
     fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
         let witness_block = block_result_to_witness_block(block_result).unwrap();
         let rows = Self::estimate_rows(block_result);
-        let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
+        let active_rows: Vec<_> = (if witness_block.circuits_params.max_rws == 0 {
             0..rows
         } else {
-            (witness_block.state_circuit_pad_to - rows)..witness_block.state_circuit_pad_to
+            (witness_block.circuits_params.max_rws - rows)..witness_block.circuits_params.max_rws
         })
         .into_iter()
         .collect();

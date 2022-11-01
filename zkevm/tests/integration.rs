@@ -130,14 +130,16 @@ fn test_mock_prove_all_target_circuits() {
     log::info!("test cases traces: {:?}", paths);
     let paths = &paths;
     let mut failed_cases = Vec::new();
+//    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(paths));
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(paths));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(paths));
+    /*
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<ZktrieCircuit>(
         paths,
     ));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
-        paths,
-    ));
+    */
+ //   failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
+   //     paths,
+   // ));
     assert_eq!(failed_cases, Vec::new());
 }
 
