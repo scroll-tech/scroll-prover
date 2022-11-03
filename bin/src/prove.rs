@@ -38,6 +38,8 @@ struct Args {
     /// Boolean means if output agg proof.
     #[clap(long = "agg")]
     agg_proof: Option<bool>,
+    #[clap(long = "multi")]
+    multi_prove: Option<bool>,
 }
 
 fn main() {
@@ -55,23 +57,38 @@ fn main() {
 
     let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
 
-    let mut traces = HashMap::new();
+    let mut traces_map = HashMap::new();
+    let mut traces_vec = Vec::new();
+
     let trace_path = PathBuf::from(&args.trace_path.unwrap());
     if trace_path.is_dir() {
         for entry in fs::read_dir(trace_path).unwrap() {
             let path = entry.unwrap().path();
             if path.is_file() && path.to_str().unwrap().ends_with(".json") {
                 let block_result = get_block_result_from_file(path.to_str().unwrap());
-                traces.insert(path.file_stem().unwrap().to_os_string(), block_result);
+                traces_map.insert(
+                    path.file_stem().unwrap().to_os_string(),
+                    block_result.clone(),
+                );
+                traces_vec.push(block_result);
             }
         }
     } else {
         let block_result = get_block_result_from_file(trace_path.to_str().unwrap());
-        traces.insert(trace_path.file_stem().unwrap().to_os_string(), block_result);
+        traces_map.insert(
+            trace_path.file_stem().unwrap().to_os_string(),
+            block_result.clone(),
+        );
+        traces_vec.push(block_result);
     }
 
     let outer_now = Instant::now();
-    for (trace_name, trace) in traces {
+    if args.multi_prove.is_some() {
+        let multi_proof = prover
+            .create_agg_circuit_proof_multi(traces_vec.as_slice())
+            .expect("cannot generate multi proof");
+    }
+    for (trace_name, trace) in traces_map {
         if args.evm_proof.is_some() {
             let proof_path = PathBuf::from(&trace_name).join("evm.proof");
 
