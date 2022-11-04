@@ -3,6 +3,7 @@ use log::info;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
+use std::fmt::format;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -57,6 +58,8 @@ fn main() {
 
     let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
 
+    prover.debug_dir = "output/".to_string();
+
     let mut traces_map = HashMap::new();
     let mut traces_vec = Vec::new();
 
@@ -81,6 +84,8 @@ fn main() {
         );
         traces_vec.push(block_result);
     }
+
+    traces_vec.reverse();
 
     let outer_now = Instant::now();
     if args.multi_prove.is_some() {
