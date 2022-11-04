@@ -279,7 +279,7 @@ impl Prover {
         connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
 
         // poseidon hash table
-        let hash_table_commitments_len = 3;
+        //let hash_table_commitments_len = 3;
         let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
         let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
         connect_table(
@@ -287,7 +287,25 @@ impl Prover {
             hash_table_start_poseidon,
             zktrie_circuit_idx,
             hash_table_start_mpt,
-            hash_table_commitments_len,
+            1,
+        );
+
+        let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.right_pos();
+        connect_table(
+            poseidon_circuit_idx,
+            hash_table_start_poseidon,
+            zktrie_circuit_idx,
+            hash_table_start_mpt,
+            1,
+        );
+
+        let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.hash_pos();
+        connect_table(
+            poseidon_circuit_idx,
+            hash_table_start_poseidon,
+            zktrie_circuit_idx,
+            hash_table_start_mpt,
+            1,
         );
 
         coherent
