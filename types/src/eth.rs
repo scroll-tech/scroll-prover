@@ -14,15 +14,24 @@ pub struct BlockResultWrapper {
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct BlockResult {
-    #[serde(rename = "blockTrace")]
-    pub block_trace: BlockTrace,
+pub struct BlockTrace {
+    pub coinbase: AccountProofWrapper,
+    pub header: EthBlock,
+    pub transactions: Vec<TransactionData>,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
     pub storage_trace: StorageTrace,
     #[serde(rename = "mptwitness", default)]
     pub mpt_witness: Vec<SMTTrace>,
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+pub struct TransactionData {
+    #[serde(rename = "isCreate", default)]
+    pub is_create: bool,
+    pub from: Address,
+    pub transaction: Transaction,
 }
 
 pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
@@ -37,20 +46,6 @@ pub struct StorageTrace {
     pub proofs: Option<AccountTrieProofs>,
     #[serde(rename = "storageProofs", default)]
     pub storage_proofs: StorageTrieProofs,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct BlockTrace {
-    pub number: U64,
-    pub hash: Hash,
-    pub time: u64,
-    pub coinbase: AccountProofWrapper,
-    pub difficulty: U256,
-    pub transactions: Vec<TransactionTrace>,
-    #[serde(rename = "baseFee")]
-    pub base_fee: Option<U256>,
-    #[serde(rename = "gasLimit")]
-    pub gas_limit: u64,
 }
 
 pub type EthBlock = Block<Transaction>;
