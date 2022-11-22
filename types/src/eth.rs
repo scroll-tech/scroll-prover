@@ -31,6 +31,7 @@ pub struct TransactionData {
     #[serde(rename = "isCreate", default)]
     pub is_create: bool,
     pub from: Address,
+    #[serde(flatten)]
     pub transaction: Transaction,
 }
 
