@@ -223,15 +223,3 @@ pub struct StorageProofWrapper {
     pub value: Option<U256>,
     pub proof: Option<Vec<Bytes>>,
 }
-
-pub fn mock_block_trace() -> BlockTrace {
-    let mut block_trace = BlockTrace::default();
-    block_trace.coinbase = AccountProofWrapper {
-        address: Some(Address::from_slice("12345678901234567890".as_bytes())),
-        nonce: Some(100),
-        balance: Some(U256::from(100)),
-        code_hash: Some(H256::zero()),
-        ..Default::default()
-    };
-    block_trace
-}
