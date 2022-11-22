@@ -5,12 +5,12 @@ use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// BlockTraceWrapper is the payload from Scroll.
+/// TaskMsg is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
-pub struct BlockTraceWrapper {
+pub struct TaskMsg {
     pub id: u64,
     #[serde(rename = "blockTraces")]
-    pub block_result: BlockTrace,
+    pub block_result: Vec<BlockTrace>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
