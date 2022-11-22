@@ -6,7 +6,6 @@ use halo2_proofs::halo2curves::FieldExt;
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;
-use serde::{Deserialize, Serialize};
 use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
@@ -128,14 +127,7 @@ pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
-    #[derive(Deserialize, Serialize, Default)]
-    struct RpcJson {
-        result: BlockTrace,
-    }
-
-    let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
-
-    j.result
+    serde_json::from_slice::<BlockTrace>(&buffer).unwrap()
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {
