@@ -5,12 +5,12 @@ use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// BlockResultWrapper is the payload from Scroll.
+/// BlockTraceWrapper is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
-pub struct BlockResultWrapper {
+pub struct BlockTraceWrapper {
     pub id: u64,
     #[serde(rename = "blockTraces")]
-    pub block_result: BlockResult,
+    pub block_result: BlockTrace,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
@@ -53,39 +53,7 @@ pub type EthBlock = Block<Transaction>;
 
 impl From<BlockTrace> for EthBlock {
     fn from(b: BlockTrace) -> Self {
-        let mut transactions = Vec::new();
-        for (tx_idx, tx_trace) in b.transactions.iter().enumerate() {
-            let tx_idx = Some(U64::from(tx_idx));
-            let block_hash = Some(b.hash);
-            let block_number = Some(b.number);
-            let tx = tx_trace.to_eth_tx(block_hash, block_number, tx_idx);
-            transactions.push(tx)
-        }
-        EthBlock {
-            hash: Some(b.hash),
-            parent_hash: Default::default(),
-            uncles_hash: Default::default(),
-            author: b.coinbase.address,
-            state_root: Default::default(),
-            transactions_root: Default::default(),
-            receipts_root: Default::default(),
-            number: Some(b.number),
-            gas_used: Default::default(),
-            gas_limit: U256::from(b.gas_limit),
-            extra_data: Default::default(),
-            logs_bloom: None,
-            timestamp: U256::from(b.time),
-            difficulty: b.difficulty,
-            total_difficulty: None,
-            seal_fields: vec![],
-            uncles: vec![],
-            transactions,
-            size: None,
-            mix_hash: None,
-            nonce: None,
-            base_fee_per_gas: b.base_fee,
-            other: Default::default(),
-        }
+        EthBlock { ..b.header }
     }
 }
 
@@ -256,14 +224,14 @@ pub struct StorageProofWrapper {
     pub proof: Option<Vec<Bytes>>,
 }
 
-pub fn mock_block_result() -> BlockResult {
-    let mut block_result = BlockResult::default();
-    block_result.block_trace.coinbase = AccountProofWrapper {
+pub fn mock_block_trace() -> BlockTrace {
+    let mut block_trace = BlockTrace::default();
+    block_trace.coinbase = AccountProofWrapper {
         address: Some(Address::from_slice("12345678901234567890".as_bytes())),
         nonce: Some(100),
         balance: Some(U256::from(100)),
         code_hash: Some(H256::zero()),
         ..Default::default()
     };
-    block_result
+    block_trace
 }

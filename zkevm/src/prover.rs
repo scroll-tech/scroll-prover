@@ -32,7 +32,7 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
 use types::base64;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
@@ -194,7 +194,7 @@ impl Prover {
 
     pub fn prove_circuit<C: TargetCircuit>(
         &mut self,
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<ProvedCircuit> {
         let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
         self.convert_target_proof::<C>(&proof)
@@ -238,14 +238,14 @@ impl Prover {
 
     pub fn create_agg_circuit_proof(
         &mut self,
-        block_result: &BlockResult,
+        block_result: &BlockTrace,
     ) -> anyhow::Result<AggCircuitProof> {
         self.create_agg_circuit_proof_multi(&[block_result.clone()])
     }
 
     pub fn create_agg_circuit_proof_multi(
         &mut self,
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<AggCircuitProof> {
         let circuit_results: Vec<ProvedCircuit> = vec![
             self.prove_circuit::<EvmCircuit>(block_results)?,
@@ -422,14 +422,14 @@ impl Prover {
     }
 
     pub fn mock_prove_target_circuit<C: TargetCircuit>(
-        block_result: &BlockResult,
+        block_result: &BlockTrace,
         full: bool,
     ) -> anyhow::Result<()> {
         Self::mock_prove_target_circuit_multi::<C>(&[block_result.clone()], full)
     }
 
     pub fn mock_prove_target_circuit_multi<C: TargetCircuit>(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
         full: bool,
     ) -> anyhow::Result<()> {
         log::info!("start mock prove {}", C::name());
@@ -455,14 +455,14 @@ impl Prover {
 
     pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
-        block_result: &BlockResult,
+        block_result: &BlockTrace,
     ) -> anyhow::Result<TargetCircuitProof, Error> {
         self.create_target_circuit_proof_multi::<C>(&[block_result.clone()])
     }
 
     pub fn create_target_circuit_proof_multi<C: TargetCircuit>(
         &mut self,
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<TargetCircuitProof, Error> {
         let (circuit, instance) = C::from_block_results(block_results)?;
         let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
@@ -474,8 +474,8 @@ impl Prover {
         info!(
             "Create {} proof of block {} ... block {}, batch len {}",
             C::name(),
-            block_results[0].block_trace.hash,
-            block_results[block_results.len() - 1].block_trace.hash,
+            block_results[0].header.hash.unwrap(),
+            block_results[block_results.len() - 1].header.hash.unwrap(),
             block_results.len()
         );
         if *MOCK_PROVE {
@@ -501,8 +501,8 @@ impl Prover {
         info!(
             "Create {} proof of block {} ... block {} Successfully!",
             C::name(),
-            block_results[0].block_trace.hash,
-            block_results[block_results.len() - 1].block_trace.hash,
+            block_results[0].header.hash.unwrap(),
+            block_results[block_results.len() - 1].header.hash.unwrap(),
         );
         let instance_bytes = serialize_instance(&instance);
         let proof = transcript.finalize();

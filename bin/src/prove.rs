@@ -81,7 +81,7 @@ fn main() {
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 
@@ -100,7 +100,7 @@ fn main() {
                 .expect("cannot generate state_proof");
             info!(
                 "finish generating state proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 
@@ -119,7 +119,7 @@ fn main() {
                 .expect("cannot generate agg_proof");
             info!(
                 "finish generating agg proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 

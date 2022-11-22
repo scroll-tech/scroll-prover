@@ -12,7 +12,7 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::{BlockResult, ExecStep};
+use types::eth::{BlockTrace, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::FieldExt;
@@ -52,16 +52,16 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
 }
 
 pub fn block_result_to_witness_block(
-    block_result: &BlockResult,
+    block_result: &BlockTrace,
 ) -> Result<Block<Fr>, anyhow::Error> {
     block_results_to_witness_block(std::slice::from_ref(block_result))
 }
 
 pub fn block_results_to_witness_block(
-    block_results: &[BlockResult],
+    block_results: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_results[0].block_trace.transactions.get(0) {
-        tx_trace.chain_id
+    let chain_id = if let Some(tx_trace) = block_results[0].transactions.get(0) {
+        tx_trace.transaction.chain_id.unwrap()
     } else {
         0i16.into()
     };
@@ -71,7 +71,7 @@ pub fn block_results_to_witness_block(
     let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
     for (idx, block_result) in block_results.iter().enumerate() {
         let is_last = idx == block_results.len() - 1;
-        let eth_block = block_result.block_trace.clone().into();
+        let eth_block = block_result.clone().into();
         let mut geth_trace = Vec::new();
         for result in &block_result.execution_results {
             geth_trace.push(result.into());
@@ -190,9 +190,7 @@ fn trace_code(
         Ok(())
     }
 }
-pub fn build_statedb_and_codedb(
-    blocks: &[BlockResult],
-) -> Result<(StateDB, CodeDB), anyhow::Error> {
+pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 

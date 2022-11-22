@@ -9,7 +9,7 @@ use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit
 use once_cell::sync::Lazy;
 
 use strum::IntoEnumIterator;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 use zkevm_circuits::evm_circuit::test::TestCircuit as EvmTestCircuit;
 use zkevm_circuits::evm_circuit::witness::{Block, RwMap};
@@ -32,11 +32,11 @@ pub trait TargetCircuit {
     /// used to generate vk&pk
     fn empty() -> Self::Inner;
     //fn public_input_len() -> usize { 0 }
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
     fn from_block_results(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -48,13 +48,13 @@ pub trait TargetCircuit {
         Self::from_block_result(&block_results[0])
     }
 
-    fn estimate_rows(_block_result: &BlockResult) -> usize {
+    fn estimate_rows(_block_result: &BlockTrace) -> usize {
         0
     }
     fn public_input_len() -> usize {
         0
     }
-    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+    fn get_active_rows(block_result: &BlockTrace) -> (Vec<usize>, Vec<usize>) {
         (
             (0..Self::estimate_rows(block_result)).into_iter().collect(),
             (0..Self::estimate_rows(block_result)).into_iter().collect(),
@@ -88,7 +88,7 @@ impl TargetCircuit for EvmCircuit {
         EvmTestCircuit::new(default_block, tags)
     }
 
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -99,7 +99,7 @@ impl TargetCircuit for EvmCircuit {
     }
 
     fn from_block_results(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -110,7 +110,7 @@ impl TargetCircuit for EvmCircuit {
         Ok((inner, instance))
     }
 
-    fn estimate_rows(block_result: &BlockResult) -> usize {
+    fn estimate_rows(block_result: &BlockTrace) -> usize {
         match block_result_to_witness_block(block_result) {
             Ok(witness_block) => EvmTestCircuit::<Fr>::get_num_rows_required(&witness_block),
             Err(e) => {
@@ -143,7 +143,7 @@ impl TargetCircuit for StateCircuit {
         StateCircuitImpl::<Fr>::new(Fr::from_u128(DEFAULT_RAND), rw_map, 0)
     }
 
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -158,7 +158,7 @@ impl TargetCircuit for StateCircuit {
     }
 
     fn from_block_results(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -173,7 +173,7 @@ impl TargetCircuit for StateCircuit {
         Ok((inner, instance))
     }
 
-    fn estimate_rows(block_result: &BlockResult) -> usize {
+    fn estimate_rows(block_result: &BlockTrace) -> usize {
         let witness_block = block_result_to_witness_block(block_result).unwrap();
         1 + witness_block
             .rws
@@ -181,7 +181,7 @@ impl TargetCircuit for StateCircuit {
             .iter()
             .fold(0usize, |total, (_, v)| v.len() + total)
     }
-    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+    fn get_active_rows(block_result: &BlockTrace) -> (Vec<usize>, Vec<usize>) {
         let witness_block = block_result_to_witness_block(block_result).unwrap();
         let rows = Self::estimate_rows(block_result);
         let active_rows: Vec<_> = (if witness_block.state_circuit_pad_to == 0 {
@@ -200,7 +200,7 @@ fn mpt_rows() -> usize {
 }
 
 fn trie_data_from_blocks<'d>(
-    block_results: impl IntoIterator<Item = &'d BlockResult>,
+    block_results: impl IntoIterator<Item = &'d BlockTrace>,
 ) -> EthTrie<Fr> {
     let mut trie_data: EthTrie<Fr> = Default::default();
     for block_result in block_results.into_iter() {
@@ -230,7 +230,7 @@ impl TargetCircuit for ZktrieCircuit {
     }
 
     fn from_block_results(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -243,7 +243,7 @@ impl TargetCircuit for ZktrieCircuit {
         Ok((mpt_circuit, instance))
     }
 
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -252,12 +252,12 @@ impl TargetCircuit for ZktrieCircuit {
         Ok((mpt_circuit, instance))
     }
 
-    fn estimate_rows(block_result: &BlockResult) -> usize {
+    fn estimate_rows(block_result: &BlockTrace) -> usize {
         let (mpt_rows, _) = trie_data_from_blocks(Some(block_result)).use_rows();
         mpt_rows
     }
 
-    fn get_active_rows(block_result: &BlockResult) -> (Vec<usize>, Vec<usize>) {
+    fn get_active_rows(block_result: &BlockTrace) -> (Vec<usize>, Vec<usize>) {
         // we have compare and pick the maxium for lookup and gate rows, here we
         // just make sure it not less than 64 (so it has contained all constant rows)
         let ret = Self::estimate_rows(block_result);
@@ -280,7 +280,7 @@ impl TargetCircuit for PoseidonCircuit {
     }
 
     fn from_block_results(
-        block_results: &[BlockResult],
+        block_results: &[BlockTrace],
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -293,7 +293,7 @@ impl TargetCircuit for PoseidonCircuit {
         Ok((circuit, instance))
     }
 
-    fn from_block_result(block_result: &BlockResult) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_block_result(block_result: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
@@ -302,7 +302,7 @@ impl TargetCircuit for PoseidonCircuit {
         Ok((circuit, instance))
     }
 
-    fn estimate_rows(block_result: &BlockResult) -> usize {
+    fn estimate_rows(block_result: &BlockTrace) -> usize {
         let (_, rows) = trie_data_from_blocks(Some(block_result)).use_rows();
         rows
     }

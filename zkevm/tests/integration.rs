@@ -1,5 +1,5 @@
 use chrono::Utc;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 use zkevm::{
     circuit::TargetCircuit,
     prover::Prover,
@@ -276,7 +276,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }
 
-fn load_block_result_for_test() -> BlockResult {
+fn load_block_result_for_test() -> BlockTrace {
     let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
     if trace_path.is_empty() {
         trace_path =

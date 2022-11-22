@@ -11,7 +11,7 @@ use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -123,14 +123,14 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
 }
 
 /// get a block-result from file
-pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
+pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut buffer = Vec::new();
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
     #[derive(Deserialize, Serialize, Default)]
     struct RpcJson {
-        result: BlockResult,
+        result: BlockTrace,
     }
 
     let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
