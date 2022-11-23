@@ -71,12 +71,15 @@ pub fn block_results_to_witness_block(
 
     let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, Default::default());
     for (idx, block_result) in block_results.iter().enumerate() {
+        let is_last = idx == block_results.len() - 1;
+        let eth_block = block_result.clone().into();
+
+        // debug
         for tx in block_result.transactions.iter() {
             let (_, acc) = state_db.get_account(&tx.from.unwrap());
             info!("acc balance = {}", acc.balance)
         }
-        let is_last = idx == block_results.len() - 1;
-        let eth_block = block_result.clone().into();
+
         let mut geth_trace = Vec::new();
         for result in &block_result.execution_results {
             geth_trace.push(result.into());
