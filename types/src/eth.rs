@@ -26,11 +26,26 @@ pub struct BlockTrace {
     pub mpt_witness: Vec<SMTTrace>,
 }
 
+impl From<BlockTrace> for EthBlock {
+    fn from(mut b: BlockTrace) -> Self {
+        let mut txs = Vec::new();
+        for tx_data in b.transactions.iter_mut() {
+            // let from = tx_data.transaction.recover_from().unwrap();
+            // tx_data.from = Some(from);
+            txs.push(tx_data.clone().transaction)
+        }
+        EthBlock {
+            transactions: txs,
+            ..b.header
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct TransactionData {
     #[serde(rename = "isCreate", default)]
     pub is_create: bool,
-    pub from: Address,
+    pub from: Option<Address>,
     #[serde(flatten)]
     pub transaction: Transaction,
 }
@@ -50,12 +65,6 @@ pub struct StorageTrace {
 }
 
 pub type EthBlock = Block<Transaction>;
-
-impl From<BlockTrace> for EthBlock {
-    fn from(b: BlockTrace) -> Self {
-        EthBlock { ..b.header }
-    }
-}
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecutionResult {
