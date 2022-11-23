@@ -19,15 +19,15 @@ pub fn init() {
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {
         "empty" => "./tests/traces/empty.json",
-        "greeter" => "./tests/traces/greeter.json",
-        "multiple" => "./tests/traces/multiple-erc20.json",
+        "greeter" => "./tests/traces/greeter_setValue.json",
+        "multiple" => "./tests/traces/erc20_transfer.json",
         "native" => "./tests/traces/native-transfer.json",
         "single" => "./tests/traces/single-erc20.json",
         "single_legacy" => "./tests/traces/single-erc20-legacy.json",
         "dao" => "./tests/traces/dao.json",
         "nft" => "./tests/traces/nft.json",
         "sushi" => "./tests/traces/masterchef.json",
-        _ => "./tests/traces/multiple-erc20.json",
+        _ => "./tests/traces/erc20_transfer.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
