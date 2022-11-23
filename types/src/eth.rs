@@ -30,9 +30,12 @@ impl From<BlockTrace> for EthBlock {
     fn from(mut b: BlockTrace) -> Self {
         let mut txs = Vec::new();
         for tx_data in b.transactions.iter_mut() {
-            // let from = tx_data.transaction.recover_from().unwrap();
-            // tx_data.from = Some(from);
-            txs.push(tx_data.clone().transaction)
+            let from = tx_data.transaction.recover_from().unwrap();
+            let tx = Transaction {
+                from,
+                ..tx_data.clone().transaction
+            };
+            txs.push(tx)
         }
         EthBlock {
             transactions: txs,
