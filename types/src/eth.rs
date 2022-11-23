@@ -4,7 +4,6 @@ use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::process::id;
 
 /// TaskMsg is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
