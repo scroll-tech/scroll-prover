@@ -9,7 +9,6 @@ mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scrol
 base64 = "0.13.0"
 blake2 = "0.10.3"
 ethers-core = "0.17.0"
-log = "0.4"
 serde = "1.0"
 serde_json = "1.0.66"
 serde_repr = "0.1"

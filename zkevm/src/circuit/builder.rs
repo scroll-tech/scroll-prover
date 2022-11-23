@@ -12,7 +12,7 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::{BlockTrace, ExecStep};
+use types::eth::{BlockTrace, EthBlock, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::FieldExt;
@@ -72,11 +72,11 @@ pub fn block_results_to_witness_block(
     let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, Default::default());
     for (idx, block_result) in block_results.iter().enumerate() {
         let is_last = idx == block_results.len() - 1;
-        let eth_block = block_result.clone().into();
+        let eth_block: EthBlock = block_result.clone().into();
 
         // debug
-        for tx in block_result.transactions.iter() {
-            let (_, acc) = state_db.get_account(&tx.from.unwrap());
+        for tx in eth_block.transactions.iter() {
+            let (_, acc) = state_db.get_account(&tx.from);
             info!("acc balance = {}", acc.balance)
         }
 
