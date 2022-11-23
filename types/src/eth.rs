@@ -1,6 +1,6 @@
 use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
-use ethers_core::types::{Address, Bytes, U256, U64};
+use ethers_core::types::{Address, Bytes, U256};
 use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -54,62 +54,6 @@ pub type EthBlock = Block<Transaction>;
 impl From<BlockTrace> for EthBlock {
     fn from(b: BlockTrace) -> Self {
         EthBlock { ..b.header }
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct TransactionTrace {
-    // FIXME after traces upgraded
-    #[serde(default, rename = "txHash")]
-    pub tx_hash: H256,
-    #[serde(rename = "type")]
-    pub type_: u8,
-    pub nonce: u64,
-    pub gas: u64,
-    #[serde(rename = "gasPrice")]
-    pub gas_price: U256,
-    pub from: Address,
-    pub to: Option<Address>,
-    #[serde(rename = "chainId")]
-    pub chain_id: U256,
-    pub value: U256,
-    pub data: Bytes,
-    #[serde(rename = "isCreate")]
-    pub is_create: bool,
-    pub v: U64,
-    pub r: U256,
-    pub s: U256,
-}
-
-impl TransactionTrace {
-    pub fn to_eth_tx(
-        &self,
-        block_hash: Option<H256>,
-        block_number: Option<U64>,
-        transaction_index: Option<U64>,
-    ) -> Transaction {
-        Transaction {
-            hash: self.tx_hash,
-            nonce: U256::from(self.nonce),
-            block_hash,
-            block_number,
-            transaction_index,
-            from: self.from,
-            to: self.to,
-            value: self.value,
-            gas_price: Some(self.gas_price),
-            gas: U256::from(self.gas),
-            input: self.data.clone(),
-            v: self.v,
-            r: self.r,
-            s: self.s,
-            transaction_type: None,
-            access_list: None,
-            max_priority_fee_per_gas: None,
-            max_fee_per_gas: None,
-            chain_id: Some(self.chain_id),
-            other: Default::default(),
-        }
     }
 }
 
