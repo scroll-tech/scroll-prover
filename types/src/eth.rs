@@ -1,9 +1,10 @@
 use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
-use ethers_core::types::{Address, Bytes, U256};
+use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::process::id;
 
 /// TaskMsg is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
@@ -29,10 +30,11 @@ pub struct BlockTrace {
 impl From<BlockTrace> for EthBlock {
     fn from(mut b: BlockTrace) -> Self {
         let mut txs = Vec::new();
-        for tx_data in b.transactions.iter_mut() {
+        for (idx, tx_data) in b.transactions.iter_mut().enumerate() {
             let from = tx_data.transaction.recover_from().unwrap();
             let tx = Transaction {
                 from,
+                transaction_index: Some(U64::from(idx)),
                 ..tx_data.clone().transaction
             };
             txs.push(tx)
