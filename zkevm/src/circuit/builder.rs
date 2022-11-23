@@ -61,7 +61,7 @@ pub fn block_results_to_witness_block(
     block_results: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
     let chain_id = if let Some(tx_trace) = block_results[0].transactions.get(0) {
-        tx_trace.transaction.chain_id.unwrap()
+        tx_trace.transaction.chain_id.unwrap_or(0i16.into())
     } else {
         0i16.into()
     };
