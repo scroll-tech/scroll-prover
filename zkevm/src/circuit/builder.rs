@@ -74,10 +74,10 @@ pub fn block_results_to_witness_block(
         let is_last = idx == block_results.len() - 1;
         let eth_block: EthBlock = block_result.clone().into();
 
-        // debug
+        // debug log
         for tx in eth_block.transactions.iter() {
-            let (_, acc) = state_db.get_account(&tx.from);
-            info!("acc balance = {}", acc.balance)
+            let (ok, acc) = state_db.get_account(&tx.from);
+            info!("get account {}, acc = {}, acc balance = {}", ok, &tx.from, acc.balance)
         }
 
         let mut geth_trace = Vec::new();
