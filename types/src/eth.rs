@@ -4,6 +4,7 @@ use ethers_core::types::{Address, Bytes, U256, U64};
 use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use log::info;
 
 /// TaskMsg is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
@@ -31,6 +32,7 @@ impl From<BlockTrace> for EthBlock {
         let mut txs = Vec::new();
         for (idx, tx_data) in b.transactions.iter_mut().enumerate() {
             let from = tx_data.transaction.recover_from().unwrap();
+            info!("tx–data = {}", &from);
             let tx = Transaction {
                 from,
                 block_hash: b.header.hash,

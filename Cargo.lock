@@ -3441,6 +3441,7 @@ dependencies = [
  "eth-types",
  "ethers-core",
  "halo2-mpt-circuits",
+ "log",
  "serde",
  "serde_derive",
  "serde_json",
