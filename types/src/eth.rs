@@ -33,6 +33,7 @@ impl From<BlockTrace> for EthBlock {
             let from = tx_data.transaction.recover_from().unwrap();
             let tx = Transaction {
                 from,
+                block_hash: b.header.hash,
                 block_number: b.header.number,
                 transaction_index: Some(U64::from(idx)),
                 ..tx_data.clone().transaction
