@@ -30,7 +30,7 @@ pub struct BlockTrace {
 pub struct TransactionData {
     #[serde(rename = "isCreate", default)]
     pub is_create: bool,
-    pub from: Option<Address>,
+    pub from: Address,
     #[serde(flatten)]
     pub transaction: Transaction,
 }
