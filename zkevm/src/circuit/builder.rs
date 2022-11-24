@@ -68,7 +68,7 @@ pub fn block_results_to_witness_block(
 
     let (state_db, code_db) = build_statedb_and_codedb(block_results)?;
 
-    let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, Default::default());
+    let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
     for (idx, block_result) in block_results.iter().enumerate() {
         let is_last = idx == block_results.len() - 1;
         let eth_block: EthBlock = block_result.clone().into();
