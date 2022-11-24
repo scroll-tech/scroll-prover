@@ -1,4 +1,4 @@
-name: Unit Test
+name: New-Unit Test
 
 on:
   push:
@@ -9,10 +9,6 @@ on:
       - main
 
 env:
-  SCCACHE_REGION: ap-northeast-1
-  SCCACHE_BUCKET: ff-building
-  SCCACHE_S3_USE_SSL: true
-  SCCACHE_S3_KEY_PREFIX: sccache-gh-action
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CARGO_INCREMENTAL: false
@@ -38,41 +34,11 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '>=1.18.0'
-      - name: Cache Cargo Index
-        uses: actions/cache@v2
-        with:
-          path: /github/home/.cargo/git
-          key: ${{ runner.os }}-${{ matrix.arch }}-index-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache Cargo Registry
-        uses: actions/cache@v2
-        with:
-          path: /github/home/.cargo/registry
-          key: ${{ runner.os }}-${{ matrix.arch }}-registry-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache Cargo Target
-        uses: actions/cache@v2
-        with:
-          path: /github/home/target
-          key: ${{ runner.os }}-${{ matrix.arch }}-target-cache-${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}
-      - name: Setup sccache
-        run: |
-          cd $RUNNER_TEMP
-          export NAME="sccache-v0.2.15-x86_64-unknown-linux-musl"
-          curl -fsSOL https://github.com/mozilla/sccache/releases/download/v0.2.15/$NAME.tar.gz
-          tar xzf $NAME.tar.gz
-          mkdir -p ~/.cargo/bin
-          mv ./$NAME/sccache ~/.cargo/bin
-          chmod +x ~/.cargo/bin/sccache
-          printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
-          ~/.cargo/bin/sccache -s
       - name: Setup Rust toolchain
         run: |
           rustup toolchain install ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
           rustup component add rustfmt
+      - uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test
-      - name: Show sccache stats
-        run: ~/.cargo/bin/sccache -s
-        env:
-          CARGO_HOME: "/github/home/.cargo"
-          CARGO_TARGET_DIR: "/github/home/target"

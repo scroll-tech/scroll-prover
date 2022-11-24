@@ -1,4 +1,4 @@
-name: Lint
+name: New-Lint
 
 on:
   push:
@@ -9,10 +9,6 @@ on:
       - main
 
 env:
-  SCCACHE_REGION: ap-northeast-1
-  SCCACHE_BUCKET: ff-building
-  SCCACHE_S3_USE_SSL: true
-  SCCACHE_S3_KEY_PREFIX: sccache-gh-action
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CARGO_INCREMENTAL: false
@@ -29,38 +25,11 @@ jobs:
           toolchain: nightly-2022-07-26
           override: true
           components: rustfmt, clippy
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo index
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Setup sccache
-        run: |
-          cd $RUNNER_TEMP
-          export NAME="sccache-v0.2.15-x86_64-unknown-linux-musl"
-          curl -fsSOL https://github.com/mozilla/sccache/releases/download/v0.2.15/$NAME.tar.gz
-          tar xzf $NAME.tar.gz
-          mkdir -p ~/.cargo/bin
-          mv ./$NAME/sccache ~/.cargo/bin
-          chmod +x ~/.cargo/bin/sccache
-          printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
-          ~/.cargo/bin/sccache -s
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo fmt
         run: |
           cargo build --release
           cargo fmt --all -- --check
-      - name: Show sccache stats
-        run: ~/.cargo/bin/sccache -s
 
   clippy:
     name: clippy
@@ -73,35 +42,8 @@ jobs:
           toolchain: nightly-2022-07-26
           override: true
           components: rustfmt, clippy
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo index
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Setup sccache
-        run: |
-          cd $RUNNER_TEMP
-          export NAME="sccache-v0.2.15-x86_64-unknown-linux-musl"
-          curl -fsSOL https://github.com/mozilla/sccache/releases/download/v0.2.15/$NAME.tar.gz
-          tar xzf $NAME.tar.gz
-          mkdir -p ~/.cargo/bin
-          mv ./$NAME/sccache ~/.cargo/bin
-          chmod +x ~/.cargo/bin/sccache
-          printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
-          ~/.cargo/bin/sccache -s
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo clippy
         run: |
           cargo build --release
           cargo clippy --release --features prove_verify -- -D warnings
-      - name: Show sccache stats
-        run: ~/.cargo/bin/sccache -s
