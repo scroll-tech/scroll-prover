@@ -21,7 +21,6 @@ use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use super::DEGREE;
 use anyhow::anyhow;
-use log::info;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
@@ -73,15 +72,6 @@ pub fn block_results_to_witness_block(
     for (idx, block_result) in block_results.iter().enumerate() {
         let is_last = idx == block_results.len() - 1;
         let eth_block: EthBlock = block_result.clone().into();
-
-        // debug log
-        for tx in eth_block.transactions.iter() {
-            let (ok, acc) = state_db.get_account(&tx.from);
-            info!(
-                "get account {}, acc = {}, acc balance = {}",
-                ok, &tx.from, acc.balance
-            )
-        }
 
         let mut geth_trace = Vec::new();
         for result in &block_result.execution_results {
