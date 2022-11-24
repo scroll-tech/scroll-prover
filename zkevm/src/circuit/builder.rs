@@ -62,7 +62,7 @@ pub fn block_results_to_witness_block(
     block_results: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
     let chain_id = if let Some(tx_trace) = block_results[0].transactions.get(0) {
-        tx_trace.transaction.chain_id.unwrap_or_else(|| 0i16.into())
+        tx_trace.chain_id.unwrap_or_else(|| 0i16.into())
     } else {
         0i16.into()
     };
@@ -77,7 +77,10 @@ pub fn block_results_to_witness_block(
         // debug log
         for tx in eth_block.transactions.iter() {
             let (ok, acc) = state_db.get_account(&tx.from);
-            info!("get account {}, acc = {}, acc balance = {}", ok, &tx.from, acc.balance)
+            info!(
+                "get account {}, acc = {}, acc balance = {}",
+                ok, &tx.from, acc.balance
+            )
         }
 
         let mut geth_trace = Vec::new();

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 /// TaskMsg is the payload from Scroll.
 #[derive(Deserialize, Serialize, Default, Debug)]
 pub struct TaskMsg {
-    pub id: u64,
+    pub id: String,
     #[serde(rename = "blockTraces")]
     pub block_result: Vec<BlockTrace>,
 }
@@ -17,7 +17,7 @@ pub struct TaskMsg {
 pub struct BlockTrace {
     pub coinbase: AccountProofWrapper,
     pub header: EthBlock,
-    pub transactions: Vec<TransactionData>,
+    pub transactions: Vec<Transaction>,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
@@ -30,13 +30,13 @@ impl From<BlockTrace> for EthBlock {
     fn from(mut b: BlockTrace) -> Self {
         let mut txs = Vec::new();
         for (idx, tx_data) in b.transactions.iter_mut().enumerate() {
-            let from = tx_data.transaction.recover_from().unwrap();
+            let from = tx_data.recover_from().unwrap();
             let tx = Transaction {
                 from,
                 block_hash: b.header.hash,
                 block_number: b.header.number,
                 transaction_index: Some(U64::from(idx)),
-                ..tx_data.clone().transaction
+                ..tx_data.clone()
             };
             txs.push(tx)
         }
@@ -45,15 +45,6 @@ impl From<BlockTrace> for EthBlock {
             ..b.header
         }
     }
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct TransactionData {
-    #[serde(rename = "isCreate", default)]
-    pub is_create: bool,
-    pub from: Option<Address>,
-    #[serde(flatten)]
-    pub transaction: Transaction,
 }
 
 pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
