@@ -4,7 +4,6 @@ pub mod prover;
 pub mod utils;
 pub mod verifier;
 
-// Test comment
 pub mod proof {
     use crate::prover::AggCircuitProof;
     use serde_derive::{Deserialize, Serialize};
