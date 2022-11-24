@@ -1,0 +1,49 @@
+name: New-Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CARGO_INCREMENTAL: false
+
+jobs:
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2022-07-26
+          override: true
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run cargo fmt
+        run: |
+          cargo build --release
+          cargo fmt --all -- --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2022-07-26
+          override: true
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run cargo clippy
+        run: |
+          cargo build --release
+          cargo clippy --release --features prove_verify -- -D warnings
