@@ -1,4 +1,4 @@
-name: New-Lint
+name: Lint
 
 on:
   push:

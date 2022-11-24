@@ -1,4 +1,4 @@
-name: New-Unit Test
+name: Unit Test
 
 on:
   push:
