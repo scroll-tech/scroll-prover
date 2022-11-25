@@ -21,6 +21,7 @@ use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use super::DEGREE;
 use anyhow::anyhow;
+use log::info;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
@@ -61,7 +62,7 @@ pub fn block_results_to_witness_block(
     block_results: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
     let chain_id = if let Some(tx_trace) = block_results[0].transactions.get(0) {
-        tx_trace.chain_id.unwrap_or_else(|| 0i16.into())
+        tx_trace.chain_id
     } else {
         0i16.into()
     };
@@ -70,6 +71,14 @@ pub fn block_results_to_witness_block(
 
     let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
     for (idx, block_result) in block_results.iter().enumerate() {
+        // debug log
+        info!(
+            "gasLimit = {}, baseFee = {}, time = {}",
+            block_result.header.gas_limit,
+            block_result.header.base_fee_per_gas.unwrap(),
+            block_result.header.timestamp
+        );
+
         let is_last = idx == block_results.len() - 1;
         let eth_block: EthBlock = block_result.clone().into();
 

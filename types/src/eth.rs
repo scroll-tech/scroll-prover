@@ -17,7 +17,7 @@ pub struct TaskMsg {
 pub struct BlockTrace {
     pub coinbase: AccountProofWrapper,
     pub header: EthBlock,
-    pub transactions: Vec<Transaction>,
+    pub transactions: Vec<TransactionTrace>,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
@@ -30,19 +30,69 @@ impl From<BlockTrace> for EthBlock {
     fn from(mut b: BlockTrace) -> Self {
         let mut txs = Vec::new();
         for (idx, tx_data) in b.transactions.iter_mut().enumerate() {
-            let from = tx_data.recover_from().unwrap();
-            let tx = Transaction {
-                from,
-                block_hash: b.header.hash,
-                block_number: b.header.number,
-                transaction_index: Some(U64::from(idx)),
-                ..tx_data.clone()
-            };
+            let tx_idx = Some(U64::from(idx));
+            let tx = tx_data.to_eth_tx(b.header.hash, b.header.number, tx_idx);
             txs.push(tx)
         }
         EthBlock {
             transactions: txs,
             ..b.header
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct TransactionTrace {
+    // FIXME after traces upgraded
+    #[serde(default, rename = "txHash")]
+    pub tx_hash: H256,
+    #[serde(rename = "type")]
+    pub type_: u8,
+    pub nonce: u64,
+    pub gas: u64,
+    #[serde(rename = "gasPrice")]
+    pub gas_price: U256,
+    pub from: Address,
+    pub to: Option<Address>,
+    #[serde(rename = "chainId")]
+    pub chain_id: U256,
+    pub value: U256,
+    pub data: Bytes,
+    #[serde(rename = "isCreate")]
+    pub is_create: bool,
+    pub v: U64,
+    pub r: U256,
+    pub s: U256,
+}
+
+impl TransactionTrace {
+    pub fn to_eth_tx(
+        &self,
+        block_hash: Option<H256>,
+        block_number: Option<U64>,
+        transaction_index: Option<U64>,
+    ) -> Transaction {
+        Transaction {
+            hash: self.tx_hash,
+            nonce: U256::from(self.nonce),
+            block_hash,
+            block_number,
+            transaction_index,
+            from: self.from,
+            to: self.to,
+            value: self.value,
+            gas_price: Some(self.gas_price),
+            gas: U256::from(self.gas),
+            input: self.data.clone(),
+            v: self.v,
+            r: self.r,
+            s: self.s,
+            transaction_type: None,
+            access_list: None,
+            max_priority_fee_per_gas: None,
+            max_fee_per_gas: None,
+            chain_id: Some(self.chain_id),
+            other: Default::default(),
         }
     }
 }
