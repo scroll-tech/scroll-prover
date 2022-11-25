@@ -47,7 +47,7 @@ pub struct TransactionTrace {
     #[serde(default, rename = "txHash")]
     pub tx_hash: H256,
     #[serde(rename = "type")]
-    pub type_: String,
+    pub type_: u8,
     pub nonce: u64,
     pub gas: u64,
     #[serde(rename = "gasPrice")]
