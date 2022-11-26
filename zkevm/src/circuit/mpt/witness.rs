@@ -155,25 +155,21 @@ impl WitnessGenerator {
         let store_value = HexBytes(*value);
         let trie = self.storages.get_mut(&address).unwrap();
 
-        let store_before = trie
-            .get_store(key.as_ref())
-            .and_then(|v| if v == Hash::zero().0 { None } else { Some(v) })
-            .map(|v| StateData {
-                key,
-                value: HexBytes(v),
-            });
+        let store_before = {
+            let value = HexBytes(trie.get_store(key.as_ref()).unwrap_or_default());
+            Some(StateData { key, value })
+        };
         let storage_before_proofs = trie.prove(key.as_ref());
         let storage_before_path = decode_proof_for_mpt_path(storage_key, storage_before_proofs);
-        let store_after = if value != &Hash::zero().0 {
+        if value != &Hash::zero().0 {
             trie.update_store(key.as_ref(), value).unwrap();
-            Some(StateData {
-                key,
-                value: store_value,
-            })
         } else {
             trie.delete(key.as_ref());
-            None
         };
+        let store_after = Some(StateData {
+            key,
+            value: store_value,
+        });
         let storage_root_after = H256(trie.root());
         let storage_after_proofs = trie.prove(key.as_ref());
         let storage_after_path = decode_proof_for_mpt_path(storage_key, storage_after_proofs);
