@@ -25,7 +25,7 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
         "single" => "./tests/traces/single-erc20.json",
         "single_legacy" => "./tests/traces/single-erc20-legacy.json",
         "dao" => "./tests/traces/dao.json",
-        "nft" => "./tests/traces/nft.json",
+        "nft" => "./tests/traces/nft/mint.json",
         "sushi" => "./tests/traces/masterchef.json",
         _ => "./tests/traces/erc20_transfer.json",
     };
