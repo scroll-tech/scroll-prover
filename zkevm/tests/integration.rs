@@ -99,7 +99,7 @@ fn test_mock_prove_all_target_circuits_packing() {
 
     init();
     let mut block_results = Vec::new();
-    for block_number in 1..=16 {
+    for block_number in 1..=10 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
         let block_result = get_block_result_from_file(trace_path);
         block_results.push(block_result);
