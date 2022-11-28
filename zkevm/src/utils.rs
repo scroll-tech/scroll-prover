@@ -122,7 +122,7 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
 }
 
 /// get a block-result from file
-pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
+pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut buffer = Vec::new();
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();

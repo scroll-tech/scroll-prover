@@ -3,7 +3,7 @@ use types::eth::BlockTrace;
 use zkevm::{
     circuit::TargetCircuit,
     prover::Prover,
-    utils::{get_block_result_from_file, read_env_var},
+    utils::{get_block_trace_from_file, read_env_var},
 };
 
 mod test_util;
@@ -20,24 +20,24 @@ fn estimate_circuit_rows() {
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_result = load_block_result_for_test();
+    let block_trace = load_block_trace_for_test();
 
     log::info!("estimating used rows for current block");
     log::info!(
         "evm circuit: {}",
-        circuit::EvmCircuit::estimate_rows(&block_result)
+        circuit::EvmCircuit::estimate_rows(&block_trace)
     );
     log::info!(
         "state circuit: {}",
-        circuit::StateCircuit::estimate_rows(&block_result)
+        circuit::StateCircuit::estimate_rows(&block_trace)
     );
     log::info!(
         "storage circuit: {}",
-        circuit::ZktrieCircuit::estimate_rows(&block_result)
+        circuit::ZktrieCircuit::estimate_rows(&block_trace)
     );
     log::info!(
         "hash circuit: {}",
-        circuit::PoseidonCircuit::estimate_rows(&block_result)
+        circuit::PoseidonCircuit::estimate_rows(&block_trace)
     );
 }
 
@@ -75,9 +75,9 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
     let mut failed_cases = Vec::new();
     for trace_path in trace_paths {
         log::info!("test {} circuit with {}", C::name(), trace_path);
-        let block_result = get_block_result_from_file(trace_path);
+        let block_trace = get_block_trace_from_file(trace_path);
         let full_height_mock_prove = true;
-        let result = Prover::mock_prove_target_circuit::<C>(&block_result, full_height_mock_prove);
+        let result = Prover::mock_prove_target_circuit::<C>(&block_trace, full_height_mock_prove);
         log::info!(
             "test {} circuit with {} result: {:?}",
             C::name(),
@@ -98,16 +98,16 @@ fn test_mock_prove_all_target_circuits_packing() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
-    let mut block_results = Vec::new();
+    let mut block_traces = Vec::new();
     for block_number in 1..=10 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-        let block_result = get_block_result_from_file(trace_path);
-        block_results.push(block_result);
+        let block_trace = get_block_trace_from_file(trace_path);
+        block_traces.push(block_trace);
     }
-    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_results, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_results, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_results, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_results, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_traces, true).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -154,7 +154,7 @@ fn test_state_evm_connect() {
     use zkevm::{
         circuit::{EvmCircuit, StateCircuit, DEGREE},
         prover::Prover,
-        utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed},
+        utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
         verifier::Verifier,
     };
 
@@ -165,7 +165,7 @@ fn test_state_evm_connect() {
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
     let trace_path = parse_trace_path_from_mode("greeter");
-    let block_result = get_block_result_from_file(trace_path);
+    let block_trace = get_block_trace_from_file(trace_path);
 
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
@@ -173,7 +173,7 @@ fn test_state_evm_connect() {
     log::info!("start generating state_circuit proof");
     let now = Instant::now();
     let state_proof = prover
-        .create_target_circuit_proof::<StateCircuit>(&block_result)
+        .create_target_circuit_proof::<StateCircuit>(&block_trace)
         .unwrap();
     log::info!(
         "finish generating state_circuit proof, elapsed: {:?}",
@@ -193,7 +193,7 @@ fn test_state_evm_connect() {
     log::info!("start generating evm_circuit proof");
     let now = Instant::now();
     let evm_proof = prover
-        .create_target_circuit_proof::<EvmCircuit>(&block_result)
+        .create_target_circuit_proof::<EvmCircuit>(&block_trace)
         .unwrap();
     log::info!(
         "finish generating evm_circuit proof, cost {:?}",
@@ -250,13 +250,13 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     init();
 
-    let block_result = load_block_result_for_test();
+    let block_trace = load_block_trace_for_test();
 
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof::<C>(&block_result)
+        .create_target_circuit_proof::<C>(&block_trace)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
@@ -276,11 +276,11 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }
 
-fn load_block_result_for_test() -> BlockTrace {
+fn load_block_trace_for_test() -> BlockTrace {
     let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
     if trace_path.is_empty() {
         trace_path =
             parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
     }
-    get_block_result_from_file(trace_path)
+    get_block_trace_from_file(trace_path)
 }
