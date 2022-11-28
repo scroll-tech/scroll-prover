@@ -5,14 +5,6 @@ use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// TaskMsg is the payload from Scroll.
-#[derive(Deserialize, Serialize, Default, Debug)]
-pub struct TaskMsg {
-    pub id: String,
-    #[serde(rename = "blockTraces")]
-    pub block_result: Vec<BlockTrace>,
-}
-
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTrace {
     pub coinbase: AccountProofWrapper,
