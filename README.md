@@ -22,7 +22,7 @@ Prove
 ```shell
 cargo build --release --bin prove
 
-./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/trace-multiple-erc20.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
+./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/erc20/multiple.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
 ```
 
 ## Test
