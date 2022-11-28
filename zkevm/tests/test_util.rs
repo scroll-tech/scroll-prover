@@ -19,7 +19,7 @@ pub fn init() {
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {
         "empty" => "./tests/traces/empty.json",
-        "greeter" => "./tests/traces/greeter_setValue.json",
+        "greeter" => "./tests/traces/greeter.json",
         "single" => "./tests/traces/erc20/single.json",
         "multiple" => "./tests/traces/erc20/multiple.json",
         "native" => "./tests/traces/native-transfer.json",
