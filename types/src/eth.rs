@@ -5,18 +5,11 @@ use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// BlockResultWrapper is the payload from Scroll.
-#[derive(Deserialize, Serialize, Default, Debug)]
-pub struct BlockResultWrapper {
-    pub id: u64,
-    #[serde(rename = "blockTraces")]
-    pub block_result: BlockResult,
-}
-
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct BlockResult {
-    #[serde(rename = "blockTrace")]
-    pub block_trace: BlockTrace,
+pub struct BlockTrace {
+    pub coinbase: AccountProofWrapper,
+    pub header: EthBlock,
+    pub transactions: Vec<TransactionTrace>,
     #[serde(rename = "executionResults")]
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
@@ -25,70 +18,17 @@ pub struct BlockResult {
     pub mpt_witness: Vec<SMTTrace>,
 }
 
-pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
-pub type StorageTrieProofs = HashMap<Address, HashMap<Word, Vec<Bytes>>>;
-
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct StorageTrace {
-    #[serde(rename = "rootBefore")]
-    pub root_before: Hash,
-    #[serde(rename = "rootAfter")]
-    pub root_after: Hash,
-    pub proofs: Option<AccountTrieProofs>,
-    #[serde(rename = "storageProofs", default)]
-    pub storage_proofs: StorageTrieProofs,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
-pub struct BlockTrace {
-    pub number: U64,
-    pub hash: Hash,
-    pub time: u64,
-    pub coinbase: AccountProofWrapper,
-    pub difficulty: U256,
-    pub transactions: Vec<TransactionTrace>,
-    #[serde(rename = "baseFee")]
-    pub base_fee: Option<U256>,
-    #[serde(rename = "gasLimit")]
-    pub gas_limit: u64,
-}
-
-pub type EthBlock = Block<Transaction>;
-
 impl From<BlockTrace> for EthBlock {
-    fn from(b: BlockTrace) -> Self {
-        let mut transactions = Vec::new();
-        for (tx_idx, tx_trace) in b.transactions.iter().enumerate() {
-            let tx_idx = Some(U64::from(tx_idx));
-            let block_hash = Some(b.hash);
-            let block_number = Some(b.number);
-            let tx = tx_trace.to_eth_tx(block_hash, block_number, tx_idx);
-            transactions.push(tx)
+    fn from(mut b: BlockTrace) -> Self {
+        let mut txs = Vec::new();
+        for (idx, tx_data) in b.transactions.iter_mut().enumerate() {
+            let tx_idx = Some(U64::from(idx));
+            let tx = tx_data.to_eth_tx(b.header.hash, b.header.number, tx_idx);
+            txs.push(tx)
         }
         EthBlock {
-            hash: Some(b.hash),
-            parent_hash: Default::default(),
-            uncles_hash: Default::default(),
-            author: b.coinbase.address,
-            state_root: Default::default(),
-            transactions_root: Default::default(),
-            receipts_root: Default::default(),
-            number: Some(b.number),
-            gas_used: Default::default(),
-            gas_limit: U256::from(b.gas_limit),
-            extra_data: Default::default(),
-            logs_bloom: None,
-            timestamp: U256::from(b.time),
-            difficulty: b.difficulty,
-            total_difficulty: None,
-            seal_fields: vec![],
-            uncles: vec![],
-            transactions,
-            size: None,
-            mix_hash: None,
-            nonce: None,
-            base_fee_per_gas: b.base_fee,
-            other: Default::default(),
+            transactions: txs,
+            ..b.header
         }
     }
 }
@@ -148,6 +88,22 @@ impl TransactionTrace {
         }
     }
 }
+
+pub type AccountTrieProofs = HashMap<Address, Vec<Bytes>>;
+pub type StorageTrieProofs = HashMap<Address, HashMap<Word, Vec<Bytes>>>;
+
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+pub struct StorageTrace {
+    #[serde(rename = "rootBefore")]
+    pub root_before: Hash,
+    #[serde(rename = "rootAfter")]
+    pub root_after: Hash,
+    pub proofs: Option<AccountTrieProofs>,
+    #[serde(rename = "storageProofs", default)]
+    pub storage_proofs: StorageTrieProofs,
+}
+
+pub type EthBlock = Block<Transaction>;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecutionResult {
@@ -258,16 +214,4 @@ pub struct StorageProofWrapper {
     pub key: Option<U256>,
     pub value: Option<U256>,
     pub proof: Option<Vec<Bytes>>,
-}
-
-pub fn mock_block_result() -> BlockResult {
-    let mut block_result = BlockResult::default();
-    block_result.block_trace.coinbase = AccountProofWrapper {
-        address: Some(Address::from_slice("12345678901234567890".as_bytes())),
-        nonce: Some(100),
-        balance: Some(U256::from(100)),
-        code_hash: Some(H256::zero()),
-        ..Default::default()
-    };
-    block_result
 }

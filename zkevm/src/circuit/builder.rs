@@ -12,7 +12,7 @@ use is_even::IsEven;
 use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
-use types::eth::{BlockResult, ExecStep};
+use types::eth::{BlockTrace, EthBlock, ExecStep};
 use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::FieldExt;
@@ -51,29 +51,28 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     bts.as_slice().try_into().expect("32 bytes")
 }
 
-pub fn block_result_to_witness_block(
-    block_result: &BlockResult,
-) -> Result<Block<Fr>, anyhow::Error> {
-    block_results_to_witness_block(std::slice::from_ref(block_result))
+pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr>, anyhow::Error> {
+    block_traces_to_witness_block(std::slice::from_ref(block_trace))
 }
 
-pub fn block_results_to_witness_block(
-    block_results: &[BlockResult],
+pub fn block_traces_to_witness_block(
+    block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_results[0].block_trace.transactions.get(0) {
+    let chain_id = if let Some(tx_trace) = block_traces[0].transactions.get(0) {
         tx_trace.chain_id
     } else {
         0i16.into()
     };
 
-    let (state_db, code_db) = build_statedb_and_codedb(block_results)?;
+    let (state_db, code_db) = build_statedb_and_codedb(block_traces)?;
 
     let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
-    for (idx, block_result) in block_results.iter().enumerate() {
-        let is_last = idx == block_results.len() - 1;
-        let eth_block = block_result.block_trace.clone().into();
+    for (idx, block_trace) in block_traces.iter().enumerate() {
+        let is_last = idx == block_traces.len() - 1;
+        let eth_block: EthBlock = block_trace.clone().into();
+
         let mut geth_trace = Vec::new();
-        for result in &block_result.execution_results {
+        for result in &block_trace.execution_results {
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
@@ -190,9 +189,7 @@ fn trace_code(
         Ok(())
     }
 }
-pub fn build_statedb_and_codedb(
-    blocks: &[BlockResult],
-) -> Result<(StateDB, CodeDB), anyhow::Error> {
+pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
     let mut cdb = CodeDB::new();
 

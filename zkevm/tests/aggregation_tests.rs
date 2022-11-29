@@ -12,7 +12,7 @@ use zkevm::circuit::{
     EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
-use zkevm::utils::{get_block_result_from_file, load_or_create_params, load_seed};
+use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
@@ -50,28 +50,26 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
                 .unwrap(),
         ]
     } else {
-        let block_results = if mode == "PACK" {
-            let mut block_results = Vec::new();
+        let block_traces = if mode == "PACK" {
+            let mut block_traces = Vec::new();
             for block_number in 1..=15 {
                 let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-                let block_result = get_block_result_from_file(trace_path);
-                block_results.push(block_result);
+                let block_trace = get_block_trace_from_file(trace_path);
+                block_traces.push(block_trace);
             }
-            block_results
+            block_traces
         } else {
             let trace_path = parse_trace_path_from_mode(mode);
-            vec![get_block_result_from_file(trace_path)]
+            vec![get_block_trace_from_file(trace_path)]
         };
         vec![
-            prover.prove_circuit::<EvmCircuit>(&block_results).unwrap(),
+            prover.prove_circuit::<EvmCircuit>(&block_traces).unwrap(),
+            prover.prove_circuit::<StateCircuit>(&block_traces).unwrap(),
             prover
-                .prove_circuit::<StateCircuit>(&block_results)
+                .prove_circuit::<PoseidonCircuit>(&block_traces)
                 .unwrap(),
             prover
-                .prove_circuit::<PoseidonCircuit>(&block_results)
-                .unwrap(),
-            prover
-                .prove_circuit::<ZktrieCircuit>(&block_results)
+                .prove_circuit::<ZktrieCircuit>(&block_traces)
                 .unwrap(),
         ]
     };

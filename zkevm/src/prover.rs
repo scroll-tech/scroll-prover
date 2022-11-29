@@ -32,7 +32,7 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
 use types::base64;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
@@ -194,9 +194,9 @@ impl Prover {
 
     pub fn prove_circuit<C: TargetCircuit>(
         &mut self,
-        block_results: &[BlockResult],
+        block_traces: &[BlockTrace],
     ) -> anyhow::Result<ProvedCircuit> {
-        let proof = self.create_target_circuit_proof_multi::<C>(block_results)?;
+        let proof = self.create_target_circuit_proof_multi::<C>(block_traces)?;
         self.convert_target_proof::<C>(&proof)
     }
 
@@ -238,20 +238,20 @@ impl Prover {
 
     pub fn create_agg_circuit_proof(
         &mut self,
-        block_result: &BlockResult,
+        block_trace: &BlockTrace,
     ) -> anyhow::Result<AggCircuitProof> {
-        self.create_agg_circuit_proof_multi(&[block_result.clone()])
+        self.create_agg_circuit_proof_multi(&[block_trace.clone()])
     }
 
     pub fn create_agg_circuit_proof_multi(
         &mut self,
-        block_results: &[BlockResult],
+        block_traces: &[BlockTrace],
     ) -> anyhow::Result<AggCircuitProof> {
         let circuit_results: Vec<ProvedCircuit> = vec![
-            self.prove_circuit::<EvmCircuit>(block_results)?,
-            self.prove_circuit::<StateCircuit>(block_results)?,
-            self.prove_circuit::<PoseidonCircuit>(block_results)?,
-            self.prove_circuit::<ZktrieCircuit>(block_results)?,
+            self.prove_circuit::<EvmCircuit>(block_traces)?,
+            self.prove_circuit::<StateCircuit>(block_traces)?,
+            self.prove_circuit::<PoseidonCircuit>(block_traces)?,
+            self.prove_circuit::<ZktrieCircuit>(block_traces)?,
         ];
         self.create_agg_circuit_proof_impl(circuit_results)
     }
@@ -422,22 +422,22 @@ impl Prover {
     }
 
     pub fn mock_prove_target_circuit<C: TargetCircuit>(
-        block_result: &BlockResult,
+        block_trace: &BlockTrace,
         full: bool,
     ) -> anyhow::Result<()> {
-        Self::mock_prove_target_circuit_multi::<C>(&[block_result.clone()], full)
+        Self::mock_prove_target_circuit_multi::<C>(&[block_trace.clone()], full)
     }
 
     pub fn mock_prove_target_circuit_multi<C: TargetCircuit>(
-        block_results: &[BlockResult],
+        block_traces: &[BlockTrace],
         full: bool,
     ) -> anyhow::Result<()> {
         log::info!("start mock prove {}", C::name());
-        let (circuit, instance) = C::from_block_results(block_results)?;
+        let (circuit, instance) = C::from_block_traces(block_traces)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
             // FIXME for packing
-            let (gate_rows, lookup_rows) = C::get_active_rows(&block_results[0]);
+            let (gate_rows, lookup_rows) = C::get_active_rows(&block_traces[0]);
             log::info!("checking {} active rows", gate_rows.len());
             if !gate_rows.is_empty() || !lookup_rows.is_empty() {
                 if let Err(e) =
@@ -455,16 +455,16 @@ impl Prover {
 
     pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
-        block_result: &BlockResult,
+        block_trace: &BlockTrace,
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        self.create_target_circuit_proof_multi::<C>(&[block_result.clone()])
+        self.create_target_circuit_proof_multi::<C>(&[block_trace.clone()])
     }
 
     pub fn create_target_circuit_proof_multi<C: TargetCircuit>(
         &mut self,
-        block_results: &[BlockResult],
+        block_traces: &[BlockTrace],
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        let (circuit, instance) = C::from_block_results(block_results)?;
+        let (circuit, instance) = C::from_block_traces(block_traces)?;
         let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
 
         let instance_slice = instance.iter().map(|x| &x[..]).collect::<Vec<_>>();
@@ -474,9 +474,9 @@ impl Prover {
         info!(
             "Create {} proof of block {} ... block {}, batch len {}",
             C::name(),
-            block_results[0].block_trace.hash,
-            block_results[block_results.len() - 1].block_trace.hash,
-            block_results.len()
+            block_traces[0].header.hash.unwrap(),
+            block_traces[block_traces.len() - 1].header.hash.unwrap(),
+            block_traces.len()
         );
         if *MOCK_PROVE {
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
@@ -501,8 +501,8 @@ impl Prover {
         info!(
             "Create {} proof of block {} ... block {} Successfully!",
             C::name(),
-            block_results[0].block_trace.hash,
-            block_results[block_results.len() - 1].block_trace.hash,
+            block_traces[0].header.hash.unwrap(),
+            block_traces[block_traces.len() - 1].header.hash.unwrap(),
         );
         let instance_bytes = serialize_instance(&instance);
         let proof = transcript.finalize();
