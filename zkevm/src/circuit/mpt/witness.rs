@@ -8,7 +8,7 @@ use halo2_proofs::halo2curves::group::ff::{Field, PrimeField};
 use mpt_circuits::hash::Hashable;
 use mpt_circuits::serde::{Hash as SMTHash, HexBytes, SMTNode, SMTPath, SMTTrace, StateData};
 use std::collections::{HashMap, HashSet};
-use types::eth::{AccountProofWrapper, BlockResult};
+use types::eth::{AccountProofWrapper, BlockTrace};
 use zktrie::{ZkMemoryDb, ZkTrie, ZkTrieNode};
 
 use num_bigint::BigUint;
@@ -60,7 +60,7 @@ impl WitnessGenerator {
         zktrie::init_hash_scheme(hash_scheme);
     }
 
-    fn set_data_from_block(db: &mut ZkMemoryDb, block: &BlockResult) {
+    fn set_data_from_block(db: &mut ZkMemoryDb, block: &BlockTrace) {
         block
             .storage_trace
             .proofs
@@ -82,7 +82,7 @@ impl WitnessGenerator {
             });
     }
 
-    fn set_accounts_from_block(&mut self, block: &BlockResult) {
+    fn set_accounts_from_block(&mut self, block: &BlockTrace) {
         let filter_map: HashSet<_> = self.accounts.keys().copied().collect();
 
         let new_accs = block
@@ -102,7 +102,7 @@ impl WitnessGenerator {
         self.accounts.extend(new_accs);
     }
 
-    fn set_storages_from_block(&mut self, block: &BlockResult) {
+    fn set_storages_from_block(&mut self, block: &BlockTrace) {
         for (account, _) in block.storage_trace.storage_proofs.iter() {
             if !self.storages.contains_key(account) {
                 let acc_data = self.accounts.get(account).unwrap();
@@ -120,13 +120,13 @@ impl WitnessGenerator {
         }
     }
 
-    pub fn add_block(&mut self, block: &BlockResult) {
+    pub fn add_block(&mut self, block: &BlockTrace) {
         Self::set_data_from_block(&mut self.db, block);
         self.set_accounts_from_block(block);
         self.set_storages_from_block(block);
     }
 
-    pub fn new(block: &BlockResult) -> Self {
+    pub fn new(block: &BlockTrace) -> Self {
         let mut db = ZkMemoryDb::new();
         Self::set_data_from_block(&mut db, block);
         let trie = db.new_trie(&block.storage_trace.root_before.0).unwrap();

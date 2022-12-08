@@ -205,14 +205,12 @@ fn mpt_rows() -> usize {
     ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
 }
 
-fn trie_data_from_blocks<'d>(
-    block_traces: impl IntoIterator<Item = &'d BlockTrace>,
-) -> EthTrie<Fr> {
+fn trie_data_from_blocks(block_traces: &[BlockTrace]) -> EthTrie<Fr> {
     use mpt::witness::WitnessGenerator;
     let mut trie_data: EthTrie<Fr> = Default::default();
 
-    if *USE_SMTTRACE 
-        && block_results
+    if *USE_SMTTRACE
+        && block_traces
             .iter()
             .any(|block| !block.mpt_witness.is_empty())
     {
@@ -223,9 +221,9 @@ fn trie_data_from_blocks<'d>(
                 .map(|tr| tr.try_into().unwrap())
                 .collect();
             trie_data.add_ops(storage_ops);
-        }    
-    }else if !block_traces.is_empty(){
-        let block_witness = block_results_to_witness_block(block_traces).unwrap();
+        }
+    } else if !block_traces.is_empty() {
+        let block_witness = block_traces_to_witness_block(block_traces).unwrap();
         let (sdb, _) = builder::build_statedb_and_codedb(block_traces).unwrap();
         let entries = mpt::mpt_entries_from_witness_block(sdb, &block_witness);
 
@@ -276,9 +274,7 @@ impl TargetCircuit for ZktrieCircuit {
     where
         Self: Sized,
     {
-        let (mpt_circuit, _) = trie_data_from_blocks(Some(block_trace)).circuits(mpt_rows());
-        let instance = vec![];
-        Ok((mpt_circuit, instance))
+        Self::from_block_traces(&[block_trace.clone()])
     }
 
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
@@ -324,9 +320,7 @@ impl TargetCircuit for PoseidonCircuit {
     where
         Self: Sized,
     {
-        let (_, circuit) = trie_data_from_blocks(Some(block_trace)).circuits(mpt_rows());
-        let instance = vec![];
-        Ok((circuit, instance))
+        Self::from_block_traces(&[block_trace.clone()])
     }
 
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {

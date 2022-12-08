@@ -45,12 +45,6 @@ pub fn verify_proof_leaf<T: Default>(
     }
 }
 
-pub fn extend_address_to_h256(src: &Address) -> [u8; 32] {
-    let mut bts: Vec<u8> = src.as_bytes().into();
-    bts.resize(32, 0);
-    bts.as_slice().try_into().expect("32 bytes")
-}
-
 pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr>, anyhow::Error> {
     block_traces_to_witness_block(std::slice::from_ref(block_trace))
 }
@@ -93,7 +87,12 @@ pub fn block_traces_to_witness_block(
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
-        let header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        let mut header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        // TODO: a temporary hacking for "miner" field in header, which do not respect coinbase
+        header.coinbase = block_trace
+            .coinbase
+            .address
+            .expect("should include coinbase address");
         builder.block.headers.insert(header.number.as_u64(), header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
     }

@@ -1,16 +1,8 @@
 use super::*;
-use serde::Deserialize;
-use types::eth::{BlockResult, StorageTrace};
+use types::eth::{BlockTrace, StorageTrace};
 
-fn get_block_result_from_sample(js_str: &str) -> BlockResult {
-    #[derive(Deserialize)]
-    struct RpcJson {
-        result: BlockResult,
-    }
-
-    let j = serde_json::from_str::<RpcJson>(js_str).unwrap();
-
-    j.result
+fn get_block_trace_from_sample(js_str: &str) -> BlockTrace {
+    serde_json::from_str::<BlockTrace>(js_str).unwrap()
 }
 
 #[test]
@@ -158,14 +150,14 @@ fn witgen_init_writer() {
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
-    let w = WitnessGenerator::new(&block_result);
+    let block_trace = get_block_trace_from_sample(TEST_SAMPLE_STR);
+    let w = WitnessGenerator::new(&block_trace);
 
     let root_init = w.trie.root();
 
     assert_eq!(
         format!("{:?}", H256(root_init)),
-        "0x262a343e70cb1293414a0a2cc279a68e6a53d36dab47a132a7ee47774e93907f"
+        "0x2cf68fe79d67e26d05cf401118293952d507eaea98ab69bd9f3381bded8e2220"
     );
 }
 
@@ -174,11 +166,11 @@ fn witgen_update_one() {
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
-    let mut w = WitnessGenerator::new(&block_result);
+    let block_trace = get_block_trace_from_sample(TEST_SAMPLE_STR);
+    let mut w = WitnessGenerator::new(&block_trace);
 
     let target_addr = Address::from_slice(
-        hex::decode("d6BFcD979e85E47425d7366c24B5672e945fD9ab")
+        hex::decode("b4d98243a206feab61d19413f60c06154137e2c2")
             .unwrap()
             .as_slice(),
     );
@@ -218,31 +210,31 @@ fn witgen_update_one() {
 
 #[test]
 fn witgen_build_mpt_table() {
-    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
+    let block_trace = get_block_trace_from_sample(TEST_SAMPLE_STR);
 
-    use crate::circuit::builder::{block_result_to_witness_block, build_statedb_and_codedb};
+    use crate::circuit::builder::{block_trace_to_witness_block, build_statedb_and_codedb};
 
-    let block_witness = block_result_to_witness_block(&block_result).unwrap();
-    let (sdb, _) = build_statedb_and_codedb(&[block_result]).unwrap();
+    let block_witness = block_trace_to_witness_block(&block_trace).unwrap();
+    let (sdb, _) = build_statedb_and_codedb(&[block_trace]).unwrap();
 
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
+
+    println!("entries {:?}", entries);
 
     assert_eq!(entries.len(), 5);
     assert_eq!(
         entries[1].balance,
         Some(
             U256::from_dec_str(
-                "153249554086588885835834702715030918361873912218360217599949094452706366759"
+                "904625697166532776746648320380374280103671755200316706558262375022925706393"
             )
             .unwrap()
         )
     );
     assert_eq!(
         entries[4].storage.as_ref().unwrap().value,
-        Some(U256::from_dec_str("1660042319298").unwrap())
+        Some(U256::from_dec_str("10").unwrap())
     );
-
-    println!("entries {:?}", entries);
 }
 
 #[test]
@@ -250,14 +242,14 @@ fn witgen_from_file() {
     use witness::WitnessGenerator;
     WitnessGenerator::init();
 
-    let block_result = get_block_result_from_sample(TEST_SAMPLE_STR);
+    let block_trace = get_block_trace_from_sample(TEST_SAMPLE_STR);
 
-    use crate::circuit::builder::{block_result_to_witness_block, build_statedb_and_codedb};
+    use crate::circuit::builder::{block_trace_to_witness_block, build_statedb_and_codedb};
 
-    let final_root = block_result.storage_trace.root_after;
-    let mut w = WitnessGenerator::new(&block_result);
-    let block_witness = block_result_to_witness_block(&block_result).unwrap();
-    let (sdb, _) = build_statedb_and_codedb(&[block_result]).unwrap();
+    let final_root = block_trace.storage_trace.root_after;
+    let mut w = WitnessGenerator::new(&block_trace);
+    let block_witness = block_trace_to_witness_block(&block_trace).unwrap();
+    let (sdb, _) = build_statedb_and_codedb(&[block_trace]).unwrap();
 
     let entries = mpt_entries_from_witness_block(sdb, &block_witness);
 
