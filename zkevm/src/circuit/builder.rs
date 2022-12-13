@@ -1,8 +1,8 @@
-use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder};
+use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder, CircuitsParams};
 
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
-use eth_types::ToAddress;
+use eth_types::{ToAddress, Word};
 use ethers_core::types::{Address, Bytes, U256};
 
 use halo2_proofs::halo2curves::bn256::Fr;
@@ -13,7 +13,6 @@ use super::mpt;
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
-use zkevm_circuits::evm_circuit::table::FixedTableTag;
 
 use halo2_proofs::arithmetic::FieldExt;
 use mpt_circuits::hash::Hashable;
@@ -65,8 +64,19 @@ pub fn block_traces_to_witness_block(
     };
 
     let (state_db, code_db) = build_statedb_and_codedb(block_traces)?;
-
-    let mut builder = CircuitInputBuilder::new(state_db, code_db, Default::default());
+    let circuit_params = CircuitsParams {
+        max_rws: (1 << *DEGREE) - 64,
+        max_txs: 50,
+        max_calldata: 0,
+        max_bytecode: 0,
+        keccak_padding: None,
+    };
+    let mut builder = CircuitInputBuilder::new_from_headers(
+        circuit_params,
+        state_db,
+        code_db,
+        Default::default(),
+    );
     for (idx, block_trace) in block_traces.iter().enumerate() {
         let is_last = idx == block_traces.len() - 1;
         let eth_block: EthBlock = block_trace.clone().into();
@@ -81,7 +91,7 @@ pub fn block_traces_to_witness_block(
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), is_last, is_last)?;
     }
 
-    let mut witness_block = block_convert(&builder.block, &builder.code_db);
+    let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
 
     // hack bytecodes table in witness
@@ -95,16 +105,15 @@ pub fn block_traces_to_witness_block(
                 .map(|call| call.code_hash)
                 .into_iter()
                 .map(|code_hash| {
-                    let mut bytecode = Bytecode::new(
-                        builder
-                            .code_db
-                            .0
-                            .get(&code_hash)
-                            .cloned()
-                            .expect("code db should has contain the code"),
-                    );
-                    bytecode.hash = U256::from_big_endian(code_hash.as_bytes());
-                    (bytecode.hash, bytecode)
+                    let bytes = builder
+                        .code_db
+                        .0
+                        .get(&code_hash)
+                        .cloned()
+                        .expect("code db should has contain the code");
+
+                    let hash: Word = U256::from_big_endian(code_hash.as_bytes());
+                    (hash, Bytecode { hash, bytes })
                 })
         })
         .collect();
@@ -348,22 +357,3 @@ pub fn trace_proof(sdb: &mut StateDB, proof: Option<AccountProofWrapper>) {
     )
 }
 */
-pub fn get_fixed_table_tags_for_block(block: &Block<Fr>) -> Vec<FixedTableTag> {
-    let need_bitwise_lookup = block.txs.iter().any(|tx| {
-        tx.steps.iter().any(|step| {
-            matches!(
-                step.opcode,
-                Some(OpcodeId::AND) | Some(OpcodeId::OR) | Some(OpcodeId::XOR)
-            )
-        })
-    });
-
-    FixedTableTag::iter()
-        .filter(|t| {
-            !matches!(
-                t,
-                FixedTableTag::BitwiseAnd | FixedTableTag::BitwiseOr | FixedTableTag::BitwiseXor
-            ) || need_bitwise_lookup
-        })
-        .collect()
-}

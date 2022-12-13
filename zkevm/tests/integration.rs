@@ -20,7 +20,7 @@ fn estimate_circuit_rows() {
     let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_trace = load_block_trace_for_test();
+    let block_trace = [load_block_trace_for_test()];
 
     log::info!("estimating used rows for current block");
     log::info!(

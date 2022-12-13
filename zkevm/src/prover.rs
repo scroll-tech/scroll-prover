@@ -432,12 +432,16 @@ impl Prover {
         block_traces: &[BlockTrace],
         full: bool,
     ) -> anyhow::Result<()> {
-        log::info!("start mock prove {}", C::name());
+        log::info!(
+            "start mock prove {}, rows needed {}",
+            C::name(),
+            C::estimate_rows(block_traces)
+        );
         let (circuit, instance) = C::from_block_traces(block_traces)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
             // FIXME for packing
-            let (gate_rows, lookup_rows) = C::get_active_rows(&block_traces[0]);
+            let (gate_rows, lookup_rows) = C::get_active_rows(block_traces);
             log::info!("checking {} active rows", gate_rows.len());
             if !gate_rows.is_empty() || !lookup_rows.is_empty() {
                 if let Err(e) =
