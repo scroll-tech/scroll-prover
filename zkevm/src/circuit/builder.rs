@@ -57,7 +57,13 @@ pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_traces[0].transactions.get(0) {
+    let chain_id = if let Some(tx_trace) = block_traces
+        .get(0)
+        .cloned()
+        .unwrap_or_default()
+        .transactions
+        .get(0)
+    {
         tx_trace.chain_id
     } else {
         0i16.into()
@@ -88,8 +94,10 @@ pub fn block_traces_to_witness_block(
         // TODO: Get the history_hashes.
         let header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
         builder.block.headers.insert(header.number.as_u64(), header);
-        builder.handle_block_inner(&eth_block, geth_trace.as_slice(), is_last, is_last)?;
+        builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
     }
+    builder.set_value_ops_call_context_rwc_eor();
+    builder.set_end_block();
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;

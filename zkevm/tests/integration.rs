@@ -1,9 +1,11 @@
-use chrono::Utc;
+use chrono::{format::format, Utc};
+use halo2_proofs::plonk::keygen_vk;
 use types::eth::BlockTrace;
 use zkevm::{
-    circuit::TargetCircuit,
+    circuit::{EvmCircuit, TargetCircuit, DEGREE},
+    io::serialize_vk,
     prover::Prover,
-    utils::{get_block_trace_from_file, read_env_var},
+    utils::{get_block_trace_from_file, load_or_create_params, read_env_var},
 };
 
 mod test_util;
@@ -104,8 +106,8 @@ fn test_mock_prove_all_target_circuits_packing() {
         let block_trace = get_block_trace_from_file(trace_path);
         block_traces.push(block_trace);
     }
-    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
+    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_traces, true).unwrap();
 }
@@ -241,6 +243,29 @@ fn test_state_evm_connect() {
 
     assert_eq!(rw_commitment_evm, rw_commitment_state);
     log::info!("Same commitment! Test passes!");
+}
+
+#[test]
+fn test_evm_vk() {
+    init();
+    let block_trace = load_block_trace_for_test();
+    let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
+    let mut vk_empty = keygen_vk(&params, &EvmCircuit::empty()).unwrap();
+    let vk_empty_bytes = serialize_vk(&vk_empty);
+    vk_empty.cs = Default::default();
+    let vk_empty_debug_string = format!("{:#?}", vk_empty);
+    let mut vk_real = keygen_vk(
+        &params,
+        &EvmCircuit::from_block_trace(&block_trace).unwrap().0,
+    )
+    .unwrap();
+    let vk_real_bytes = serialize_vk(&vk_real);
+    let vk_real_debug_string = format!("{:#?}", vk_empty);
+    vk_real.cs = Default::default();
+    dbg!(&vk_empty_debug_string);
+    dbg!(&vk_real_debug_string);
+    assert_eq!(vk_empty_debug_string, vk_real_debug_string);
+    assert_eq!(vk_empty_bytes, vk_real_bytes);
 }
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {

@@ -130,12 +130,11 @@ impl Prover {
         );
     }
 
-    fn init_pk<C: TargetCircuit>(&mut self) {
+    fn init_pk<C: TargetCircuit>(&mut self, circuit: &<C as TargetCircuit>::Inner) {
         Self::tick(&format!("before init pk of {}", C::name()));
-        let circuit = C::empty();
-        let vk = keygen_vk(&self.params, &circuit)
+        let vk = keygen_vk(&self.params, circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
-        let pk = keygen_pk(&self.params, vk, &circuit)
+        let pk = keygen_pk(&self.params, vk, circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} pk", C::name()));
         self.target_circuit_pks.insert(C::name(), pk);
         Self::tick(&format!("after init pk of {}", C::name()));
@@ -491,7 +490,8 @@ impl Prover {
         }
 
         if !self.target_circuit_pks.contains_key(&C::name()) {
-            self.init_pk::<C>();
+            //self.init_pk::<C>(&circuit);
+            self.init_pk::<C>(&C::empty());
         }
         let pk = &self.target_circuit_pks[&C::name()];
         create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(

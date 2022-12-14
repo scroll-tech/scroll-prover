@@ -43,6 +43,7 @@ chrono = "0.4.19"
 procfs = "0.13.0"
 
 [features]
+#default = ["prove_verify"]
 default = []
 prove_verify = []
 

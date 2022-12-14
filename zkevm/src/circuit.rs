@@ -27,21 +27,24 @@ pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
     fn name() -> String;
     /// used to generate vk&pk
-    fn empty() -> Self::Inner;
-    //fn public_input_len() -> usize { 0 }
-    fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where
-        Self: Sized;
-    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn empty() -> Self::Inner
     where
         Self: Sized,
     {
-        log::error!(
-            "from_block_traces for circuit {} unimplemented, use first block result",
-            Self::name()
-        );
-        Self::from_block_trace(&block_traces[0])
+        Self::from_block_traces(&[]).unwrap().0
     }
+    //fn public_input_len() -> usize { 0 }
+    fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        Self::from_block_traces(std::slice::from_ref(block_trace))
+    }
+    fn from_block_traces(
+        block_traces: &[BlockTrace],
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized;
 
     fn estimate_rows(_block_traces: &[BlockTrace]) -> usize {
         0
@@ -64,15 +67,6 @@ impl TargetCircuit for EvmCircuit {
 
     fn name() -> String {
         "evm".to_string()
-    }
-
-    fn empty() -> Self::Inner {
-        let default_block = Block::<Fr> {
-            evm_circuit_pad_to: (1 << *DEGREE) - 64,
-            ..Default::default()
-        };
-
-        EvmTestCircuit::new(default_block)
     }
 
     fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
