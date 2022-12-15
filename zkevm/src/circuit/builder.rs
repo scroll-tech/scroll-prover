@@ -9,7 +9,7 @@ use halo2_proofs::halo2curves::bn256::Fr;
 
 use is_even::IsEven;
 
-use super::mpt;
+use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
@@ -71,10 +71,10 @@ pub fn block_traces_to_witness_block(
 
     let (state_db, code_db) = build_statedb_and_codedb(block_traces)?;
     let circuit_params = CircuitsParams {
-        max_rws: (1 << *DEGREE) - 64,
-        max_txs: 50,
-        max_calldata: 0,
-        max_bytecode: 0,
+        max_rws: MAX_RWS,
+        max_txs: MAX_TXS,
+        max_calldata: MAX_CALLDATA,
+        max_bytecode: MAX_CALLDATA,
         keccak_padding: None,
     };
     let mut builder = CircuitInputBuilder::new_from_headers(
@@ -100,7 +100,7 @@ pub fn block_traces_to_witness_block(
     builder.set_end_block();
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
-    witness_block.evm_circuit_pad_to = (1 << *DEGREE) - 64;
+    witness_block.evm_circuit_pad_to = MAX_RWS;
 
     // hack bytecodes table in witness
     witness_block.bytecodes = builder

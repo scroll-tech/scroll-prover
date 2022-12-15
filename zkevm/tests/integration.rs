@@ -97,7 +97,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits_packing() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
+    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, ZktrieCircuit};
 
     init();
     let mut block_traces = Vec::new();
@@ -106,6 +106,7 @@ fn test_mock_prove_all_target_circuits_packing() {
         let block_trace = get_block_trace_from_file(trace_path);
         block_traces.push(block_trace);
     }
+    Prover::mock_prove_target_circuit_multi::<SuperCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
@@ -250,10 +251,10 @@ fn test_evm_vk() {
     init();
     let block_trace = load_block_trace_for_test();
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let mut vk_empty = keygen_vk(&params, &EvmCircuit::empty()).unwrap();
+    let vk_empty = keygen_vk(&params, &EvmCircuit::empty()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
     let vk_empty_debug_string = format!("{:#?}", vk_empty);
-    let mut vk_real = keygen_vk(
+    let vk_real = keygen_vk(
         &params,
         &EvmCircuit::from_block_trace(&block_trace).unwrap().0,
     )

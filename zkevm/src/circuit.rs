@@ -1,3 +1,4 @@
+use anyhow::bail;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
 
@@ -10,8 +11,9 @@ use types::eth::BlockTrace;
 
 use zkevm_circuits::evm_circuit::test::get_test_degree as evm_circuit_get_test_degree;
 use zkevm_circuits::evm_circuit::witness::Block;
-use zkevm_circuits::evm_circuit::EvmCircuit as EvmTestCircuit;
+use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
+use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
 
 mod builder;
 mod mpt;
@@ -20,8 +22,13 @@ use crate::utils::read_env_var;
 
 use self::builder::{block_trace_to_witness_block, block_traces_to_witness_block};
 
-pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 20));
-pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
+const MAX_TXS: usize = 25;
+const MAX_CALLDATA: usize = 400_000;
+const MAX_RWS: usize = 500_000;
+//pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));
+//pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
+pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
+pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -33,7 +40,6 @@ pub trait TargetCircuit {
     {
         Self::from_block_traces(&[]).unwrap().0
     }
-    //fn public_input_len() -> usize { 0 }
     fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -52,6 +58,7 @@ pub trait TargetCircuit {
     fn public_input_len() -> usize {
         0
     }
+    // It is usually safer to use MockProver::verify than MockProver::verify_at_rows
     fn get_active_rows(block_traces: &[BlockTrace]) -> (Vec<usize>, Vec<usize>) {
         (
             (0..Self::estimate_rows(block_traces)).into_iter().collect(),
@@ -60,10 +67,47 @@ pub trait TargetCircuit {
     }
 }
 
+pub struct SuperCircuit {}
+
+impl TargetCircuit for SuperCircuit {
+    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_RWS>;
+
+    fn name() -> String {
+        "super".to_string()
+    }
+
+    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_traces_to_witness_block(block_traces)?;
+        let (k, inner, instance) = Self::Inner::build_from_witness_block(witness_block)?;
+        if k as usize > *DEGREE {
+            bail!(
+                "circuit not enough: DEGREE = {}, less than k needed: {}",
+                *DEGREE,
+                k
+            );
+        }
+        debug_assert_eq!(instance.len(), 1);
+        Ok((inner, instance))
+    }
+
+    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
+        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
+        // evm only now
+        Self::Inner::get_num_rows_required(&witness_block)
+    }
+
+    fn public_input_len() -> usize {
+        1
+    }
+}
+
 pub struct EvmCircuit {}
 
 impl TargetCircuit for EvmCircuit {
-    type Inner = EvmTestCircuit<Fr>;
+    type Inner = EvmCircuitImpl<Fr>;
 
     fn name() -> String {
         "evm".to_string()
@@ -74,7 +118,7 @@ impl TargetCircuit for EvmCircuit {
         Self: Sized,
     {
         let witness_block = block_trace_to_witness_block(block_trace)?;
-        let inner = EvmTestCircuit::<Fr>::new(witness_block);
+        let inner = EvmCircuitImpl::<Fr>::new(witness_block);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -84,7 +128,7 @@ impl TargetCircuit for EvmCircuit {
         Self: Sized,
     {
         let witness_block = block_traces_to_witness_block(block_traces)?;
-        let inner = EvmTestCircuit::<Fr>::new(witness_block);
+        let inner = EvmCircuitImpl::<Fr>::new(witness_block);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -93,7 +137,7 @@ impl TargetCircuit for EvmCircuit {
         match block_traces_to_witness_block(block_traces) {
             Ok(witness_block) => {
                 evm_circuit_get_test_degree(&witness_block);
-                EvmTestCircuit::<Fr>::get_num_rows_required(&witness_block)
+                EvmCircuitImpl::<Fr>::get_num_rows_required(&witness_block)
             }
             Err(e) => {
                 log::error!("convert block result to witness block failed: {:?}", e);

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use crate::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
+    EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
+    AGG_DEGREE, DEGREE,
 };
 use crate::io::{
     deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
@@ -38,7 +39,13 @@ use types::eth::BlockTrace;
 extern crate procfs;
 
 pub const ENABLE_COHERENT: bool = true;
-pub const CIRCUIT_NUM: usize = 4;
+pub const CIRCUIT_NUM: usize = 3;
+
+const super_circuit_idx: usize = 0;
+//const evm_circuit_idx: usize = 0;
+//const state_circuit_idx: usize = 1;
+const poseidon_circuit_idx: usize = 1;
+const zktrie_circuit_idx: usize = 2;
 fn from_0_to_n<const N: usize>() -> [usize; N] {
     core::array::from_fn(|i| i)
 }
@@ -247,8 +254,9 @@ impl Prover {
         block_traces: &[BlockTrace],
     ) -> anyhow::Result<AggCircuitProof> {
         let circuit_results: Vec<ProvedCircuit> = vec![
-            self.prove_circuit::<EvmCircuit>(block_traces)?,
-            self.prove_circuit::<StateCircuit>(block_traces)?,
+            self.prove_circuit::<SuperCircuit>(block_traces)?,
+            //self.prove_circuit::<EvmCircuit>(block_traces)?,
+            //self.prove_circuit::<StateCircuit>(block_traces)?,
             self.prove_circuit::<PoseidonCircuit>(block_traces)?,
             self.prove_circuit::<ZktrieCircuit>(block_traces)?,
         ];
@@ -258,11 +266,6 @@ impl Prover {
     // commitments of columns of shared tables of circuits should be same
     fn build_coherent() -> Vec<[(usize, usize); 2]> {
         let mut coherent = Vec::new();
-
-        let evm_circuit_idx = 0;
-        let state_circuit_idx = 1;
-        let poseidon_circuit_idx = 2;
-        let zktrie_circuit_idx = 3;
 
         let mut connect_table =
             |circuit_idx_1, table_start_1, circuit_idx_2, table_start_2, table_len: usize| {
@@ -275,7 +278,7 @@ impl Prover {
             };
 
         // rw table
-        connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
+        // connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
 
         // poseidon hash table
         let hash_table_commitments_len = 3;
