@@ -252,7 +252,6 @@ fn test_evm_vk() {
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let mut vk_empty = keygen_vk(&params, &EvmCircuit::empty()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
-    vk_empty.cs = Default::default();
     let vk_empty_debug_string = format!("{:#?}", vk_empty);
     let mut vk_real = keygen_vk(
         &params,
@@ -261,11 +260,10 @@ fn test_evm_vk() {
     .unwrap();
     let vk_real_bytes = serialize_vk(&vk_real);
     let vk_real_debug_string = format!("{:#?}", vk_empty);
-    vk_real.cs = Default::default();
-    dbg!(&vk_empty_debug_string);
-    dbg!(&vk_real_debug_string);
-    assert_eq!(vk_empty_debug_string, vk_real_debug_string);
+    //dbg!(&vk_empty_debug_string);
+    //dbg!(&vk_real_debug_string);
     assert_eq!(vk_empty_bytes, vk_real_bytes);
+    assert_eq!(vk_empty_debug_string, vk_real_debug_string);
 }
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
