@@ -8,7 +8,6 @@ use once_cell::sync::Lazy;
 
 use types::eth::BlockTrace;
 
-use zkevm_circuits::evm_circuit::test::get_test_degree as evm_circuit_get_test_degree;
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
@@ -133,9 +132,7 @@ impl TargetCircuit for EvmCircuit {
 
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
         match block_traces_to_witness_block(block_traces) {
-            Ok(witness_block) => {
-                EvmCircuitImpl::<Fr>::get_num_rows_required(&witness_block)
-            }
+            Ok(witness_block) => EvmCircuitImpl::<Fr>::get_num_rows_required(&witness_block),
             Err(e) => {
                 log::error!("convert block result to witness block failed: {:?}", e);
                 0
