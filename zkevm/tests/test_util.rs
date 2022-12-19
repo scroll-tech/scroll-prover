@@ -1,6 +1,7 @@
 use std::sync::Once;
 
 use git_version::git_version;
+use zkevm::utils::get_block_trace_from_file;
 
 pub const GIT_VERSION: &str = git_version!();
 pub const PARAMS_DIR: &str = "./test_params";
@@ -14,6 +15,16 @@ pub fn init() {
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
     });
     log::info!("git version {}", GIT_VERSION);
+}
+
+pub fn load_packing_traces() -> Vec<types::eth::BlockTrace> {
+    let mut block_traces = Vec::new();
+    for block_number in 1..=10 {
+        let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+        let block_trace = get_block_trace_from_file(trace_path);
+        block_traces.push(block_trace);
+    }
+    block_traces
 }
 
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {

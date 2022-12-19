@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use crate::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
+    PoseidonCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
     AGG_DEGREE, DEGREE,
 };
 use crate::io::{
@@ -41,11 +41,11 @@ extern crate procfs;
 pub const ENABLE_COHERENT: bool = true;
 pub const CIRCUIT_NUM: usize = 3;
 
-const super_circuit_idx: usize = 0;
+//const super_circuit_idx: usize = 0;
 //const evm_circuit_idx: usize = 0;
 //const state_circuit_idx: usize = 1;
-const poseidon_circuit_idx: usize = 1;
-const zktrie_circuit_idx: usize = 2;
+const POSEIDON_CIRCUIT_IDX: usize = 1;
+const ZKTRIE_CIRCUIT_IDX: usize = 2;
 fn from_0_to_n<const N: usize>() -> [usize; N] {
     core::array::from_fn(|i| i)
 }
@@ -285,9 +285,9 @@ impl Prover {
         let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
         let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
         connect_table(
-            poseidon_circuit_idx,
+            POSEIDON_CIRCUIT_IDX,
             hash_table_start_poseidon,
-            zktrie_circuit_idx,
+            ZKTRIE_CIRCUIT_IDX,
             hash_table_start_mpt,
             hash_table_commitments_len,
         );
@@ -369,18 +369,16 @@ impl Prover {
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
 
         if self.agg_pk.is_none() {
-            log::info!("init_agg_pk: init from verifier circuit");
-
+            log::info!("generate agg pk: begin");
             let verify_circuit_vk =
                 keygen_vk(&self.agg_params, &verify_circuit).expect("keygen_vk should not fail");
-
+            log::info!("generate agg pk: vk done");
             let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, &verify_circuit)
                 .expect("keygen_pk should not fail");
             self.agg_pk = Some(verify_circuit_pk);
-
-            log::info!("init_agg_pk: init done");
+            log::info!("init_agg_pk: done");
         } else {
-            log::info!("using existing agg_pk");
+            log::info!("generate agg pk: done");
         }
 
         let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];

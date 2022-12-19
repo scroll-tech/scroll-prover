@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use zkevm::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
+    EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE, SuperCircuit,
 };
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
@@ -18,6 +18,7 @@ use zkevm::{io::*, prover::Prover};
 
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
+use test_util::load_packing_traces;
 
 fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
@@ -37,11 +38,16 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
         log::info!("loading cached target proofs");
         vec![
             prover
+                .debug_load_proved_circuit::<SuperCircuit>(Some(&mut v))
+                .unwrap(),
+                /* 
+            prover
                 .debug_load_proved_circuit::<EvmCircuit>(Some(&mut v))
                 .unwrap(),
             prover
                 .debug_load_proved_circuit::<StateCircuit>(Some(&mut v))
                 .unwrap(),
+                */
             prover
                 .debug_load_proved_circuit::<PoseidonCircuit>(Some(&mut v))
                 .unwrap(),
@@ -51,20 +57,17 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
         ]
     } else {
         let block_traces = if mode == "PACK" {
-            let mut block_traces = Vec::new();
-            for block_number in 1..=15 {
-                let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-                let block_trace = get_block_trace_from_file(trace_path);
-                block_traces.push(block_trace);
-            }
-            block_traces
+            load_packing_traces()
         } else {
             let trace_path = parse_trace_path_from_mode(mode);
             vec![get_block_trace_from_file(trace_path)]
         };
         vec![
-            prover.prove_circuit::<EvmCircuit>(&block_traces).unwrap(),
-            prover.prove_circuit::<StateCircuit>(&block_traces).unwrap(),
+            prover
+                .prove_circuit::<SuperCircuit>(&block_traces)
+                .unwrap(),
+            //prover.prove_circuit::<EvmCircuit>(&block_traces).unwrap(),
+            //prover.prove_circuit::<StateCircuit>(&block_traces).unwrap(),
             prover
                 .prove_circuit::<PoseidonCircuit>(&block_traces)
                 .unwrap(),

@@ -1,8 +1,8 @@
-use chrono::{format::format, Utc};
+use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
 use types::eth::BlockTrace;
 use zkevm::{
-    circuit::{EvmCircuit, TargetCircuit, DEGREE},
+    circuit::{EvmCircuit, TargetCircuit, DEGREE, SuperCircuit},
     io::serialize_vk,
     prover::Prover,
     utils::{get_block_trace_from_file, load_or_create_params, read_env_var},
@@ -48,6 +48,13 @@ fn estimate_circuit_rows() {
 fn test_evm_prove_verify() {
     use zkevm::circuit::EvmCircuit;
     test_target_circuit_prove_verify::<EvmCircuit>();
+}
+
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_super_prove_verify() {
+    use zkevm::circuit::SuperCircuit;
+    test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -99,13 +106,10 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
 fn test_mock_prove_all_target_circuits_packing() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, ZktrieCircuit};
 
+    use crate::test_util::load_packing_traces;
+
     init();
-    let mut block_traces = Vec::new();
-    for block_number in 1..=10 {
-        let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-        let block_trace = get_block_trace_from_file(trace_path);
-        block_traces.push(block_trace);
-    }
+    let block_traces = load_packing_traces();
     Prover::mock_prove_target_circuit_multi::<SuperCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
@@ -246,23 +250,35 @@ fn test_state_evm_connect() {
     log::info!("Same commitment! Test passes!");
 }
 
+#[cfg(feature = "prove_verify")]
 #[test]
-fn test_evm_vk() {
+fn test_vk_same() {
     init();
+    //type C = EvmCircuit;
+    type C = SuperCircuit;
     let block_trace = load_block_trace_for_test();
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let vk_empty = keygen_vk(&params, &EvmCircuit::empty()).unwrap();
+    let vk_empty = keygen_vk(&params, &C::empty()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
+    let vk_empty_commitments: Vec<_> = vk_empty_bytes.chunks(32).enumerate().collect();
     let vk_empty_debug_string = format!("{:#?}", vk_empty);
     let vk_real = keygen_vk(
         &params,
-        &EvmCircuit::from_block_trace(&block_trace).unwrap().0,
+        &C::from_block_trace(&block_trace).unwrap().0,
     )
     .unwrap();
-    let vk_real_bytes = serialize_vk(&vk_real);
+    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
+    let vk_real_commitments: Vec<_> = vk_real_bytes.chunks(32).enumerate().collect();
     let vk_real_debug_string = format!("{:#?}", vk_empty);
     //dbg!(&vk_empty_debug_string);
     //dbg!(&vk_real_debug_string);
+    assert_eq!(vk_real_bytes.len(), vk_empty_bytes.len());
+    for i in 0..vk_real_commitments.len() {
+        if vk_empty_commitments[i] != vk_real_commitments[i] {
+            println!("diff at {}: {:?} vs {:?}", i, vk_empty_commitments[i], vk_real_commitments[i])
+        }
+    }
+    assert_eq!(format!("{:?}", vk_empty_commitments), format!("{:?}", vk_real_commitments));
     assert_eq!(vk_empty_bytes, vk_real_bytes);
     assert_eq!(vk_empty_debug_string, vk_real_debug_string);
 }

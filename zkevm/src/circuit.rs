@@ -6,11 +6,9 @@ use mpt_circuits::{hash::Hashable, operation::AccountOp, EthTrie, EthTrieCircuit
 
 use once_cell::sync::Lazy;
 
-use strum::IntoEnumIterator;
 use types::eth::BlockTrace;
 
 use zkevm_circuits::evm_circuit::test::get_test_degree as evm_circuit_get_test_degree;
-use zkevm_circuits::evm_circuit::witness::Block;
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
@@ -89,7 +87,7 @@ impl TargetCircuit for SuperCircuit {
                 k
             );
         }
-        debug_assert_eq!(instance.len(), 1);
+        debug_assert_eq!(instance.len(), 0);
         Ok((inner, instance))
     }
 

@@ -11,14 +11,12 @@ use is_even::IsEven;
 
 use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
 use std::collections::HashMap;
-use strum::IntoEnumIterator;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use halo2_proofs::arithmetic::FieldExt;
 use mpt_circuits::hash::Hashable;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
-use super::DEGREE;
 use anyhow::anyhow;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
@@ -75,7 +73,7 @@ pub fn block_traces_to_witness_block(
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
-        keccak_padding: None,
+        keccak_padding: Some(80000),
     };
     let mut builder = CircuitInputBuilder::new_from_headers(
         circuit_params,
@@ -101,6 +99,7 @@ pub fn block_traces_to_witness_block(
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     witness_block.evm_circuit_pad_to = MAX_RWS;
+    log::debug!("witness_block.circuits_params {:?}", witness_block.circuits_params);
 
     // hack bytecodes table in witness
     witness_block.bytecodes = builder

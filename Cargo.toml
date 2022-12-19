@@ -8,7 +8,9 @@ members = [
 [profile.test]
 opt-level = 3
 debug-assertions = true
+overflow-checks = false
 
 [profile.release]
 opt-level = 3
 debug-assertions = true
+overflow-checks = false
