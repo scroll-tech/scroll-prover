@@ -2,7 +2,7 @@ use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
 use types::eth::BlockTrace;
 use zkevm::{
-    circuit::{EvmCircuit, TargetCircuit, DEGREE, SuperCircuit},
+    circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
     utils::{get_block_trace_from_file, load_or_create_params, read_env_var},
@@ -262,11 +262,7 @@ fn test_vk_same() {
     let vk_empty_bytes = serialize_vk(&vk_empty);
     let vk_empty_commitments: Vec<_> = vk_empty_bytes.chunks(32).enumerate().collect();
     let vk_empty_debug_string = format!("{:#?}", vk_empty);
-    let vk_real = keygen_vk(
-        &params,
-        &C::from_block_trace(&block_trace).unwrap().0,
-    )
-    .unwrap();
+    let vk_real = keygen_vk(&params, &C::from_block_trace(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
     let vk_real_commitments: Vec<_> = vk_real_bytes.chunks(32).enumerate().collect();
     let vk_real_debug_string = format!("{:#?}", vk_empty);
@@ -275,10 +271,16 @@ fn test_vk_same() {
     assert_eq!(vk_real_bytes.len(), vk_empty_bytes.len());
     for i in 0..vk_real_commitments.len() {
         if vk_empty_commitments[i] != vk_real_commitments[i] {
-            println!("diff at {}: {:?} vs {:?}", i, vk_empty_commitments[i], vk_real_commitments[i])
+            println!(
+                "diff at {}: {:?} vs {:?}",
+                i, vk_empty_commitments[i], vk_real_commitments[i]
+            )
         }
     }
-    assert_eq!(format!("{:?}", vk_empty_commitments), format!("{:?}", vk_real_commitments));
+    assert_eq!(
+        format!("{:?}", vk_empty_commitments),
+        format!("{:?}", vk_real_commitments)
+    );
     assert_eq!(vk_empty_bytes, vk_real_bytes);
     assert_eq!(vk_empty_debug_string, vk_real_debug_string);
 }

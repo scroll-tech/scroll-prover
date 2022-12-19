@@ -8,17 +8,15 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use zkevm::circuit::{
-    EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE, SuperCircuit,
-};
+use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
 use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
-use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 use test_util::load_packing_traces;
+use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
@@ -40,7 +38,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
             prover
                 .debug_load_proved_circuit::<SuperCircuit>(Some(&mut v))
                 .unwrap(),
-                /* 
+            /*
             prover
                 .debug_load_proved_circuit::<EvmCircuit>(Some(&mut v))
                 .unwrap(),
@@ -63,9 +61,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
             vec![get_block_trace_from_file(trace_path)]
         };
         vec![
-            prover
-                .prove_circuit::<SuperCircuit>(&block_traces)
-                .unwrap(),
+            prover.prove_circuit::<SuperCircuit>(&block_traces).unwrap(),
             //prover.prove_circuit::<EvmCircuit>(&block_traces).unwrap(),
             //prover.prove_circuit::<StateCircuit>(&block_traces).unwrap(),
             prover

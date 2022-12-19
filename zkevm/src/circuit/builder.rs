@@ -99,7 +99,10 @@ pub fn block_traces_to_witness_block(
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     witness_block.evm_circuit_pad_to = MAX_RWS;
-    log::debug!("witness_block.circuits_params {:?}", witness_block.circuits_params);
+    log::debug!(
+        "witness_block.circuits_params {:?}",
+        witness_block.circuits_params
+    );
 
     // hack bytecodes table in witness
     witness_block.bytecodes = builder

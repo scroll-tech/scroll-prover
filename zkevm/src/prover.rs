@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use crate::circuit::{
-    PoseidonCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
-    AGG_DEGREE, DEGREE,
+    PoseidonCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
 };
 use crate::io::{
     deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
