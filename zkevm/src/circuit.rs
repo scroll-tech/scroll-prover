@@ -134,7 +134,6 @@ impl TargetCircuit for EvmCircuit {
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
         match block_traces_to_witness_block(block_traces) {
             Ok(witness_block) => {
-                evm_circuit_get_test_degree(&witness_block);
                 EvmCircuitImpl::<Fr>::get_num_rows_required(&witness_block)
             }
             Err(e) => {
