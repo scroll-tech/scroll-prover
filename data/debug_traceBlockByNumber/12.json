@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "result": {
+        "gas": 21000,
+        "failed": false,
+        "returnValue": "",
+        "accountAfter": null,
+        "structLogs": []
+      }
+    }
+  ]
+}
