@@ -250,7 +250,7 @@ fn test_state_evm_connect() {
     log::info!("Same commitment! Test passes!");
 }
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_vk_same() {
     init();
@@ -260,29 +260,21 @@ fn test_vk_same() {
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let vk_empty = keygen_vk(&params, &C::empty()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
-    let vk_empty_commitments: Vec<_> = vk_empty_bytes.chunks(32).enumerate().collect();
-    let vk_empty_debug_string = format!("{:#?}", vk_empty);
     let vk_real = keygen_vk(&params, &C::from_block_trace(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
-    let vk_real_commitments: Vec<_> = vk_real_bytes.chunks(32).enumerate().collect();
-    let vk_real_debug_string = format!("{:#?}", vk_empty);
-    //dbg!(&vk_empty_debug_string);
-    //dbg!(&vk_real_debug_string);
-    assert_eq!(vk_real_bytes.len(), vk_empty_bytes.len());
-    for i in 0..vk_real_commitments.len() {
-        if vk_empty_commitments[i] != vk_real_commitments[i] {
-            println!(
-                "diff at {}: {:?} vs {:?}",
-                i, vk_empty_commitments[i], vk_real_commitments[i]
-            )
+    assert_eq!(vk_empty.fixed_commitments().len(), vk_real.fixed_commitments().len());
+    for i in 0..vk_empty.fixed_commitments().len() {
+        if vk_empty.fixed_commitments()[i] != vk_real.fixed_commitments()[i] {
+            log::error!("{}th fixed_commitments not same {:?} {:?}", i, vk_empty.fixed_commitments()[i], vk_real.fixed_commitments()[i]);
         }
     }
-    assert_eq!(
-        format!("{:?}", vk_empty_commitments),
-        format!("{:?}", vk_real_commitments)
-    );
+    assert_eq!(vk_empty.permutation().commitments().len(), vk_real.permutation().commitments().len());
+    for i in 0..vk_empty.permutation().commitments().len() {
+        if vk_empty.permutation().commitments()[i] != vk_real.permutation().commitments()[i] {
+            log::error!("{}th permutation_commitments not same {:?} {:?}", i, vk_empty.permutation().commitments()[i], vk_real.permutation().commitments()[i]);
+        }
+    }
     assert_eq!(vk_empty_bytes, vk_real_bytes);
-    assert_eq!(vk_empty_debug_string, vk_real_debug_string);
 }
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
