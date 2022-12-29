@@ -308,7 +308,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -743,7 +743,7 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 [[package]]
 name = "ecc"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=scroll-dev-1010#5a7f1a422316f71852bdc367792844106a536970"
+source = "git+https://github.com/privacy-scaling-explorations/halo2wrong?tag=v2022_09_09#2d708b4453387f03059aad68d6d87441db112a2f"
 dependencies = [
  "group",
  "integer",
@@ -757,7 +757,7 @@ dependencies = [
 [[package]]
 name = "ecdsa"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=scroll-dev-1010#5a7f1a422316f71852bdc367792844106a536970"
+source = "git+https://github.com/privacy-scaling-explorations/halo2wrong?tag=v2022_09_09#2d708b4453387f03059aad68d6d87441db112a2f"
 dependencies = [
  "ecc",
  "group",
@@ -874,7 +874,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "ethers-core",
  "ethers-signers",
@@ -1028,7 +1028,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1246,7 +1246,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1286,9 +1286,11 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
+ "env_logger",
  "gobuild",
+ "log",
 ]
 
 [[package]]
@@ -1399,7 +1401,7 @@ dependencies = [
 [[package]]
 name = "halo2-ecc-circuit-lib"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#0d2bc2d6dee04fbf8dbb590b6c61d8f845f0004d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-1220#5fc71cf703308ecd70d992db856bee3c7fb2183d"
 dependencies = [
  "group",
  "halo2_proofs",
@@ -1411,7 +1413,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0902#b0ffab97316f9cf4b9e65aba398a047a8d6424a1"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-1220#007c3371062c9865195d97a1ba1db3e9afd739ad"
 dependencies = [
  "bitvec 0.22.3",
  "ff 0.11.1",
@@ -1428,7 +1430,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-api"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#0d2bc2d6dee04fbf8dbb590b6c61d8f845f0004d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-1220#5fc71cf703308ecd70d992db856bee3c7fb2183d"
 dependencies = [
  "blake2b_simd",
  "chrono",
@@ -1447,7 +1449,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#0d2bc2d6dee04fbf8dbb590b6c61d8f845f0004d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-1220#5fc71cf703308ecd70d992db856bee3c7fb2183d"
 dependencies = [
  "clap",
  "halo2-ecc-circuit-lib",
@@ -1466,7 +1468,7 @@ dependencies = [
 [[package]]
 name = "halo2-snark-aggregator-solidity"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-0920-tpl#0d2bc2d6dee04fbf8dbb590b6c61d8f845f0004d"
+source = "git+https://github.com/scroll-tech/halo2-snark-aggregator?branch=scroll-dev-1220#5fc71cf703308ecd70d992db856bee3c7fb2183d"
 dependencies = [
  "halo2-ecc-circuit-lib",
  "halo2-snark-aggregator-api",
@@ -1482,7 +1484,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0902#b46c23bcda77fe01ac76099796e6ddeecdccb535"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-1220#2739742f0eb5d1f61934f8d0be1d7b055e57261e"
 dependencies = [
  "blake2b_simd",
  "cfg-if 0.1.10",
@@ -1497,23 +1499,6 @@ dependencies = [
  "rayon",
  "subtle",
  "tracing",
-]
-
-[[package]]
-name = "halo2curves"
-version = "0.2.0"
-source = "git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.2.0#bbd4cee10dbf9c51e0456ea67ec2b894b49f688c"
-dependencies = [
- "ff 0.12.0",
- "group",
- "lazy_static",
- "num-bigint",
- "num-traits",
- "pasta_curves",
- "rand",
- "rand_core",
- "static_assertions",
- "subtle",
 ]
 
 [[package]]
@@ -1553,7 +1538,7 @@ dependencies = [
 [[package]]
 name = "halo2wrong"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=scroll-dev-1010#5a7f1a422316f71852bdc367792844106a536970"
+source = "git+https://github.com/privacy-scaling-explorations/halo2wrong?tag=v2022_09_09#2d708b4453387f03059aad68d6d87441db112a2f"
 dependencies = [
  "group",
  "halo2_proofs",
@@ -1809,7 +1794,7 @@ dependencies = [
 [[package]]
 name = "integer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=scroll-dev-1010#5a7f1a422316f71852bdc367792844106a536970"
+source = "git+https://github.com/privacy-scaling-explorations/halo2wrong?tag=v2022_09_09#2d708b4453387f03059aad68d6d87441db112a2f"
 dependencies = [
  "group",
  "maingate",
@@ -1893,12 +1878,14 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
+ "env_logger",
  "eth-types",
  "halo2_proofs",
  "itertools",
  "lazy_static",
+ "log",
  "num-bigint",
  "num-traits",
 ]
@@ -1991,7 +1978,7 @@ dependencies = [
 [[package]]
 name = "maingate"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=scroll-dev-1010#5a7f1a422316f71852bdc367792844106a536970"
+source = "git+https://github.com/privacy-scaling-explorations/halo2wrong?tag=v2022_09_09#2d708b4453387f03059aad68d6d87441db112a2f"
 dependencies = [
  "group",
  "halo2wrong",
@@ -2059,7 +2046,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2443,7 +2430,7 @@ dependencies = [
 [[package]]
 name = "poseidon"
 version = "0.2.0"
-source = "git+https://github.com/appliedzkp/poseidon.git#5d29df01a95e3df6334080d28e983407f56b5da3"
+source = "git+https://github.com/appliedzkp/poseidon.git#0b9965fbcd9e03559088b8f68489592286bc55e0"
 dependencies = [
  "group",
  "halo2curves 0.2.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=0.3.0)",
@@ -2453,10 +2440,10 @@ dependencies = [
 [[package]]
 name = "poseidon"
 version = "0.2.0"
-source = "git+https://github.com/privacy-scaling-explorations/poseidon.git#336466a8d7aba6cf65be6980552cf7be93e957d8"
+source = "git+https://github.com/privacy-scaling-explorations/poseidon.git#0b9965fbcd9e03559088b8f68489592286bc55e0"
 dependencies = [
  "group",
- "halo2curves 0.2.0",
+ "halo2curves 0.2.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=0.3.0)",
  "subtle",
 ]
 
@@ -3901,7 +3888,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#d354f9871189676ccc023abc04230c48df7391b0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-stable#7587594c92a8772427c6a774aa31abfb85b457ac"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -3926,6 +3913,7 @@ dependencies = [
  "rand",
  "rand_chacha",
  "rand_xorshift",
+ "rlp",
  "sha3 0.10.1",
  "strum",
  "strum_macros",

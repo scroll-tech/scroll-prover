@@ -262,16 +262,32 @@ fn test_vk_same() {
     let vk_empty_bytes = serialize_vk(&vk_empty);
     let vk_real = keygen_vk(&params, &C::from_block_trace(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
-    assert_eq!(vk_empty.fixed_commitments().len(), vk_real.fixed_commitments().len());
+    assert_eq!(
+        vk_empty.fixed_commitments().len(),
+        vk_real.fixed_commitments().len()
+    );
     for i in 0..vk_empty.fixed_commitments().len() {
         if vk_empty.fixed_commitments()[i] != vk_real.fixed_commitments()[i] {
-            log::error!("{}th fixed_commitments not same {:?} {:?}", i, vk_empty.fixed_commitments()[i], vk_real.fixed_commitments()[i]);
+            log::error!(
+                "{}th fixed_commitments not same {:?} {:?}",
+                i,
+                vk_empty.fixed_commitments()[i],
+                vk_real.fixed_commitments()[i]
+            );
         }
     }
-    assert_eq!(vk_empty.permutation().commitments().len(), vk_real.permutation().commitments().len());
+    assert_eq!(
+        vk_empty.permutation().commitments().len(),
+        vk_real.permutation().commitments().len()
+    );
     for i in 0..vk_empty.permutation().commitments().len() {
         if vk_empty.permutation().commitments()[i] != vk_real.permutation().commitments()[i] {
-            log::error!("{}th permutation_commitments not same {:?} {:?}", i, vk_empty.permutation().commitments()[i], vk_real.permutation().commitments()[i]);
+            log::error!(
+                "{}th permutation_commitments not same {:?} {:?}",
+                i,
+                vk_empty.permutation().commitments()[i],
+                vk_real.permutation().commitments()[i]
+            );
         }
     }
     assert_eq!(vk_empty_bytes, vk_real_bytes);
