@@ -1484,7 +1484,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-1220#2739742f0eb5d1f61934f8d0be1d7b055e57261e"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-1220#a6312fee2560e6eed50ee3bb0d972cec4c71ca89"
 dependencies = [
  "blake2b_simd",
  "cfg-if 0.1.10",
