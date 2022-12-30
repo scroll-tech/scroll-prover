@@ -3,7 +3,7 @@ use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder, Circuit
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
 use eth_types::{ToAddress, Word};
-use ethers_core::types::{Address, Bytes, U256};
+use ethers_core::types::{Bytes, U256};
 
 use halo2_proofs::halo2curves::bn256::Fr;
 
