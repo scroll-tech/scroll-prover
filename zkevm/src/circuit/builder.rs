@@ -9,6 +9,8 @@ use halo2_proofs::halo2curves::bn256::Fr;
 
 use is_even::IsEven;
 
+use crate::circuit::MAX_INNER_BLOCKS;
+
 use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
 use std::collections::HashMap;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
@@ -73,6 +75,7 @@ pub fn block_traces_to_witness_block(
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
+        //max_inner_blocks: MAX_INNER_BLOCKS,
         keccak_padding: Some(80000),
     };
     let mut builder = CircuitInputBuilder::new_from_headers(

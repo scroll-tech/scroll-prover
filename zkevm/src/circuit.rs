@@ -20,6 +20,7 @@ use crate::utils::read_env_var;
 use self::builder::{block_trace_to_witness_block, block_traces_to_witness_block};
 
 const MAX_TXS: usize = 25;
+const MAX_INNER_BLOCKS: usize = 64;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_RWS: usize = 500_000;
 //pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));
@@ -86,7 +87,7 @@ impl TargetCircuit for SuperCircuit {
                 k
             );
         }
-        debug_assert_eq!(instance.len(), 0);
+        //debug_assert_eq!(instance.len(), 0);
         Ok((inner, instance))
     }
 
