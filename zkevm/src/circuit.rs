@@ -23,6 +23,7 @@ const MAX_TXS: usize = 25;
 const MAX_INNER_BLOCKS: usize = 64;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_RWS: usize = 500_000;
+const MAX_KECCAK_ROWS: usize = 500_000;
 //pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));
 //pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
@@ -68,7 +69,7 @@ pub trait TargetCircuit {
 pub struct SuperCircuit {}
 
 impl TargetCircuit for SuperCircuit {
-    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_RWS>;
+    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_RWS>;
 
     fn name() -> String {
         "super".to_string()

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Cursor;
 use std::path::PathBuf;
 
 use crate::circuit::{
@@ -14,7 +15,9 @@ use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
-use halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, ProvingKey, VerifyingKey};
+use halo2_proofs::plonk::{
+    create_proof, keygen_pk, keygen_pk2, keygen_vk, ProvingKey, VerifyingKey,
+};
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
 use halo2_proofs::poly::kzg::multiopen::ProverGWC;
@@ -59,6 +62,8 @@ pub struct TargetCircuitProof {
     pub proof: Vec<u8>,
     #[serde(with = "base64")]
     pub instance: Vec<u8>,
+    #[serde(with = "base64", default)]
+    pub vk: Vec<u8>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Default)]
@@ -138,9 +143,7 @@ impl Prover {
 
     fn init_pk<C: TargetCircuit>(&mut self, circuit: &<C as TargetCircuit>::Inner) {
         Self::tick(&format!("before init pk of {}", C::name()));
-        let vk = keygen_vk(&self.params, circuit)
-            .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()));
-        let pk = keygen_pk(&self.params, vk, circuit)
+        let pk = keygen_pk2(&self.params, circuit)
             .unwrap_or_else(|_| panic!("failed to generate {} pk", C::name()));
         self.target_circuit_pks.insert(C::name(), pk);
         Self::tick(&format!("after init pk of {}", C::name()));
@@ -211,10 +214,21 @@ impl Prover {
     ) -> anyhow::Result<ProvedCircuit> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);
-        debug_assert!(instances.is_empty(), "instance not supported yet");
+        //debug_assert!(instances.is_empty(), "instance not supported yet");
         let vk = match self.target_circuit_pks.get(&proof.name) {
             Some(pk) => pk.get_vk().clone(),
-            None => keygen_vk(&self.params, &C::empty()).unwrap(),
+            None => {
+                let allow_read_vk = false;
+                if allow_read_vk && !proof.vk.is_empty() {
+                    VerifyingKey::<G1Affine>::read::<_, C::Inner, Bn256, _>(
+                        &mut Cursor::new(&proof.vk),
+                        &self.params,
+                    )
+                    .unwrap()
+                } else {
+                    keygen_vk(&self.params, &C::empty()).unwrap()
+                }
+            }
         };
         if *OPT_MEM {
             Self::tick(&format!("before release pk of {}", C::name()));
@@ -352,6 +366,7 @@ impl Prover {
         };
         ///////////////////////////// build verifier circuit from block result done ///////////////////
         let n_instances = target_circuits.map(|i| vec![circuit_results[i].instance.clone()]);
+        log::debug!("n_instances {:?}", n_instances);
         let n_transcript = target_circuits.map(|i| vec![circuit_results[i].transcript.clone()]);
         let instances: [Halo2CircuitInstance<'_, Bn256>; CIRCUIT_NUM] =
             target_circuits.map(|i| Halo2CircuitInstance {
@@ -521,6 +536,7 @@ impl Prover {
             name: name.clone(),
             proof,
             instance: instance_bytes,
+            vk: serialize_vk(pk.get_vk()),
         };
         if !self.debug_dir.is_empty() {
             // write vk
