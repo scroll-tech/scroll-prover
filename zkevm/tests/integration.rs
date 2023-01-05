@@ -286,13 +286,13 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     init();
 
-    let block_trace = load_block_trace_for_test();
+    let (_, block_traces) = load_block_traces_for_test();
 
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof::<C>(&block_trace)
+        .create_target_circuit_proof_multi::<C>(&block_traces)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
@@ -314,8 +314,11 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
 fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     use glob::glob;
-    let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
-
+    let mut test_trace: String = read_env_var("TRACE_FILE", "".to_string());
+    if test_trace.is_empty() {
+        test_trace =
+            parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
+    }
     let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
         glob(&format!("{}/**/*.json", test_trace))
             .unwrap()
