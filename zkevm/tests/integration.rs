@@ -1,3 +1,4 @@
+use bus_mapping::circuit_input_builder::Block;
 use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
 use types::eth::BlockTrace;
@@ -13,16 +14,11 @@ use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 #[test]
 fn estimate_circuit_rows() {
-    use zkevm::{
-        circuit::{self, TargetCircuit, DEGREE},
-        utils::{load_or_create_params, load_or_create_seed},
-    };
+    use zkevm::circuit::{self, TargetCircuit};
 
     init();
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
 
-    let block_trace = [load_block_trace_for_test()];
+    let (_, block_trace) = load_block_traces_for_test();
 
     log::info!("estimating used rows for current block");
     log::info!(
@@ -79,12 +75,11 @@ fn test_hash_prove_verify() {
 }
 
 fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
-    trace_paths: &[String],
+    traces: &(Vec<String>, Vec<BlockTrace>),
 ) -> Vec<(String, String)> {
     let mut failed_cases = Vec::new();
-    for trace_path in trace_paths {
+    for (trace_path, block_trace) in traces.0.iter().zip(traces.1.iter()) {
         log::info!("test {} circuit with {}", C::name(), trace_path);
-        let block_trace = get_block_trace_from_file(trace_path);
         let full_height_mock_prove = true;
         let result = Prover::mock_prove_target_circuit::<C>(&block_trace, full_height_mock_prove);
         log::info!(
@@ -124,26 +119,17 @@ fn test_mock_prove_all_target_circuits() {
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
-    let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
-
-    let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
-        glob(&format!("{}/**/*.json", test_trace))
-            .unwrap()
-            .map(|p| p.unwrap().to_str().unwrap().to_string())
-            .collect()
-    } else {
-        vec![test_trace]
-    };
-    log::info!("test cases traces: {:?}", paths);
-    let paths = &paths;
+    let traces = load_block_traces_for_test();
     let mut failed_cases = Vec::new();
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(paths));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(paths));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(
+        &traces,
+    ));
+    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(&traces));
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<ZktrieCircuit>(
-        paths,
+        &traces,
     ));
     failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
-        paths,
+        &traces,
     ));
     assert_eq!(failed_cases, Vec::new());
 }
@@ -324,6 +310,26 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
+}
+
+fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
+    use glob::glob;
+    let test_trace: String = read_env_var("TEST_TRACE", "./tests/traces".to_string());
+
+    let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
+        glob(&format!("{}/**/*.json", test_trace))
+            .unwrap()
+            .map(|p| p.unwrap().to_str().unwrap().to_string())
+            .collect()
+    } else {
+        vec![test_trace]
+    };
+    log::info!("test cases traces: {:?}", paths);
+    let traces: Vec<_> = paths
+        .iter()
+        .map(|trace_path| get_block_trace_from_file(trace_path))
+        .collect();
+    (paths, traces)
 }
 
 fn load_block_trace_for_test() -> BlockTrace {

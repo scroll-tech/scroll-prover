@@ -207,13 +207,22 @@ fn trie_data_from_blocks<'d>(
     block_traces: impl IntoIterator<Item = &'d BlockTrace>,
 ) -> EthTrie<Fr> {
     let mut trie_data: EthTrie<Fr> = Default::default();
-    for block_trace in block_traces.into_iter() {
+    let mut total_tx_num = 0usize;
+    for (idx, block_trace) in block_traces.into_iter().enumerate() {
         let storage_ops: Vec<AccountOp<_>> = block_trace
             .mpt_witness
             .iter()
             .map(|tr| tr.try_into().unwrap())
             .collect();
         trie_data.add_ops(storage_ops);
+        total_tx_num += block_trace.execution_results.len();
+        log::debug!(
+            "after {}th block(tx num: {}), total tx num: {}, zktrie row num: {:?}",
+            idx,
+            block_trace.transactions.len(),
+            total_tx_num,
+            trie_data.use_rows()
+        );
     }
 
     trie_data
