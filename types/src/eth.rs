@@ -18,6 +18,11 @@ pub struct BlockTrace {
     pub mpt_witness: Vec<SMTTrace>,
 }
 
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+pub struct BlockTraceJsonRpcResult {
+    pub result: BlockTrace,
+}
+
 impl From<BlockTrace> for EthBlock {
     fn from(mut b: BlockTrace) -> Self {
         let mut txs = Vec::new();
