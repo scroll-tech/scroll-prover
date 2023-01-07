@@ -319,13 +319,13 @@ fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
         test_trace =
             parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
     }
-    let paths: Vec<String> = if std::fs::metadata(&test_trace).unwrap().is_dir() {
+    let paths: Vec<String> = if !std::fs::metadata(&test_trace).unwrap().is_dir() {
+        vec![test_trace]
+    } else {
         glob(&format!("{}/**/*.json", test_trace))
             .unwrap()
             .map(|p| p.unwrap().to_str().unwrap().to_string())
             .collect()
-    } else {
-        vec![test_trace]
     };
     log::info!("test cases traces: {:?}", paths);
     let traces: Vec<_> = paths
