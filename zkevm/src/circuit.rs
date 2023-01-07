@@ -190,7 +190,7 @@ impl TargetCircuit for StateCircuit {
 }
 
 fn mpt_rows() -> usize {
-    ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
+    ((1 << *DEGREE) - 10) / 10
 }
 
 fn trie_data_from_blocks<'d>(
