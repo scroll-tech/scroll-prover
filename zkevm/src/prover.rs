@@ -405,7 +405,11 @@ impl Prover {
                 &verify_circuit,
                 vec![verify_circuit_instances.clone()],
             )?;
-            if let Err(e) = prover.verify_par() {
+            if let Err(errs) = prover.verify_par() {
+                log::error!("err num: {}", errs.len());
+                for err in errs {
+                    log::error!("{}", err);
+                }
                 bail!("{:#?}", e);
             }
             log::info!("mock prove agg circuit done");
