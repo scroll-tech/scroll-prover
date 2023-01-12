@@ -57,14 +57,13 @@ pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    let chain_id = if let Some(tx_trace) = block_traces
-        .get(0)
-        .cloned()
-        .unwrap_or_default()
-        .transactions
-        .get(0)
-    {
-        tx_trace.chain_id
+    let chain_ids = block_traces
+        .iter()
+        .flat_map(|block_trace| block_trace.transactions.iter().map(|tx| tx.chain_id))
+        .collect::<Vec<U256>>();
+
+    let chain_id = if !chain_ids.is_empty() {
+        chain_ids[0]
     } else {
         0i16.into()
     };
