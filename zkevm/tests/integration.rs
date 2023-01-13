@@ -105,11 +105,11 @@ fn test_mock_prove_all_target_circuits_packing() {
 
     init();
     let block_traces = load_packing_traces();
+    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<SuperCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]

@@ -29,7 +29,7 @@ function check_same() {
 }
 function step1() {
 	RUST_LOG=debug GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=PACK cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.pack
-	#RUST_LOG=info GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=multi cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.multi
+	RUST_LOG=info GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=multi cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.multi
 	#RUST_LOG=info GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=nft cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.nft
 }
 

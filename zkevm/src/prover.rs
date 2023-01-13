@@ -407,10 +407,10 @@ impl Prover {
             )?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
-                for err in errs {
+                for err in &errs {
                     log::error!("{}", err);
                 }
-                bail!("{:#?}", e);
+                bail!("{:#?}", errs);
             }
             log::info!("mock prove agg circuit done");
         }
@@ -509,8 +509,8 @@ impl Prover {
         }
 
         if !self.target_circuit_pks.contains_key(&C::name()) {
-            //self.init_pk::<C>(&circuit);
-            self.init_pk::<C>(&C::empty());
+            self.init_pk::<C>(&circuit);
+            //self.init_pk::<C>(&C::empty());
         }
         let pk = &self.target_circuit_pks[&C::name()];
         create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
