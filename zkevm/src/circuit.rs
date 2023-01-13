@@ -190,9 +190,13 @@ impl TargetCircuit for StateCircuit {
     }
 }
 
-fn mpt_rows() -> usize {
-    ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
+fn mpt_rows2() -> (usize, usize) {
+   ((1 << *DEGREE) / 3, (1 <<*DEGREE) - 200)
 }
+
+//fn mpt_rows() -> usize {
+//   ((1 << *DEGREE) - 10) / <Fr as Hashable>::hash_block_size()
+//}
 
 fn trie_data_from_blocks<'d>(
     block_traces: impl IntoIterator<Item = &'d BlockTrace>,
@@ -220,7 +224,7 @@ impl TargetCircuit for ZktrieCircuit {
     }
     fn empty() -> Self::Inner {
         let dummy_trie: EthTrie<Fr> = Default::default();
-        let (circuit, _) = dummy_trie.circuits(mpt_rows());
+        let (circuit, _) = dummy_trie.circuits2(mpt_rows2());
         circuit
     }
 
@@ -230,10 +234,10 @@ impl TargetCircuit for ZktrieCircuit {
     {
         let trie_data = trie_data_from_blocks(block_traces);
         let (rows, _) = trie_data.use_rows();
-        if rows >= mpt_rows() {
+        if rows >= mpt_rows2().0 {
             bail!("mpt row num overflow: {}", rows);
         }
-        let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
+        let (mpt_circuit, _) = trie_data.circuits2(mpt_rows2());
         let instance = vec![];
         Ok((mpt_circuit, instance))
     }
@@ -242,7 +246,7 @@ impl TargetCircuit for ZktrieCircuit {
     where
         Self: Sized,
     {
-        let (mpt_circuit, _) = trie_data_from_blocks(Some(block_trace)).circuits(mpt_rows());
+        let (mpt_circuit, _) = trie_data_from_blocks(Some(block_trace)).circuits2(mpt_rows2());
         let instance = vec![];
         Ok((mpt_circuit, instance))
     }
@@ -270,7 +274,7 @@ impl TargetCircuit for PoseidonCircuit {
     }
     fn empty() -> Self::Inner {
         let dummy_trie: EthTrie<Fr> = Default::default();
-        let (_, circuit) = dummy_trie.circuits(mpt_rows());
+        let (_, circuit) = dummy_trie.circuits2(mpt_rows2());
         circuit
     }
 
@@ -281,7 +285,7 @@ impl TargetCircuit for PoseidonCircuit {
         let trie_data = trie_data_from_blocks(block_traces);
         //        let (_, rows) = trie_data.use_rows();
         //        log::info!("poseidon use rows {}", rows);
-        let (_, circuit) = trie_data.circuits(mpt_rows());
+        let (_, circuit) = trie_data.circuits2(mpt_rows2());
         let instance = vec![];
         Ok((circuit, instance))
     }
@@ -290,7 +294,7 @@ impl TargetCircuit for PoseidonCircuit {
     where
         Self: Sized,
     {
-        let (_, circuit) = trie_data_from_blocks(Some(block_trace)).circuits(mpt_rows());
+        let (_, circuit) = trie_data_from_blocks(Some(block_trace)).circuits2(mpt_rows2());
         let instance = vec![];
         Ok((circuit, instance))
     }
