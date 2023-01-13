@@ -1,3 +1,4 @@
+use anyhow::bail;
 use bus_mapping::operation::OperationContainer;
 
 use halo2_proofs::arithmetic::FieldExt;
@@ -228,8 +229,10 @@ impl TargetCircuit for ZktrieCircuit {
         Self: Sized,
     {
         let trie_data = trie_data_from_blocks(block_traces);
-        //        let (rows, _) = trie_data.use_rows();
-        //        log::info!("zktrie use rows {}", rows);
+        let (rows, _) = trie_data.use_rows();
+        if rows >= mpt_rows() {
+            bail!("mpt row num overflow: {}", rows);
+        }
         let (mpt_circuit, _) = trie_data.circuits(mpt_rows());
         let instance = vec![];
         Ok((mpt_circuit, instance))
