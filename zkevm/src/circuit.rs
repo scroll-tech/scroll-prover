@@ -191,7 +191,10 @@ impl TargetCircuit for StateCircuit {
 }
 
 fn mpt_rows2() -> (usize, usize) {
-   ((1 << *DEGREE) / 3, (1 <<*DEGREE) - 200)
+    (
+        (1 << *DEGREE) / 3,
+        ((1 << *DEGREE) - 200) / <Fr as Hashable>::hash_block_size(),
+    )
 }
 
 //fn mpt_rows() -> usize {
@@ -283,8 +286,8 @@ impl TargetCircuit for PoseidonCircuit {
         Self: Sized,
     {
         let trie_data = trie_data_from_blocks(block_traces);
-        //        let (_, rows) = trie_data.use_rows();
-        //        log::info!("poseidon use rows {}", rows);
+        let (_, rows) = trie_data.use_rows();
+        log::info!("poseidon use rows {}", rows);
         let (_, circuit) = trie_data.circuits2(mpt_rows2());
         let instance = vec![];
         Ok((circuit, instance))

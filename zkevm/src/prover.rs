@@ -282,6 +282,7 @@ impl Prover {
         let hash_table_commitments_len = 3;
         let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
         let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
+        /*
         connect_table(
             poseidon_circuit_idx,
             hash_table_start_poseidon,
@@ -289,6 +290,7 @@ impl Prover {
             hash_table_start_mpt,
             hash_table_commitments_len,
         );
+        */
 
         coherent
     }
