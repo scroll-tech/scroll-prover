@@ -509,8 +509,8 @@ impl Prover {
         }
 
         if !self.target_circuit_pks.contains_key(&C::name()) {
-            self.init_pk::<C>(&circuit);
-            //self.init_pk::<C>(&C::empty());
+            //self.init_pk::<C>(&circuit);
+            self.init_pk::<C>(&C::empty());
         }
         let pk = &self.target_circuit_pks[&C::name()];
         create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
