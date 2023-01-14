@@ -17,14 +17,16 @@ pub fn init() {
     log::info!("git version {}", GIT_VERSION);
 }
 
-pub fn load_packing_traces() -> Vec<types::eth::BlockTrace> {
+pub fn load_packing_traces() -> (Vec<String>, Vec<types::eth::BlockTrace>) {
     let mut block_traces = Vec::new();
+    let mut file_names = Vec::new();
     for block_number in 1..=10 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
+        file_names.push(trace_path);
         let block_trace = get_block_trace_from_file(trace_path);
         block_traces.push(block_trace);
     }
-    block_traces
+    (file_names, block_traces)
 }
 
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {

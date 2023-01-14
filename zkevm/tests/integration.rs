@@ -1,3 +1,5 @@
+use std::vec;
+
 use bus_mapping::circuit_input_builder::Block;
 use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
@@ -104,7 +106,7 @@ fn test_mock_prove_all_target_circuits_packing() {
     use crate::test_util::load_packing_traces;
 
     init();
-    let block_traces = load_packing_traces();
+    let block_traces = load_packing_traces().1;
     Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_traces, true).unwrap();
     Prover::mock_prove_target_circuit_multi::<SuperCircuit>(&block_traces, true).unwrap();
@@ -314,18 +316,24 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
 fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     use glob::glob;
-    let mut test_trace: String = read_env_var("TRACE_FILE", "".to_string());
-    if test_trace.is_empty() {
-        test_trace =
-            parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
-    }
-    let paths: Vec<String> = if !std::fs::metadata(&test_trace).unwrap().is_dir() {
-        vec![test_trace]
+    let test_trace: String = read_env_var("TRACE_FILE", "".to_string());
+    let paths: Vec<String> = if test_trace.is_empty() {
+        // use mode
+        let mode = read_env_var("MODE", "multiple".to_string());
+        if mode == "PACK" {
+            load_packing_traces().0
+        } else {
+            vec![parse_trace_path_from_mode(&mode).to_string()]
+        }
     } else {
-        glob(&format!("{}/**/*.json", test_trace))
-            .unwrap()
-            .map(|p| p.unwrap().to_str().unwrap().to_string())
-            .collect()
+        if !std::fs::metadata(&test_trace).unwrap().is_dir() {
+            vec![test_trace]
+        } else {
+            glob(&format!("{}/**/*.json", test_trace))
+                .unwrap()
+                .map(|p| p.unwrap().to_str().unwrap().to_string())
+                .collect()
+        }
     };
     log::info!("test cases traces: {:?}", paths);
     let traces: Vec<_> = paths

@@ -55,7 +55,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
         ]
     } else {
         let block_traces = if mode == "PACK" {
-            load_packing_traces()
+            load_packing_traces().1
         } else {
             let trace_path = parse_trace_path_from_mode(mode);
             vec![get_block_trace_from_file(trace_path)]
