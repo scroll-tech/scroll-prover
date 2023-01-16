@@ -19,6 +19,8 @@ use zkevm::{io::*, prover::Prover};
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
+pub static PACK_DIR: Lazy<String> = Lazy::new(|| read_env_var("PACK_DIR", "tests/traces/bridge/"));
+
 fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
@@ -52,12 +54,34 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     } else {
         let block_traces = if mode == "PACK" {
             let mut block_traces = Vec::new();
-            for block_number in 1..=15 {
-                let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-                let block_trace = get_block_trace_from_file(trace_path);
-                block_traces.push(block_trace);
-            }
-            block_traces
+            let pack_dir = *PACK_DIR;
+            let file_names: Vec<String> = glob(&format!("{}/**/*.json", pack_dir))
+                .unwrap()
+                .map(|p| p.unwrap().to_str().unwrap().to_string())
+                .collect();
+            let mut names_and_traces = file_names
+                .into_iter()
+                .map(|trace_path| {
+                    let trace: BlockTrace = get_block_trace_from_file(trace_path);
+                    (
+                        trace_path.clone(),
+                        trace.clone(),
+                        trace.header.number.unwrap().as_u64(),
+                    )
+                })
+                .collect::<Vec<_>>();
+            names_and_traces.sort_by_key(|(f, t, b)| b);
+            log::info!(
+                "test packing with {:?}",
+                names_and_traces
+                    .iter()
+                    .map(|(f, _, _)| f.clone())
+                    .collect::<Vec<String>>()
+            );
+            names_and_traces
+                .iter()
+                .map(|(_, t, _)| f.clone())
+                .collect::<Vec<_>>()
         } else {
             let trace_path = parse_trace_path_from_mode(mode);
             vec![get_block_trace_from_file(trace_path)]
