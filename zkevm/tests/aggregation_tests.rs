@@ -16,10 +16,17 @@ use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
+use types::eth::BlockTrace;
+
+use zkevm::utils::read_env_var;
+use glob::glob;
+
 mod test_util;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
-pub static PACK_DIR: Lazy<String> = Lazy::new(|| read_env_var("PACK_DIR", "tests/traces/bridge/"));
+use once_cell::sync::Lazy;
+
+pub static PACK_DIR: Lazy<String> = Lazy::new(|| read_env_var("PACK_DIR", "tests/traces/bridge/".to_string()));
 
 fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
@@ -53,8 +60,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
         ]
     } else {
         let block_traces = if mode == "PACK" {
-            let mut block_traces = Vec::new();
-            let pack_dir = *PACK_DIR;
+            let pack_dir = &*PACK_DIR;
             let file_names: Vec<String> = glob(&format!("{}/**/*.json", pack_dir))
                 .unwrap()
                 .map(|p| p.unwrap().to_str().unwrap().to_string())
@@ -62,7 +68,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
             let mut names_and_traces = file_names
                 .into_iter()
                 .map(|trace_path| {
-                    let trace: BlockTrace = get_block_trace_from_file(trace_path);
+                    let trace: BlockTrace = get_block_trace_from_file(trace_path.clone());
                     (
                         trace_path.clone(),
                         trace.clone(),
@@ -70,7 +76,8 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
                     )
                 })
                 .collect::<Vec<_>>();
-            names_and_traces.sort_by_key(|(f, t, b)| b);
+                names_and_traces.sort_by(|a, b| a.2.cmp(&b.2));
+//            names_and_traces.sort_by_key(|(f, t, b)| b);
             log::info!(
                 "test packing with {:?}",
                 names_and_traces
@@ -80,7 +87,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
             );
             names_and_traces
                 .iter()
-                .map(|(_, t, _)| f.clone())
+                .map(|(_, t, _)| t.clone())
                 .collect::<Vec<_>>()
         } else {
             let trace_path = parse_trace_path_from_mode(mode);

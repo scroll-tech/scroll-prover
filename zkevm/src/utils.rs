@@ -10,7 +10,7 @@ use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use types::eth::BlockTrace;
+use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -124,10 +124,24 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
 /// get a block-result from file
 pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut buffer = Vec::new();
-    let mut f = File::open(path).unwrap();
+    let mut f = File::open(&path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
-    serde_json::from_slice::<BlockTrace>(&buffer).unwrap()
+
+serde_json::from_slice::<BlockTrace>(&buffer).unwrap_or_else(|e1| {
+        serde_json::from_slice::<BlockTraceJsonRpcResult>(&buffer)
+            .map_err(|e2| {
+                panic!(
+                    "unable to load BlockTrace from {:?}, {:?}, {:?}",
+                    path.as_ref(),
+                    e1,
+                    e2
+                )
+            })
+            .unwrap()
+            .result
+    })
+
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {
