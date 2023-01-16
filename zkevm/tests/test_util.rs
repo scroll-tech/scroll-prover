@@ -22,7 +22,7 @@ pub fn load_packing_traces() -> (Vec<String>, Vec<types::eth::BlockTrace>) {
     let mut file_names = Vec::new();
     for block_number in 1..=10 {
         let trace_path = format!("tests/traces/bridge/{:02}.json", block_number);
-        file_names.push(trace_path);
+        file_names.push(trace_path.clone());
         let block_trace = get_block_trace_from_file(trace_path);
         block_traces.push(block_trace);
     }

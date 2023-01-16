@@ -468,8 +468,12 @@ impl Prover {
                     bail!("{:?}", e);
                 }
             }
-        } else if let Err(e) = prover.verify_par() {
-            bail!("{:?}", e);
+        } else if let Err(errs) = prover.verify_par() {
+            log::error!("err num: {}", errs.len());
+            for err in &errs {
+                log::error!("{}", err);
+            }
+            bail!("{:#?}", errs);
         }
         log::info!("mock prove {} done", C::name());
         Ok(())
@@ -502,8 +506,12 @@ impl Prover {
         );
         if *MOCK_PROVE {
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
-            if let Err(e) = prover.verify_par() {
-                bail!("{:?}", e);
+            if let Err(errs) = prover.verify_par() {
+                log::error!("err num: {}", errs.len());
+                for err in &errs {
+                    log::error!("{}", err);
+                }
+                bail!("{:#?}", errs);
             }
             log::info!("mock prove {} done", C::name());
         }

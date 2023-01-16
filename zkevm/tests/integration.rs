@@ -12,6 +12,7 @@ use zkevm::{
 };
 
 mod test_util;
+use crate::test_util::load_packing_traces;
 use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
 
 #[test]

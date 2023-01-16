@@ -17,6 +17,7 @@ use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use halo2_proofs::arithmetic::FieldExt;
 use mpt_circuits::hash::Hashable;
+use mpt_zktrie::state::ZktrieState;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
 
 use anyhow::anyhow;
@@ -130,6 +131,22 @@ pub fn block_traces_to_witness_block(
         })
         .collect();
 
+    // FIXME: multi block?
+    let trace = block_traces[0].storage_trace.clone();
+    let zktrie_state = ZktrieState::from_trace(
+        trace.root_before,
+        trace
+            .proofs
+            .unwrap()
+            .iter()
+            .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref))),
+        trace.storage_proofs.iter().flat_map(|(k, kv_map)| {
+            kv_map
+                .iter()
+                .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
+        }),
+    )?;
+    witness_block.mpt_state = Some(zktrie_state);
     Ok(witness_block)
 }
 
