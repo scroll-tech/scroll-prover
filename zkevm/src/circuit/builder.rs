@@ -14,7 +14,6 @@ use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
 
-
 //use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
@@ -24,8 +23,7 @@ use itertools::Itertools;
 use std::time::Instant;
 
 const SUB_CIRCUIT_NAMES: [&str; 11] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
-    "poseidon", "mpt",
+    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "poseidon", "mpt",
 ];
 
 // TODO: optimize it later
@@ -149,13 +147,13 @@ pub fn block_traces_to_witness_block(
                         .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
                 })
         }),
-        block_traces.iter().rev().flat_map(|block|
+        block_traces.iter().rev().flat_map(|block| {
             block
                 .storage_trace
                 .deletion_proofs
                 .iter()
                 .map(Bytes::as_ref)
-        ),
+        }),
     )?;
 
     let chain_ids = block_traces
@@ -173,10 +171,7 @@ pub fn block_traces_to_witness_block(
 
     let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
     if !zero_coinbase_exist {
-        state_db.set_account(
-            &Default::default(),
-            Account::zero(),
-        );
+        state_db.set_account(&Default::default(), Account::zero());
     }
 
     let code_db = build_codedb(&state_db, block_traces)?;
@@ -263,7 +258,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-/* 
+/*
 #[derive(Debug, Clone)]
 struct PoseidonCodeHash {
     bytes_in_field: usize,
