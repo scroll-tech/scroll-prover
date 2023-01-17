@@ -1,5 +1,4 @@
 use anyhow::bail;
-use bus_mapping::operation::OperationContainer;
 
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;

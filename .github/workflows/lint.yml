@@ -23,7 +23,7 @@ jobs:
         with:
           profile: minimal
           toolchain: nightly-2022-07-26
-          override: true
+          override: false
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run cargo fmt
@@ -40,7 +40,7 @@ jobs:
         with:
           profile: minimal
           toolchain: nightly-2022-07-26
-          override: true
+          override: false
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run cargo clippy

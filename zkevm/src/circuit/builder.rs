@@ -132,14 +132,17 @@ pub fn block_traces_to_witness_block(
         .collect();
 
     // FIXME: multi block?
-    let trace = block_traces[0].storage_trace.clone();
+    let trace = block_traces
+        .get(0)
+        .map(|t| t.storage_trace.clone())
+        .unwrap_or_default();
     let zktrie_state = ZktrieState::from_trace(
         trace.root_before,
-        trace
-            .proofs
-            .unwrap()
-            .iter()
-            .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref))),
+        trace.proofs.iter().flat_map(|proofs| {
+            proofs
+                .iter()
+                .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
+        }),
         trace.storage_proofs.iter().flat_map(|(k, kv_map)| {
             kv_map
                 .iter()
