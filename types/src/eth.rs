@@ -205,6 +205,10 @@ pub struct AccountProofWrapper {
     pub balance: Option<U256>,
     #[serde(rename = "codeHash")]
     pub code_hash: Option<H256>,
+    #[serde(rename = "poseidonCodeHash")]
+    pub poseidon_code_hash: Option<H256>,
+    #[serde(rename = "CodeSize")]
+    pub code_size: Option<u64>,
     pub proof: Option<Vec<Bytes>>,
     pub storage: Option<StorageProofWrapper>,
 }
