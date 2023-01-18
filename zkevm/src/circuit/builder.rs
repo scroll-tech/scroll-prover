@@ -58,6 +58,38 @@ pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
+    let old_root = if block_traces.is_empty() {
+        eth_types::Hash::zero()
+    } else {
+        block_traces[0].storage_trace.root_before
+    };
+    let zktrie_state = ZktrieState::from_trace(
+        old_root,
+        block_traces.iter().rev().flat_map(|block| {
+            block
+                .storage_trace
+                .proofs
+                .iter()
+                .map(|kv_map| {
+                    kv_map
+                        .iter()
+                        .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
+                })
+                .flatten()
+        }),
+        block_traces.iter().rev().flat_map(|block| {
+            block
+                .storage_trace
+                .storage_proofs
+                .iter()
+                .flat_map(|(k, kv_map)| {
+                    kv_map
+                        .iter()
+                        .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
+                })
+        }),
+    )?;
+
     let chain_ids = block_traces
         .iter()
         .flat_map(|block_trace| block_trace.transactions.iter().map(|tx| tx.chain_id))
@@ -69,7 +101,22 @@ pub fn block_traces_to_witness_block(
         0i16.into()
     };
 
-    let (state_db, code_db) = build_statedb_and_codedb(block_traces)?;
+    let mut state_db = zktrie_state.state().clone();
+    let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
+    if !zero_coinbase_exist {
+        state_db.set_account(
+            &Default::default(),
+            Account {
+                nonce: Default::default(),
+                balance: Default::default(),
+                storage: HashMap::new(),
+                // FIXME: 0 or keccak(nil)?
+                code_hash: Default::default(),
+            },
+        );
+    }
+
+    let (_state_db_legacy, code_db) = build_statedb_and_codedb(block_traces)?;
     let circuit_params = CircuitsParams {
         max_rws: MAX_RWS,
         max_txs: MAX_TXS,
@@ -80,7 +127,7 @@ pub fn block_traces_to_witness_block(
     };
     let mut builder = CircuitInputBuilder::new_from_headers(
         circuit_params,
-        state_db,
+        state_db.clone(),
         code_db,
         Default::default(),
     );
@@ -108,6 +155,7 @@ pub fn block_traces_to_witness_block(
     );
 
     // hack bytecodes table in witness
+    // FIXME: need to include the whole codedb?
     witness_block.bytecodes = builder
         .block
         .txs()
@@ -131,24 +179,6 @@ pub fn block_traces_to_witness_block(
         })
         .collect();
 
-    // FIXME: multi block?
-    let trace = block_traces
-        .get(0)
-        .map(|t| t.storage_trace.clone())
-        .unwrap_or_default();
-    let zktrie_state = ZktrieState::from_trace(
-        trace.root_before,
-        trace.proofs.iter().flat_map(|proofs| {
-            proofs
-                .iter()
-                .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
-        }),
-        trace.storage_proofs.iter().flat_map(|(k, kv_map)| {
-            kv_map
-                .iter()
-                .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
-        }),
-    )?;
     witness_block.mpt_state = Some(zktrie_state);
     Ok(witness_block)
 }

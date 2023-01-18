@@ -1,6 +1,5 @@
 use anyhow::bail;
 
-use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::plonk::Circuit as Halo2Circuit;
 

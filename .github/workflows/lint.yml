@@ -22,8 +22,8 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2022-07-26
-          override: false
+          toolchain: nightly-2022-09-18
+          override: true
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run cargo fmt
@@ -39,8 +39,8 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2022-07-26
-          override: false
+          toolchain: nightly-2022-09-18
+          override: true
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run cargo clippy
