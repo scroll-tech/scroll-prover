@@ -66,16 +66,11 @@ pub fn block_traces_to_witness_block(
     let zktrie_state = ZktrieState::from_trace(
         old_root,
         block_traces.iter().rev().flat_map(|block| {
-            block
-                .storage_trace
-                .proofs
-                .iter()
-                .map(|kv_map| {
-                    kv_map
-                        .iter()
-                        .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
-                })
-                .flatten()
+            block.storage_trace.proofs.iter().flat_map(|kv_map| {
+                kv_map
+                    .iter()
+                    .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
+            })
         }),
         block_traces.iter().rev().flat_map(|block| {
             block

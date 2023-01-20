@@ -84,7 +84,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     let mut params_buf = Vec::new();
     params.write(&mut params_buf)?;
 
-    let mut params_file = File::create(&params_path)?;
+    let mut params_file = File::create(params_path)?;
     params_file.write_all(&params_buf[..])?;
     log::info!("create params successfully!");
 
@@ -116,7 +116,7 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
         0xe5,
     ];
 
-    let mut seed_file = File::create(&seed_path)?;
+    let mut seed_file = File::create(seed_path)?;
     seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
     Ok(RNG_SEED_BYTES)
 }

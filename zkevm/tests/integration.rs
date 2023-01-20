@@ -1,6 +1,5 @@
 use std::vec;
 
-use bus_mapping::circuit_input_builder::Block;
 use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
 use types::eth::BlockTrace;
@@ -84,7 +83,7 @@ fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
     for (trace_path, block_trace) in traces.0.iter().zip(traces.1.iter()) {
         log::info!("test {} circuit with {}", C::name(), trace_path);
         let full_height_mock_prove = true;
-        let result = Prover::mock_prove_target_circuit::<C>(&block_trace, full_height_mock_prove);
+        let result = Prover::mock_prove_target_circuit::<C>(block_trace, full_height_mock_prove);
         log::info!(
             "test {} circuit with {} result: {:?}",
             C::name(),
@@ -118,7 +117,6 @@ fn test_mock_prove_all_target_circuits_packing() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_all_target_circuits() {
-    use glob::glob;
     use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
 
     init();
@@ -239,7 +237,7 @@ fn test_state_evm_connect() {
     log::info!("Same commitment! Test passes!");
 }
 
-//#[cfg(feature = "prove_verify")]
+#[cfg(feature = "prove_verify")]
 #[test]
 fn test_vk_same() {
     init();
@@ -326,21 +324,16 @@ fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
         } else {
             vec![parse_trace_path_from_mode(&mode).to_string()]
         }
+    } else if !std::fs::metadata(&test_trace).unwrap().is_dir() {
+        vec![test_trace]
     } else {
-        if !std::fs::metadata(&test_trace).unwrap().is_dir() {
-            vec![test_trace]
-        } else {
-            glob(&format!("{}/**/*.json", test_trace))
-                .unwrap()
-                .map(|p| p.unwrap().to_str().unwrap().to_string())
-                .collect()
-        }
+        glob(&format!("{}/**/*.json", test_trace))
+            .unwrap()
+            .map(|p| p.unwrap().to_str().unwrap().to_string())
+            .collect()
     };
     log::info!("test cases traces: {:?}", paths);
-    let traces: Vec<_> = paths
-        .iter()
-        .map(|trace_path| get_block_trace_from_file(trace_path))
-        .collect();
+    let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
     (paths, traces)
 }
 
