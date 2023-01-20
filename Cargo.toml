@@ -6,7 +6,8 @@ members = [
 ]
 
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-1220" }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-1220"  }
+#halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", rev ="1a92fa80d277b93c55ddf191bedf7eb67307beda" }
 #substrate = { git = "https://github.com/paritytech/substrate.git", rev = "42f38dbd961342cd965154858e50f0253b0b7c0a"}
 
 #[replace]

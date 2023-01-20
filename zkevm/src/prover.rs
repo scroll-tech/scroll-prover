@@ -40,8 +40,8 @@ use types::eth::BlockTrace;
 #[cfg(target_os = "linux")]
 extern crate procfs;
 
-pub const ENABLE_COHERENT: bool = true;
-pub const CIRCUIT_NUM: usize = 3;
+pub const ENABLE_COHERENT: bool = false;
+pub const CIRCUIT_NUM: usize = 1;
 
 //const super_circuit_idx: usize = 0;
 //const evm_circuit_idx: usize = 0;
