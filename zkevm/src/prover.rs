@@ -505,6 +505,7 @@ impl Prover {
             block_traces.len()
         );
         if *MOCK_PROVE {
+            log::info!("mock prove {} start", C::name());
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
