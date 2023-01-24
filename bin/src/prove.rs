@@ -11,7 +11,7 @@ use std::time::Instant;
 use zkevm::{
     circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
     prover::Prover,
-    utils::{get_block_result_from_file, load_or_create_params, load_or_create_seed},
+    utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
 };
 
 #[derive(Parser, Debug)]
@@ -61,13 +61,13 @@ fn main() {
         for entry in fs::read_dir(trace_path).unwrap() {
             let path = entry.unwrap().path();
             if path.is_file() && path.to_str().unwrap().ends_with(".json") {
-                let block_result = get_block_result_from_file(path.to_str().unwrap());
-                traces.insert(path.file_stem().unwrap().to_os_string(), block_result);
+                let block_trace = get_block_trace_from_file(path.to_str().unwrap());
+                traces.insert(path.file_stem().unwrap().to_os_string(), block_trace);
             }
         }
     } else {
-        let block_result = get_block_result_from_file(trace_path.to_str().unwrap());
-        traces.insert(trace_path.file_stem().unwrap().to_os_string(), block_result);
+        let block_trace = get_block_trace_from_file(trace_path.to_str().unwrap());
+        traces.insert(trace_path.file_stem().unwrap().to_os_string(), block_trace);
     }
 
     let outer_now = Instant::now();
@@ -81,7 +81,7 @@ fn main() {
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 
@@ -100,7 +100,7 @@ fn main() {
                 .expect("cannot generate state_proof");
             info!(
                 "finish generating state proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 
@@ -119,7 +119,7 @@ fn main() {
                 .expect("cannot generate agg_proof");
             info!(
                 "finish generating agg proof of {}, elapsed: {:?}",
-                &trace.block_trace.hash,
+                &trace.header.hash.unwrap(),
                 now.elapsed()
             );
 

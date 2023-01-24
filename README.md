@@ -1,6 +1,6 @@
-# scroll-common
-[![Unit Test](https://github.com/scroll-tech/common-rs/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/common-rs/actions/workflows/unit_test.yml)
-![issues](https://img.shields.io/github/issues/scroll-tech/common-rs)
+# scroll-zkevm
+[![Unit Test](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml)
+![issues](https://img.shields.io/github/issues/scroll-tech/scroll-zkevm)
 
 Scroll common rust crates.
 
@@ -22,7 +22,7 @@ Prove
 ```shell
 cargo build --release --bin prove
 
-./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/trace-multiple-erc20.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
+./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/erc20/multiple.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
 ```
 
 ## Test
@@ -44,3 +44,12 @@ By default, it run the test for a trace corresponding to a block containing mult
 + `MODE=native` for a block containing 1 native ETH transfer tx.
 + `MODE=greeter` for a block containing 1 `Greeter` contract `set_value` call tx.
 + `MODE=empty` for an empty block.
+
+## License
+
+Licensed under either of
+
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.

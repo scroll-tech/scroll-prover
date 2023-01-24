@@ -6,12 +6,11 @@ use halo2_proofs::halo2curves::FieldExt;
 use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;
-use serde::{Deserialize, Serialize};
 use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use types::eth::BlockResult;
+use types::eth::BlockTrace;
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -123,19 +122,12 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
 }
 
 /// get a block-result from file
-pub fn get_block_result_from_file<P: AsRef<Path>>(path: P) -> BlockResult {
+pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut buffer = Vec::new();
     let mut f = File::open(path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
-    #[derive(Deserialize, Serialize, Default)]
-    struct RpcJson {
-        result: BlockResult,
-    }
-
-    let j = serde_json::from_slice::<RpcJson>(&buffer).unwrap();
-
-    j.result
+    serde_json::from_slice::<BlockTrace>(&buffer).unwrap()
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {
