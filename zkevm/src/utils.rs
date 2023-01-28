@@ -19,7 +19,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
     match metadata(params_dir) {
         Ok(md) => {
             if md.is_file() {
-                panic!("{} should be folder", params_dir);
+                panic!("{params_dir} should be folder");
             }
         }
         Err(_) => {
@@ -28,7 +28,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
         }
     };
 
-    let params_path = format!("{}/params{}", params_dir, degree);
+    let params_path = format!("{params_dir}/params{degree}");
     log::info!("load_or_create_params {}", params_path);
     if Path::new(&params_path).exists() {
         match load_params(&params_path, degree) {
@@ -46,11 +46,11 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
-        format!("{}/params{}", params_dir, degree)
+        format!("{params_dir}/params{degree}")
     } else {
         params_dir.to_string()
     };
-    let f = File::open(&params_path)?;
+    let f = File::open(params_path)?;
 
     // check params file length:
     //   len: 4 bytes

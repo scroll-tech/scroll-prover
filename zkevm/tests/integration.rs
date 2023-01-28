@@ -327,7 +327,7 @@ fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     } else if !std::fs::metadata(&test_trace).unwrap().is_dir() {
         vec![test_trace]
     } else {
-        glob(&format!("{}/**/*.json", test_trace))
+        glob(&format!("{test_trace}/**/*.json"))
             .unwrap()
             .map(|p| p.unwrap().to_str().unwrap().to_string())
             .collect()

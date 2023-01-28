@@ -174,13 +174,13 @@ mod tests {
         let proofs = s_trace.proofs.as_ref().unwrap();
         for (_, proof) in proofs.iter() {
             let proof: AccountProof = proof.as_slice().try_into().unwrap();
-            println!("proof: {:?}", proof);
+            println!("proof: {proof:?}");
         }
 
         for (_, s_map) in s_trace.storage_proofs.iter() {
             for (k, val) in s_map {
                 let val_proof: StorageProof = val.as_slice().try_into().unwrap();
-                println!("k: {}, v: {:?}", k, val_proof);
+                println!("k: {k}, v: {val_proof:?}");
             }
         }
     }
@@ -241,13 +241,13 @@ mod tests {
         let proofs = s_trace.proofs.as_ref().unwrap();
         for (_, proof) in proofs.iter() {
             let proof: AccountProof = proof.as_slice().try_into().unwrap();
-            println!("proof: {:?}", proof);
+            println!("proof: {proof:?}");
         }
 
         for (_, s_map) in s_trace.storage_proofs.iter() {
             for (k, val) in s_map {
                 let val_proof: StorageProof = val.as_slice().try_into().unwrap();
-                println!("k: {}, v: {:?}", k, val_proof);
+                println!("k: {k}, v: {val_proof:?}");
             }
         }
     }

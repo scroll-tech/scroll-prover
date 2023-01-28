@@ -30,7 +30,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     prover.debug_dir = output_dir.to_string();
 
     // auto load target proofs
-    let load = Path::new(&format!("{}/zktrie_proof.json", output_dir)).exists();
+    let load = Path::new(&format!("{output_dir}/zktrie_proof.json")).exists();
     let circuit_results: Vec<ProvedCircuit> = if load {
         let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
@@ -54,7 +54,7 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
                 .unwrap(),
         ]
     } else {
-        let block_traces = if mode == "PACK" {
+        let block_traces = if mode.to_lowercase() == "pack" {
             load_packing_traces().1
         } else {
             let trace_path = parse_trace_path_from_mode(mode);
@@ -92,7 +92,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let load_full = true;
     let (vk, proof, instance) = if load_full {
-        let file = fs::File::open(&format!("{}/full_proof.data", dir)).unwrap();
+        let file = fs::File::open(format!("{dir}/full_proof.data")).unwrap();
         let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
         (agg_proof.vk, agg_proof.proof, agg_proof.instance)
     } else {

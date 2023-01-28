@@ -137,7 +137,7 @@ pub fn block_traces_to_witness_block(
         // TODO: Get the history_hashes.
         let mut header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
         // override zeroed minder field with additional "coinbase" field in blocktrace
-        if let Some(address) = block_trace.coinbase.address{
+        if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
         }
         builder.block.headers.insert(header.number.as_u64(), header);
@@ -191,7 +191,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     let bytecode_len = stripped.len() as u64;
     if !bytecode_len.is_even() {
-        stripped = format!("0{}", stripped);
+        stripped = format!("0{stripped}");
     }
 
     hex::decode(stripped).map_err(|e| e.into())

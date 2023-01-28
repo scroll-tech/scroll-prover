@@ -553,8 +553,7 @@ impl Prover {
         };
         if !self.debug_dir.is_empty() {
             // write vk
-            let mut fd =
-                std::fs::File::create(&format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
+            let mut fd = std::fs::File::create(format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
             pk.get_vk().write(&mut fd).unwrap();
             drop(fd);
 
@@ -562,7 +561,7 @@ impl Prover {
             //let mut folder = PathBuf::from_str(&self.debug_dir).unwrap();
             //write_file(&mut folder, &format!("{}.proof", name), &proof);
             let output_file = format!("{}/{}_proof.json", self.debug_dir, name);
-            let mut fd = std::fs::File::create(&output_file).unwrap();
+            let mut fd = std::fs::File::create(output_file).unwrap();
             serde_json::to_writer_pretty(&mut fd, &target_proof).unwrap();
         }
         Ok(target_proof)
