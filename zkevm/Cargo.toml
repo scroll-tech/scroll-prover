@@ -18,11 +18,11 @@ sha2 ="0.10.2"
 #halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10", features = ["profile"] }
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10", features = ["phase-check"] }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","zktrie"] }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220", default-features = false, features = ["test","zktrie"] }
 #zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","zktrie", "onephase"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-dev-1220" }
 
 #bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git",  rev="5e19e90" }
 #zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git",  default-features = false, features = ["test","zktrie"], rev="5e19e90" }
