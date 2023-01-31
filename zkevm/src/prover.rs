@@ -144,7 +144,7 @@ impl Prover {
     fn init_pk<C: TargetCircuit>(&mut self, circuit: &<C as TargetCircuit>::Inner) {
         Self::tick(&format!("before init pk of {}", C::name()));
         let pk = keygen_pk2(&self.params, circuit)
-            .unwrap_or_else(|_| panic!("failed to generate {} pk", C::name()));
+            .unwrap_or_else(|e| panic!("failed to generate {} pk: {:?}", C::name(), e));
         self.target_circuit_pks.insert(C::name(), pk);
         Self::tick(&format!("after init pk of {}", C::name()));
     }

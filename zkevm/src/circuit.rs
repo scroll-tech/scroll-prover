@@ -70,7 +70,7 @@ pub trait TargetCircuit {
 pub struct SuperCircuit {}
 
 impl TargetCircuit for SuperCircuit {
-    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_RWS>;
+    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_RWS, MAX_RWS>;
 
     fn name() -> String {
         "super".to_string()

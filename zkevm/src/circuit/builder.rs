@@ -1,26 +1,23 @@
-use bus_mapping::circuit_input_builder::{BlockHead, CircuitInputBuilder, CircuitsParams};
-
+use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
+use crate::circuit::{MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
+use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
 use eth_types::{ToAddress, Word};
 use ethers_core::types::{Address, Bytes, U256};
-
-use halo2_proofs::halo2curves::bn256::Fr;
-
-use is_even::IsEven;
-
-use crate::circuit::{MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
-
-use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
-use std::collections::HashMap;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
-use halo2_proofs::arithmetic::FieldExt;
 use mpt_circuits::hash::Hashable;
 use mpt_zktrie::state::ZktrieState;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
+// use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
+
+use halo2_proofs::arithmetic::FieldExt;
+use halo2_proofs::halo2curves::bn256::Fr;
 
 use anyhow::anyhow;
+use is_even::IsEven;
+use std::collections::HashMap;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
@@ -114,18 +111,16 @@ pub fn block_traces_to_witness_block(
     let (_state_db_legacy, code_db) = build_statedb_and_codedb(block_traces)?;
     let circuit_params = CircuitsParams {
         max_rws: MAX_RWS,
+        max_copy_rows: MAX_RWS,
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
         keccak_padding: Some(MAX_KECCAK_ROWS),
     };
-    let mut builder = CircuitInputBuilder::new_from_headers(
-        circuit_params,
-        state_db.clone(),
-        code_db,
-        Default::default(),
-    );
+    let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
+    builder_block.prev_state_root = U256::from(zktrie_state.root());
+    let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
         let is_last = idx == block_traces.len() - 1;
         let eth_block: EthBlock = block_trace.clone().into();
@@ -144,7 +139,7 @@ pub fn block_traces_to_witness_block(
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
     }
     builder.set_value_ops_call_context_rwc_eor();
-    builder.set_end_block();
+    builder.set_end_block()?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     witness_block.evm_circuit_pad_to = MAX_RWS;
@@ -179,6 +174,7 @@ pub fn block_traces_to_witness_block(
         .collect();
 
     witness_block.mpt_state = Some(zktrie_state);
+    //block_apply_mpt_state(&mut witness_block, zktrie_state);
     Ok(witness_block)
 }
 

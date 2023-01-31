@@ -1,5 +1,6 @@
 set -x
 set -e
+set -o pipefail
 
 export OPT_MEM=true
 #export MOCK_PROVE=true
@@ -29,8 +30,8 @@ function check_same() {
 }
 function step1() {
 	RUST_LOG=info GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=multi cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.multi
-	RUST_LOG=debug GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=dao cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.dao
-	#RUST_LOG=info GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=sushi cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.sushi
+	RUST_LOG=debug GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=sushi cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.sushi
+	#RUST_LOG=trace GEN_SOLI=true PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=native cargo test --features prove_verify --release test_4in1 -- --nocapture 2>&1 | tee logs/4in1.log.native
 }
 
 
