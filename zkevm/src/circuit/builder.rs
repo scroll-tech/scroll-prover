@@ -9,8 +9,8 @@ use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use mpt_circuits::hash::Hashable;
 use mpt_zktrie::state::ZktrieState;
+//use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
-// use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
@@ -55,6 +55,14 @@ pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
+    log::info!(
+        "process block traces, block num {}, tx num {}",
+        block_traces.len(),
+        block_traces
+            .iter()
+            .map(|b| b.transactions.len())
+            .sum::<usize>()
+    );
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {

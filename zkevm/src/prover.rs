@@ -2,9 +2,7 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::path::PathBuf;
 
-use crate::circuit::{
-    PoseidonCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE,
-};
+use crate::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::{
     deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
@@ -21,7 +19,7 @@ use halo2_proofs::plonk::{
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
 use halo2_proofs::poly::kzg::multiopen::ProverGWC;
-use halo2_proofs::transcript::{Challenge255, PoseidonRead, PoseidonWrite, TranscriptRead};
+use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
     final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
@@ -39,18 +37,6 @@ use types::eth::BlockTrace;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
-
-pub const ENABLE_COHERENT: bool = false;
-pub const CIRCUIT_NUM: usize = 1;
-
-//const super_circuit_idx: usize = 0;
-//const evm_circuit_idx: usize = 0;
-//const state_circuit_idx: usize = 1;
-const POSEIDON_CIRCUIT_IDX: usize = 1;
-const ZKTRIE_CIRCUIT_IDX: usize = 2;
-fn from_0_to_n<const N: usize>() -> [usize; N] {
-    core::array::from_fn(|i| i)
-}
 
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
@@ -204,7 +190,7 @@ impl Prover {
         &mut self,
         block_traces: &[BlockTrace],
     ) -> anyhow::Result<ProvedCircuit> {
-        let proof = self.create_target_circuit_proof_multi::<C>(block_traces)?;
+        let proof = self.create_target_circuit_proof_batch::<C>(block_traces)?;
         self.convert_target_proof::<C>(&proof)
     }
 
@@ -259,96 +245,26 @@ impl Prover {
         &mut self,
         block_trace: &BlockTrace,
     ) -> anyhow::Result<AggCircuitProof> {
-        self.create_agg_circuit_proof_multi(&[block_trace.clone()])
+        self.create_agg_circuit_proof_batch(&[block_trace.clone()])
     }
 
-    pub fn create_agg_circuit_proof_multi(
+    pub fn create_agg_circuit_proof_batch(
         &mut self,
         block_traces: &[BlockTrace],
     ) -> anyhow::Result<AggCircuitProof> {
-        let circuit_results: Vec<ProvedCircuit> = vec![
-            self.prove_circuit::<SuperCircuit>(block_traces)?,
-            //self.prove_circuit::<EvmCircuit>(block_traces)?,
-            //self.prove_circuit::<StateCircuit>(block_traces)?,
-            self.prove_circuit::<PoseidonCircuit>(block_traces)?,
-            self.prove_circuit::<ZktrieCircuit>(block_traces)?,
-        ];
+        let circuit_results: Vec<ProvedCircuit> =
+            vec![self.prove_circuit::<SuperCircuit>(block_traces)?];
         self.create_agg_circuit_proof_impl(circuit_results)
-    }
-
-    // commitments of columns of shared tables of circuits should be same
-    fn build_coherent() -> Vec<[(usize, usize); 2]> {
-        let mut coherent = Vec::new();
-
-        let mut connect_table =
-            |circuit_idx_1, table_start_1, circuit_idx_2, table_start_2, table_len: usize| {
-                for i in 0..table_len {
-                    coherent.push([
-                        (circuit_idx_1, table_start_1 + i),
-                        (circuit_idx_2, table_start_2 + i),
-                    ]);
-                }
-            };
-
-        // rw table
-        // connect_table(evm_circuit_idx, 0, state_circuit_idx, 0, 11);
-
-        // poseidon hash table
-        let hash_table_commitments_len = 3;
-        let commit_indexs = mpt_circuits::CommitmentIndexs::new::<Fr>();
-        let (hash_table_start_mpt, hash_table_start_poseidon) = commit_indexs.left_pos();
-        connect_table(
-            POSEIDON_CIRCUIT_IDX,
-            hash_table_start_poseidon,
-            ZKTRIE_CIRCUIT_IDX,
-            hash_table_start_mpt,
-            hash_table_commitments_len,
-        );
-
-        coherent
     }
 
     pub fn create_agg_circuit_proof_impl(
         &mut self,
         circuit_results: Vec<ProvedCircuit>,
     ) -> anyhow::Result<AggCircuitProof> {
-        let target_circuits = from_0_to_n::<CIRCUIT_NUM>();
         ///////////////////////////// build verifier circuit from block result ///////////////////
-
-        let coherent = if ENABLE_COHERENT {
-            Self::build_coherent()
-        } else {
-            Default::default()
-        };
-
-        if ENABLE_COHERENT {
-            // check commitments equality
-            let load_commitment = |proof: &[u8], start| {
-                let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
-                for _ in 0..start {
-                    transcript.read_point().unwrap();
-                }
-                transcript.read_point().unwrap()
-            };
-            for [(c1, p1), (c2, p2)] in &coherent {
-                let a = load_commitment(&circuit_results[*c1].transcript, *p1);
-                let b = load_commitment(&circuit_results[*c2].transcript, *p2);
-                if a != b {
-                    bail!(
-                        "fail to connect circuit: {}th point of {}({:?}) != {}th point of {}({:?})",
-                        p1,
-                        circuit_results[*c1].name,
-                        a,
-                        p2,
-                        circuit_results[*c2].name,
-                        b
-                    );
-                }
-            }
-        }
-
+        let target_circuits = [0];
         let verifier_params = self.params.verifier_params();
-        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, CIRCUIT_NUM> {
+        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 1> {
             circuits: target_circuits.map(|i| {
                 let c = &circuit_results[i];
                 Halo2VerifierCircuit::<'_, Bn256> {
@@ -362,13 +278,13 @@ impl Prover {
                     params: verifier_params,
                 }
             }),
-            coherent,
+            coherent: Vec::new(),
         };
         ///////////////////////////// build verifier circuit from block result done ///////////////////
         let n_instances = target_circuits.map(|i| vec![circuit_results[i].instance.clone()]);
         log::debug!("n_instances {:?}", n_instances);
         let n_transcript = target_circuits.map(|i| vec![circuit_results[i].transcript.clone()]);
-        let instances: [Halo2CircuitInstance<'_, Bn256>; CIRCUIT_NUM] =
+        let instances: [Halo2CircuitInstance<'_, Bn256>; 1] =
             target_circuits.map(|i| Halo2CircuitInstance {
                 name: circuit_results[i].name.clone(),
                 params: verifier_params,
@@ -376,8 +292,8 @@ impl Prover {
                 n_instances: &n_instances[i],
                 n_transcript: &n_transcript[i],
             });
-        let verify_circuit_final_pair = Halo2CircuitInstances::<'_, Bn256, CIRCUIT_NUM>(instances)
-            .calc_verify_circuit_final_pair();
+        let verify_circuit_final_pair =
+            Halo2CircuitInstances::<'_, Bn256, 1>(instances).calc_verify_circuit_final_pair();
         log::debug!("final pair {:?}", verify_circuit_final_pair);
         let verify_circuit_instances =
             final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
@@ -443,10 +359,10 @@ impl Prover {
         block_trace: &BlockTrace,
         full: bool,
     ) -> anyhow::Result<()> {
-        Self::mock_prove_target_circuit_multi::<C>(&[block_trace.clone()], full)
+        Self::mock_prove_target_circuit_batch::<C>(&[block_trace.clone()], full)
     }
 
-    pub fn mock_prove_target_circuit_multi<C: TargetCircuit>(
+    pub fn mock_prove_target_circuit_batch<C: TargetCircuit>(
         block_traces: &[BlockTrace],
         full: bool,
     ) -> anyhow::Result<()> {
@@ -483,10 +399,10 @@ impl Prover {
         &mut self,
         block_trace: &BlockTrace,
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        self.create_target_circuit_proof_multi::<C>(&[block_trace.clone()])
+        self.create_target_circuit_proof_batch::<C>(&[block_trace.clone()])
     }
 
-    pub fn create_target_circuit_proof_multi<C: TargetCircuit>(
+    pub fn create_target_circuit_proof_batch<C: TargetCircuit>(
         &mut self,
         block_traces: &[BlockTrace],
     ) -> anyhow::Result<TargetCircuitProof, Error> {

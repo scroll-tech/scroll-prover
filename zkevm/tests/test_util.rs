@@ -12,24 +12,22 @@ pub const SEED_PATH: &str = "./test_seed";
 
 pub static ENV_LOGGER: Once = Once::new();
 
-pub static PACK_DIR: Lazy<String> =
-    Lazy::new(|| read_env_var("PACK_DIR", "tests/traces/bridge/".to_string()));
+pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
 
 pub fn init() {
-    dotenv::dotenv().ok();
     ENV_LOGGER.call_once(|| {
+        dotenv::dotenv().ok();
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
+        log::info!("git version {}", GIT_VERSION);
     });
-    log::info!("git version {}", GIT_VERSION);
 }
 
-pub fn load_packing_traces() -> (Vec<String>, Vec<types::eth::BlockTrace>) {
-    let pack_dir = &*PACK_DIR;
-    let file_names: Vec<String> = glob(&format!("{pack_dir}/**/*.json"))
+pub fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<types::eth::BlockTrace>) {
+    let file_names: Vec<String> = glob(&format!("{batch_dir}/**/*.json"))
         .unwrap()
         .map(|p| p.unwrap().to_str().unwrap().to_string())
         .collect();
-    log::info!("test packing with {:?}", file_names);
+    log::info!("test batch with {:?}", file_names);
     let mut names_and_traces = file_names
         .into_iter()
         .map(|trace_path| {
@@ -66,4 +64,24 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
+}
+
+pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
+    let trace_path: String = read_env_var("TRACE_PATH", "".to_string());
+    let paths: Vec<String> = if trace_path.is_empty() {
+        // use mode
+        let mode = read_env_var("MODE", "multiple".to_string());
+        if mode.to_lowercase() == "batch" || mode.to_lowercase() == "pack" {
+            load_batch_traces("tests/traces/bridge/").0
+        } else {
+            vec![parse_trace_path_from_mode(&mode).to_string()]
+        }
+    } else if !std::fs::metadata(&trace_path).unwrap().is_dir() {
+        vec![trace_path]
+    } else {
+        load_batch_traces(&trace_path).0
+    };
+    log::info!("test cases traces: {:?}", paths);
+    let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
+    (paths, traces)
 }

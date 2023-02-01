@@ -11,8 +11,9 @@ use zkevm::{
 };
 
 mod test_util;
-use crate::test_util::load_packing_traces;
-use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
+use test_util::{
+    init, load_block_traces_for_test, parse_trace_path_from_mode, CIRCUIT, PARAMS_DIR, SEED_PATH,
+};
 
 #[test]
 fn estimate_circuit_rows() {
@@ -22,219 +23,85 @@ fn estimate_circuit_rows() {
 
     let (_, block_trace) = load_block_traces_for_test();
 
-    log::info!("estimating used rows for current block");
-    log::info!(
-        "evm circuit: {}",
-        circuit::EvmCircuit::estimate_rows(&block_trace)
-    );
-    log::info!(
-        "state circuit: {}",
-        circuit::StateCircuit::estimate_rows(&block_trace)
-    );
-    log::info!(
-        "storage circuit: {}",
-        circuit::ZktrieCircuit::estimate_rows(&block_trace)
-    );
-    log::info!(
-        "hash circuit: {}",
-        circuit::PoseidonCircuit::estimate_rows(&block_trace)
-    );
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_evm_prove_verify() {
-    use zkevm::circuit::EvmCircuit;
-    test_target_circuit_prove_verify::<EvmCircuit>();
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_super_prove_verify() {
-    use zkevm::circuit::SuperCircuit;
-    test_target_circuit_prove_verify::<SuperCircuit>();
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_state_prove_verify() {
-    use zkevm::circuit::StateCircuit;
-    test_target_circuit_prove_verify::<StateCircuit>();
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_storage_prove_verify() {
-    use zkevm::circuit::ZktrieCircuit;
-    test_target_circuit_prove_verify::<ZktrieCircuit>();
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_hash_prove_verify() {
-    use zkevm::circuit::PoseidonCircuit;
-    test_target_circuit_prove_verify::<PoseidonCircuit>();
-}
-
-fn test_mock_prove_all_with_circuit<C: TargetCircuit>(
-    traces: &(Vec<String>, Vec<BlockTrace>),
-) -> Vec<(String, String)> {
-    let mut failed_cases = Vec::new();
-    for (trace_path, block_trace) in traces.0.iter().zip(traces.1.iter()) {
-        log::info!("test {} circuit with {}", C::name(), trace_path);
-        let full_height_mock_prove = true;
-        let result = Prover::mock_prove_target_circuit::<C>(block_trace, full_height_mock_prove);
-        log::info!(
-            "test {} circuit with {} result: {:?}",
-            C::name(),
-            trace_path,
-            result
-        );
-        if result.is_err() {
-            failed_cases.push((C::name(), trace_path.to_string()));
-        }
+    log::info!("estimating used rows for batch");
+    for circuit in CIRCUIT.split(",") {
+        let rows = match circuit {
+            "evm" => circuit::EvmCircuit::estimate_rows(&block_trace),
+            "state" => circuit::StateCircuit::estimate_rows(&block_trace),
+            "zktrie" => circuit::ZktrieCircuit::estimate_rows(&block_trace),
+            "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
+            "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
+            _ => {
+                log::error!("invalid circuit: {:?}", circuit);
+                0
+            }
+        };
+        log::info!("{} circuit: {}", circuit, rows);
     }
-    log::info!("ALL {} circuit tests finished", C::name());
-    failed_cases
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_mock_prove_all_target_circuits_packing() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, ZktrieCircuit};
+fn test_mock_prove() {
+    use zkevm::circuit::{
+        self, EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, ZktrieCircuit,
+    };
 
-    use crate::test_util::load_packing_traces;
+    use crate::test_util::load_block_traces_for_test;
 
     init();
-    let block_traces = load_packing_traces().1;
-    Prover::mock_prove_target_circuit_multi::<ZktrieCircuit>(&block_traces, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<PoseidonCircuit>(&block_traces, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<SuperCircuit>(&block_traces, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<EvmCircuit>(&block_traces, true).unwrap();
-    Prover::mock_prove_target_circuit_multi::<StateCircuit>(&block_traces, true).unwrap();
+    let block_traces = load_block_traces_for_test().1;
+
+    use zkevm::circuit::{self, TargetCircuit};
+    for circuit in CIRCUIT.split(",") {
+        let rows = match circuit {
+            "evm" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces, true)
+                    .unwrap()
+            }
+            "state" => Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(
+                &block_traces,
+                true,
+            )
+            .unwrap(),
+            "zktrie" => Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(
+                &block_traces,
+                true,
+            )
+            .unwrap(),
+            "poseidon" => Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(
+                &block_traces,
+                true,
+            )
+            .unwrap(),
+            "super" => Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
+                &block_traces,
+                true,
+            )
+            .unwrap(),
+            _ => {
+                log::error!("invalid circuit, skip: {:?}", circuit);
+            }
+        };
+    }
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_mock_prove_all_target_circuits() {
-    use zkevm::circuit::{EvmCircuit, PoseidonCircuit, StateCircuit, ZktrieCircuit};
-
-    init();
-    let traces = load_block_traces_for_test();
-    let mut failed_cases = Vec::new();
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<StateCircuit>(
-        &traces,
-    ));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<EvmCircuit>(&traces));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<ZktrieCircuit>(
-        &traces,
-    ));
-    failed_cases.append(&mut test_mock_prove_all_with_circuit::<PoseidonCircuit>(
-        &traces,
-    ));
-    assert_eq!(failed_cases, Vec::new());
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_state_evm_connect() {
-    // TODO: better code reuse
-    use std::time::Instant;
-
-    use halo2_proofs::{
-        halo2curves::bn256::G1Affine,
-        transcript::{Challenge255, PoseidonRead, TranscriptRead},
-    };
-    use zkevm::{
-        circuit::{EvmCircuit, StateCircuit, DEGREE},
-        prover::Prover,
-        utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
-        verifier::Verifier,
-    };
-
-    init();
-
-    log::info!("loading setup params");
-    let _ = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let _ = load_or_create_seed(SEED_PATH).unwrap();
-
-    let trace_path = parse_trace_path_from_mode("greeter");
-    let block_trace = get_block_trace_from_file(trace_path);
-
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
-    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
-
-    log::info!("start generating state_circuit proof");
-    let now = Instant::now();
-    let state_proof = prover
-        .create_target_circuit_proof::<StateCircuit>(&block_trace)
-        .unwrap();
-    log::info!(
-        "finish generating state_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start verifying state_circuit proof");
-    let now = Instant::now();
-    assert!(verifier
-        .verify_target_circuit_proof::<StateCircuit>(&state_proof)
-        .is_ok());
-    log::info!(
-        "finish verifying state_circuit proof, elapsed: {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start generating evm_circuit proof");
-    let now = Instant::now();
-    let evm_proof = prover
-        .create_target_circuit_proof::<EvmCircuit>(&block_trace)
-        .unwrap();
-    log::info!(
-        "finish generating evm_circuit proof, cost {:?}",
-        now.elapsed()
-    );
-
-    log::info!("start verifying evm_circuit proof");
-    let now = Instant::now();
-    assert!(verifier
-        .verify_target_circuit_proof::<EvmCircuit>(&evm_proof)
-        .is_ok());
-    log::info!(
-        "finish verifying evm_circuit proof, cost {:?}",
-        now.elapsed()
-    );
-
-    let load_commitments = |proof: &[u8], start, len| {
-        let mut transcript = PoseidonRead::<_, _, Challenge255<G1Affine>>::init(proof);
-        let mut points = Vec::new();
-        for _ in 0..start {
-            transcript.read_point().unwrap();
-        }
-        for _ in 0..len {
-            points.push(transcript.read_point().unwrap());
-        }
-        points
-    };
-
-    let rw_table_commitments_len = 11;
-    let rw_table_start_evm = 0;
-    let rw_table_start_state = 0;
-    let rw_commitment_state = load_commitments(
-        &state_proof.proof[..],
-        rw_table_start_state,
-        rw_table_commitments_len,
-    );
-    log::info!("rw_commitment_state {:?}", rw_commitment_state);
-
-    let rw_commitment_evm = load_commitments(
-        &evm_proof.proof[..],
-        rw_table_start_evm,
-        rw_table_commitments_len,
-    );
-    log::info!("rw_commitment_evm {:?}", rw_commitment_evm);
-
-    assert_eq!(rw_commitment_evm, rw_commitment_state);
-    log::info!("Same commitment! Test passes!");
+fn test_prove_verify() {
+    use zkevm::circuit::{self, TargetCircuit};
+    for circuit in CIRCUIT.split(",") {
+        let rows = match circuit {
+            "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
+            "state" => test_target_circuit_prove_verify::<circuit::StateCircuit>(),
+            "zktrie" => test_target_circuit_prove_verify::<circuit::ZktrieCircuit>(),
+            "poseidon" => test_target_circuit_prove_verify::<circuit::PoseidonCircuit>(),
+            "super" => test_target_circuit_prove_verify::<circuit::SuperCircuit>(),
+            _ => {
+                log::error!("invalid circuit, skip: {:?}", circuit);
+            }
+        };
+    }
 }
 
 #[cfg(feature = "prove_verify")]
@@ -293,7 +160,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof_multi::<C>(&block_traces)
+        .create_target_circuit_proof_batch::<C>(&block_traces)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
@@ -311,37 +178,4 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
-}
-
-fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
-    use glob::glob;
-    let test_trace: String = read_env_var("TRACE_FILE", "".to_string());
-    let paths: Vec<String> = if test_trace.is_empty() {
-        // use mode
-        let mode = read_env_var("MODE", "multiple".to_string());
-        if mode == "PACK" {
-            load_packing_traces().0
-        } else {
-            vec![parse_trace_path_from_mode(&mode).to_string()]
-        }
-    } else if !std::fs::metadata(&test_trace).unwrap().is_dir() {
-        vec![test_trace]
-    } else {
-        glob(&format!("{test_trace}/**/*.json"))
-            .unwrap()
-            .map(|p| p.unwrap().to_str().unwrap().to_string())
-            .collect()
-    };
-    log::info!("test cases traces: {:?}", paths);
-    let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
-    (paths, traces)
-}
-
-fn load_block_trace_for_test() -> BlockTrace {
-    let mut trace_path = read_env_var("TRACE_FILE", "".to_string());
-    if trace_path.is_empty() {
-        trace_path =
-            parse_trace_path_from_mode(&read_env_var("MODE", "multiple".to_string())).to_string();
-    }
-    get_block_trace_from_file(trace_path)
 }

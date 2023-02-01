@@ -15,10 +15,11 @@ use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
-use test_util::load_packing_traces;
-use test_util::{init, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH};
+use test_util::{
+    init, load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH,
+};
 
-fn verifier_circuit_prove(output_dir: &str, mode: &str) {
+fn verifier_circuit_prove(output_dir: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
 
@@ -34,55 +35,18 @@ fn verifier_circuit_prove(output_dir: &str, mode: &str) {
     let circuit_results: Vec<ProvedCircuit> = if load {
         let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
-        vec![
-            prover
-                .debug_load_proved_circuit::<SuperCircuit>(Some(&mut v))
-                .unwrap(),
-            /*
-            prover
-                .debug_load_proved_circuit::<EvmCircuit>(Some(&mut v))
-                .unwrap(),
-            prover
-                .debug_load_proved_circuit::<StateCircuit>(Some(&mut v))
-                .unwrap(),
-                */
-            prover
-                .debug_load_proved_circuit::<PoseidonCircuit>(Some(&mut v))
-                .unwrap(),
-            prover
-                .debug_load_proved_circuit::<ZktrieCircuit>(Some(&mut v))
-                .unwrap(),
-        ]
+        vec![prover
+            .debug_load_proved_circuit::<SuperCircuit>(Some(&mut v))
+            .unwrap()]
     } else {
-        let block_traces = if mode.to_lowercase() == "pack" {
-            load_packing_traces().1
-        } else {
-            let trace_path = parse_trace_path_from_mode(mode);
-            vec![get_block_trace_from_file(trace_path)]
-        };
-        vec![
-            prover.prove_circuit::<SuperCircuit>(&block_traces).unwrap(),
-            //prover.prove_circuit::<EvmCircuit>(&block_traces).unwrap(),
-            //prover.prove_circuit::<StateCircuit>(&block_traces).unwrap(),
-            prover
-                .prove_circuit::<PoseidonCircuit>(&block_traces)
-                .unwrap(),
-            prover
-                .prove_circuit::<ZktrieCircuit>(&block_traces)
-                .unwrap(),
-        ]
+        let block_traces = load_block_traces_for_test().1;
+        vec![prover.prove_circuit::<SuperCircuit>(&block_traces).unwrap()]
     };
 
     let agg_proof = prover
         .create_agg_circuit_proof_impl(circuit_results)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
-    let sol = prover.create_solidity_verifier(&agg_proof);
-    write_file(
-        &mut out_dir,
-        "verifier2.sol",
-        &Vec::<u8>::from(sol.as_bytes()),
-    );
     log::info!("output files to {}", output_dir);
 }
 
@@ -153,23 +117,19 @@ fn verifier_circuit_verify(d: &str) {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_4in1() {
+fn test_agg() {
     use chrono::Utc;
     use zkevm::utils::read_env_var;
 
     init();
-    let exp_name = read_env_var("EXP", "".to_string());
-    let mode = read_env_var("MODE", "greeter".to_string());
-    let output = if exp_name.is_empty() {
-        format!("output_{}_{}", Utc::now().format("%Y%m%d_%H%M%S"), mode)
-    } else {
-        exp_name
-    };
+    let mode = read_env_var("MODE", "multi".to_string());
+    let output_dir = read_env_var(
+        "OUTPUT_DIR",
+        format!("output_{}_{}", Utc::now().format("%Y%m%d_%H%M%S"), mode),
+    );
     log::info!("output dir {}", output);
-    {
-        let output_dir = PathBuf::from_str(&output).unwrap();
-        fs::create_dir_all(output_dir).unwrap();
-    }
+    let output_dir = PathBuf::from_str(&output).unwrap();
+    fs::create_dir_all(output_dir).unwrap();
 
     verifier_circuit_prove(&output, &mode);
     verifier_circuit_verify(&output);
