@@ -411,7 +411,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1160,7 +1160,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "ethers-core",
  "ethers-signers",
@@ -1422,7 +1422,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1567,7 +1567,7 @@ dependencies = [
 [[package]]
 name = "frame-support"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "bitflags",
  "frame-metadata",
@@ -1599,7 +1599,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "Inflector",
  "cfg-expr",
@@ -1614,7 +1614,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate",
@@ -1626,7 +1626,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1753,7 +1753,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1793,7 +1793,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -1947,7 +1947,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0111#cf4ab5ac23817fa9feb2622bcce2122c473f1b63"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0111#1b78a0db938b627a6ee0d9d7ef5f6f1b373876c6"
 dependencies = [
  "halo2_proofs",
  "hex",
@@ -2439,9 +2439,9 @@ checksum = "5741cc4ac9f6105f6bb067d09bb5685dc255e5bdec6f3bf6d86f4bda6187d17e"
 
 [[package]]
 name = "itertools"
-version = "0.10.3"
+version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9a9d19fa1e79b6215ff29b9d6880b706147f16e9b1dbb1e4e5947b5b02bc5e3"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
 ]
@@ -2483,7 +2483,7 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "env_logger",
  "eth-types",
@@ -2715,7 +2715,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2730,7 +2730,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4123,7 +4123,7 @@ dependencies = [
 [[package]]
 name = "sp-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "hash-db",
  "log",
@@ -4141,7 +4141,7 @@ dependencies = [
 [[package]]
 name = "sp-api-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "blake2",
  "proc-macro-crate",
@@ -4153,7 +4153,7 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -4166,7 +4166,7 @@ dependencies = [
 [[package]]
 name = "sp-arithmetic"
 version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "integer-sqrt",
  "num-traits",
@@ -4180,7 +4180,7 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "array-bytes",
  "base58 0.2.0",
@@ -4222,7 +4222,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "blake2",
  "byteorder",
@@ -4236,7 +4236,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing-proc-macro"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4247,7 +4247,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4257,7 +4257,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.13.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -4268,7 +4268,7 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "async-trait",
  "impl-trait-for-tuples",
@@ -4282,7 +4282,7 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "bytes",
  "ed25519",
@@ -4307,7 +4307,7 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.13.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "async-trait",
  "futures",
@@ -4323,7 +4323,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -4333,7 +4333,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "either",
  "hash256-std-hasher",
@@ -4355,7 +4355,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "bytes",
  "impl-trait-for-tuples",
@@ -4373,7 +4373,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "Inflector",
  "proc-macro-crate",
@@ -4385,7 +4385,7 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -4397,7 +4397,7 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.13.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "hash-db",
  "log",
@@ -4417,12 +4417,12 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 
 [[package]]
 name = "sp-storage"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "impl-serde 0.4.0",
  "parity-scale-codec",
@@ -4435,7 +4435,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "parity-scale-codec",
  "sp-std",
@@ -4447,7 +4447,7 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "ahash 0.8.3",
  "hash-db",
@@ -4470,7 +4470,7 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "impl-serde 0.4.0",
  "parity-scale-codec",
@@ -4487,7 +4487,7 @@ dependencies = [
 [[package]]
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -4498,7 +4498,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "7.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "impl-trait-for-tuples",
  "log",
@@ -4511,7 +4511,7 @@ dependencies = [
 [[package]]
 name = "sp-weights"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#129fee774a6d185d117a57fd1e81b3d0d05ad747"
+source = "git+https://github.com/paritytech/substrate?branch=master#5d0867c7dcdc50572422611128853ccff63ebd4d"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -5718,6 +5718,7 @@ dependencies = [
  "halo2_proofs",
  "hex",
  "is-even",
+ "itertools",
  "log",
  "mpt-zktrie",
  "num-bigint",
@@ -5738,7 +5739,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#393cfac4c7c29f59d1b7457865f250ffd14de360"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=scroll-dev-1220#e7997ddfb00474415dd45db89ebce458ad370e57"
 dependencies = [
  "array-init",
  "bus-mapping",

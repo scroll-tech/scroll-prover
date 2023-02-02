@@ -2,7 +2,10 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::path::PathBuf;
 
-use crate::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE, DEGREE};
+use crate::circuit::{
+    block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit, AGG_DEGREE,
+    DEGREE,
+};
 use crate::io::{
     deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
@@ -50,6 +53,8 @@ pub struct TargetCircuitProof {
     pub instance: Vec<u8>,
     #[serde(with = "base64", default)]
     pub vk: Vec<u8>,
+    pub proved_block_count: usize,
+    pub original_block_count: usize,
 }
 
 #[derive(Deserialize, Serialize, Debug, Default)]
@@ -65,6 +70,8 @@ pub struct AggCircuitProof {
 
     #[serde(with = "base64")]
     pub vk: Vec<u8>,
+
+    pub block_count: usize,
 }
 
 pub struct ProvedCircuit {
@@ -72,6 +79,8 @@ pub struct ProvedCircuit {
     pub transcript: Vec<u8>,
     pub vk: VerifyingKey<G1Affine>,
     pub instance: Vec<Vec<Vec<Fr>>>,
+    pub proved_block_count: usize,
+    pub original_block_count: usize,
 }
 
 impl AggCircuitProof {
@@ -227,6 +236,8 @@ impl Prover {
             transcript: proof.proof.clone(),
             vk,
             instance: vec![instances],
+            proved_block_count: proof.proved_block_count,
+            original_block_count: proof.original_block_count,
         })
     }
 
@@ -339,7 +350,11 @@ impl Prover {
             self.rng.clone(),
             &mut transcript,
         )?;
-        log::info!("create agg proof done");
+        log::info!(
+            "create agg proof done, block proved {}/{}",
+            circuit_results[0].proved_block_count,
+            circuit_results[0].original_block_count
+        );
 
         let proof = transcript.finalize();
 
@@ -352,6 +367,7 @@ impl Prover {
             instance: instance_bytes,
             final_pair,
             vk: vk_bytes,
+            block_count: circuit_results[0].proved_block_count,
         })
     }
 
@@ -371,11 +387,15 @@ impl Prover {
             C::name(),
             C::estimate_rows(block_traces)
         );
-        let (circuit, instance) = C::from_block_traces(block_traces)?;
+        let original_block_len = block_traces.len();
+        let mut block_traces = block_traces.to_vec();
+        check_batch_capacity(&mut block_traces)?;
+        let witness_block = block_traces_to_witness_block(&block_traces)?;
+        let (circuit, instance) = C::from_witness_block(&witness_block)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
             // FIXME for packing
-            let (gate_rows, lookup_rows) = C::get_active_rows(block_traces);
+            let (gate_rows, lookup_rows) = C::get_active_rows(&block_traces);
             log::info!("checking {} active rows", gate_rows.len());
             if !gate_rows.is_empty() || !lookup_rows.is_empty() {
                 if let Err(e) =
@@ -391,7 +411,12 @@ impl Prover {
             }
             bail!("{:#?}", errs);
         }
-        log::info!("mock prove {} done", C::name());
+        log::info!(
+            "mock prove {} done. block proved {}/{}",
+            C::name(),
+            block_traces.len(),
+            original_block_len
+        );
         Ok(())
     }
 
@@ -406,7 +431,11 @@ impl Prover {
         &mut self,
         block_traces: &[BlockTrace],
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        let (circuit, instance) = C::from_block_traces(block_traces)?;
+        let original_block_count = block_traces.len();
+        let mut block_traces = block_traces.to_vec();
+        check_batch_capacity(&mut block_traces)?;
+        let witness_block = block_traces_to_witness_block(&block_traces)?;
+        let (circuit, instance) = C::from_witness_block(&witness_block)?;
         let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
 
         let instance_slice = instance.iter().map(|x| &x[..]).collect::<Vec<_>>();
@@ -466,6 +495,8 @@ impl Prover {
             proof,
             instance: instance_bytes,
             vk: serialize_vk(pk.get_vk()),
+            original_block_count,
+            proved_block_count: witness_block.context.ctxs.len(),
         };
         if !self.debug_dir.is_empty() {
             // write vk

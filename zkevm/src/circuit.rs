@@ -12,13 +12,14 @@ use types::eth::BlockTrace;
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
+use zkevm_circuits::witness;
 
 mod builder;
 mod mpt;
 
 use crate::utils::read_env_var;
 
-use self::builder::{block_trace_to_witness_block, block_traces_to_witness_block};
+pub use self::builder::{block_traces_to_witness_block, check_batch_capacity};
 
 const MAX_TXS: usize = 25;
 const MAX_INNER_BLOCKS: usize = 64;
@@ -29,6 +30,7 @@ const MAX_KECCAK_ROWS: usize = 500_000;
 //pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
+pub static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
 
 pub trait TargetCircuit {
     type Inner: Halo2Circuit<Fr>;
@@ -46,8 +48,15 @@ pub trait TargetCircuit {
     {
         Self::from_block_traces(std::slice::from_ref(block_trace))
     }
-    fn from_block_traces(
-        block_traces: &[BlockTrace],
+    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        let witness_block = block_traces_to_witness_block(block_traces)?;
+        Self::from_witness_block(&witness_block)
+    }
+    fn from_witness_block(
+        witness_block: &witness::Block<Fr>,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
@@ -76,12 +85,13 @@ impl TargetCircuit for SuperCircuit {
         "super".to_string()
     }
 
-    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_witness_block(
+        witness_block: &witness::Block<Fr>,
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let witness_block = block_traces_to_witness_block(block_traces)?;
-        let (k, inner, instance) = Self::Inner::build_from_witness_block(witness_block)?;
+        let (k, inner, instance) = Self::Inner::build_from_witness_block(witness_block.clone())?;
         if k as usize > *DEGREE {
             bail!(
                 "circuit not enough: DEGREE = {}, less than k needed: {}",
@@ -89,14 +99,14 @@ impl TargetCircuit for SuperCircuit {
                 k
             );
         }
-        //debug_assert_eq!(instance.len(), 0);
         Ok((inner, instance))
     }
 
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        // evm only now
-        Self::Inner::get_num_rows_required(&witness_block)
+        let mut block_traces = block_traces.to_vec();
+        check_batch_capacity(&mut block_traces).unwrap();
+        let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
+        Self::Inner::min_num_rows_block(&witness_block).1
     }
 
     fn public_input_len() -> usize {
@@ -113,22 +123,13 @@ impl TargetCircuit for EvmCircuit {
         "evm".to_string()
     }
 
-    fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_witness_block(
+        witness_block: &witness::Block<Fr>,
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        let witness_block = block_trace_to_witness_block(block_trace)?;
-        let inner = EvmCircuitImpl::<Fr>::new(witness_block);
-        let instance = vec![];
-        Ok((inner, instance))
-    }
-
-    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where
-        Self: Sized,
-    {
-        let witness_block = block_traces_to_witness_block(block_traces)?;
-        let inner = EvmCircuitImpl::<Fr>::new(witness_block);
+        let inner = EvmCircuitImpl::<Fr>::new(witness_block.clone());
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -157,20 +158,14 @@ impl TargetCircuit for StateCircuit {
         StateCircuitImpl::<Fr>::default()
     }
 
-    fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    fn from_witness_block(
+        witness_block: &witness::Block<Fr>,
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
-        Self::from_block_traces(std::slice::from_ref(block_trace))
-    }
-
-    fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where
-        Self: Sized,
-    {
-        let witness_block = block_traces_to_witness_block(block_traces)?;
         let inner = StateCircuitImpl::<Fr>::new(
-            witness_block.rws,
+            witness_block.rws.clone(),
             // TODO: put it into CircuitParams?
             (1 << *DEGREE) - 64,
         );
@@ -277,6 +272,15 @@ impl TargetCircuit for ZktrieCircuit {
         let ret = Self::estimate_rows(block_traces);
         ((0..ret.max(64)).collect(), (0..ret.max(64)).collect())
     }
+
+    fn from_witness_block(
+        _witness_block: &witness::Block<Fr>,
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 pub struct PoseidonCircuit {}
@@ -317,5 +321,14 @@ impl TargetCircuit for PoseidonCircuit {
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
         let (_, rows) = trie_data_from_blocks(block_traces).use_rows();
         rows
+    }
+
+    fn from_witness_block(
+        _witness_block: &witness::Block<Fr>,
+    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+    where
+        Self: Sized,
+    {
+        todo!()
     }
 }

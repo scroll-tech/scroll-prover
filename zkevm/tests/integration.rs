@@ -44,7 +44,7 @@ fn estimate_circuit_rows() {
 #[test]
 fn test_mock_prove() {
     use zkevm::circuit::{
-        self, EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, ZktrieCircuit,
+        self, EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
     };
 
     use crate::test_util::load_block_traces_for_test;
@@ -52,9 +52,8 @@ fn test_mock_prove() {
     init();
     let block_traces = load_block_traces_for_test().1;
 
-    use zkevm::circuit::{self, TargetCircuit};
     for circuit in CIRCUIT.split(",") {
-        let rows = match circuit {
+        match circuit {
             "evm" => {
                 Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces, true)
                     .unwrap()
@@ -91,7 +90,7 @@ fn test_mock_prove() {
 fn test_prove_verify() {
     use zkevm::circuit::{self, TargetCircuit};
     for circuit in CIRCUIT.split(",") {
-        let rows = match circuit {
+        match circuit {
             "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
             "state" => test_target_circuit_prove_verify::<circuit::StateCircuit>(),
             "zktrie" => test_target_circuit_prove_verify::<circuit::ZktrieCircuit>(),
@@ -110,11 +109,11 @@ fn test_vk_same() {
     init();
     //type C = EvmCircuit;
     type C = SuperCircuit;
-    let block_trace = load_block_trace_for_test();
+    let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
     let vk_empty = keygen_vk(&params, &C::empty()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
-    let vk_real = keygen_vk(&params, &C::from_block_trace(&block_trace).unwrap().0).unwrap();
+    let vk_real = keygen_vk(&params, &C::from_block_traces(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
     assert_eq!(
         vk_empty.fixed_commitments().len(),

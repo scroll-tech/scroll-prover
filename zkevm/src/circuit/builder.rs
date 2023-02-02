@@ -1,23 +1,25 @@
 use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
-use crate::circuit::{MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
+use crate::circuit::{TargetCircuit, AUTO_TRUNCATE, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
 use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
-use eth_types::{ToAddress, Word};
+use eth_types::ToAddress;
 use ethers_core::types::{Address, Bytes, U256};
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use mpt_circuits::hash::Hashable;
 use mpt_zktrie::state::ZktrieState;
-//use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
-use zkevm_circuits::evm_circuit::witness::{block_convert, Block, Bytecode};
+use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
+use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use is_even::IsEven;
+use itertools::Itertools;
 use std::collections::HashMap;
+use std::time::Instant;
 
 fn verify_proof_leaf<T: Default>(inp: mpt::TrieProof<T>, key_buf: &[u8; 32]) -> mpt::TrieProof<T> {
     let first_16bytes: [u8; 16] = key_buf[..16].try_into().expect("expect first 16 bytes");
@@ -48,21 +50,101 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     bts.as_slice().try_into().expect("32 bytes")
 }
 
-pub fn block_trace_to_witness_block(block_trace: &BlockTrace) -> Result<Block<Fr>, anyhow::Error> {
-    block_traces_to_witness_block(std::slice::from_ref(block_trace))
+const SUB_CIRCUIT_NAMES: [&str; 10] = [
+    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "mpt",
+];
+
+// TODO: optimize it later
+pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
+    let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
+    let rows =
+        <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
+            &witness_block,
+        )
+        .0;
+
+    log::debug!(
+        "row usage of block {:?}, tx num {:?}, tx len sum {}, rows needed {:?}",
+        block_trace.header.number,
+        witness_block.txs.len(),
+        witness_block
+            .txs
+            .iter()
+            .map(|t| t.call_data_length)
+            .sum::<usize>(),
+        SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter())
+    );
+    Ok(rows)
+}
+
+/// ...
+pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), anyhow::Error> {
+    let total_tx_count = block_traces
+        .iter()
+        .map(|b| b.transactions.len())
+        .sum::<usize>();
+    let total_tx_len_sum = block_traces
+        .iter()
+        .flat_map(|b| b.transactions.iter().map(|t| t.data.len()))
+        .sum::<usize>();
+    log::info!(
+        "check capacity of block traces, block count {}, tx total num {}, tx total len {}",
+        block_traces.len(),
+        total_tx_count,
+        total_tx_len_sum
+    );
+
+    if !*AUTO_TRUNCATE {
+        log::debug!("AUTO_TRUNCATE=false, keep batch as is");
+        return Ok(());
+    }
+
+    let t = Instant::now();
+    let mut acc = Vec::new();
+    let mut block_num = block_traces.len();
+    for (idx, block) in block_traces.iter().enumerate() {
+        let usage = calculate_row_usage_of_trace(block)?;
+        if acc.is_empty() {
+            acc = usage;
+        } else {
+            acc.iter_mut().zip(usage.iter()).for_each(|(acc, usage)| {
+                *acc += usage;
+            });
+        }
+        let rows = itertools::max(&acc).unwrap();
+        let rows_and_names: Vec<(_, _)> = SUB_CIRCUIT_NAMES
+            .iter()
+            .zip_eq(acc.iter())
+            .collect::<Vec<(_, _)>>();
+        log::debug!(
+            "row usage after block {}({:?}): {}, {:?}",
+            idx,
+            block.header.number,
+            rows,
+            rows_and_names
+        );
+        if *rows >= (1 << *DEGREE) - 256 {
+            log::warn!("truncate blocks [{}..{})", idx, block_traces.len());
+            block_num = idx;
+            break;
+        }
+    }
+    log::debug!("check_batch_capacity takes {:?}", t.elapsed());
+    block_traces.truncate(block_num);
+    let total_tx_count2 = block_traces
+        .iter()
+        .map(|b| b.transactions.len())
+        .sum::<usize>();
+    if total_tx_count != 0 && total_tx_count2 == 0 {
+        // the circuit cannot even prove the first non-empty block...
+        bail!("ciruit capacity not enough");
+    }
+    Ok(())
 }
 
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    log::info!(
-        "process block traces, block num {}, tx num {}",
-        block_traces.len(),
-        block_traces
-            .iter()
-            .map(|b| b.transactions.len())
-            .sum::<usize>()
-    );
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -145,44 +227,39 @@ pub fn block_traces_to_witness_block(
         }
         builder.block.headers.insert(header.number.as_u64(), header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
+
+        let per_block_metric = false;
+        if per_block_metric {
+            let t = Instant::now();
+            let block = block_convert::<Fr>(&builder.block, &builder.code_db)?;
+            log::debug!("block convert time {:?}", t.elapsed());
+            let rows =
+                <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
+            log::debug!(
+                "after block {}, tx num {:?}, tx len sum {}, rows needed {:?}. estimate time: {:?}",
+                idx,
+                builder.block.txs().len(),
+                builder
+                    .block
+                    .txs()
+                    .iter()
+                    .map(|t| t.input.len())
+                    .sum::<usize>(),
+                rows,
+                t.elapsed()
+            );
+        }
     }
     builder.set_value_ops_call_context_rwc_eor();
     builder.set_end_block()?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
-    witness_block.evm_circuit_pad_to = MAX_RWS;
     log::debug!(
         "witness_block.circuits_params {:?}",
         witness_block.circuits_params
     );
 
-    // hack bytecodes table in witness
-    // FIXME: need to include the whole codedb?
-    witness_block.bytecodes = builder
-        .block
-        .txs()
-        .iter()
-        .flat_map(|tx| {
-            tx.calls()
-                .iter()
-                .map(|call| call.code_hash)
-                .into_iter()
-                .map(|code_hash| {
-                    let bytes = builder
-                        .code_db
-                        .0
-                        .get(&code_hash)
-                        .cloned()
-                        .expect("code db should has contain the code");
-
-                    let hash: Word = U256::from_big_endian(code_hash.as_bytes());
-                    (hash, Bytecode { hash, bytes })
-                })
-        })
-        .collect();
-
-    witness_block.mpt_state = Some(zktrie_state);
-    //block_apply_mpt_state(&mut witness_block, zktrie_state);
+    block_apply_mpt_state(&mut witness_block, zktrie_state);
     Ok(witness_block)
 }
 

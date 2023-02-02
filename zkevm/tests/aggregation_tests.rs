@@ -31,7 +31,7 @@ fn verifier_circuit_prove(output_dir: &str) {
     prover.debug_dir = output_dir.to_string();
 
     // auto load target proofs
-    let load = Path::new(&format!("{output_dir}/zktrie_proof.json")).exists();
+    let load = Path::new(&format!("{output_dir}/super_proof.json")).exists();
     let circuit_results: Vec<ProvedCircuit> = if load {
         let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
@@ -109,8 +109,9 @@ fn verifier_circuit_verify(d: &str) {
     let agg_proof = AggCircuitProof {
         proof,
         instance,
-        final_pair: vec![], // not used
         vk,
+        final_pair: vec![], // not used
+        block_count: 0,     // not used
     };
     verifier.verify_agg_circuit_proof(agg_proof).unwrap();
 }
@@ -123,7 +124,7 @@ fn test_agg() {
 
     init();
     let mode = read_env_var("MODE", "multi".to_string());
-    let output_dir = read_env_var(
+    let output = read_env_var(
         "OUTPUT_DIR",
         format!("output_{}_{}", Utc::now().format("%Y%m%d_%H%M%S"), mode),
     );
@@ -131,7 +132,7 @@ fn test_agg() {
     let output_dir = PathBuf::from_str(&output).unwrap();
     fs::create_dir_all(output_dir).unwrap();
 
-    verifier_circuit_prove(&output, &mode);
+    verifier_circuit_prove(&output);
     verifier_circuit_verify(&output);
     verifier_circuit_generate_solidity(&output);
 }
