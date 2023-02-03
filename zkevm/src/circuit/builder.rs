@@ -254,6 +254,7 @@ pub fn block_traces_to_witness_block(
     builder.set_end_block()?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
+    witness_block.evm_circuit_pad_to = MAX_RWS;
     log::debug!(
         "witness_block.circuits_params {:?}",
         witness_block.circuits_params
