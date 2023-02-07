@@ -1,7 +1,7 @@
 use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
 use ethers_core::types::{Address, Bytes, U256, U64};
-use mpt_circuits::serde::SMTTrace;
+//use mpt_circuits::serde::SMTTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -14,8 +14,8 @@ pub struct BlockTrace {
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
     pub storage_trace: StorageTrace,
-    #[serde(rename = "mptwitness", default)]
-    pub mpt_witness: Vec<SMTTrace>,
+//    #[serde(rename = "mptwitness", default)]
+//    pub mpt_witness: Vec<SMTTrace>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
