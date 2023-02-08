@@ -1,3 +1,4 @@
+use halo2_proofs::SerdeFormat;
 use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 
@@ -66,9 +67,9 @@ fn verifier_circuit_generate_solidity(dir: &str) {
             load_verify_circuit_instance(&mut folder),
         )
     };
-    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
+    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
         &mut Cursor::new(&vk),
-        &params,
+        SerdeFormat::Processed,
     )
     .unwrap();
     let request = MultiCircuitSolidityGenerate {

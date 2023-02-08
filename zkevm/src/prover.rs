@@ -14,6 +14,7 @@ use crate::io::{
 use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
+use halo2_proofs::SerdeFormat;
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::{
@@ -215,9 +216,9 @@ impl Prover {
             None => {
                 let allow_read_vk = false;
                 if allow_read_vk && !proof.vk.is_empty() {
-                    VerifyingKey::<G1Affine>::read::<_, C::Inner, Bn256, _>(
+                    VerifyingKey::<G1Affine>::read::<_, C::Inner>(
                         &mut Cursor::new(&proof.vk),
-                        &self.params,
+                        SerdeFormat::Processed,
                     )
                     .unwrap()
                 } else {
@@ -501,7 +502,7 @@ impl Prover {
         if !self.debug_dir.is_empty() {
             // write vk
             let mut fd = std::fs::File::create(format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
-            pk.get_vk().write(&mut fd).unwrap();
+            pk.get_vk().write(&mut fd, SerdeFormat::Processed).unwrap();
             drop(fd);
 
             // write proof

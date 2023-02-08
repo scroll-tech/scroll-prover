@@ -35,9 +35,9 @@ impl Verifier {
             log::error!("Verifier should better have raw_agg_vk to check consistency");
         }
         let agg_vk = raw_agg_vk.as_ref().map(|k| {
-            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
+            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
                 &mut Cursor::new(&k),
-                &agg_params,
+                halo2_proofs::SerdeFormat::Processed,
             )
             .unwrap()
         });
@@ -89,9 +89,9 @@ impl Verifier {
 
         // TODO better way to do this?
         let vk_in_proof =
-            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
+            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
                 &mut Cursor::new(&proof.vk),
-                &self.agg_params,
+                halo2_proofs::SerdeFormat::Processed
             )
             .unwrap();
         verify_proof::<_, VerifierGWC<_>, _, _, _>(

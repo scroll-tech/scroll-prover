@@ -12,6 +12,7 @@ use types::eth::BlockTrace;
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
+use zkevm_circuits::util::SubCircuit;
 use zkevm_circuits::witness;
 
 mod builder;
@@ -79,7 +80,7 @@ pub trait TargetCircuit {
 pub struct SuperCircuit {}
 
 impl TargetCircuit for SuperCircuit {
-    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_RWS, MAX_RWS>;
+    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000>;
 
     fn name() -> String {
         "super".to_string()
@@ -227,7 +228,7 @@ fn trie_data_from_blocks<'d>(
 pub struct ZktrieCircuit {}
 
 impl TargetCircuit for ZktrieCircuit {
-    type Inner = EthTrieCircuit<Fr>;
+    type Inner = EthTrieCircuit<Fr, true>;
 
     fn name() -> String {
         "zktrie".to_string()

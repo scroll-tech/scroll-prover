@@ -1,9 +1,9 @@
 use anyhow::Result;
+use halo2_proofs::SerdeFormat;
 use halo2_proofs::arithmetic::Field;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use halo2_proofs::halo2curves::FieldExt;
 
-use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;
 use std::fs::{self, metadata, File};
@@ -63,7 +63,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = Params::read::<_>(&mut BufReader::new(f))?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), SerdeFormat::Processed)?;
     log::info!("load params successfully!");
     Ok(p)
 }
@@ -82,7 +82,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     };
     let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
     let mut params_buf = Vec::new();
-    params.write(&mut params_buf)?;
+    params.write_custom(&mut params_buf, halo2_proofs::SerdeFormat::Processed)?;
 
     let mut params_file = File::create(params_path)?;
     params_file.write_all(&params_buf[..])?;
