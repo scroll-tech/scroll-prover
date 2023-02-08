@@ -6,7 +6,8 @@ use std::{
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fq, Fr, G1Affine},
     plonk::VerifyingKey,
-    poly::{commitment::Params, kzg::commitment::ParamsKZG}, SerdeFormat,
+    poly::{commitment::Params, kzg::commitment::ParamsKZG},
+    SerdeFormat,
 };
 use num_bigint::BigUint;
 use zkevm_circuits::tx_circuit::PrimeField;

@@ -9,9 +9,9 @@ use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use mpt_circuits::hash::Hashable;
 use mpt_zktrie::state::ZktrieState;
-use zkevm_circuits::util::SubCircuit;
 use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
+use zkevm_circuits::util::SubCircuit;
 
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;

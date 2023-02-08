@@ -1,8 +1,8 @@
 use anyhow::Result;
-use halo2_proofs::SerdeFormat;
 use halo2_proofs::arithmetic::Field;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use halo2_proofs::halo2curves::FieldExt;
+use halo2_proofs::SerdeFormat;
 
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;

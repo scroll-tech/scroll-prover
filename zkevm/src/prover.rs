@@ -14,7 +14,6 @@ use crate::io::{
 use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
 use anyhow::{bail, Error};
-use halo2_proofs::SerdeFormat;
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::{
@@ -24,6 +23,7 @@ use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
 use halo2_proofs::poly::kzg::multiopen::ProverGWC;
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
+use halo2_proofs::SerdeFormat;
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
 use halo2_snark_aggregator_circuit::verify_circuit::{
     final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,

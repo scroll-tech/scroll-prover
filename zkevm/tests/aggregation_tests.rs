@@ -1,6 +1,6 @@
-use halo2_proofs::SerdeFormat;
 use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
+use halo2_proofs::SerdeFormat;
 
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;

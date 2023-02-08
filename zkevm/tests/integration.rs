@@ -1,19 +1,15 @@
-use std::vec;
-
 use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
-use types::eth::BlockTrace;
+
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{get_block_trace_from_file, load_or_create_params, read_env_var},
+    utils::load_or_create_params,
 };
 
 mod test_util;
-use test_util::{
-    init, load_block_traces_for_test, parse_trace_path_from_mode, CIRCUIT, PARAMS_DIR, SEED_PATH,
-};
+use test_util::{init, load_block_traces_for_test, CIRCUIT, PARAMS_DIR, SEED_PATH};
 
 #[test]
 fn estimate_circuit_rows() {
@@ -43,9 +39,7 @@ fn estimate_circuit_rows() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove() {
-    use zkevm::circuit::{
-        self, EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
-    };
+    use zkevm::circuit;
 
     use crate::test_util::load_block_traces_for_test;
 
@@ -88,7 +82,7 @@ fn test_mock_prove() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_prove_verify() {
-    use zkevm::circuit::{self, TargetCircuit};
+    use zkevm::circuit;
     for circuit in CIRCUIT.split(",") {
         match circuit {
             "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
