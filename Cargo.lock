@@ -3230,7 +3230,7 @@ dependencies = [
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-0201#ceda6061aa5e5d09ca5dfd5d90c581eb54077fc0"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-0201#614d979360bdbf2fac6d32dd4733cf4810dd0d47"
 dependencies = [
  "bitvec 1.0.1",
  "halo2_proofs",
