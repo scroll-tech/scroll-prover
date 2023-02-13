@@ -18,7 +18,7 @@ use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIEL
 use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
-use anyhow::{anyhow, bail};
+use anyhow::bail;
 use is_even::IsEven;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -60,7 +60,7 @@ const SUB_CIRCUIT_NAMES: [&str; 10] = [
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
-    let rows = 
+    let rows =
         <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
             &witness_block,
         )
@@ -210,6 +210,7 @@ pub fn block_traces_to_witness_block(
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
         keccak_padding: Some(MAX_KECCAK_ROWS),
+        max_exp_steps: 256,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.prev_state_root = U256::from(zktrie_state.root());
@@ -295,8 +296,8 @@ impl PoseidonCodeHash {
 
 impl CodeHash for PoseidonCodeHash {
     fn hash_code(&self, code: &[u8]) -> Hash {
-        use mpt_zktrie::hash::MessageHashable;
         use halo2_proofs::halo2curves::group::ff::PrimeField;
+        use mpt_zktrie::hash::MessageHashable;
         let fls = (0..(code.len() / self.bytes_in_field))
             .map(|i| i * self.bytes_in_field)
             .map(|i| {
@@ -398,7 +399,10 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
     // sanity check
     let (existed, data) = sdb.get_account(&addr);
     if existed && !(data.nonce.is_zero() && data.balance.is_zero()) {
-        assert_eq!(hash, data.code_hash, "invalid codehash for existed account {addr:?}, {data:?}");
+        assert_eq!(
+            hash, data.code_hash,
+            "invalid codehash for existed account {addr:?}, {data:?}"
+        );
     };
 }
 pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeDB), anyhow::Error> {
@@ -466,7 +470,7 @@ pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeD
         for execution_result in &block.execution_results {
             if let Some(bytecode) = &execution_result.byte_code {
                 let hash = cdb.insert(decode_bytecode(bytecode)?.to_vec());
-                
+
                 if execution_result.account_created.is_none() {
                     assert_eq!(Some(hash), execution_result.code_hash);
                 }

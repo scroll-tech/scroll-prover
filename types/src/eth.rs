@@ -14,8 +14,8 @@ pub struct BlockTrace {
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
     pub storage_trace: StorageTrace,
-//    #[serde(rename = "mptwitness", default)]
-//    pub mpt_witness: Vec<SMTTrace>,
+    //    #[serde(rename = "mptwitness", default)]
+    //    pub mpt_witness: Vec<SMTTrace>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]

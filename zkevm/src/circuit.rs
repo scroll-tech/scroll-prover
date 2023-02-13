@@ -7,12 +7,12 @@ use once_cell::sync::Lazy;
 
 use types::eth::BlockTrace;
 
-use zkevm_circuits::util::SubCircuit;
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
-use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
-use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
 use zkevm_circuits::mpt_circuit::MptCircuit as ZktrieCircuitImpl;
 use zkevm_circuits::poseidon_circuit::PoseidonCircuit as PoseidonCircuitImpl;
+use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
+use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
+use zkevm_circuits::util::SubCircuit;
 use zkevm_circuits::witness;
 
 mod builder;
@@ -196,7 +196,7 @@ impl TargetCircuit for StateCircuit {
     }
 }
 
-/* 
+/*
 fn trie_data_from_blocks<'d>(
     block_traces: impl IntoIterator<Item = &'d BlockTrace>,
 ) -> EthTrie<Fr> {
@@ -235,11 +235,10 @@ impl TargetCircuit for ZktrieCircuit {
     fn from_witness_block(
         witness_block: &witness::Block<Fr>,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where Self: Sized,
+    where
+        Self: Sized,
     {
-        let inner = ZktrieCircuitImpl::new_from_block(
-            &witness_block,
-        );
+        let inner = ZktrieCircuitImpl::new_from_block(witness_block);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -248,7 +247,6 @@ impl TargetCircuit for ZktrieCircuit {
         let witness_block = block_traces_to_witness_block(block_traces).unwrap();
         ZktrieCircuitImpl::min_num_rows_block(&witness_block).0
     }
-
 }
 
 pub struct PoseidonCircuit {}
@@ -263,11 +261,10 @@ impl TargetCircuit for PoseidonCircuit {
     fn from_witness_block(
         witness_block: &witness::Block<Fr>,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where Self: Sized,
+    where
+        Self: Sized,
     {
-        let inner = PoseidonCircuitImpl::new_from_block(
-            &witness_block,
-        );
+        let inner = PoseidonCircuitImpl::new_from_block(witness_block);
         let instance = vec![];
         Ok((inner, instance))
     }
@@ -276,5 +273,4 @@ impl TargetCircuit for PoseidonCircuit {
         let witness_block = block_traces_to_witness_block(block_traces).unwrap();
         PoseidonCircuitImpl::min_num_rows_block(&witness_block).0
     }
-
 }
