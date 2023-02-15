@@ -27,6 +27,7 @@ const MAX_INNER_BLOCKS: usize = 64;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_RWS: usize = 500_000;
 const MAX_KECCAK_ROWS: usize = 500_000;
+const MAX_EXP_STEPS: usize = 10_000;
 //pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));
 //pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
@@ -62,7 +63,11 @@ pub trait TargetCircuit {
     where
         Self: Sized;
 
-    fn estimate_rows(_block_traces: &[BlockTrace]) -> usize {
+    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
+        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
+        Self::estimate_rows_from_witness_block(&witness_block)
+    }
+    fn estimate_rows_from_witness_block(_witness_block: &witness::Block<Fr>) -> usize {
         0
     }
     fn public_input_len() -> usize {
@@ -103,10 +108,7 @@ impl TargetCircuit for SuperCircuit {
         Ok((inner, instance))
     }
 
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let mut block_traces = block_traces.to_vec();
-        check_batch_capacity(&mut block_traces).unwrap();
-        let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
+    fn estimate_rows_from_witness_block(witness_block: &witness::Block<Fr>) -> usize {
         Self::Inner::min_num_rows_block(&witness_block).1
     }
 

@@ -11,8 +11,8 @@ use crate::io::{
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
-use crate::utils::load_seed;
 use crate::utils::{load_or_create_params, read_env_var};
+use crate::utils::{load_seed, metric_of_witness_block};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
@@ -38,6 +38,7 @@ use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
 use types::base64;
 use types::eth::BlockTrace;
+use zkevm_circuits::witness;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;
@@ -392,6 +393,11 @@ impl Prover {
         let mut block_traces = block_traces.to_vec();
         check_batch_capacity(&mut block_traces)?;
         let witness_block = block_traces_to_witness_block(&block_traces)?;
+        log::info!(
+            "mock proving batch of len {}, batch metric {:?}",
+            original_block_len,
+            metric_of_witness_block(&witness_block)
+        );
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
         if !full {
@@ -413,10 +419,11 @@ impl Prover {
             bail!("{:#?}", errs);
         }
         log::info!(
-            "mock prove {} done. block proved {}/{}",
+            "mock prove {} done. block proved {}/{}, batch metric: {:?}",
             C::name(),
             block_traces.len(),
-            original_block_len
+            original_block_len,
+            metric_of_witness_block(&witness_block),
         );
         Ok(())
     }
@@ -436,6 +443,11 @@ impl Prover {
         let mut block_traces = block_traces.to_vec();
         check_batch_capacity(&mut block_traces)?;
         let witness_block = block_traces_to_witness_block(&block_traces)?;
+        log::info!(
+            "proving batch of len {}, batch metric {:?}",
+            original_block_count,
+            metric_of_witness_block(&witness_block)
+        );
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
         let mut transcript = PoseidonWrite::<_, G1Affine, Challenge255<_>>::init(vec![]);
 

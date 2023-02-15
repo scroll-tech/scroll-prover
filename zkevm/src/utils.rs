@@ -11,6 +11,7 @@ use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
+use zkevm_circuits::witness;
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -146,4 +147,19 @@ pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T
     std::env::var(var_name)
         .map(|s| s.parse::<T>().unwrap_or_else(|_| default.clone()))
         .unwrap_or(default)
+}
+
+#[derive(Debug)]
+pub struct BatchMetric {
+    pub num_block: usize,
+    pub num_tx: usize,
+    pub num_step: usize,
+}
+
+pub fn metric_of_witness_block(block: &witness::Block<Fr>) -> BatchMetric {
+    BatchMetric {
+        num_block: block.context.ctxs.len(),
+        num_tx: block.txs.len(),
+        num_step: block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>(),
+    }
 }

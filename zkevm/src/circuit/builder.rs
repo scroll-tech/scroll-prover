@@ -1,4 +1,4 @@
-use super::{mpt, MAX_CALLDATA, MAX_RWS, MAX_TXS};
+use super::{mpt, MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
 use crate::circuit::{TargetCircuit, AUTO_TRUNCATE, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
 use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
@@ -91,7 +91,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .flat_map(|b| b.transactions.iter().map(|t| t.data.len()))
         .sum::<usize>();
     log::info!(
-        "check capacity of block traces, block count {}, tx total num {}, tx total len {}",
+        "check capacity of block traces, num_block {}, num_tx {}, tx total len {}",
         block_traces.len(),
         total_tx_count,
         total_tx_len_sum
@@ -210,7 +210,7 @@ pub fn block_traces_to_witness_block(
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
         keccak_padding: Some(MAX_KECCAK_ROWS),
-        max_exp_steps: 256,
+        max_exp_steps: MAX_EXP_STEPS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.prev_state_root = U256::from(zktrie_state.root());
