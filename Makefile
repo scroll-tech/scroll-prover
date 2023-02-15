@@ -35,7 +35,6 @@ mock:
 mock-debug:
 	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
 
-
 test-agg:
 	@cargo test --features prove_verify --release test_agg
 
