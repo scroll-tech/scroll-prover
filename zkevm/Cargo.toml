@@ -46,8 +46,8 @@ itertools = "0.10.5"
 procfs = "0.13.0"
 
 [features]
-#default = ["prove_verify"]
 default = []
+#default = ["prove_verify"]
 prove_verify = []
 
 [dev-dependencies]
