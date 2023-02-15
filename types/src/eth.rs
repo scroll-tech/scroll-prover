@@ -122,8 +122,8 @@ pub struct ExecutionResult {
     pub account_after: Vec<AccountProofWrapper>,
     #[serde(rename = "accountCreated")]
     pub account_created: Option<AccountProofWrapper>,
-    #[serde(rename = "codeHash")]
-    pub code_hash: Option<Hash>,
+    #[serde(rename = "poseidonCodeHash", alias = "codeHash")]
+    pub poseidon_code_hash: Option<Hash>,
     #[serde(rename = "byteCode")]
     pub byte_code: Option<String>,
     #[serde(rename = "structLogs")]
@@ -187,10 +187,13 @@ impl From<&ExecStep> for GethExecStep {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ExtraData {
+    #[serde(default, rename = "callFailed")]
+    pub call_failed: bool,
     #[serde(rename = "codeList")]
     pub code_list: Option<Vec<Bytes>>,
     #[serde(rename = "proofList")]
     pub proof_list: Option<Vec<AccountProofWrapper>>,
+    pub caller: Option<Vec<AccountProofWrapper>>,
 }
 
 impl ExtraData {
@@ -207,10 +210,14 @@ impl ExtraData {
 pub struct AccountProofWrapper {
     pub address: Option<Address>,
     pub nonce: Option<u64>,
+    #[serde(rename = "codeSize")]
+    pub code_size: Option<u64>,
     pub balance: Option<U256>,
-    #[serde(rename = "codeHash")]
-    pub code_hash: Option<H256>,
-    pub proof: Option<Vec<Bytes>>,
+    #[serde(rename = "keccakCodeHash", alias = "codeHash")]
+    pub k_code_hash: Option<H256>,
+    #[serde(rename = "poseidonCodeHash")]
+    pub poseidon_code_hash: Option<H256>,
+    //pub proof: Option<Vec<Bytes>>,
     pub storage: Option<StorageProofWrapper>,
 }
 
@@ -218,5 +225,5 @@ pub struct AccountProofWrapper {
 pub struct StorageProofWrapper {
     pub key: Option<U256>,
     pub value: Option<U256>,
-    pub proof: Option<Vec<Bytes>>,
+    //pub proof: Option<Vec<Bytes>>,
 }

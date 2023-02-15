@@ -472,7 +472,7 @@ pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeD
                 let hash = cdb.insert(decode_bytecode(bytecode)?.to_vec());
 
                 if execution_result.account_created.is_none() {
-                    assert_eq!(Some(hash), execution_result.code_hash);
+                    assert_eq!(Some(hash), execution_result.poseidon_code_hash);
                 }
             }
 
