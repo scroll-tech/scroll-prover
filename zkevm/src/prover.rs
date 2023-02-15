@@ -38,7 +38,6 @@ use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
 use types::base64;
 use types::eth::BlockTrace;
-use zkevm_circuits::witness;
 
 #[cfg(target_os = "linux")]
 extern crate procfs;

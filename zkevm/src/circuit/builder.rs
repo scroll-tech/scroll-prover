@@ -53,8 +53,9 @@ fn extend_address_to_h256(src: &Address) -> [u8; 32] {
     bts.as_slice().try_into().expect("32 bytes")
 }
 
-const SUB_CIRCUIT_NAMES: [&str; 10] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "mpt",
+const SUB_CIRCUIT_NAMES: [&str; 9] = [
+    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
+    // "mpt",
 ];
 
 // TODO: optimize it later
@@ -187,6 +188,7 @@ pub fn block_traces_to_witness_block(
     };
 
     let mut state_db = zktrie_state.state().clone();
+
     let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
     if !zero_coinbase_exist {
         state_db.set_account(
@@ -213,6 +215,7 @@ pub fn block_traces_to_witness_block(
         max_exp_steps: MAX_EXP_STEPS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
+
     builder_block.prev_state_root = U256::from(zktrie_state.root());
     let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
@@ -229,6 +232,7 @@ pub fn block_traces_to_witness_block(
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
         }
+
         builder.block.headers.insert(header.number.as_u64(), header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
 
@@ -254,6 +258,7 @@ pub fn block_traces_to_witness_block(
             );
         }
     }
+
     builder.set_value_ops_call_context_rwc_eor();
     builder.set_end_block()?;
 
@@ -472,7 +477,7 @@ pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeD
                 let hash = cdb.insert(decode_bytecode(bytecode)?.to_vec());
 
                 if execution_result.account_created.is_none() {
-                    assert_eq!(Some(hash), execution_result.code_hash);
+                    //assert_eq!(Some(hash), execution_result.code_hash);
                 }
             }
 

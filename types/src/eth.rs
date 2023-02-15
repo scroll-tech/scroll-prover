@@ -122,7 +122,7 @@ pub struct ExecutionResult {
     pub account_after: Vec<AccountProofWrapper>,
     #[serde(rename = "accountCreated")]
     pub account_created: Option<AccountProofWrapper>,
-    #[serde(rename = "codeHash")]
+    #[serde(rename = "poseidonCodeHash")]
     pub code_hash: Option<Hash>,
     #[serde(rename = "byteCode")]
     pub byte_code: Option<String>,
