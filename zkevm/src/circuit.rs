@@ -22,7 +22,7 @@ use crate::utils::read_env_var;
 pub use self::builder::{block_traces_to_witness_block, check_batch_capacity};
 
 const MAX_TXS: usize = 44;
-const MAX_INNER_BLOCKS: usize = 64;
+const MAX_INNER_BLOCKS: usize = 100;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_RWS: usize = 500_000;
 const MAX_KECCAK_ROWS: usize = 500_000;

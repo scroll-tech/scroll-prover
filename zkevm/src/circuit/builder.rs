@@ -53,6 +53,7 @@ pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usiz
 
 /// ...
 pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), anyhow::Error> {
+    let block_traces_len = block_traces.len();
     let total_tx_count = block_traces
         .iter()
         .map(|b| b.transactions.len())
@@ -63,10 +64,14 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .sum::<usize>();
     log::info!(
         "check capacity of block traces, num_block {}, num_tx {}, tx total len {}",
-        block_traces.len(),
+        block_traces_len,
         total_tx_count,
         total_tx_len_sum
     );
+
+    if block_traces_len > MAX_INNER_BLOCKS {
+        bail!("too many blocks");
+    }
 
     if !*AUTO_TRUNCATE {
         log::debug!("AUTO_TRUNCATE=false, keep batch as is");
@@ -75,7 +80,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
 
     let t = Instant::now();
     let mut acc = Vec::new();
-    let mut block_num = block_traces.len();
+    let mut truncate_idx = block_traces.len();
     for (idx, block) in block_traces.iter().enumerate() {
         let usage = calculate_row_usage_of_trace(block)?;
         if acc.is_empty() {
@@ -98,13 +103,13 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
             rows_and_names
         );
         if *rows >= (1 << *DEGREE) - 256 {
-            log::warn!("truncate blocks [{}..{})", idx, block_traces.len());
-            block_num = idx;
+            log::warn!("truncate blocks [{}..{})", idx, block_traces_len);
+            truncate_idx = idx;
             break;
         }
     }
     log::debug!("check_batch_capacity takes {:?}", t.elapsed());
-    block_traces.truncate(block_num);
+    block_traces.truncate(truncate_idx);
     let total_tx_count2 = block_traces
         .iter()
         .map(|b| b.transactions.len())
@@ -154,7 +159,8 @@ pub fn block_traces_to_witness_block(
     let chain_id = if !chain_ids.is_empty() {
         chain_ids[0]
     } else {
-        0i16.into()
+        0x82751.into()
+        //0i16.into()
     };
 
     let mut state_db = zktrie_state.state().clone();
@@ -185,7 +191,7 @@ pub fn block_traces_to_witness_block(
         max_exp_steps: MAX_EXP_STEPS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
-
+    builder_block.chain_id = chain_id;
     builder_block.prev_state_root = U256::from(zktrie_state.root());
     let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
