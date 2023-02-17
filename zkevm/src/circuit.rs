@@ -109,7 +109,7 @@ impl TargetCircuit for SuperCircuit {
     }
 
     fn estimate_rows_from_witness_block(witness_block: &witness::Block<Fr>) -> usize {
-        Self::Inner::min_num_rows_block(&witness_block).1
+        Self::Inner::min_num_rows_block(witness_block).1
     }
 
     fn public_input_len() -> usize {
