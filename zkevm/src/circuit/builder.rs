@@ -1,5 +1,7 @@
 use super::{MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
-use crate::circuit::{TargetCircuit, AUTO_TRUNCATE, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS};
+use crate::circuit::{
+    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS,
+};
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
 use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
 use eth_types::evm_types::OpcodeId;
@@ -23,9 +25,9 @@ use itertools::Itertools;
 use std::collections::HashMap;
 use std::time::Instant;
 
-const SUB_CIRCUIT_NAMES: [&str; 9] = [
+const SUB_CIRCUIT_NAMES: [&str; 10] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
-    // "mpt",
+    "poseidon", // "mpt",
 ];
 
 // TODO: optimize it later
@@ -159,8 +161,7 @@ pub fn block_traces_to_witness_block(
     let chain_id = if !chain_ids.is_empty() {
         chain_ids[0]
     } else {
-        0x82751.into()
-        //0i16.into()
+        (*CHAIN_ID).into()
     };
 
     let mut state_db = zktrie_state.state().clone();
