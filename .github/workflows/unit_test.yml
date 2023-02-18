@@ -28,9 +28,10 @@ jobs:
         # "1" means line tables only, which is useful for panic tracebacks.
         RUSTFLAGS: "-C debuginfo=1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
+      - run: git config --system --add safe.directory /__w/scroll-zkevm/scroll-zkevm
       - uses: actions/setup-go@v3
         with:
           go-version: '>=1.18.0'
