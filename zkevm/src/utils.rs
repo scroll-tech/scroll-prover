@@ -71,7 +71,9 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
 /// create params and write it into file
 pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     log::info!("start creating params with degree {}", degree);
-    let seed_str = read_env_var("PARAM_SEED", "".to_string());
+    // The params used for production need to be generated from a trusted setup ceremony.
+    // Here we use a deterministic seed to generate params. This method is unsafe for production usage.
+    let seed_str = read_env_var("PARAM_SEED", "bb4b94a1bbef58c4b5fcda6c900629b5".to_string());
     let seed_fr = if seed_str.is_empty() {
         log::info!("use OsRng to create params");
         Fr::random(OsRng)
