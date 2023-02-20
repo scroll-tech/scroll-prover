@@ -10,7 +10,7 @@ use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use types::eth::BlockTrace;
+use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -19,7 +19,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
     match metadata(params_dir) {
         Ok(md) => {
             if md.is_file() {
-                panic!("{} should be folder", params_dir);
+                panic!("{params_dir} should be folder");
             }
         }
         Err(_) => {
@@ -28,7 +28,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
         }
     };
 
-    let params_path = format!("{}/params{}", params_dir, degree);
+    let params_path = format!("{params_dir}/params{degree}");
     log::info!("load_or_create_params {}", params_path);
     if Path::new(&params_path).exists() {
         match load_params(&params_path, degree) {
@@ -46,11 +46,11 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
-        format!("{}/params{}", params_dir, degree)
+        format!("{params_dir}/params{degree}")
     } else {
         params_dir.to_string()
     };
-    let f = File::open(&params_path)?;
+    let f = File::open(params_path)?;
 
     // check params file length:
     //   len: 4 bytes
@@ -86,7 +86,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     let mut params_buf = Vec::new();
     params.write(&mut params_buf)?;
 
-    let mut params_file = File::create(&params_path)?;
+    let mut params_file = File::create(params_path)?;
     params_file.write_all(&params_buf[..])?;
     log::info!("create params successfully!");
 
@@ -118,7 +118,7 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
         0xe5,
     ];
 
-    let mut seed_file = File::create(&seed_path)?;
+    let mut seed_file = File::create(seed_path)?;
     seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
     Ok(RNG_SEED_BYTES)
 }
@@ -126,10 +126,22 @@ pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
 /// get a block-result from file
 pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut buffer = Vec::new();
-    let mut f = File::open(path).unwrap();
+    let mut f = File::open(&path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
-    serde_json::from_slice::<BlockTrace>(&buffer).unwrap()
+    serde_json::from_slice::<BlockTrace>(&buffer).unwrap_or_else(|e1| {
+        serde_json::from_slice::<BlockTraceJsonRpcResult>(&buffer)
+            .map_err(|e2| {
+                panic!(
+                    "unable to load BlockTrace from {:?}, {:?}, {:?}",
+                    path.as_ref(),
+                    e1,
+                    e2
+                )
+            })
+            .unwrap()
+            .result
+    })
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {

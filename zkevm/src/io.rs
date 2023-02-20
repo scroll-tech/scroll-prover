@@ -89,11 +89,11 @@ pub fn load_target_circuit_vk(folder: &mut PathBuf) -> Vec<u8> {
 }
 
 pub fn load_target_circuit_instance(folder: &mut PathBuf, index: usize) -> Vec<u8> {
-    read_file(folder, &format!("sample_circuit_instance{}.data", index))
+    read_file(folder, &format!("sample_circuit_instance{index}.data"))
 }
 
 pub fn load_target_circuit_proof(folder: &mut PathBuf, index: usize) -> Vec<u8> {
-    read_file(folder, &format!("sample_circuit_proof{}.data", index))
+    read_file(folder, &format!("sample_circuit_proof{index}.data"))
 }
 
 pub fn load_verify_circuit_params(folder: &mut PathBuf) -> Vec<u8> {
