@@ -1,7 +1,7 @@
 set -x
 set -e
 
-git_commit_id=`git rev-parse --short HEAD`
+# git_commit_id=`git rev-parse --short HEAD`
 
 cargo build --release
 find target/release | grep libzktrie.so | xargs -i cp {} ./
