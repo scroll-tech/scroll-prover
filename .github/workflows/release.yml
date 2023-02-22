@@ -35,7 +35,7 @@ jobs:
           release_name: ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: Upload release assets
+      - name: Upload release libs.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,3 +44,12 @@ jobs:
           asset_path: ./libs.zip
           asset_name: libs.zip
           asset_content_type: application/zip
+      - name: Upload zip.sha256
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ./zip.sha256
+            asset_name: zip.sha256
+            asset_content_type: application/text
