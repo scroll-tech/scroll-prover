@@ -13,4 +13,4 @@ shasum -a 256 libzktrie.so > zktrie.sha256
 zip -r libs.zip libzktrie.so libzkp.a zkp.sha256 zktrie.sha256
 shasum -a 256 libs.zip > zip.sha256
 
-rm libzktrie.so libzkp.a libs.sha256
+rm libzktrie.so libzkp.a ./*.sha256
