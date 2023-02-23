@@ -21,7 +21,7 @@ use halo2_proofs::plonk::{
 };
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
-use halo2_proofs::poly::kzg::multiopen::ProverGWC;
+use halo2_proofs::poly::kzg::multiopen::{ProverGWC, ProverSHPLONK};
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_proofs::SerdeFormat;
 use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
@@ -32,10 +32,16 @@ use halo2_snark_aggregator_circuit::verify_circuit::{
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use log::info;
 use once_cell::sync::Lazy;
-
+use rand::rngs::OsRng;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
+use snark_verifier::system::halo2::{compile, Config};
+use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::halo2::{
+    gen_proof_shplonk, gen_snark_gwc, PoseidonTranscript, POSEIDON_SPEC,
+};
+use snark_verifier_sdk::{gen_pk, NativeLoader, Snark};
 use types::base64;
 use types::eth::BlockTrace;
 
@@ -45,8 +51,9 @@ extern crate procfs;
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
+/// A serialized proof that is to be aggregated.
 #[derive(Deserialize, Serialize, Debug)]
-pub struct TargetCircuitProof {
+pub struct InnerCircuitProof {
     pub name: String,
     #[serde(with = "base64")]
     pub proof: Vec<u8>,
@@ -58,8 +65,9 @@ pub struct TargetCircuitProof {
     pub original_block_count: usize,
 }
 
+/// The final, serialized, aggregated proof that is to be verified on chain.
 #[derive(Deserialize, Serialize, Debug, Default)]
-pub struct AggCircuitProof {
+pub struct OuterCircuitProof {
     #[serde(with = "base64")]
     pub proof: Vec<u8>,
 
@@ -67,26 +75,13 @@ pub struct AggCircuitProof {
     pub instance: Vec<u8>,
 
     #[serde(with = "base64")]
-    pub final_pair: Vec<u8>,
-
-    #[serde(with = "base64")]
     pub vk: Vec<u8>,
 
     pub block_count: usize,
 }
 
-pub struct ProvedCircuit {
-    pub name: String,
-    pub transcript: Vec<u8>,
-    pub vk: VerifyingKey<G1Affine>,
-    pub instance: Vec<Vec<Vec<Fr>>>,
-    pub proved_block_count: usize,
-    pub original_block_count: usize,
-}
-
-impl AggCircuitProof {
+impl OuterCircuitProof {
     pub fn write_to_dir(&self, out_dir: &mut PathBuf) {
-        write_verify_circuit_final_pair(out_dir, &self.final_pair);
         write_verify_circuit_instance(out_dir, &self.instance);
         write_verify_circuit_proof(out_dir, &self.proof);
         write_verify_circuit_vk(out_dir, &self.vk);
@@ -98,8 +93,9 @@ impl AggCircuitProof {
     }
 }
 
+/// The prover that takes `InnerCircuitProof` and generate the final `OuterCircuitProof`.
 #[derive(Debug)]
-pub struct Prover {
+pub struct OuterCircuitProver {
     pub params: ParamsKZG<Bn256>,
     pub agg_params: ParamsKZG<Bn256>,
     pub rng: XorShiftRng,
@@ -107,10 +103,9 @@ pub struct Prover {
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,
     pub agg_pk: Option<ProvingKey<G1Affine>>,
     pub debug_dir: String,
-    //pub target_circuit_vks: HashMap<String, ProvingKey<G1Affine>>,
 }
 
-impl Prover {
+impl OuterCircuitProver {
     pub fn new(params: ParamsKZG<Bn256>, agg_params: ParamsKZG<Bn256>, rng: XorShiftRng) -> Self {
         Self {
             params,
@@ -158,6 +153,7 @@ impl Prover {
         agg_params: ParamsKZG<Bn256>,
         seed: [u8; 16],
     ) -> Self {
+        // Question(Zhenfei): why check consistency here instead of in new()?
         {
             let target_params_verifier: &ParamsVerifierKZG<Bn256> = params.verifier_params();
             let agg_params_verifier: &ParamsVerifierKZG<Bn256> = agg_params.verifier_params();
@@ -181,36 +177,40 @@ impl Prover {
         Self::from_params_and_seed(params, agg_params, seed)
     }
 
-    pub fn debug_load_proved_circuit<C: TargetCircuit>(
+    /// Load the cached proof. Should only be used for debugging purpose.
+    pub fn debug_load_inner_circuit<C: TargetCircuit>(
         &mut self,
         v: Option<&mut crate::verifier::Verifier>,
-    ) -> anyhow::Result<ProvedCircuit> {
+    ) -> anyhow::Result<(Snark, usize)> {
         assert!(!self.debug_dir.is_empty());
-        log::debug!("debug_load_proved_circuit {}", C::name());
+        log::debug!("debug_load_outer_circuit {}", C::name());
         let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
         let file = std::fs::File::open(file_name)?;
-        let proof: TargetCircuitProof = serde_json::from_reader(file)?;
+        let proof: InnerCircuitProof = serde_json::from_reader(file)?;
         if let Some(v) = v {
             v.verify_target_circuit_proof::<C>(&proof).unwrap();
         }
         self.convert_target_proof::<C>(&proof)
     }
 
-    pub fn prove_circuit<C: TargetCircuit>(
+    pub fn build_inner_circuit<C: TargetCircuit>(
         &mut self,
         block_traces: &[BlockTrace],
-    ) -> anyhow::Result<ProvedCircuit> {
+    ) -> anyhow::Result<(Snark, usize)> {
         let proof = self.create_target_circuit_proof_batch::<C>(block_traces)?;
         self.convert_target_proof::<C>(&proof)
     }
 
+    /// Extract an `InnerCircuit` from a InnerCircuitProof; update self's target_circuit pk list.
+    // Does not perform any real computation.
     fn convert_target_proof<C: TargetCircuit>(
         &mut self,
-        proof: &TargetCircuitProof,
-    ) -> anyhow::Result<ProvedCircuit> {
+        proof: &InnerCircuitProof,
+    ) -> anyhow::Result<(Snark, usize)> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);
-        //debug_assert!(instances.is_empty(), "instance not supported yet");
+        let num_instance: Vec<usize> = instances.iter().map(|x| x.len()).collect();
+
         let vk = match self.target_circuit_pks.get(&proof.name) {
             Some(pk) => pk.get_vk().clone(),
             None => {
@@ -226,153 +226,93 @@ impl Prover {
                 }
             }
         };
+
         if *OPT_MEM {
             Self::tick(&format!("before release pk of {}", C::name()));
             self.target_circuit_pks.remove(&C::name());
             Self::tick(&format!("after release pk of {}", &C::name()));
         }
 
-        Ok(ProvedCircuit {
-            name: proof.name.clone(),
-            transcript: proof.proof.clone(),
-            vk,
-            instance: vec![instances],
-            proved_block_count: proof.proved_block_count,
-            original_block_count: proof.original_block_count,
-        })
+        let protocol = compile(
+            &self.params,
+            &vk,
+            Config::kzg().with_num_instance(num_instance.clone()),
+        );
+        let snark = Snark::new(protocol, instances.clone(), proof.proof.clone());
+
+        Ok((snark, proof.original_block_count))
     }
 
-    pub fn create_solidity_verifier(&self, proof: &AggCircuitProof) -> String {
-        MultiCircuitSolidityGenerate {
-            verify_vk: self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
-            verify_params: &self.agg_params,
-            verify_circuit_instance: load_instances(&proof.instance),
-            proof: proof.proof.clone(),
-            verify_public_inputs_size: 4, // not used now
-        }
-        .call("".into())
-    }
+    /// TODO: Fix this function
+    // pub fn create_solidity_verifier(&self, proof: &OuterCircuitProof) -> String {
+    //     let res =
+    //     MultiCircuitSolidityGenerate {
+    //         verify_vk: self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
+    //         verify_params: &self.agg_params,
+    //         verify_circuit_instance: load_instances(&proof.instance),
+    //         proof: proof.proof.clone(),
+    //         verify_public_inputs_size: 4, // not used now
+    //     }
+    //     .call("".into());
+    //     println!("create solidity verifier: {}", res);
+    //     res
+    // }
 
     pub fn create_agg_circuit_proof(
         &mut self,
         block_trace: &BlockTrace,
-    ) -> anyhow::Result<AggCircuitProof> {
+    ) -> anyhow::Result<OuterCircuitProof> {
         self.create_agg_circuit_proof_batch(&[block_trace.clone()])
     }
 
+    /// Input a list of BlockTrace, build the in
     pub fn create_agg_circuit_proof_batch(
         &mut self,
         block_traces: &[BlockTrace],
-    ) -> anyhow::Result<AggCircuitProof> {
-        let circuit_results: Vec<ProvedCircuit> =
-            vec![self.prove_circuit::<SuperCircuit>(block_traces)?];
-        self.create_agg_circuit_proof_impl(circuit_results)
+    ) -> anyhow::Result<OuterCircuitProof> {
+        let (snark, first_proved_block_count) =
+            self.build_inner_circuit::<SuperCircuit>(block_traces)?;
+
+        self.create_agg_circuit_proof_impl(vec![snark], first_proved_block_count)
     }
 
+    /// Input a list of inner circuit and their proofs,
+    /// generate an aggregated proof
     pub fn create_agg_circuit_proof_impl(
         &mut self,
-        circuit_results: Vec<ProvedCircuit>,
-    ) -> anyhow::Result<AggCircuitProof> {
+        snarks: Vec<Snark>,
+        first_proved_block_count: usize,
+    ) -> anyhow::Result<OuterCircuitProof> {
         ///////////////////////////// build verifier circuit from block result ///////////////////
-        let target_circuits = [0];
         let verifier_params = self.params.verifier_params();
-        let verify_circuit = Halo2VerifierCircuits::<'_, Bn256, 1> {
-            circuits: target_circuits.map(|i| {
-                let c = &circuit_results[i];
-                Halo2VerifierCircuit::<'_, Bn256> {
-                    name: c.name.clone(),
-                    nproofs: 1,
-                    proofs: vec![SingleProofWitness::<'_, Bn256> {
-                        instances: &c.instance,
-                        transcript: &c.transcript,
-                    }],
-                    vk: &c.vk,
-                    params: verifier_params,
-                }
-            }),
-            coherent: Vec::new(),
-        };
+        let mut rng = OsRng;
+        let agg_circuit = AggregationCircuit::new(&verifier_params, snarks, rng);
+
         ///////////////////////////// build verifier circuit from block result done ///////////////////
-        let n_instances = target_circuits.map(|i| vec![circuit_results[i].instance.clone()]);
-        log::debug!("n_instances {:?}", n_instances);
-        let n_transcript = target_circuits.map(|i| vec![circuit_results[i].transcript.clone()]);
-        let instances: [Halo2CircuitInstance<'_, Bn256>; 1] =
-            target_circuits.map(|i| Halo2CircuitInstance {
-                name: circuit_results[i].name.clone(),
-                params: verifier_params,
-                vk: &circuit_results[i].vk,
-                n_instances: &n_instances[i],
-                n_transcript: &n_transcript[i],
-            });
-        let verify_circuit_final_pair =
-            Halo2CircuitInstances::<'_, Bn256, 1>(instances).calc_verify_circuit_final_pair();
-        log::debug!("final pair {:?}", verify_circuit_final_pair);
-        let verify_circuit_instances =
-            final_pair_to_instances::<_, Bn256>(&verify_circuit_final_pair);
-
-        if self.agg_pk.is_none() {
-            log::info!("generate agg pk: begin");
-            let verify_circuit_vk =
-                keygen_vk(&self.agg_params, &verify_circuit).expect("keygen_vk should not fail");
-            log::info!("generate agg pk: vk done");
-            let verify_circuit_pk = keygen_pk(&self.agg_params, verify_circuit_vk, &verify_circuit)
-                .expect("keygen_pk should not fail");
-            self.agg_pk = Some(verify_circuit_pk);
-            log::info!("init_agg_pk: done");
-        } else {
-            log::info!("generate agg pk: done");
-        }
-
-        let instances_slice: &[&[&[Fr]]] = &[&[&verify_circuit_instances[..]]];
-        let mut transcript = ShaWrite::<_, G1Affine, Challenge255<_>, sha2::Sha256>::init(vec![]);
-
-        if *MOCK_PROVE {
-            log::info!("mock prove agg circuit");
-            let prover = MockProver::<Fr>::run(
-                *AGG_DEGREE as u32,
-                &verify_circuit,
-                vec![verify_circuit_instances.clone()],
-            )?;
-            if let Err(errs) = prover.verify_par() {
-                log::error!("err num: {}", errs.len());
-                for err in &errs {
-                    log::error!("{}", err);
-                }
-                bail!("{:#?}", errs);
-            }
-            log::info!("mock prove agg circuit done");
-        }
-        log::info!("create agg proof");
-        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
-            &self.agg_params,
-            self.agg_pk.as_ref().unwrap(),
-            &[verify_circuit],
-            instances_slice,
-            self.rng.clone(),
-            &mut transcript,
-        )?;
-        log::info!(
-            "create agg proof done, block proved {}/{}",
-            circuit_results[0].proved_block_count,
-            circuit_results[0].original_block_count
+        let instances = vec![agg_circuit.instance()];
+        let pk = gen_pk(&verifier_params, &agg_circuit, None);
+        let proof = gen_proof_shplonk(
+            verifier_params,
+            &pk,
+            agg_circuit.clone(),
+            instances.clone(),
+            &mut rng,
+            None,
         );
 
-        let proof = transcript.finalize();
-
-        let instances_for_serde = serialize_fr_tensor(&[vec![verify_circuit_instances]]);
+        let instances_for_serde = serialize_fr_tensor(&[instances]);
         let instance_bytes = serde_json::to_vec(&instances_for_serde)?;
         let vk_bytes = serialize_vk(self.agg_pk.as_ref().expect("pk should be inited").get_vk());
-        let final_pair = serialize_verify_circuit_final_pair(&verify_circuit_final_pair);
-        Ok(AggCircuitProof {
+
+        Ok(OuterCircuitProof {
             proof,
             instance: instance_bytes,
-            final_pair,
             vk: vk_bytes,
-            block_count: circuit_results[0].proved_block_count,
+            block_count: first_proved_block_count,
         })
     }
 
-    pub fn mock_prove_target_circuit<C: TargetCircuit>(
+    pub fn mock_prove_inner_circuit<C: TargetCircuit>(
         block_trace: &BlockTrace,
         full: bool,
     ) -> anyhow::Result<()> {
@@ -430,14 +370,14 @@ impl Prover {
     pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
         block_trace: &BlockTrace,
-    ) -> anyhow::Result<TargetCircuitProof, Error> {
+    ) -> anyhow::Result<InnerCircuitProof, Error> {
         self.create_target_circuit_proof_batch::<C>(&[block_trace.clone()])
     }
 
     pub fn create_target_circuit_proof_batch<C: TargetCircuit>(
         &mut self,
         block_traces: &[BlockTrace],
-    ) -> anyhow::Result<TargetCircuitProof, Error> {
+    ) -> anyhow::Result<InnerCircuitProof, Error> {
         let original_block_count = block_traces.len();
         let mut block_traces = block_traces.to_vec();
         check_batch_capacity(&mut block_traces)?;
@@ -479,7 +419,7 @@ impl Prover {
             self.init_pk::<C>(&C::empty());
         }
         let pk = &self.target_circuit_pks[&C::name()];
-        create_proof::<KZGCommitmentScheme<_>, ProverGWC<_>, _, _, _, _>(
+        create_proof::<KZGCommitmentScheme<_>, ProverSHPLONK<_>, _, _, _, _>(
             &self.params,
             pk,
             &[circuit],
@@ -502,7 +442,7 @@ impl Prover {
             &proof[0..15],
             instance_bytes.len()
         );
-        let target_proof = TargetCircuitProof {
+        let target_proof = InnerCircuitProof {
             name: name.clone(),
             proof,
             instance: instance_bytes,

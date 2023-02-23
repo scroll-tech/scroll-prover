@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 use zkevm::{
     circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
-    prover::Prover,
+    prover::OuterCircuitProver,
     utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
 };
 
@@ -53,7 +53,7 @@ fn main() {
         load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
     let rng = XorShiftRng::from_seed(seed);
 
-    let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
+    let mut prover = OuterCircuitProver::from_params_and_rng(params, agg_params, rng);
 
     let mut traces = HashMap::new();
     let trace_path = PathBuf::from(&args.trace_path.unwrap());

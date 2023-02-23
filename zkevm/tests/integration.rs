@@ -4,7 +4,7 @@ use halo2_proofs::plonk::keygen_vk;
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
-    prover::Prover,
+    prover::OuterCircuitProver,
     utils::load_or_create_params,
 };
 
@@ -48,30 +48,36 @@ fn test_mock_prove() {
 
     for circuit in CIRCUIT.split(",") {
         match circuit {
-            "evm" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces, true)
-                    .unwrap()
+            "evm" => OuterCircuitProver::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(
+                &block_traces,
+                true,
+            )
+            .unwrap(),
+            "state" => {
+                OuterCircuitProver::mock_prove_target_circuit_batch::<circuit::StateCircuit>(
+                    &block_traces,
+                    true,
+                )
+                .unwrap()
             }
-            "state" => Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(
-                &block_traces,
-                true,
-            )
+            "zktrie" => {
+                OuterCircuitProver::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(
+                    &block_traces,
+                    true,
+                )
+                .unwrap()
+            }
+            "poseidon" => OuterCircuitProver::mock_prove_target_circuit_batch::<
+                circuit::PoseidonCircuit,
+            >(&block_traces, true)
             .unwrap(),
-            "zktrie" => Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "poseidon" => Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "super" => Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
+            "super" => {
+                OuterCircuitProver::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
+                    &block_traces,
+                    true,
+                )
+                .unwrap()
+            }
             _ => {
                 log::error!("invalid circuit, skip: {:?}", circuit);
             }
@@ -151,7 +157,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
+    let mut prover = OuterCircuitProver::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
         .create_target_circuit_proof_batch::<C>(&block_traces)
         .unwrap();

@@ -10,10 +10,10 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
-use zkevm::prover::{AggCircuitProof, ProvedCircuit};
+use zkevm::prover::{InnerCircuit, OuterCircuitProof};
 use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
-use zkevm::{io::*, prover::Prover};
+use zkevm::{io::*, prover::OuterCircuitProver};
 
 mod test_util;
 use test_util::{
@@ -28,20 +28,23 @@ fn verifier_circuit_prove(output_dir: &str) {
     let agg_params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).expect("failed to init params");
     let seed = load_seed(SEED_PATH).expect("failed to init rng");
 
-    let mut prover = Prover::from_params_and_seed(params.clone(), agg_params.clone(), seed);
+    let mut prover =
+        OuterCircuitProver::from_params_and_seed(params.clone(), agg_params.clone(), seed);
     prover.debug_dir = output_dir.to_string();
 
     // auto load target proofs
     let load = Path::new(&format!("{output_dir}/super_proof.json")).exists();
-    let circuit_results: Vec<ProvedCircuit> = if load {
+    let circuit_results: Vec<InnerCircuit> = if load {
         let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
         vec![prover
-            .debug_load_proved_circuit::<SuperCircuit>(Some(&mut v))
+            .debug_load_inner_circuit::<SuperCircuit>(Some(&mut v))
             .unwrap()]
     } else {
         let block_traces = load_block_traces_for_test().1;
-        vec![prover.prove_circuit::<SuperCircuit>(&block_traces).unwrap()]
+        vec![prover
+            .build_inner_circuit::<SuperCircuit>(&block_traces)
+            .unwrap()]
     };
 
     let agg_proof = prover
@@ -58,7 +61,7 @@ fn verifier_circuit_generate_solidity(dir: &str) {
     let load_full = true;
     let (vk, proof, instance) = if load_full {
         let file = fs::File::open(format!("{dir}/full_proof.data")).unwrap();
-        let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
+        let agg_proof: OuterCircuitProof = serde_json::from_reader(file).unwrap();
         (agg_proof.vk, agg_proof.proof, agg_proof.instance)
     } else {
         (
@@ -92,7 +95,7 @@ fn verifier_circuit_verify_proof() {
 
     let proof = read_env_var("PROOF_JSON", "proof.json".to_string());
     let file = fs::File::open(proof).unwrap();
-    let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
+    let agg_proof: OuterCircuitProof = serde_json::from_reader(file).unwrap();
     let verifier = Verifier::from_fpath(PARAMS_DIR, None);
     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
 }
@@ -107,7 +110,7 @@ fn verifier_circuit_verify(d: &str) {
     let proof = load_verify_circuit_proof(&mut folder);
     let instance = load_verify_circuit_instance(&mut folder);
 
-    let agg_proof = AggCircuitProof {
+    let agg_proof = OuterCircuitProof {
         proof,
         instance,
         vk,

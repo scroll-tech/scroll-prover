@@ -19,12 +19,16 @@ zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", br
 mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
 
 #mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "scroll-dev-0129" }
+# halo2-ecc = { git = "https://github.com/scroll-tech/halo2-lib", branch = "halo2-ecc-snark-verifier-0220", features = [ "default" ] }
+# halo2-base = { git = "https://github.com/scroll-tech/halo2-lib", branch = "halo2-ecc-snark-verifier-0220", features = [ "default" ] }
+snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0220", features = [ "default" ] }
+snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0220", features = [ "default" ] }
 
 rand = "0.8"
 rand_xorshift = "0.3"
 is-even = "1.0.0"
 ethers-core = "0.17.0"
-sha2 ="0.10.2"
+sha2 ="0.10.5"
 hex = "0.4.3"
 serde = "1.0"
 serde_derive = "1.0"
@@ -46,8 +50,8 @@ itertools = "0.10.5"
 procfs = "0.13.0"
 
 [features]
-default = []
-#default = ["prove_verify"]
+#default = []
+default = ["prove_verify"]
 prove_verify = []
 
 [dev-dependencies]

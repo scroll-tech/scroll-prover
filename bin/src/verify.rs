@@ -2,7 +2,7 @@ use clap::Parser;
 use log::info;
 use std::fs::File;
 use std::io::Read;
-use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
+use zkevm::prover::{InnerCircuitProof, OuterCircuitProof};
 use zkevm::verifier::Verifier;
 use zkevm::{
     circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
@@ -43,13 +43,13 @@ fn main() {
     let mut v = Verifier::from_params(params, agg_params, Some(agg_vk));
     if let Some(path) = args.evm_proof {
         let proof_vec = read_from_file(&path);
-        let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
+        let proof = serde_json::from_slice::<InnerCircuitProof>(proof_vec.as_slice()).unwrap();
         let verified = v.verify_target_circuit_proof::<EvmCircuit>(&proof).is_ok();
         info!("verify evm proof: {}", verified)
     }
     if let Some(path) = args.state_proof {
         let proof_vec = read_from_file(&path);
-        let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
+        let proof = serde_json::from_slice::<InnerCircuitProof>(proof_vec.as_slice()).unwrap();
         let verified = v
             .verify_target_circuit_proof::<StateCircuit>(&proof)
             .is_ok();
@@ -57,7 +57,7 @@ fn main() {
     }
     if let Some(path) = args.agg_proof {
         let proof_vec = read_from_file(&path);
-        let proof = serde_json::from_slice::<AggCircuitProof>(proof_vec.as_slice()).unwrap();
+        let proof = serde_json::from_slice::<OuterCircuitProof>(proof_vec.as_slice()).unwrap();
         let verified = v.verify_agg_circuit_proof(proof).is_ok();
         info!("verify agg proof: {}", verified)
     }

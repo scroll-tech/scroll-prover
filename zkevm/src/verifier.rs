@@ -3,7 +3,7 @@ use std::io::Cursor;
 
 use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::{deserialize_fr_matrix, load_instances};
-use crate::prover::{AggCircuitProof, TargetCircuitProof};
+use crate::prover::{InnerCircuitProof, OuterCircuitProof};
 use crate::utils::load_params;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
@@ -65,7 +65,7 @@ impl Verifier {
         Self::from_params(params, agg_params, agg_vk)
     }
 
-    pub fn verify_agg_circuit_proof(&self, proof: AggCircuitProof) -> anyhow::Result<()> {
+    pub fn verify_agg_circuit_proof(&self, proof: OuterCircuitProof) -> anyhow::Result<()> {
         if let Some(raw_agg_vk) = &self.raw_agg_vk {
             if &proof.vk != raw_agg_vk {
                 log::error!("vk provided in proof != vk in verifier");
@@ -105,7 +105,7 @@ impl Verifier {
 
     pub fn verify_target_circuit_proof<C: TargetCircuit>(
         &mut self,
-        proof: &TargetCircuitProof,
+        proof: &InnerCircuitProof,
     ) -> anyhow::Result<()> {
         let instances: Vec<Vec<Vec<u8>>> = serde_json::from_reader(&proof.instance[..])?;
         let instances = deserialize_fr_matrix(instances);

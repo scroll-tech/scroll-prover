@@ -35,21 +35,29 @@ pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26)
 pub static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
 
 pub trait TargetCircuit {
+    /// Inner circuit implements Halo2::circuit
     type Inner: Halo2Circuit<Fr>;
+
+    /// Name of the circuit
     fn name() -> String;
-    /// used to generate vk&pk
+
+    /// An empty circuit that is used to generate vk&pk
     fn empty() -> Self::Inner
     where
         Self: Sized,
     {
         Self::from_block_traces(&[]).unwrap().0
     }
+
+    /// Convert a block trace into a circuit
     fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
         Self::from_block_traces(std::slice::from_ref(block_trace))
     }
+
+    /// Convert a set of block traces into circuits
     fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -57,19 +65,24 @@ pub trait TargetCircuit {
         let witness_block = block_traces_to_witness_block(block_traces)?;
         Self::from_witness_block(&witness_block)
     }
+
+    /// Convert a witness block into a circuit
     fn from_witness_block(
         witness_block: &witness::Block<Fr>,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized;
 
+    /// Estimate number of rows for a block trace
     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
         let witness_block = block_traces_to_witness_block(block_traces).unwrap();
         Self::estimate_rows_from_witness_block(&witness_block)
     }
+
     fn estimate_rows_from_witness_block(_witness_block: &witness::Block<Fr>) -> usize {
         0
     }
+
     fn public_input_len() -> usize {
         0
     }
