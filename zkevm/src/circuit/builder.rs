@@ -3,9 +3,9 @@ use crate::circuit::{
     TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS,
 };
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
-use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
+use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
-use eth_types::{Hash, ToAddress};
+use eth_types::ToAddress;
 use ethers_core::types::{Bytes, U256};
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
@@ -14,7 +14,6 @@ use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
 
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
 
 //use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
@@ -22,7 +21,6 @@ use halo2_proofs::halo2curves::bn256::Fr;
 use anyhow::bail;
 use is_even::IsEven;
 use itertools::Itertools;
-use std::collections::HashMap;
 use std::time::Instant;
 
 const SUB_CIRCUIT_NAMES: [&str; 10] = [
@@ -170,13 +168,7 @@ pub fn block_traces_to_witness_block(
     if !zero_coinbase_exist {
         state_db.set_account(
             &Default::default(),
-            Account {
-                nonce: Default::default(),
-                balance: Default::default(),
-                storage: HashMap::new(),
-                // FIXME: 0 or keccak(nil)?
-                code_hash: Default::default(),
-            },
+            Account::zero(),
         );
     }
 
@@ -264,7 +256,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-
+/* 
 #[derive(Debug, Clone)]
 struct PoseidonCodeHash {
     bytes_in_field: usize,
@@ -338,7 +330,7 @@ fn code_hashing() {
         "0x26f706f949ff4faad54ee72308e9d30ece46e37cf8b9968bdb274e750a264937"
     );
 }
-
+*/
 /*
 fn get_account_deployed_codehash(
     execution_result: &ExecutionResult,
@@ -388,14 +380,13 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
     let (existed, data) = sdb.get_account(&addr);
     if existed && !(data.nonce.is_zero() && data.balance.is_zero()) {
         assert_eq!(
-            hash, data.code_hash,
+            hash, data.poseidon_code_hash,
             "invalid codehash for existed account {addr:?}, {data:?}"
         );
     };
 }
 pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyhow::Error> {
-    let mut cdb =
-        CodeDB::new_with_code_hasher(Box::new(PoseidonCodeHash::new(HASHBLOCK_BYTES_IN_FIELD)));
+    let mut cdb = CodeDB::new();
 
     for block in blocks.iter().rev() {
         // notice empty codehash always kept as keccak256(nil)
