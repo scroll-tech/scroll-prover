@@ -418,7 +418,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1153,11 +1153,10 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "ethers-core",
  "ethers-signers",
- "halo2-mpt-circuits",
  "halo2_proofs",
  "hex",
  "itertools",
@@ -1165,6 +1164,7 @@ dependencies = [
  "libsecp256k1",
  "num",
  "num-bigint",
+ "poseidon-circuit",
  "regex",
  "serde",
  "serde_json",
@@ -1415,7 +1415,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1728,7 +1728,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1768,7 +1768,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -1922,7 +1922,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0216#051b5efc54512d1422eba35338364473fe3a65c0"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=goerli-0215-dual-hash#24b5663c3319376e8be8a64d78dc52859194711a"
 dependencies = [
  "halo2_proofs",
  "hex",
@@ -2482,7 +2482,7 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "env_logger",
  "eth-types",
@@ -2723,7 +2723,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2738,7 +2738,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -5770,7 +5770,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#452578ff51c2dabf85e7ab3219e79156bd1eab6a"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#ffc2741ddd392711b43dc4f62535d43863459abb"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -5808,7 +5808,7 @@ dependencies = [
 [[package]]
 name = "zktrie"
 version = "0.1.2"
-source = "git+https://github.com/lispc/zktrie?branch=scroll-dev-0215#0bd8820fea4fea1ad10371ae9cae49622bd5413b"
+source = "git+https://github.com/scroll-tech/zktrie.git?branch=scroll-dev-0226#1a5562f663a81ff903383db69dc6c9404b63e69d"
 dependencies = [
  "gobuild",
 ]
