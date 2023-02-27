@@ -7,41 +7,33 @@ use crate::circuit::{
     DEGREE,
 };
 use crate::io::{
-    deserialize_fr_matrix, load_instances, serialize_fr_tensor, serialize_instance,
-    serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
+    deserialize_fr_matrix, load_instance, serialize_fr_tensor, serialize_instance, serialize_vk,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
 use crate::utils::{load_or_create_params, read_env_var};
 use crate::utils::{load_seed, metric_of_witness_block};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
-use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
-use halo2_proofs::plonk::{
-    create_proof, keygen_pk, keygen_pk2, keygen_vk, ProvingKey, VerifyingKey,
-};
+use halo2_proofs::halo2curves::bn256::{Bn256, Fq, Fr, G1Affine};
+use halo2_proofs::plonk::{create_proof, keygen_pk2, keygen_vk, ProvingKey, VerifyingKey};
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG, ParamsVerifierKZG};
-use halo2_proofs::poly::kzg::multiopen::{ProverGWC, ProverSHPLONK};
+use halo2_proofs::poly::kzg::multiopen::ProverSHPLONK;
 use halo2_proofs::transcript::{Challenge255, PoseidonWrite};
 use halo2_proofs::SerdeFormat;
-use halo2_snark_aggregator_api::transcript::sha::ShaWrite;
-use halo2_snark_aggregator_circuit::verify_circuit::{
-    final_pair_to_instances, Halo2CircuitInstance, Halo2CircuitInstances, Halo2VerifierCircuit,
-    Halo2VerifierCircuits, SingleProofWitness,
-};
-use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use log::info;
 use once_cell::sync::Lazy;
 use rand::rngs::OsRng;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use serde_derive::{Deserialize, Serialize};
+use snark_verifier::loader::evm::{self, EvmLoader};
+use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
 use snark_verifier::system::halo2::{compile, Config};
+use snark_verifier::verifier::{Plonk, PlonkVerifier};
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use snark_verifier_sdk::halo2::{
-    gen_proof_shplonk, gen_snark_gwc, PoseidonTranscript, POSEIDON_SPEC,
-};
-use snark_verifier_sdk::{gen_pk, NativeLoader, Snark};
+use snark_verifier_sdk::halo2::gen_proof_shplonk;
+use snark_verifier_sdk::{gen_pk, Snark};
 use types::base64;
 use types::eth::BlockTrace;
 
@@ -243,19 +235,27 @@ impl OuterCircuitProver {
         Ok((snark, proof.original_block_count))
     }
 
-    /// TODO: Fix this function
-    // pub fn create_solidity_verifier(&self, proof: &OuterCircuitProof) -> String {
-    //     let res =
-    //     MultiCircuitSolidityGenerate {
-    //         verify_vk: self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
-    //         verify_params: &self.agg_params,
-    //         verify_circuit_instance: load_instances(&proof.instance),
-    //         proof: proof.proof.clone(),
-    //         verify_public_inputs_size: 4, // not used now
-    //     }
-    //     .call("".into());
-    //     println!("create solidity verifier: {}", res);
-    //     res
+    // pub fn create_solidity_verifier(&self, proof: &OuterCircuitProof) -> Vec<u8> {
+    //     let svk = self.params.get_g()[0].into();
+    //     let dk = (self.params.g2(), self.params.s_g2()).into();
+    //     let instances = load_instance(&proof.instance);
+    //     let num_instance: Vec<usize> = instances.iter().map(|x| x.len()).collect();
+
+    //     let protocol = compile(
+    //         &self.params,
+    //         &self.agg_pk.as_ref().expect("pk should be inited").get_vk(),
+    //         Config::kzg().with_num_instance(num_instance),
+    //     );
+
+    //     let loader = EvmLoader::new::<Fq, Fr>();
+    //     let protocol = protocol.loaded(&loader);
+
+    //     let mut transcript = EvmTranscript::<_, Rc<EvmLoader>, _, _>::new(&loader);
+
+    //     let instances = transcript.load_instances(num_instance);
+    //     let proof = Plonk::read_proof(&svk, &protocol, &instances, &mut transcript);
+
+    //     evm::compile_yul(&loader.yul_code())
     // }
 
     pub fn create_agg_circuit_proof(

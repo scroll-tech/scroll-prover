@@ -4,13 +4,14 @@ use halo2_proofs::SerdeFormat;
 
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
+use snark_verifier_sdk::Snark;
 use std::fs::{self};
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
-use zkevm::prover::{InnerCircuit, OuterCircuitProof};
+use zkevm::prover::OuterCircuitProof;
 use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::OuterCircuitProver};
@@ -34,7 +35,7 @@ fn verifier_circuit_prove(output_dir: &str) {
 
     // auto load target proofs
     let load = Path::new(&format!("{output_dir}/super_proof.json")).exists();
-    let circuit_results: Vec<InnerCircuit> = if load {
+    let circuit_results: Vec<(Snark, usize)> = if load {
         let mut v = Verifier::from_params(params, agg_params, None);
         log::info!("loading cached target proofs");
         vec![prover
@@ -46,9 +47,15 @@ fn verifier_circuit_prove(output_dir: &str) {
             .build_inner_circuit::<SuperCircuit>(&block_traces)
             .unwrap()]
     };
+    let first_proved_block_count = circuit_results[0].1;
+    let circuit_results: Vec<Snark> = circuit_results
+        .iter()
+        .map(|(snark, _index)| snark)
+        .cloned()
+        .collect();
 
     let agg_proof = prover
-        .create_agg_circuit_proof_impl(circuit_results)
+        .create_agg_circuit_proof_impl(circuit_results, first_proved_block_count)
         .unwrap();
     agg_proof.write_to_dir(&mut out_dir);
     log::info!("output files to {}", output_dir);
@@ -114,8 +121,7 @@ fn verifier_circuit_verify(d: &str) {
         proof,
         instance,
         vk,
-        final_pair: vec![], // not used
-        block_count: 0,     // not used
+        block_count: 0, // not used
     };
     verifier.verify_agg_circuit_proof(agg_proof).unwrap();
 }

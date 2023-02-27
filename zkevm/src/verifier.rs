@@ -10,11 +10,14 @@ use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::plonk::{keygen_vk, verify_proof};
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
-use halo2_proofs::poly::kzg::multiopen::VerifierGWC;
+use halo2_proofs::poly::kzg::multiopen::VerifierSHPLONK;
 use halo2_proofs::poly::kzg::strategy::SingleStrategy;
 use halo2_proofs::transcript::{Challenge255, PoseidonRead};
-use halo2_snark_aggregator_api::transcript::sha::ShaRead;
-use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
+use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::halo2::PoseidonTranscript;
+use snark_verifier_sdk::NativeLoader;
+// use halo2_snark_aggregator_api::transcript::sha::ShaRead;
+// use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 
 pub struct Verifier {
     params: ParamsKZG<Bn256>,
@@ -35,7 +38,7 @@ impl Verifier {
             log::error!("Verifier should better have raw_agg_vk to check consistency");
         }
         let agg_vk = raw_agg_vk.as_ref().map(|k| {
-            VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+            VerifyingKey::<G1Affine>::read::<_, AggregationCircuit>(
                 &mut Cursor::new(&k),
                 halo2_proofs::SerdeFormat::Processed,
             )
@@ -85,15 +88,15 @@ impl Verifier {
         let verify_circuit_instance2: Vec<&[&[Fr]]> =
             verify_circuit_instance1.iter().map(|x| &x[..]).collect();
 
-        let mut transcript = ShaRead::<_, _, Challenge255<_>, sha2::Sha256>::init(&proof.proof[..]);
+        let mut transcript = PoseidonTranscript::<NativeLoader, _>::new(proof.proof.as_slice());
 
         // TODO better way to do this?
-        let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
+        let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, AggregationCircuit>(
             &mut Cursor::new(&proof.vk),
             halo2_proofs::SerdeFormat::Processed,
         )
         .unwrap();
-        verify_proof::<_, VerifierGWC<_>, _, _, _>(
+        verify_proof::<_, VerifierSHPLONK<_>, _, _, _>(
             params,
             self.agg_vk.as_ref().unwrap_or(&vk_in_proof),
             strategy,
@@ -123,7 +126,7 @@ impl Verifier {
                 .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()))
         });
 
-        verify_proof::<_, VerifierGWC<_>, _, _, _>(
+        verify_proof::<_, VerifierSHPLONK<_>, _, _, _>(
             verifier_params,
             vk,
             strategy,
