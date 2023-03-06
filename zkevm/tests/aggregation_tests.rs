@@ -1,4 +1,5 @@
-use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
+use eth_types::geth_types::GethData;
+use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::SerdeFormat;
 

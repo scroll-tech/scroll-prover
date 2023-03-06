@@ -57,3 +57,4 @@ prove_verify = []
 [dev-dependencies]
 git-version = "0.3.5"
 glob = "0.3.0"
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "scroll-stable" }

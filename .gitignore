@@ -16,3 +16,5 @@ target/
 zkevm/tests/traces/bridge/*.proof
 
 *.log
+*.srs
+*.pkey
