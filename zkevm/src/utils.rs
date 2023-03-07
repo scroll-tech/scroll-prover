@@ -2,8 +2,8 @@ use anyhow::Result;
 use halo2_proofs::arithmetic::Field;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use halo2_proofs::halo2curves::FieldExt;
+use halo2_proofs::SerdeFormat;
 
-use halo2_proofs::poly::commitment::Params;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use rand::rngs::OsRng;
 use std::fs::{self, metadata, File};
@@ -11,6 +11,7 @@ use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
+use zkevm_circuits::witness;
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
@@ -63,7 +64,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = Params::read::<_>(&mut BufReader::new(f))?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), SerdeFormat::Processed)?;
     log::info!("load params successfully!");
     Ok(p)
 }
@@ -84,7 +85,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     };
     let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
     let mut params_buf = Vec::new();
-    params.write(&mut params_buf)?;
+    params.write_custom(&mut params_buf, halo2_proofs::SerdeFormat::Processed)?;
 
     let mut params_file = File::create(params_path)?;
     params_file.write_all(&params_buf[..])?;
@@ -148,4 +149,19 @@ pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T
     std::env::var(var_name)
         .map(|s| s.parse::<T>().unwrap_or_else(|_| default.clone()))
         .unwrap_or(default)
+}
+
+#[derive(Debug)]
+pub struct BatchMetric {
+    pub num_block: usize,
+    pub num_tx: usize,
+    pub num_step: usize,
+}
+
+pub fn metric_of_witness_block(block: &witness::Block<Fr>) -> BatchMetric {
+    BatchMetric {
+        num_block: block.context.ctxs.len(),
+        num_tx: block.txs.len(),
+        num_step: block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>(),
+    }
 }
