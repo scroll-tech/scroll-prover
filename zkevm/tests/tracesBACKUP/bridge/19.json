@@ -1,0 +1,1050 @@
+{
+    "chainID": 534353,
+    "version": "0.1.9-alpha-03b4de32",
+    "coinbase": {
+        "address": "0x5300000000000000000000000000000000000005",
+        "nonce": 0,
+        "balance": "0x12d8c59",
+        "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+        "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+        "codeSize": 1652
+    },
+    "header": {
+        "parentHash": "0x9ef696aa281d59deca384d813ba416325e8c0e7d30cdbda968e8972a98a38220",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "miner": "0x0000000000000000000000000000000000000000",
+        "stateRoot": "0x0c7dacdd1a024e662983999fb69a4fe2b65d58382af42655a5b51eafa1e7f845",
+        "transactionsRoot": "0x7c8c2effd3144f3c2ec4a9d41dbc1541e35a566961ffe05600de586396d65e00",
+        "receiptsRoot": "0x056b23fbba480696b65fe5a59b8f2148a1299103c4f57df839233af2cf4ca2d2",
+        "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "difficulty": "0x2",
+        "number": "0x13",
+        "gasLimit": "0x7a1200",
+        "gasUsed": "0x5208",
+        "timestamp": "0x63f87554",
+        "extraData": "0xd983010a0d846765746889676f312e31372e3130856c696e75780000000000006db02f756f022455f833d5c53e9033c0ed804ace6e8a9ed14a1daa73ffb268fa7e5d675c45c1630c04f24097f67048e730e873d6556f16a49114cbcf28e7e2ad01",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x0000000000000000",
+        "baseFeePerGas": null,
+        "hash": "0xc51b90d3dcbf89b5d9def03a02660780bc99a60bb21a9fb323ea7111b8e923d4"
+    },
+    "transactions": [
+        {
+            "type": 0,
+            "nonce": 41,
+            "txHash": "0xbf7fb148639a396627dae44f3b606ae3c3bacb1149b86362de07c17cc855f886",
+            "gas": 21000,
+            "gasPrice": "0x1",
+            "from": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+            "to": "0x831a53b05bc02b11038307996564753d8366cc93",
+            "chainId": "0x82751",
+            "value": "0x14d1120d7b160000",
+            "data": "0x",
+            "isCreate": false,
+            "v": "0x104ec6",
+            "r": "0xfc6288e0210c6fecc4f729d9571be16af518385f043f57f398cd4ee5c268adf6",
+            "s": "0xe0546c06491bb15f36a0494881ae2df151e9cbcfd250df3fc99b4bff847e292"
+        }
+    ],
+    "storageTrace": {
+        "rootBefore": "0x20b46cbd5ef0ce4f1cae852ab16d07da35553daccce248320b996d602453adac",
+        "rootAfter": "0x0c7dacdd1a024e662983999fb69a4fe2b65d58382af42655a5b51eafa1e7f845",
+        "proofs": {
+            "0x4075A6bcAd6c3c5B941C2482fda716A56608106B": [
+                "0x0022ff0836594d245b1c70f2e00ae5ed0d4c7368ecd3ef4b55f82bdf859cd1325e184a8c3fee905893f537328536a7a5421cdef31438555e6ab5e3f6b72e98a67d",
+                "0x000e61bdb65586816e8f4254f33a715055faa5899fe6ce3c27c17b8e425492a3b310b297c6046bc1ca7c686cd001eb469329e9aee52998e574a846cf473678d727",
+                "0x0017bdb3fbf7a5d657bc3c47a6138818856c2928e71721860524cc9a9615fe55141f73e652e6fb4a46297817890bf65221f693d5d9b7b381fd8c93e64537ce8461",
+                "0x002ad790bf3d39b7bf2f2ed080a381d15b6cb604a68a42529bd7f3aa7fc0fb4ca30111248548f2a5fcd1144c99f3e40d7201d332a63376801b821d1eb2a433500a",
+                "0x002dc94c3dc4f684d9bd1889e43d888f5bb2d2dae492c43a7650126edc136a5935013de666a430607514b2fdc368bedc498529ba0d9bd569c43bc056781bff997d",
+                "0x000c0c3fde0f8fa36362e032e8bdb3d84f52ab98f562be598926522ae2d7a235ec0000000000000000000000000000000000000000000000000000000000000000",
+                "0x002b1fab81956caa60e2a566afdf95d7a5f5f1c551e9ab8992aee2bf79ec860c990000000000000000000000000000000000000000000000000000000000000000",
+                "0x0000000000000000000000000000000000000000000000000000000000000000001879ca0aa2b67ce1ca72010c540a6a2f15fc6082fb317368df6d58a0a23c9a5a",
+                "0x0023aa337ab41b727e46ccdd4341813832d5c99ca20223452989a6a6f72950f19f0000000000000000000000000000000000000000000000000000000000000000",
+                "0x0029ea2e694e20268f64de557c9dd29c3c5a8cbc35aea60898b24ad04d9b349f160000000000000000000000000000000000000000000000000000000000000000",
+                "0x00254c2623ed1c2c93251ccb2cfaf23eb575d141e437cd234372fe78c4dee53c301345283f2e83e62df2a887f9c5f8ec6cec01fab91121889113927d1d493fb51d",
+                "0x0105d4bf13623923f7bc72da862e18fab20027434d3b5c6f8ad52e37191f4274960508000000000000000000000000000000000000000000000000000000000000000000290000000000000000000000000000000000000000000000003782dace9c62c5af0000000000000000000000000000000000000000000000000000000000000000c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a4702098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864204075a6bcad6c3c5b941c2482fda716a56608106b000000000000000000000000",
+                "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+            ],
+            "0x5300000000000000000000000000000000000005": [
+                "0x0022ff0836594d245b1c70f2e00ae5ed0d4c7368ecd3ef4b55f82bdf859cd1325e184a8c3fee905893f537328536a7a5421cdef31438555e6ab5e3f6b72e98a67d",
+                "0x000e61bdb65586816e8f4254f33a715055faa5899fe6ce3c27c17b8e425492a3b310b297c6046bc1ca7c686cd001eb469329e9aee52998e574a846cf473678d727",
+                "0x0017bdb3fbf7a5d657bc3c47a6138818856c2928e71721860524cc9a9615fe55141f73e652e6fb4a46297817890bf65221f693d5d9b7b381fd8c93e64537ce8461",
+                "0x00057323157d8310dcc3bf9fa744d64506d81fdc4c55ab0cced68fde3edd91855008a2fa54afca0774ea816bc18bc496095c9e9ad114ecfe6c42842e903aa8fa44",
+                "0x011facf302b106912bccc8194dff4cb12139e7f04288d3f5eefb57ccf4d842ba2205080000000000000000000000000000000000000000000000000674000000000000000000000000000000000000000000000000000000000000000000000000012d3a511f143c1935b0cdd59c80db02b026d3eb944f52070fd1e927f7ba6fac45f19f3c256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d602c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5205300000000000000000000000000000000000005000000000000000000000000",
+                "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+            ],
+            "0x831A53b05BC02b11038307996564753d8366cc93": [
+                "0x0022ff0836594d245b1c70f2e00ae5ed0d4c7368ecd3ef4b55f82bdf859cd1325e184a8c3fee905893f537328536a7a5421cdef31438555e6ab5e3f6b72e98a67d",
+                "0x0014ab95a7928224f5161069fa568cc88795cc5a200b86a7b1c59fa8b98c525220105de16c149ec99a65b39ee221714d8098e5cea6d823c5fa944bf7179e31e783",
+                "0x0025964e35dddcbbed70802d124e847e53b00ed2d5d9d35ae2c630f6e4d52566da2a4984cddb10222b0f8b9b1a6e15ad3079b2e8b69f2f4fbb64e136794fe4db2d",
+                "0x00276cfb8d518209463aaa565ee44f9a29eb8c08c4bb9bd2d5411a573c74096e1201a10fc5f001b7067c422cf18faa7ca36486b8053990bbd65ff9f91562129dd0",
+                "0x000c70d21d86dd8674f2ed6d58302a084cd3252ce74f48870f088a552cd31a244d016d567e7cd12b05300679fb38510ad1984d1814c2892065a2a0d47c721498fd",
+                "0x0122ee972cb6ba51b957d1027089b9d003377cd3ac95aa65ffd7c8661c7bd8d0d105080000000000000000000000000000000000000000000000000723000000000000000100000000000000000000000000000000000000000000000000000000000000000b5ea212a63372838ec236dc181bc37819c7da6af90e07b75fd8521a67088ffbae41290cb5ff621ddad2c09331609c7fe3bd832e059bc2eb2b23cc5f833d7eb111079b9c5064ee66f3e98eb95603347708eed0ac7822dee6e4857304e82e4c1e20cf16a0bebb13045c91127cdf7325d6d0d1ca6e75000000000000000000000000",
+                "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+            ]
+        }
+    },
+    "executionResults": [
+        {
+            "gas": 21000,
+            "failed": false,
+            "returnValue": "",
+            "from": {
+                "address": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+                "nonce": 41,
+                "balance": "0x3782dace9c62c5af",
+                "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+                "codeSize": 0
+            },
+            "to": {
+                "address": "0x831a53b05bc02b11038307996564753d8366cc93",
+                "nonce": 0,
+                "balance": "0x0",
+                "keccakCodeHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "poseidonCodeHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "codeSize": 0
+            },
+            "accountAfter": [
+                {
+                    "address": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+                    "nonce": 42,
+                    "balance": "0x22b1c8c1214c73a7",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+                    "codeSize": 0
+                },
+                {
+                    "address": "0x831a53b05bc02b11038307996564753d8366cc93",
+                    "nonce": 0,
+                    "balance": "0x14d1120d7b160000",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+                    "codeSize": 0
+                },
+                {
+                    "address": "0x5300000000000000000000000000000000000005",
+                    "nonce": 0,
+                    "balance": "0x12d8c59",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                }
+            ],
+            "structLogs": []
+        }
+    ],
+    "mptwitness": [
+        {
+            "address": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+            "accountKey": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405",
+            "accountPath": [
+                {
+                    "pathPart": "0x496",
+                    "root": "0xacad5324606d990b3248e2ccac3d5535da076db12a85ae1c4fcef05ebd6cb420",
+                    "path": [
+                        {
+                            "value": "0x5e32d19c85df2bf8554befd3ec68734c0dede50ae0f2701c5b244d593608ff22",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x27d7783647cf46a874e59829e5aee9299346eb01d06c687ccac16b04c697b210",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x6184ce3745e6938cfd81b3b7d9d593f62152f60b89177829464afbe652e6731f",
+                            "sibling": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17"
+                        },
+                        {
+                            "value": "0xa34cfbc07faaf3d79b52428aa604b66c5bd181a380d02e2fbfb7393dbf90d72a",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x7d99ff1b7856c03bc469d59b0dba298549dcbe68c3fdb214756030a466e63d01",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0xec35a2d7e22a52268959be62f598ab524fd8b3bde832e06263a38f0fde3f0c0c",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x990c86ec79bfe2ae9289abe951c5f1f5a5d795dfaf66a5e260aa6c9581ab1f2b",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x5a9a3ca2a0586ddf687331fb8260fc152f6a0a540c0172cae17cb6a20aca7918",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x9ff15029f7a6a68929452302a29cc9d53238814143ddcc467e721bb47a33aa23",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x169f349b4dd04ab29808a6ae35bc8c5a3c9cd29d7c55de648f26204e692eea29",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x1db53f491d7d921391882111b9fa01ec6cecf8c5f987a8f22de6832e3f284513",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x75ea77033a0dbb464d725d5b16f4183329f9955e46b69d6b7a37dfb5be179b19",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                },
+                {
+                    "pathPart": "0x496",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x69d6e1f4a1832b05a002fad75449595d6e6690b5018b7af1c16e3267bae5c61f",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x9f06ed98728881796ff9c4ea23d55e53284558a5254edb2f7d5632bb2a5c300a",
+                            "sibling": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17"
+                        },
+                        {
+                            "value": "0xe39b1f7687f0c3fc88cb5f883fed529ee7b619da91e9fe8cf133d99e2d50360d",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x93b6b1bd6214fde30e10aa04ccef5960ddba97bbcfc5e0b0c9a9e44dfb143c07",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0xfbb5e510cbc7f672a1dd2b3dfb86da6b3f86dd65220fc4a1f5069bafb3f73e10",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x2f1d8a74544966968979cd13798d3a5dab7ab2edbf185817328c50918d2b7624",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xc11f2d101f46aea7b6cb51b55fe4cdd3e928534f5f83c81ed6b5d6d3597c3704",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xff057fa660b54070de8f6533a5ef79778e192718f24c290d1625adb9fd5b9c10",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xabd6aa4ee8936c716f91743af09817eaa6b8f299ee2f3e7c82c636c3dd530629",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x38166cc0254de4f13c98b276c90150a6bab76d28f6c6198b1caf33fbd4a2e728",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xa1290c5609bd8cff1b5a8fd2b7ab6e06fb496451e621eb9fe7c952d56b30f414",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 41,
+                    "balance": "0x3782dace9c62c5af",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                },
+                {
+                    "nonce": 42,
+                    "balance": "0x3782dace9c62c5af",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                }
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x5300000000000000000000000000000000000005",
+            "accountKey": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f",
+            "accountPath": [
+                {
+                    "pathPart": "0x2",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x69d6e1f4a1832b05a002fad75449595d6e6690b5018b7af1c16e3267bae5c61f",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17",
+                            "sibling": "0x9f06ed98728881796ff9c4ea23d55e53284558a5254edb2f7d5632bb2a5c300a"
+                        },
+                        {
+                            "value": "0x508591dd3ede8fd6ce0cab554cdc1fd80645d644a79fbfc3dc10837d15237305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x9ea71bf3770e790673286c705a61c97ab645fd52566bb3603b87ef0f5a7b842d",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                },
+                {
+                    "pathPart": "0x2",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x69d6e1f4a1832b05a002fad75449595d6e6690b5018b7af1c16e3267bae5c61f",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17",
+                            "sibling": "0x9f06ed98728881796ff9c4ea23d55e53284558a5254edb2f7d5632bb2a5c300a"
+                        },
+                        {
+                            "value": "0x508591dd3ede8fd6ce0cab554cdc1fd80645d644a79fbfc3dc10837d15237305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x9ea71bf3770e790673286c705a61c97ab645fd52566bb3603b87ef0f5a7b842d",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 0,
+                    "balance": "0x12d3a51",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                },
+                {
+                    "nonce": 0,
+                    "balance": "0x12d3a51",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                }
+            ],
+            "commonStateRoot": "0x3c9ff145ac6fbaf727e9d10f07524f94ebd326b002db809cd5cdb035193c141f",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x831a53b05bc02b11038307996564753d8366cc93",
+            "accountKey": "0x910e0f04f12d585162c84d2123ccc1d7a2b6bdc312d9659e702aef0c67a05d23",
+            "accountPath": [
+                {
+                    "pathPart": "0x11",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18",
+                            "sibling": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618"
+                        },
+                        {
+                            "value": "0x2052528cb9a89fc5b1a7860b205acc9587c88c56fa691016f5248292a795ab14",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xda6625d5e4f630c6e25ad3d9d5d20eb0537e844e122d8070edbbdcdd354e9625",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0x126e09743c571a41d5d29bbbc4088ceb299a4fe45e56aa3a460982518dfb6c27",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xfa592fcec12265401584d0a4d81d67004e04c24db0710aaf4fa582bee09fe518",
+                        "sibling": "0xd1d0d87b1c66c8d7ff65aa95acd37c3703d0b9897002d157b951bab62c97ee22"
+                    }
+                },
+                {
+                    "pathPart": "0x11",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18",
+                            "sibling": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618"
+                        },
+                        {
+                            "value": "0x2052528cb9a89fc5b1a7860b205acc9587c88c56fa691016f5248292a795ab14",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xda6625d5e4f630c6e25ad3d9d5d20eb0537e844e122d8070edbbdcdd354e9625",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0x126e09743c571a41d5d29bbbc4088ceb299a4fe45e56aa3a460982518dfb6c27",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xfa592fcec12265401584d0a4d81d67004e04c24db0710aaf4fa582bee09fe518",
+                        "sibling": "0xd1d0d87b1c66c8d7ff65aa95acd37c3703d0b9897002d157b951bab62c97ee22"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                null,
+                null
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+            "accountKey": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405",
+            "accountPath": [
+                {
+                    "pathPart": "0x496",
+                    "root": "0x2747a78378e6c9781aa73fe0d9daf1f5d179cb8e84cbd99a0f92497231209707",
+                    "path": [
+                        {
+                            "value": "0x9be71be923901ab34a5850de68ac79db190dab4d3ea8efee6406bad519f61618",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x69d6e1f4a1832b05a002fad75449595d6e6690b5018b7af1c16e3267bae5c61f",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x9f06ed98728881796ff9c4ea23d55e53284558a5254edb2f7d5632bb2a5c300a",
+                            "sibling": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17"
+                        },
+                        {
+                            "value": "0xe39b1f7687f0c3fc88cb5f883fed529ee7b619da91e9fe8cf133d99e2d50360d",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x93b6b1bd6214fde30e10aa04ccef5960ddba97bbcfc5e0b0c9a9e44dfb143c07",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0xfbb5e510cbc7f672a1dd2b3dfb86da6b3f86dd65220fc4a1f5069bafb3f73e10",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x2f1d8a74544966968979cd13798d3a5dab7ab2edbf185817328c50918d2b7624",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xc11f2d101f46aea7b6cb51b55fe4cdd3e928534f5f83c81ed6b5d6d3597c3704",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xff057fa660b54070de8f6533a5ef79778e192718f24c290d1625adb9fd5b9c10",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xabd6aa4ee8936c716f91743af09817eaa6b8f299ee2f3e7c82c636c3dd530629",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x38166cc0254de4f13c98b276c90150a6bab76d28f6c6198b1caf33fbd4a2e728",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xa1290c5609bd8cff1b5a8fd2b7ab6e06fb496451e621eb9fe7c952d56b30f414",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                },
+                {
+                    "pathPart": "0x496",
+                    "root": "0x1281b7527e9a6debf4b0fb4f90f8af0758c38325509040dda9c089ac3d1d531f",
+                    "path": [
+                        {
+                            "value": "0x6c7d87e0914edbc932202ae13ddec1ceba892683acbe38d957f9685522f5da10",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0xb6e2b70a725af48315d603af7f1f1ea19387432319cc024f89cc117f03135902",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b",
+                            "sibling": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17"
+                        },
+                        {
+                            "value": "0xc764d8ad8e402c15e75bb77b41f2da00abf013d2a7c50ff0f242cd2df96d1c13",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x8f532e2af3c814ae663e10d90c4bd59b25b9921148b17575cac7a30efb36df20",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0x5d6dbaecc35c803a2efa2ebe66ad6e6200c8e23de4c77743a41413f5f6403909",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x5d84794a41bb4f268e559f1be52d5ce0a82f10d125934a973ffa171bf7d43110",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x45aa21010216b234acac47aad7ae61afb310ef03db15208995ac539083522307",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xbe013c44a010a22687fd0b1f3df57f64af1807995d59c4eb9a7da2662042f01c",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x93f98a383fc0502226c31068691e1e38983c2776cf782f1a7f207038c2b8431e",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x25d5becde2e2a955075571596bdc3b6cf1c589926578110883dc640707bc3e01",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x6f2a24cb8b4da7d8c32e64164bb57261bb94cebdbae25a13f6cbd4893cd01515",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 42,
+                    "balance": "0x3782dace9c62c5af",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                },
+                {
+                    "nonce": 42,
+                    "balance": "0x22b1c8c1214c73a7",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                }
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x5300000000000000000000000000000000000005",
+            "accountKey": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f",
+            "accountPath": [
+                {
+                    "pathPart": "0x2",
+                    "root": "0x1281b7527e9a6debf4b0fb4f90f8af0758c38325509040dda9c089ac3d1d531f",
+                    "path": [
+                        {
+                            "value": "0x6c7d87e0914edbc932202ae13ddec1ceba892683acbe38d957f9685522f5da10",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0xb6e2b70a725af48315d603af7f1f1ea19387432319cc024f89cc117f03135902",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x1455fe15969acc2405862117e728296c85188813a6473cbc57d6a5f7fbb3bd17",
+                            "sibling": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b"
+                        },
+                        {
+                            "value": "0x508591dd3ede8fd6ce0cab554cdc1fd80645d644a79fbfc3dc10837d15237305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x9ea71bf3770e790673286c705a61c97ab645fd52566bb3603b87ef0f5a7b842d",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                },
+                {
+                    "pathPart": "0x2",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x83e84011c0510e3d7e5f83a7b842eaf66b77d4e671cba572ae5fbc0ef62c2820",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x5d156f97a97ed02a5dea2c6a9abfd93c4c1e455461f6c3644ce5cd4922cde004",
+                            "sibling": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b"
+                        },
+                        {
+                            "value": "0x38832e52f06a06a5a1dd443da8e5485d19f1eb31a9ccfb27d90c11e88598d305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x1faa6ccf0544616088b540c82901a07f35db8419c23b95fd09df0872e90fc017",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 0,
+                    "balance": "0x12d3a51",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                },
+                {
+                    "nonce": 0,
+                    "balance": "0x12d8c59",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                }
+            ],
+            "commonStateRoot": "0x3c9ff145ac6fbaf727e9d10f07524f94ebd326b002db809cd5cdb035193c141f",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x831a53b05bc02b11038307996564753d8366cc93",
+            "accountKey": "0x910e0f04f12d585162c84d2123ccc1d7a2b6bdc312d9659e702aef0c67a05d23",
+            "accountPath": [
+                {
+                    "pathPart": "0x11",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18",
+                            "sibling": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f"
+                        },
+                        {
+                            "value": "0x2052528cb9a89fc5b1a7860b205acc9587c88c56fa691016f5248292a795ab14",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xda6625d5e4f630c6e25ad3d9d5d20eb0537e844e122d8070edbbdcdd354e9625",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0x126e09743c571a41d5d29bbbc4088ceb299a4fe45e56aa3a460982518dfb6c27",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xfa592fcec12265401584d0a4d81d67004e04c24db0710aaf4fa582bee09fe518",
+                        "sibling": "0xd1d0d87b1c66c8d7ff65aa95acd37c3703d0b9897002d157b951bab62c97ee22"
+                    }
+                },
+                {
+                    "pathPart": "0x11",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18",
+                            "sibling": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f"
+                        },
+                        {
+                            "value": "0x2052528cb9a89fc5b1a7860b205acc9587c88c56fa691016f5248292a795ab14",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xda6625d5e4f630c6e25ad3d9d5d20eb0537e844e122d8070edbbdcdd354e9625",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0x126e09743c571a41d5d29bbbc4088ceb299a4fe45e56aa3a460982518dfb6c27",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xfa592fcec12265401584d0a4d81d67004e04c24db0710aaf4fa582bee09fe518",
+                        "sibling": "0xd1d0d87b1c66c8d7ff65aa95acd37c3703d0b9897002d157b951bab62c97ee22"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                null,
+                null
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x4075a6bcad6c3c5b941c2482fda716a56608106b",
+            "accountKey": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405",
+            "accountPath": [
+                {
+                    "pathPart": "0x496",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x83e84011c0510e3d7e5f83a7b842eaf66b77d4e671cba572ae5fbc0ef62c2820",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b",
+                            "sibling": "0x5d156f97a97ed02a5dea2c6a9abfd93c4c1e455461f6c3644ce5cd4922cde004"
+                        },
+                        {
+                            "value": "0xc764d8ad8e402c15e75bb77b41f2da00abf013d2a7c50ff0f242cd2df96d1c13",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x8f532e2af3c814ae663e10d90c4bd59b25b9921148b17575cac7a30efb36df20",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0x5d6dbaecc35c803a2efa2ebe66ad6e6200c8e23de4c77743a41413f5f6403909",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x5d84794a41bb4f268e559f1be52d5ce0a82f10d125934a973ffa171bf7d43110",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x45aa21010216b234acac47aad7ae61afb310ef03db15208995ac539083522307",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xbe013c44a010a22687fd0b1f3df57f64af1807995d59c4eb9a7da2662042f01c",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x93f98a383fc0502226c31068691e1e38983c2776cf782f1a7f207038c2b8431e",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x25d5becde2e2a955075571596bdc3b6cf1c589926578110883dc640707bc3e01",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x6f2a24cb8b4da7d8c32e64164bb57261bb94cebdbae25a13f6cbd4893cd01515",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                },
+                {
+                    "pathPart": "0x496",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x83e84011c0510e3d7e5f83a7b842eaf66b77d4e671cba572ae5fbc0ef62c2820",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b",
+                            "sibling": "0x5d156f97a97ed02a5dea2c6a9abfd93c4c1e455461f6c3644ce5cd4922cde004"
+                        },
+                        {
+                            "value": "0xc764d8ad8e402c15e75bb77b41f2da00abf013d2a7c50ff0f242cd2df96d1c13",
+                            "sibling": "0x0a5033a4b21e1d821b807633a632d301720de4f3994c14d1fca5f24885241101"
+                        },
+                        {
+                            "value": "0x8f532e2af3c814ae663e10d90c4bd59b25b9921148b17575cac7a30efb36df20",
+                            "sibling": "0x35596a13dc6e1250763ac492e4dad2b25b8f883de48918bdd984f6c43d4cc92d"
+                        },
+                        {
+                            "value": "0x5d6dbaecc35c803a2efa2ebe66ad6e6200c8e23de4c77743a41413f5f6403909",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x5d84794a41bb4f268e559f1be52d5ce0a82f10d125934a973ffa171bf7d43110",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x45aa21010216b234acac47aad7ae61afb310ef03db15208995ac539083522307",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xbe013c44a010a22687fd0b1f3df57f64af1807995d59c4eb9a7da2662042f01c",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x93f98a383fc0502226c31068691e1e38983c2776cf782f1a7f207038c2b8431e",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0x25d5becde2e2a955075571596bdc3b6cf1c589926578110883dc640707bc3e01",
+                            "sibling": "0x303ce5dec478fe724323cd37e441d175b53ef2fa2ccb1c25932c1ced23264c25"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x6f2a24cb8b4da7d8c32e64164bb57261bb94cebdbae25a13f6cbd4893cd01515",
+                        "sibling": "0x9674421f19372ed58a6f5c3b4d432700b2fa182e86da72bcf723396213bfd405"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 42,
+                    "balance": "0x22b1c8c1214c73a7",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                },
+                {
+                    "nonce": 42,
+                    "balance": "0x22b1c8c1214c73a7",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                }
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x5300000000000000000000000000000000000005",
+            "accountKey": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f",
+            "accountPath": [
+                {
+                    "pathPart": "0x2",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x83e84011c0510e3d7e5f83a7b842eaf66b77d4e671cba572ae5fbc0ef62c2820",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x5d156f97a97ed02a5dea2c6a9abfd93c4c1e455461f6c3644ce5cd4922cde004",
+                            "sibling": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b"
+                        },
+                        {
+                            "value": "0x38832e52f06a06a5a1dd443da8e5485d19f1eb31a9ccfb27d90c11e88598d305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x1faa6ccf0544616088b540c82901a07f35db8419c23b95fd09df0872e90fc017",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                },
+                {
+                    "pathPart": "0x2",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f",
+                            "sibling": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18"
+                        },
+                        {
+                            "value": "0x83e84011c0510e3d7e5f83a7b842eaf66b77d4e671cba572ae5fbc0ef62c2820",
+                            "sibling": "0xb3a39254428e7bc1273ccee69f89a5fa5550713af354428f6e818655b6bd610e"
+                        },
+                        {
+                            "value": "0x5d156f97a97ed02a5dea2c6a9abfd93c4c1e455461f6c3644ce5cd4922cde004",
+                            "sibling": "0x4b30d209c6dcf2ef836a693432b9218482d4ce8260be353bf864b1213fc0b12b"
+                        },
+                        {
+                            "value": "0x38832e52f06a06a5a1dd443da8e5485d19f1eb31a9ccfb27d90c11e88598d305",
+                            "sibling": "0x44faa83a902e84426cfeec14d19a9e5c0996c48bc16b81ea7407caaf54faa208"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x1faa6ccf0544616088b540c82901a07f35db8419c23b95fd09df0872e90fc017",
+                        "sibling": "0x22ba42d8f4cc57fbeef5d38842f0e73921b14cff4d19c8cc2b9106b102f3ac1f"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                {
+                    "nonce": 0,
+                    "balance": "0x12d8c59",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                },
+                {
+                    "nonce": 0,
+                    "balance": "0x12d8c59",
+                    "keccakCodeHash": "0x256e306f068f0847c8aab5819879b2ff45c021ce2e2f428be51be663415b1d60",
+                    "poseidonCodeHash": "0x2c49d7de76e39008575f2f090bb3e90912bad475ea8102c8565c249a75575df5",
+                    "codeSize": 1652
+                }
+            ],
+            "commonStateRoot": "0x3c9ff145ac6fbaf727e9d10f07524f94ebd326b002db809cd5cdb035193c141f",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        },
+        {
+            "address": "0x831a53b05bc02b11038307996564753d8366cc93",
+            "accountKey": "0x910e0f04f12d585162c84d2123ccc1d7a2b6bdc312d9659e702aef0c67a05d23",
+            "accountPath": [
+                {
+                    "pathPart": "0x11",
+                    "root": "0x562a9d98c2d954374f794086b1d9cb143eb239832cba0341eeaf0e94be59e926",
+                    "path": [
+                        {
+                            "value": "0x7da6982eb7f6e3b56a5e553814f3de1c42a5a736853237f5935890ee3f8c4a18",
+                            "sibling": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f"
+                        },
+                        {
+                            "value": "0x2052528cb9a89fc5b1a7860b205acc9587c88c56fa691016f5248292a795ab14",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xda6625d5e4f630c6e25ad3d9d5d20eb0537e844e122d8070edbbdcdd354e9625",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0x126e09743c571a41d5d29bbbc4088ceb299a4fe45e56aa3a460982518dfb6c27",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0xfa592fcec12265401584d0a4d81d67004e04c24db0710aaf4fa582bee09fe518",
+                        "sibling": "0xd1d0d87b1c66c8d7ff65aa95acd37c3703d0b9897002d157b951bab62c97ee22"
+                    }
+                },
+                {
+                    "pathPart": "0x11",
+                    "root": "0x45f8e7a1af1eb5a55526f42a38585db6e24f9ab69f998329664e021addac7d0c",
+                    "path": [
+                        {
+                            "value": "0xffb8ad385c274cad5932a7667c22b671e4b39534520f6ab1085518c60c481524",
+                            "sibling": "0xf2f8a53c5bad81eaa7196de10e7a0b18bc1f2688299a13d068ae60370be53f0f"
+                        },
+                        {
+                            "value": "0xc8345300b385797470b3d89465e5e889e7f77542ff76efcd51dcf7db865e1718",
+                            "sibling": "0x83e7319e17f74b94fac523d8a6cee598804d7121e29eb3659ac99e146ce15d10"
+                        },
+                        {
+                            "value": "0xd249df41a747aa1be0c8c12f905ea5969dc9339d52d7be2f4aaa7e747abc9405",
+                            "sibling": "0x2ddbe44f7936e164bb4f2f9fb6e8b27930ad156e1a9b8b0f2b2210dbcd84492a"
+                        },
+                        {
+                            "value": "0xce6fb117b62da80fc193aecf7d8f01ab779cf3164166afb13aec5ec9a4dc6f0d",
+                            "sibling": "0xd09d126215f9f95fd6bb903905b88664a37caa8ff12c427c06b701f0c50fa101"
+                        },
+                        {
+                            "value": "0x9fe226c1273af1db2334867cc3de50d12af4c16bd87b122aa010f500a6c7a52c",
+                            "sibling": "0x4d241ad32c558a080f87484fe72c25d34c082a30586dedf27486dd861dd2700c"
+                        },
+                        {
+                            "value": "0xf9b45c327d36722743daed23f7464be3a855a6f256a785dc2397b4f75019d726",
+                            "sibling": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                        },
+                        {
+                            "value": "0xb03f6abe1ea484097ea89bbbe02b5c529dfef8ac4c71864839bacdda9c4f092b",
+                            "sibling": "0xfd9814727cd4a0a2652089c214184d98d10a5138fb790630052bd17c7e566d01"
+                        }
+                    ],
+                    "leaf": {
+                        "value": "0x78ba2560c0932ece2424e29f3a424924be0d170cab6d8c2dbeb0740bbfdabb2e",
+                        "sibling": "0x910e0f04f12d585162c84d2123ccc1d7a2b6bdc312d9659e702aef0c67a05d23"
+                    }
+                }
+            ],
+            "accountUpdate": [
+                null,
+                {
+                    "nonce": 0,
+                    "balance": "0x14d1120d7b160000",
+                    "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                    "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864"
+                }
+            ],
+            "commonStateRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "statePath": [
+                null,
+                null
+            ],
+            "stateUpdate": [
+                null,
+                null
+            ]
+        }
+    ],
+    "withdraw_trie_root": "0x0000000000000000000000000000000000000000000000000000000000000000"
+}
