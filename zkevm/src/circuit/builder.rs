@@ -174,13 +174,14 @@ pub fn block_traces_to_witness_block(
 
     let code_db = build_codedb(&state_db, block_traces)?;
     let circuit_params = CircuitsParams {
+        max_evm_rows: (1<<*DEGREE)-64,
         max_rws: MAX_RWS,
         max_copy_rows: MAX_RWS,
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
-        keccak_padding: Some(MAX_KECCAK_ROWS),
+        max_keccak_rows: MAX_KECCAK_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
@@ -232,7 +233,6 @@ pub fn block_traces_to_witness_block(
     builder.set_end_block()?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
-    witness_block.evm_circuit_pad_to = MAX_RWS;
     log::debug!(
         "witness_block.circuits_params {:?}",
         witness_block.circuits_params

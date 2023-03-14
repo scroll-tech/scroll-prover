@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "goerli-0215-dual-hash" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/codehash-maintained" }
 base64 = "0.13.0"
 blake2 = "0.10.3"
 ethers-core = "0.17.0"

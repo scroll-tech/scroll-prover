@@ -418,7 +418,7 @@ checksum = "8f1e260c3a9040a7c19a12468758f4c16f31a81a1fe087482be9570ec864bb6c"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1153,7 +1153,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "ethers-core",
  "ethers-signers",
@@ -1415,10 +1415,11 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "eth-types",
  "geth-utils",
+ "log",
  "serde",
  "serde_json",
 ]
@@ -1523,7 +1524,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "evm",
  "frame-support",
@@ -1728,7 +1729,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1768,7 +1769,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2024,7 +2025,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0220#49f4c58908095b46b4f0983404c12106b725df4e"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=scroll-dev-0220#5689a747c6acf9f7316b73dbe5ce4a1b3628c60c"
 dependencies = [
  "ark-std",
  "blake2b_simd",
@@ -2482,7 +2483,7 @@ checksum = "f9b7d56ba4a8344d6be9729995e6b06f928af29998cdf79fe390cbf6b1fee838"
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "env_logger",
  "eth-types",
@@ -2723,7 +2724,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2738,13 +2739,12 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "bus-mapping",
  "eth-types",
  "halo2-mpt-circuits",
  "halo2_proofs",
- "hex",
  "lazy_static",
  "log",
  "num-bigint",
@@ -2902,7 +2902,7 @@ checksum = "21326818e99cfe6ce1e524c2a805c189a99b5ae555a35d19f9a284b427d86afa"
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "fp-evm",
 ]
@@ -2910,7 +2910,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -2920,7 +2920,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-curve25519"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "curve25519-dalek 4.0.0-pre.1",
  "fp-evm",
@@ -2929,7 +2929,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "fp-evm",
  "num",
@@ -2938,7 +2938,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?rev=73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca#73e6223e8bc26bf8e57cd9b212f1bc2fd288c5ca"
+source = "git+https://github.com/paritytech/frontier?rev=76ad4c8f#76ad4c8fe970e15fafcdd931fa00d8af237ec513"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -5052,7 +5052,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if 1.0.0",
  "digest 0.10.3",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
@@ -5770,7 +5770,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=goerli-0215-dual-hash#57e9abf12b6c7657cce62e25a5331986219dcd00"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/codehash-maintained#c6d31646facc30e7731b1837778c42c4fd258929"
 dependencies = [
  "array-init",
  "bus-mapping",
