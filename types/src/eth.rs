@@ -112,6 +112,8 @@ pub type EthBlock = Block<Transaction>;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecutionResult {
+    #[serde(rename = "l1Fee", default)]
+    pub l1_fee: u64,
     pub gas: u64,
     pub failed: bool,
     #[serde(rename = "returnValue", default)]
@@ -138,6 +140,7 @@ impl From<&ExecutionResult> for GethExecTrace {
             struct_logs.push(step)
         }
         GethExecTrace {
+            l1_fee: e.l1_fee,
             gas: Gas(e.gas),
             failed: e.failed,
             return_value: e.return_value.clone(),

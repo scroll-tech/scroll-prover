@@ -23,9 +23,9 @@ use is_even::IsEven;
 use itertools::Itertools;
 use std::time::Instant;
 
-const SUB_CIRCUIT_NAMES: [&str; 10] = [
+const SUB_CIRCUIT_NAMES: [&str; 11] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
-    "poseidon", // "mpt",
+    "poseidon", "mpt",
 ];
 
 // TODO: optimize it later
@@ -174,7 +174,7 @@ pub fn block_traces_to_witness_block(
 
     let code_db = build_codedb(&state_db, block_traces)?;
     let circuit_params = CircuitsParams {
-        max_evm_rows: (1<<*DEGREE)-64,
+        max_evm_rows: MAX_RWS,
         max_rws: MAX_RWS,
         max_copy_rows: MAX_RWS,
         max_txs: MAX_TXS,
