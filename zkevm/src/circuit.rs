@@ -24,7 +24,7 @@ pub use self::builder::{block_traces_to_witness_block, check_batch_capacity};
 const MAX_TXS: usize = 44;
 const MAX_INNER_BLOCKS: usize = 100;
 const MAX_CALLDATA: usize = 400_000;
-const MAX_RWS: usize = 524_000;
+const MAX_RWS: usize = 500_000;
 const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_EXP_STEPS: usize = 10_000;
 //pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));

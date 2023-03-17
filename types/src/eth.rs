@@ -33,6 +33,7 @@ impl From<BlockTrace> for EthBlock {
         }
         EthBlock {
             transactions: txs,
+            difficulty: 0.into(),
             ..b.header
         }
     }

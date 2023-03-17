@@ -1,17 +1,16 @@
 set -x
 set -u
-set -e 
+#set -e 
 set -o pipefail
 
 export KECCAK_ROWS=20
 export RUST_LOG=trace
 
 function check_batch() {
-	TRACE_VER="0228-alpha"
+	TRACE_VER="0317-alpha"
 	for d in $(ls ~/zip-traces/${TRACE_VER}/traces); do
 		export TRACE_PATH=$(realpath ~/zip-traces/${TRACE_VER}/traces/${d}/traces-data) 
-		make rows 2>&1 | tee rows.log
-		(make mock 2>&1 | tee /tmp/mock_${d}.log) || (echo /tmp/mock_${d}.log; exit 1)
+		make mock 2>&1 | tee /tmp/mock_${d}.log
 	done
 }
 

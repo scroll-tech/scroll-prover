@@ -3,20 +3,18 @@ set -e
 set -o pipefail
 
 export OPT_MEM=true
-export MOCK_PROVE=true
+#export MOCK_PROVE=true
 export KECCAK_ROWS=20
+export KECCAK_DEGREE=19
 export RUST_MIN_STACK=100000000
 export PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 
 
 function goerli() {
-#	for d in 2.zip 8.zip
-#	do
-		d=2.zip
-		OUTPUT_DIR=output_20230216_140905_multi RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/0214/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
-		d=8.zip
-		export MOCK_PROVE=false
-		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/0214/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
-#	done
+		TRACE_DIR="0228-alpha"
+		d=1429.zip
+		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
+		d=1476.zip
+		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
 }
 
 function run_agg_tests() {
@@ -28,6 +26,6 @@ function run_agg_tests() {
 	#RUST_LOG=trace PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=native cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.native
 }
 
-#goerli
-run_agg_tests
+goerli
+#run_agg_tests
 
