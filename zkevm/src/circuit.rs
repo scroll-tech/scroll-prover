@@ -9,7 +9,7 @@ use types::eth::BlockTrace;
 
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
 use zkevm_circuits::mpt_circuit::MptCircuit as ZktrieCircuitImpl;
-use zkevm_circuits::poseidon_circuit::PoseidonCircuit as PoseidonCircuitImpl;
+// use zkevm_circuits::poseidon_circuit::PoseidonCircuit as PoseidonCircuitImpl;
 use zkevm_circuits::state_circuit::StateCircuit as StateCircuitImpl;
 use zkevm_circuits::super_circuit::SuperCircuit as SuperCircuitImpl;
 use zkevm_circuits::util::SubCircuit;
@@ -98,7 +98,7 @@ pub trait TargetCircuit {
 pub struct SuperCircuit {}
 
 impl TargetCircuit for SuperCircuit {
-    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000>;
+    type Inner = SuperCircuitImpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000, 0x100>;
 
     fn name() -> String {
         "super".to_string()
@@ -264,28 +264,28 @@ impl TargetCircuit for ZktrieCircuit {
     }
 }
 
-pub struct PoseidonCircuit {}
+// pub struct PoseidonCircuit {}
 
-impl TargetCircuit for PoseidonCircuit {
-    type Inner = PoseidonCircuitImpl<Fr>;
+// impl TargetCircuit for PoseidonCircuit {
+//     type Inner = PoseidonCircuitImpl<Fr>;
 
-    fn name() -> String {
-        "poseidon".to_string()
-    }
+//     fn name() -> String {
+//         "poseidon".to_string()
+//     }
 
-    fn from_witness_block(
-        witness_block: &witness::Block<Fr>,
-    ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
-    where
-        Self: Sized,
-    {
-        let inner = PoseidonCircuitImpl::new_from_block(witness_block);
-        let instance = vec![];
-        Ok((inner, instance))
-    }
+//     fn from_witness_block(
+//         witness_block: &witness::Block<Fr>,
+//     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
+//     where
+//         Self: Sized,
+//     {
+//         let inner = PoseidonCircuitImpl::new_from_block(witness_block);
+//         let instance = vec![];
+//         Ok((inner, instance))
+//     }
 
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        PoseidonCircuitImpl::min_num_rows_block(&witness_block).0
-    }
-}
+//     fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
+//         let witness_block = block_traces_to_witness_block(block_traces).unwrap();
+//         PoseidonCircuitImpl::min_num_rows_block(&witness_block).0
+//     }
+// }

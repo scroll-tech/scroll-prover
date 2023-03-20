@@ -5,6 +5,7 @@ use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
 use eth_types::evm_types::OpcodeId;
 use eth_types::{Hash, ToAddress};
 use ethers_core::types::{Address, Bytes, U256};
+use halo2_proofs::ff::PrimeField;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
 use mpt_zktrie::hash::Hashable;
@@ -13,9 +14,8 @@ use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
 
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
+// use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
 
-use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
 use anyhow::bail;
@@ -61,7 +61,7 @@ const SUB_CIRCUIT_NAMES: [&str; 10] = [
 pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
     let rows =
-        <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
+        <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(
             &witness_block,
         )
         .0;
@@ -75,9 +75,9 @@ pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usiz
             .iter()
             .map(|t| t.call_data_length)
             .sum::<usize>(),
-        SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter())
+        SUB_CIRCUIT_NAMES.iter().zip_eq([rows].iter())
     );
-    Ok(rows)
+    Ok(vec![rows])
 }
 
 /// ...
@@ -209,9 +209,10 @@ pub fn block_traces_to_witness_block(
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
-        max_keccak_rows: MAX_KECCAK_ROWS,
-        max_exp_steps: MAX_EXP_STEPS,
-        max_evm_rows: MAX_RWS,
+        // max_keccak_rows: MAX_KECCAK_ROWS,
+        // max_exp_steps: MAX_EXP_STEPS,
+        // max_evm_rows: MAX_RWS,
+        keccak_padding: None,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.prev_state_root = U256::from(zktrie_state.root());
@@ -408,8 +409,9 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
 }
 pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeDB), anyhow::Error> {
     let mut sdb = StateDB::new();
+    // FIXME: temporary using 32 for testing
     let mut cdb =
-        CodeDB::new_with_code_hasher(Box::new(PoseidonCodeHash::new(HASHBLOCK_BYTES_IN_FIELD)));
+        CodeDB::new_with_code_hasher(Box::new(PoseidonCodeHash::new(32)));
 
     // step1: insert proof into statedb
     for block in blocks.iter().rev() {

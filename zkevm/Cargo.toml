@@ -6,17 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-halo2-snark-aggregator-circuit = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
-halo2-snark-aggregator-solidity = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
-halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
+# halo2-snark-aggregator-circuit = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
+# halo2-snark-aggregator-solidity = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
+# halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark-aggregator", branch = "scroll-dev-0220" }
 
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 #halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10", features = ["phase-check"] }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","zktrie","poseidon-codehash","enable-sign-verify"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0220" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0220" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0220" }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0220" }
 
 #mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "scroll-dev-0129" }
 # halo2-ecc = { git = "https://github.com/scroll-tech/halo2-lib", branch = "halo2-ecc-snark-verifier-0220", features = [ "default" ] }
@@ -57,4 +57,4 @@ prove_verify = []
 [dev-dependencies]
 git-version = "0.3.5"
 glob = "0.3.0"
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "scroll-stable" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "halo2-ecc-snark-verifier-0220" }

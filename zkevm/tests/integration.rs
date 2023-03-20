@@ -25,7 +25,7 @@ fn estimate_circuit_rows() {
             "evm" => circuit::EvmCircuit::estimate_rows(&block_trace),
             "state" => circuit::StateCircuit::estimate_rows(&block_trace),
             "zktrie" => circuit::ZktrieCircuit::estimate_rows(&block_trace),
-            "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
+            // "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
             "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
             _ => {
                 log::error!("invalid circuit: {:?}", circuit);
@@ -67,10 +67,10 @@ fn test_mock_prove() {
                 )
                 .unwrap()
             }
-            "poseidon" => OuterCircuitProver::mock_prove_target_circuit_batch::<
-                circuit::PoseidonCircuit,
-            >(&block_traces, true)
-            .unwrap(),
+            // "poseidon" => OuterCircuitProver::mock_prove_target_circuit_batch::<
+            //     circuit::PoseidonCircuit,
+            // >(&block_traces, true)
+            // .unwrap(),
             "super" => {
                 OuterCircuitProver::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
                     &block_traces,
@@ -94,7 +94,7 @@ fn test_prove_verify() {
             "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
             "state" => test_target_circuit_prove_verify::<circuit::StateCircuit>(),
             "zktrie" => test_target_circuit_prove_verify::<circuit::ZktrieCircuit>(),
-            "poseidon" => test_target_circuit_prove_verify::<circuit::PoseidonCircuit>(),
+            // "poseidon" => test_target_circuit_prove_verify::<circuit::PoseidonCircuit>(),
             "super" => test_target_circuit_prove_verify::<circuit::SuperCircuit>(),
             _ => {
                 log::error!("invalid circuit, skip: {:?}", circuit);

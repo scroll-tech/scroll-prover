@@ -1,7 +1,7 @@
 use anyhow::Result;
 use halo2_proofs::arithmetic::Field;
+use halo2_proofs::ff::FromUniformBytes;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
-use halo2_proofs::halo2curves::FieldExt;
 use halo2_proofs::SerdeFormat;
 
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
@@ -81,7 +81,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     } else {
         let bytes = &mut [0u8; 64];
         bytes[..32].clone_from_slice(&seed_str.as_bytes()[..32]);
-        Fr::from_bytes_wide(bytes)
+        Fr::from_uniform_bytes(bytes)
     };
     let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
     let mut params_buf = Vec::new();

@@ -6,9 +6,17 @@ members = [
 ]
 
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "scroll-dev-0220"  }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "halo2-ecc-snark-verifier-0220"  }
 [patch."https://github.com/privacy-scaling-explorations/poseidon.git"]
-poseidon = { git = "https://github.com/scroll-tech/poseidon.git", branch = "scroll-dev-0220" }
+poseidon = { git = "https://github.com/scroll-tech/poseidon.git", branch = "halo2-ecc-snark-verifier-0220" }
+[patch."https://github.com/privacy-scaling-explorations/halo2curves.git"]
+halo2curves = { git = "https://github.com/scroll-tech/halo2curves.git", branch = "halo2-ecc-snark-verifier-0220" }
+[patch."https://github.com/privacy-scaling-explorations/halo2wrong.git"]
+halo2wrong = { git = "https://github.com/scroll-tech/halo2wrong.git", branch = "halo2-ecc-snark-verifier-0220" }
+[patch.crates-io]
+# temporary solution to funty@1.2.0 being yanked, tracking issue: https://github.com/ferrilab/funty/issues/7
+funty = { git = "https://github.com/ferrilab/funty/", rev = "7ef0d890fbcd8b3def1635ac1a877fc298488446" }
+
 
 [profile.test]
 opt-level = 3
