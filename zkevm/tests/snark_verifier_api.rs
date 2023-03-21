@@ -176,7 +176,7 @@ mod application {
 
 #[test]
 fn test_snark_verifier_api() {
-    let k = 20;
+    let k = 15;
     let k_agg = 22;
 
     init();
@@ -185,28 +185,39 @@ fn test_snark_verifier_api() {
 
     let circuit = StandardPlonk::rand(&mut rng);
     let params_inner = gen_srs(k);
-    let params_aggregate = gen_srs(k_agg);
-    let pk = gen_pk(
+    let params_outer = gen_srs(k_agg);
+    let pk_inner = gen_pk(
         &params_inner,
         &circuit,
-        Some(Path::new("data/zkevm_evm.pkey")),
+        Some(Path::new("data/inner.pkey")),
     );
     let snark = gen_snark_shplonk(
         &params_inner,
-        &pk,
+        &pk_inner,
         circuit,
         &mut rng,
-        Some(Path::new("data/zkevm_evm.snark")),
+        Some(Path::new("data/inner.snark")),
     );
+    println!("finished snark generation");
+
     let snarks = [snark];
-    let agg_circuit = AggregationCircuit::new(&params_aggregate, snarks, &mut rng);
+    let agg_circuit = AggregationCircuit::new(&params_outer, snarks, &mut rng);
+    let pk_outer = gen_pk(
+        &params_outer,
+        &agg_circuit,
+        Some(Path::new("data/outer.pkey")),
+    );
+
     let instances = agg_circuit.instances();
     let proof = gen_proof_shplonk(
-        &params_aggregate,
-        &pk,
+        &params_outer,
+        &pk_outer,
         agg_circuit.clone(),
         instances,
         &mut rng,
-        None,
+        Some((Path::new("data/outer.instance"), Path::new("data/outer.snark"))),
     );
+
+    println!("finished aggregation generation");
+
 }
