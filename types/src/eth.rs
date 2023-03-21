@@ -198,8 +198,9 @@ pub struct ExtraData {
 }
 
 impl ExtraData {
-    pub fn get_code_at(&self, i: usize) -> Bytes {
-        self.code_list.as_ref().unwrap().get(i).cloned().unwrap()
+    pub fn get_code_at(&self, i: usize) -> Option<Bytes> {
+        let code_list = self.code_list.as_ref().unwrap();
+        code_list.get(i).cloned()
     }
 
     pub fn get_proof_at(&self, i: usize) -> Option<AccountProofWrapper> {

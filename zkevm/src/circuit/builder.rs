@@ -392,7 +392,7 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyh
         // notice empty codehash always kept as keccak256(nil)
         cdb.insert(Vec::new());
 
-        for execution_result in &block.execution_results {
+        for (er_idx, execution_result) in block.execution_results.iter().enumerate() {
             if let Some(bytecode) = &execution_result.byte_code {
                 let _hash = cdb.insert(decode_bytecode(bytecode)?.to_vec());
 
@@ -408,8 +408,16 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyh
                         | OpcodeId::CALLCODE
                         | OpcodeId::DELEGATECALL
                         | OpcodeId::STATICCALL => {
-                            let callee_code = data.get_code_at(1);
-                            trace_code(&mut cdb, step, sdb, callee_code, 1);
+                            let code_idx = if block.transactions[er_idx].to.is_none() {
+                                0
+                            } else {
+                                1
+                            };
+                            let callee_code = data.get_code_at(code_idx);
+                            if callee_code.is_none() {
+                                log::error!("cannot get code of call: {:?}", step);
+                            }
+                            trace_code(&mut cdb, step, sdb, callee_code.unwrap(), 1);
                         }
                         OpcodeId::CREATE | OpcodeId::CREATE2 => {
                             // notice we do not need to insert code for CREATE,
@@ -417,7 +425,10 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyh
                         }
                         OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
                             let code = data.get_code_at(0);
-                            trace_code(&mut cdb, step, sdb, code, 0);
+                            if code.is_none() {
+                                log::error!("cannot get code of ext: {:?}", step);
+                            }
+                            trace_code(&mut cdb, step, sdb, code.unwrap(), 0);
                         }
 
                         _ => {}

@@ -3,6 +3,7 @@ members = [
     "types",
     "zkevm",
     "bin",
+    "ffi",
 ]
 
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
