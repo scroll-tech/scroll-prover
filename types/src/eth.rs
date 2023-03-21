@@ -107,6 +107,8 @@ pub struct StorageTrace {
     pub proofs: Option<AccountTrieProofs>,
     #[serde(rename = "storageProofs", default)]
     pub storage_proofs: StorageTrieProofs,
+    #[serde(rename = "deletionProofs", default)]
+    pub deletion_proofs: Vec<Bytes>,
 }
 
 pub type EthBlock = Block<Transaction>;

@@ -129,7 +129,7 @@ pub fn block_traces_to_witness_block(
     } else {
         block_traces[0].storage_trace.root_before
     };
-    let zktrie_state = ZktrieState::from_trace(
+    let zktrie_state = ZktrieState::from_trace_with_additional(
         old_root,
         block_traces.iter().rev().flat_map(|block| {
             block.storage_trace.proofs.iter().flat_map(|kv_map| {
@@ -149,6 +149,13 @@ pub fn block_traces_to_witness_block(
                         .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
                 })
         }),
+        block_traces.iter().rev().flat_map(|block|
+            block
+                .storage_trace
+                .deletion_proofs
+                .iter()
+                .map(Bytes::as_ref)
+        ),
     )?;
 
     let chain_ids = block_traces
