@@ -21,3 +21,6 @@ zkevm/tests/traces/bridge/*.proof
 # ignore local parameters
 *.srs
 *.pkey
+*.snark
+*.instance
+*.sol
