@@ -13,11 +13,11 @@ halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 #halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10", features = ["phase-check"] }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "goerli-0215" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "goerli-0215" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-ecdsa-0323" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-ecdsa-0323" }
 #zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","zktrie","poseidon-codehash","enable-sign-verify"] }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "goerli-0215", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "goerli-0215" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-ecdsa-0323", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-ecdsa-0323" }
 
 #mpt-circuits = { package = "halo2-mpt-circuits", git = "https://github.com/scroll-tech/mpt-circuit.git", branch = "scroll-dev-0129" }
 

@@ -17,3 +17,7 @@ zkevm/tests/traces/bridge/*.proof
 
 # ignore local logs
 *.log
+
+# ignore local parameters
+*.srs
+*.pkey
