@@ -31,9 +31,8 @@ async fn main() {
             ProveType::Block => get_traces_by_block_api(&provider, &setting, i).await,
         };
 
-        let block_traces = block_traces.expect(&format!(
-            "mock-testnet: failed to request API with batch-{i}"
-        ));
+        let block_traces = block_traces
+            .unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
 
         if let Some(block_traces) = block_traces {
             match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces, true) {
