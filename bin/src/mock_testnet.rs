@@ -33,7 +33,7 @@ async fn prove_by_batch(provider: Provider<Http>, setting: Setting) {
 
     for i in setting.begin_index..=setting.end_index {
         let block_traces: Vec<BlockTrace> = provider
-            .request("l2_getTracesByBatchIndex", i)
+            .request("l2_getTracesByBatchIndex", [format!("{i:#x}")])
             .await
             .expect("mock-testnet: failed to request l2_getTracesByBatchIndex with params [{i}]");
 
@@ -51,7 +51,7 @@ async fn prove_by_block(provider: Provider<Http>, setting: Setting) {
 
     for i in setting.begin_index..=setting.end_index {
         let block_trace: BlockTrace = provider
-            .request("scroll_getBlockTraceByNumberOrHash", i)
+            .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
             .await
             .expect("mock-testnet: failed to request scroll_getBlockTraceByNumberOrHash with params [{i}]");
 
