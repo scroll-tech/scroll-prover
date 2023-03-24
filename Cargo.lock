@@ -263,6 +263,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 name = "bin"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "clap",
  "dotenv",
  "env_logger",
@@ -270,6 +271,7 @@ dependencies = [
  "log",
  "rand 0.8.5",
  "rand_xorshift",
+ "reqwest",
  "serde",
  "serde_derive",
  "serde_json",

@@ -1,11 +1,14 @@
+use anyhow::Result;
 use ethers_providers::{Http, Provider};
+use reqwest::Url;
+use serde::Deserialize;
 use std::env;
 use types::eth::BlockTrace;
 use zkevm::circuit::SuperCircuit;
 use zkevm::prover::Prover;
 
-const DEFAULT_BEGIN_INDEX: i64 = 1;
-const DEFAULT_END_INDEX: i64 = i64::MAX;
+const DEFAULT_BEGIN_BATCH: i64 = 1;
+const DEFAULT_END_BATCH: i64 = i64::MAX;
 
 #[tokio::main]
 async fn main() {
@@ -17,80 +20,125 @@ async fn main() {
     let setting = Setting::new();
     log::info!("mock-testnet: {setting:?}");
 
-    let provider = Provider::<Http>::try_from(&setting.scroll_api_url)
+    let provider = Provider::<Http>::try_from(&setting.l2geth_api_url)
         .expect("mock-testnet: failed to initialize ethers Provider");
 
-    match setting.prove_type {
-        ProveType::Batch => prove_by_batch(provider, setting).await,
-        ProveType::Block => prove_by_block(provider, setting).await,
+    for i in setting.begin_batch..=setting.end_batch {
+        log::info!("move-testnet: requesting block traces of batch {i}");
+
+        let block_traces = match setting.prove_type {
+            ProveType::Batch => get_traces_by_batch_api(&provider, &setting, i).await,
+            ProveType::Block => get_traces_by_block_api(&provider, &setting, i).await,
+        };
+
+        let block_traces = block_traces.expect(&format!(
+            "mock-testnet: failed to request API with batch-{i}"
+        ));
+
+        if let Some(block_traces) = block_traces {
+            match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces, true) {
+                Ok(_) => log::info!("mock-testnet: succeeded to prove batch-{i}"),
+                Err(err) => log::error!("mock-testnet: failed to prove batch-{i}:\n{err:?}"),
+            }
+        } else {
+            log::info!("mock-testnet: finished to prove at batch-{i}");
+            break;
+        }
     }
 
     log::info!("move-testnet: end");
 }
 
-async fn prove_by_batch(provider: Provider<Http>, setting: Setting) {
-    log::info!("move-testnet: prover-by-batch begin");
-
-    for i in setting.begin_index..=setting.end_index {
-        let block_traces: Vec<BlockTrace> = provider
-            .request("l2_getTracesByBatchIndex", [format!("{i:#x}")])
-            .await
-            .expect("mock-testnet: failed to request l2_getTracesByBatchIndex with params [{i}]");
-
-        match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces, true) {
-            Ok(_) => log::info!("mock-testnet: succeeded to prove batch-{i}"),
-            Err(err) => log::error!("mock-testnet: failed to prove batch-{i}:\n{err:?}"),
-        }
-    }
-
-    log::info!("move-testnet: prover-by-batch end");
+/// Request block traces by API `l2_getTracesByBatchIndex`. Return None for no more batches.
+async fn get_traces_by_batch_api(
+    provider: &Provider<Http>,
+    _setting: &Setting,
+    batch_index: i64,
+) -> Result<Option<Vec<BlockTrace>>> {
+    // TODO: need to test this API.
+    Ok(Some(
+        provider
+            .request("l2_getTracesByBatchIndex", [format!("{batch_index:#x}")])
+            .await?,
+    ))
 }
 
-async fn prove_by_block(provider: Provider<Http>, setting: Setting) {
-    log::info!("move-testnet: prover-by-block begin");
+/// Request block traces by API `scroll_getBlockTraceByNumberOrHash`. Return None for no more batches.
+async fn get_traces_by_block_api(
+    provider: &Provider<Http>,
+    setting: &Setting,
+    batch_index: i64,
+) -> Result<Option<Vec<BlockTrace>>> {
+    let url = Url::parse_with_params(
+        &setting.rollupscan_api_url,
+        &[("index", batch_index.to_string())],
+    )?;
 
-    for i in setting.begin_index..=setting.end_index {
-        let block_trace: BlockTrace = provider
-            .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
-            .await
-            .expect("mock-testnet: failed to request scroll_getBlockTraceByNumberOrHash with params [{i}]");
+    let resp: RollupscanResponse = reqwest::get(url).await?.json().await?;
 
-        match Prover::mock_prove_target_circuit::<SuperCircuit>(&block_trace, true) {
-            Ok(_) => log::info!("mock-testnet: succeeded to prove block-{i}"),
-            Err(err) => log::error!("mock-testnet: failed to prove block-{i}:\n{err:?}"),
+    Ok(if let Some(batch) = resp.batch {
+        let mut traces = vec![];
+        for i in batch.start_block_number..=batch.end_block_number {
+            log::info!("move-testnet: requesting trace of block {i}");
+
+            let trace = provider
+                .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
+                .await?;
+            traces.push(trace);
         }
-    }
 
-    log::info!("move-testnet: prover-by-block end");
+        Some(traces)
+    } else {
+        None
+    })
+}
+
+#[derive(Deserialize)]
+struct RollupscanResponse {
+    batch: Option<RollupscanBatch>,
+}
+
+#[derive(Deserialize)]
+struct RollupscanBatch {
+    start_block_number: i64,
+    end_block_number: i64,
 }
 
 #[derive(Debug)]
 struct Setting {
     prove_type: ProveType,
-    begin_index: i64,
-    end_index: i64,
-    scroll_api_url: String,
+    begin_batch: i64,
+    end_batch: i64,
+    l2geth_api_url: String,
+    rollupscan_api_url: String,
 }
 
 impl Setting {
     pub fn new() -> Self {
-        let scroll_api_url =
-            env::var("SCROLL_API_URL").expect("mock-testnet: Must set env SCROLL_API_URL");
+        let l2geth_api_url =
+            env::var("L2GETH_API_URL").expect("mock-testnet: Must set env L2GETH_API_URL");
         let prove_type = env::var("PROVE_TYPE").ok().unwrap_or_default().into();
-        let begin_index = env::var("PROVE_BEGIN_INDEX")
+        let rollupscan_api_url = env::var("ROLLUPSCAN_API_URL");
+        let rollupscan_api_url = match prove_type {
+            ProveType::Batch => rollupscan_api_url.unwrap_or_default(),
+            ProveType::Block => rollupscan_api_url
+                .expect("mock-testnet: Must set env ROLLUPSCAN_API_URL for block type"),
+        };
+        let begin_batch = env::var("PROVE_BEGIN_BATCH")
             .ok()
             .and_then(|n| n.parse().ok())
-            .unwrap_or(DEFAULT_BEGIN_INDEX);
-        let end_index = env::var("PROVE_END_INDEX")
+            .unwrap_or(DEFAULT_BEGIN_BATCH);
+        let end_batch = env::var("PROVE_END_BATCH")
             .ok()
             .and_then(|n| n.parse().ok())
-            .unwrap_or(DEFAULT_END_INDEX);
+            .unwrap_or(DEFAULT_END_BATCH);
 
         Self {
             prove_type,
-            begin_index,
-            end_index,
-            scroll_api_url,
+            begin_batch,
+            end_batch,
+            l2geth_api_url,
+            rollupscan_api_url,
         }
     }
 }
