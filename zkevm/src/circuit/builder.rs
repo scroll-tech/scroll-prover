@@ -2,28 +2,23 @@ use super::{MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
 use crate::circuit::{
     TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS,
 };
+use anyhow::bail;
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
 use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
 use eth_types::evm_types::OpcodeId;
 use eth_types::{Hash, ToAddress};
 use ethers_core::types::{Bytes, U256};
-use types::eth::{BlockTrace, EthBlock, ExecStep};
-
+use halo2_proofs::halo2curves::bn256::Fr;
+use is_even::IsEven;
+use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
+use std::collections::HashMap;
+use std::time::Instant;
+use types::eth::{BlockTrace, EthBlock, ExecStep};
+use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
 use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
-
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
-
-//use halo2_proofs::arithmetic::FieldExt;
-use halo2_proofs::halo2curves::bn256::Fr;
-
-use anyhow::bail;
-use is_even::IsEven;
-use itertools::Itertools;
-use std::collections::HashMap;
-use std::time::Instant;
 
 const SUB_CIRCUIT_NAMES: [&str; 10] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
@@ -53,6 +48,8 @@ pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usiz
     Ok(rows)
 }
 
+// FIXME: we need better API name for this.
+// This function also mutates the block trace.
 /// ...
 pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), anyhow::Error> {
     let block_traces_len = block_traces.len();
@@ -118,7 +115,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .sum::<usize>();
     if total_tx_count != 0 && total_tx_count2 == 0 {
         // the circuit cannot even prove the first non-empty block...
-        bail!("ciruit capacity not enough");
+        bail!("circuit capacity not enough");
     }
     Ok(())
 }

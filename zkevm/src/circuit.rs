@@ -1,10 +1,8 @@
 use anyhow::bail;
 
 use halo2_proofs::halo2curves::bn256::Fr;
-use halo2_proofs::plonk::Circuit as Halo2Circuit;
-
 use once_cell::sync::Lazy;
-
+use snark_verifier_sdk::CircuitExt;
 use types::eth::BlockTrace;
 
 use zkevm_circuits::evm_circuit::EvmCircuit as EvmCircuitImpl;
@@ -34,22 +32,35 @@ pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
 pub static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
 
+/// A target circuit trait is a wrapper of inner circuit, with convenient APIs for building
+/// circuits from traces.
 pub trait TargetCircuit {
-    type Inner: Halo2Circuit<Fr>;
+    /// The actual inner circuit that implements Circuit trait.
+    type Inner: CircuitExt<Fr>;
+
+    /// Name tag of the circuit.
+    /// This tag will be used as a key to index the circuit.
+    /// It is therefore important that the name is unique.
     fn name() -> String;
-    /// used to generate vk&pk
-    fn empty() -> Self::Inner
+
+    /// Generate a dummy circuit with an empty trace.
+    /// This is useful for generating vk and pk.
+    fn dummy_inner_circuit() -> Self::Inner
     where
         Self: Sized,
     {
         Self::from_block_traces(&[]).unwrap().0
     }
+
+    /// Build the inner circuit and the instances from a traces
     fn from_block_trace(block_trace: &BlockTrace) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
     {
         Self::from_block_traces(std::slice::from_ref(block_trace))
     }
+
+    /// Build the inner circuit and the instances from a list of traces
     fn from_block_traces(block_traces: &[BlockTrace]) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,
@@ -57,6 +68,8 @@ pub trait TargetCircuit {
         let witness_block = block_traces_to_witness_block(block_traces)?;
         Self::from_witness_block(&witness_block)
     }
+
+    /// Build the inner circuit and the instances from the witness block
     fn from_witness_block(
         witness_block: &witness::Block<Fr>,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
@@ -67,12 +80,15 @@ pub trait TargetCircuit {
         let witness_block = block_traces_to_witness_block(block_traces).unwrap();
         Self::estimate_rows_from_witness_block(&witness_block)
     }
+
     fn estimate_rows_from_witness_block(_witness_block: &witness::Block<Fr>) -> usize {
         0
     }
+
     fn public_input_len() -> usize {
         0
     }
+
     // It is usually safer to use MockProver::verify than MockProver::verify_at_rows
     fn get_active_rows(block_traces: &[BlockTrace]) -> (Vec<usize>, Vec<usize>) {
         (
@@ -157,7 +173,7 @@ impl TargetCircuit for StateCircuit {
     }
 
     // TODO: use from_block_trace(&Default::default()) ?
-    fn empty() -> Self::Inner {
+    fn dummy_inner_circuit() -> Self::Inner {
         StateCircuitImpl::<Fr>::default()
     }
 

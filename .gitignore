@@ -24,3 +24,5 @@ zkevm/tests/traces/bridge/*.proof
 *.snark
 *.instance
 *.sol
+*.vk
+*.json

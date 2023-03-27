@@ -1,6 +1,6 @@
 use clap::Parser;
 use log::info;
-use rand::SeedableRng;
+use rand::{RngCore, SeedableRng};
 use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 use std::fs;
@@ -51,9 +51,19 @@ fn main() {
         .expect("failed to load or create params");
     let seed =
         load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
-    let rng = XorShiftRng::from_seed(seed);
 
-    let mut prover = Prover::from_params_and_rng(params, agg_params, rng);
+    let (local_rng1, mut local_rng2) = {
+        let mut rng = XorShiftRng::from_seed(seed);
+        let mut seed1 = [0u8; 16];
+        rng.fill_bytes(&mut seed1);
+        let local_rng1 = XorShiftRng::from_seed(seed1);
+        let mut seed2 = [0u8; 16];
+        rng.fill_bytes(&mut seed2);
+        let local_rng2 = XorShiftRng::from_seed(seed2);
+        (local_rng1, local_rng2)
+    };
+
+    let mut prover = Prover::from_params_and_rng(params, agg_params, local_rng1);
 
     let mut traces = HashMap::new();
     let trace_path = PathBuf::from(&args.trace_path.unwrap());
@@ -77,7 +87,7 @@ fn main() {
 
             let now = Instant::now();
             let evm_proof = prover
-                .create_target_circuit_proof::<EvmCircuit>(&trace)
+                .create_target_circuit_proof::<EvmCircuit>(&trace, &mut local_rng2)
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
@@ -87,7 +97,7 @@ fn main() {
 
             if args.evm_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
-                f.write_all(evm_proof.proof.as_slice()).unwrap();
+                f.write_all(evm_proof.snark.proof.as_slice()).unwrap();
             }
         }
 
@@ -96,7 +106,7 @@ fn main() {
 
             let now = Instant::now();
             let state_proof = prover
-                .create_target_circuit_proof::<StateCircuit>(&trace)
+                .create_target_circuit_proof::<StateCircuit>(&trace, &mut local_rng2)
                 .expect("cannot generate state_proof");
             info!(
                 "finish generating state proof of {}, elapsed: {:?}",
@@ -106,7 +116,7 @@ fn main() {
 
             if args.state_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
-                f.write_all(state_proof.proof.as_slice()).unwrap();
+                f.write_all(state_proof.snark.proof.as_slice()).unwrap();
             }
         }
 
@@ -115,7 +125,7 @@ fn main() {
 
             let now = Instant::now();
             let agg_proof = prover
-                .create_agg_circuit_proof(&trace)
+                .create_agg_circuit_proof(&trace, &mut local_rng2)
                 .expect("cannot generate agg_proof");
             info!(
                 "finish generating agg proof of {}, elapsed: {:?}",

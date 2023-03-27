@@ -1,6 +1,7 @@
 use chrono::Utc;
 use halo2_proofs::plonk::keygen_vk;
-
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
@@ -105,7 +106,7 @@ fn test_vk_same() {
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let vk_empty = keygen_vk(&params, &C::empty()).unwrap();
+    let vk_empty = keygen_vk(&params, &C::dummy_inner_circuit()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
     let vk_real = keygen_vk(&params, &C::from_block_traces(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
@@ -146,6 +147,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use zkevm::verifier::Verifier;
 
     init();
+    let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
     let (_, block_traces) = load_block_traces_for_test();
 
@@ -153,7 +155,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof_batch::<C>(&block_traces)
+        .create_target_circuit_proof_batch::<C>(&block_traces, &mut rng)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
