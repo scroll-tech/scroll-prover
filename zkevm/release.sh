@@ -4,17 +4,17 @@ set -o pipefail
 
 export OPT_MEM=true
 #export MOCK_PROVE=true
-export KECCAK_ROWS=20
-export KECCAK_DEGREE=19
+#export KECCAK_ROWS=20
+#export KECCAK_DEGREE=19
 export RUST_MIN_STACK=100000000
 export PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 
 
 function goerli() {
-		TRACE_DIR="0228-alpha"
-		d=1429.zip
-		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
-		d=1476.zip
-		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
+		TRACE_DIR="0327-correct-deletion"
+		d="617365.json"
+		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/${d}` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.${d}.log
+		d="617366.json"
+		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/${d}` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.${d}.log
 }
 
 function run_agg_tests() {
