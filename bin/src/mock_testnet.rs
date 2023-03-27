@@ -35,7 +35,7 @@ async fn main() {
             .unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
 
         if let Some(block_traces) = block_traces {
-            match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces, true) {
+            match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces) {
                 Ok(_) => log::info!("mock-testnet: succeeded to prove batch-{i}"),
                 Err(err) => log::error!("mock-testnet: failed to prove batch-{i}:\n{err:?}"),
             }

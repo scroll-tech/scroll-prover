@@ -13,6 +13,8 @@ use std::str::FromStr;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 
+pub(crate) const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
+
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     let _path = PathBuf::from(params_dir);
@@ -64,7 +66,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), SerdeFormat::Processed)?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), DEFAULT_SERDE_FORMAT)?;
     log::info!("load params successfully!");
     Ok(p)
 }
@@ -85,7 +87,7 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     };
     let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
     let mut params_buf = Vec::new();
-    params.write_custom(&mut params_buf, halo2_proofs::SerdeFormat::Processed)?;
+    params.write_custom(&mut params_buf, DEFAULT_SERDE_FORMAT)?;
 
     let mut params_file = File::create(params_path)?;
     params_file.write_all(&params_buf[..])?;

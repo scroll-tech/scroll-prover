@@ -21,16 +21,27 @@ use crate::utils::read_env_var;
 
 pub use self::builder::{block_traces_to_witness_block, check_batch_capacity};
 
+////// params for degree = 19 ////////////
+/*
+pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 const MAX_TXS: usize = 44;
 const MAX_INNER_BLOCKS: usize = 100;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_RWS: usize = 500_000;
 const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_EXP_STEPS: usize = 10_000;
-//pub static MAX_TXS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_TXS", 15));
-//pub static MAX_RWS: Lazy<usize> = Lazy::new(|| read_env_var("MAX_RWS", 500_000));
+*/
+
+////// params for degree = 20 ////////////
+pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 20));
+const MAX_TXS: usize = 44;
+const MAX_INNER_BLOCKS: usize = 100;
+const MAX_CALLDATA: usize = 400_000;
+const MAX_RWS: usize = 1_000_000;
+const MAX_KECCAK_ROWS: usize = 524_000;
+const MAX_EXP_STEPS: usize = 10_000;
+
 pub static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
-pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
 pub static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
 
@@ -63,22 +74,15 @@ pub trait TargetCircuit {
     where
         Self: Sized;
 
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        Self::estimate_rows_from_witness_block(&witness_block)
+    fn estimate_rows(block_traces: &[BlockTrace]) -> anyhow::Result<usize> {
+        let witness_block = block_traces_to_witness_block(block_traces)?;
+        Ok(Self::estimate_rows_from_witness_block(&witness_block))
     }
     fn estimate_rows_from_witness_block(_witness_block: &witness::Block<Fr>) -> usize {
         0
     }
     fn public_input_len() -> usize {
         0
-    }
-    // It is usually safer to use MockProver::verify than MockProver::verify_at_rows
-    fn get_active_rows(block_traces: &[BlockTrace]) -> (Vec<usize>, Vec<usize>) {
-        (
-            (0..Self::estimate_rows(block_traces)).into_iter().collect(),
-            (0..Self::estimate_rows(block_traces)).into_iter().collect(),
-        )
     }
 }
 
@@ -136,16 +140,6 @@ impl TargetCircuit for EvmCircuit {
         let instance = vec![];
         Ok((inner, instance))
     }
-
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        match block_traces_to_witness_block(block_traces) {
-            Ok(witness_block) => EvmCircuitImpl::<Fr>::get_num_rows_required(&witness_block),
-            Err(e) => {
-                log::error!("convert block result to witness block failed: {:?}", e);
-                0
-            }
-        }
-    }
 }
 
 pub struct StateCircuit {}
@@ -174,27 +168,6 @@ impl TargetCircuit for StateCircuit {
         );
         let instance = vec![];
         Ok((inner, instance))
-    }
-
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        1 + witness_block
-            .rws
-            .0
-            .iter()
-            .fold(0usize, |total, (_, v)| v.len() + total)
-    }
-    fn get_active_rows(block_traces: &[BlockTrace]) -> (Vec<usize>, Vec<usize>) {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        let rows = Self::estimate_rows(block_traces);
-        let active_rows: Vec<_> = (if witness_block.circuits_params.max_rws == 0 {
-            0..rows
-        } else {
-            (witness_block.circuits_params.max_rws - rows)..witness_block.circuits_params.max_rws
-        })
-        .into_iter()
-        .collect();
-        (active_rows.clone(), active_rows)
     }
 }
 
@@ -244,11 +217,6 @@ impl TargetCircuit for ZktrieCircuit {
         let instance = vec![];
         Ok((inner, instance))
     }
-
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        ZktrieCircuitImpl::min_num_rows_block(&witness_block).0
-    }
 }
 
 pub struct PoseidonCircuit {}
@@ -269,10 +237,5 @@ impl TargetCircuit for PoseidonCircuit {
         let inner = PoseidonCircuitImpl::new_from_block(witness_block);
         let instance = vec![];
         Ok((inner, instance))
-    }
-
-    fn estimate_rows(block_traces: &[BlockTrace]) -> usize {
-        let witness_block = block_traces_to_witness_block(block_traces).unwrap();
-        PoseidonCircuitImpl::min_num_rows_block(&witness_block).0
     }
 }

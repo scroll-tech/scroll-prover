@@ -382,7 +382,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
     let (existed, data) = sdb.get_account(&addr);
     if existed && !(data.nonce.is_zero() && data.balance.is_zero()) {
         assert_eq!(
-            hash, data.poseidon_code_hash,
+            hash, data.code_hash,
             "invalid codehash for existed account {addr:?}, {data:?}"
         );
     };

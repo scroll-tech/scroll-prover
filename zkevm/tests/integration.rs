@@ -28,11 +28,10 @@ fn estimate_circuit_rows() {
             "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
             "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
             _ => {
-                log::error!("invalid circuit: {:?}", circuit);
-                0
+                unimplemented!("invalid circuit: {:?}", circuit);
             }
         };
-        log::info!("{} circuit: {}", circuit, rows);
+        log::info!("{} circuit: {:?}", circuit, rows);
     }
 }
 

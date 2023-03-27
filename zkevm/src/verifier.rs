@@ -68,7 +68,11 @@ impl Verifier {
     pub fn verify_agg_circuit_proof(&self, proof: AggCircuitProof) -> anyhow::Result<()> {
         if let Some(raw_agg_vk) = &self.raw_agg_vk {
             if &proof.vk != raw_agg_vk {
-                log::error!("vk provided in proof != vk in verifier");
+                log::error!(
+                    "vk provided in proof != vk in verifier, proof vk {:?}... vs config vk {:?}...",
+                    &proof.vk[..10],
+                    &raw_agg_vk[..10]
+                );
             }
         }
         let verify_circuit_instance: Vec<Vec<Vec<Fr>>> = {
@@ -91,8 +95,7 @@ impl Verifier {
         let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
             &mut Cursor::new(&proof.vk),
             halo2_proofs::SerdeFormat::Processed,
-        )
-        .unwrap();
+        )?;
         verify_proof::<_, VerifierGWC<_>, _, _, _>(
             params,
             self.agg_vk.as_ref().unwrap_or(&vk_in_proof),
