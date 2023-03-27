@@ -9,7 +9,11 @@ use zkevm::{
 };
 
 mod test_util;
-use test_util::{init, load_block_traces_for_test, CIRCUIT, PARAMS_DIR, SEED_PATH};
+use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
+
+use once_cell::sync::Lazy;
+use zkevm::utils::read_env_var;
+pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
 
 #[test]
 fn estimate_circuit_rows() {
@@ -47,30 +51,24 @@ fn test_mock_prove() {
 
     for circuit in CIRCUIT.split(",") {
         match circuit {
-            "evm" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces, true)
+            "evm" => Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces)
+                .unwrap(),
+            "state" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(&block_traces)
                     .unwrap()
             }
-            "state" => Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "zktrie" => Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "poseidon" => Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "super" => Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
+            "zktrie" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(&block_traces)
+                    .unwrap()
+            }
+            "poseidon" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(&block_traces)
+                    .unwrap()
+            }
+            "super" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces)
+                    .unwrap()
+            }
             _ => {
                 log::error!("invalid circuit, skip: {:?}", circuit);
             }
