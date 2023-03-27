@@ -1,5 +1,6 @@
 use halo2_proofs::poly::commitment::Params;
 use mock_plonk::MockPlonkCircuit;
+use mock_plonk::StandardPlonk;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
@@ -7,12 +8,10 @@ use snark_verifier_sdk::evm::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifie
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
-use zkevm::io::serialize_vk;
 use std::path::Path;
 use test_util::init;
-use zkevm::prover::{Prover, TargetCircuitProof};
+use zkevm::prover::{Prover};
 use zkevm::verifier::Verifier;
-use mock_plonk::StandardPlonk;
 
 mod mock_plonk;
 mod test_util;
@@ -77,9 +76,8 @@ fn test_snark_verifier_sdk_api() {
     evm_verify(deployment_code, instances, proof)
 }
 
-
 // A partial integration test.
-// The inner snark proofs are generated from a mock circuit 
+// The inner snark proofs are generated from a mock circuit
 // instead of the trace files.
 #[test]
 fn test_aggregation_api() {
@@ -100,7 +98,7 @@ fn test_aggregation_api() {
         params
     };
 
-    let prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
+    let mut prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
 
     // ====================================================
     // A whole aggregation procedure takes the following steps
@@ -133,19 +131,17 @@ fn test_aggregation_api() {
     // Note:
     // we do not have traces for testing so here we simply assume that we have already
     // obtained 3 inner circuits proofs for some dummy circuit
-    let pk_inner = gen_pk(&params_inner, &circuit, None);
-    let vk_inner = pk_inner.get_vk();
-    let vk_inner_bytes = serialize_vk(vk_inner);
-
-    let snarks = (0..num_snarks)
+    let target_circuit_proof = (0..num_snarks)
         .map(|_| {
-            gen_snark_shplonk(
-                &params_inner,
-                &pk_inner,
-                circuit.clone(),
-                &mut rng,
-                None::<String>,
-            )
+            prover
+                .create_target_circuit_proof_from_circuit::<MockPlonkCircuit>(
+                    circuit,
+                    circuit.instances(),
+                    &mut rng,
+                    0,
+                    0,
+                )
+                .unwrap()
         })
         .collect::<Vec<_>>();
     log::info!("finished inner circuit snark generation");
@@ -153,18 +149,17 @@ fn test_aggregation_api() {
     // sanity check: the inner proof is correct
     let mut verifier = Verifier::new(params_inner, params_outer.clone(), None);
     for i in 0..num_snarks {
-        let proof = TargetCircuitProof {
-            name: "MockPlonk".into(),
-            snark: snarks[i].clone(),
-            vk: vk_inner_bytes.clone(),
-            num_of_proved_blocks: 0,
-            total_num_of_blocks: 0,
-        };
-        verifier.verify_target_circuit_proof::<MockPlonkCircuit>(&proof).unwrap();
+        verifier
+            .verify_target_circuit_proof::<MockPlonkCircuit>(&target_circuit_proof[i])
+            .unwrap();
     }
     log::info!("sanity check: inner circuit snark are correct");
 
     // 3. build an aggregation circuit proof
+    let snarks = target_circuit_proof
+        .iter()
+        .map(|p| p.snark.clone())
+        .collect::<Vec<_>>();
     let agg_circuit = AggregationCircuit::new(&params_outer, snarks, &mut rng);
     let pk_outer = gen_pk(&params_outer, &agg_circuit, None);
 
@@ -179,10 +174,7 @@ fn test_aggregation_api() {
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let deployment_code = prover.create_evm_verifier_bytecode(
-        &agg_circuit,
-        pk_outer.get_vk(),
-    );
+    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk());
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode

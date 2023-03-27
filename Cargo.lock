@@ -4390,6 +4390,25 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
+source = "git+https://github.com/privacy-scaling-explorations/snark-verifier?tag=v2023_02_02#df03d898b841f71cbc36c2fb9fa07b8196f9623e"
+dependencies = [
+ "ecc",
+ "halo2_proofs",
+ "halo2curves",
+ "hex",
+ "itertools",
+ "lazy_static",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "poseidon",
+ "rand 0.8.5",
+]
+
+[[package]]
+name = "snark-verifier"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#fdb14b7e045ad18c6d2703d07290969f7ae843a1"
 dependencies = [
  "bytes",
  "ethereum-types 0.14.1",
@@ -4411,26 +4430,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "snark-verifier"
-version = "0.1.0"
-source = "git+https://github.com/privacy-scaling-explorations/snark-verifier?tag=v2023_02_02#df03d898b841f71cbc36c2fb9fa07b8196f9623e"
-dependencies = [
- "ecc",
- "halo2_proofs",
- "halo2curves",
- "hex",
- "itertools",
- "lazy_static",
- "num-bigint",
- "num-integer",
- "num-traits",
- "poseidon",
- "rand 0.8.5",
-]
-
-[[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#fdb14b7e045ad18c6d2703d07290969f7ae843a1"
 dependencies = [
  "bincode",
  "eth-types",
@@ -4446,7 +4448,7 @@ dependencies = [
  "rand_chacha 0.3.1",
  "serde",
  "serde_json",
- "snark-verifier 0.1.0",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323)",
  "zkevm-circuits",
 ]
 
@@ -6017,7 +6019,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.6",
- "snark-verifier 0.1.0",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323)",
  "snark-verifier-sdk",
  "strum",
  "strum_macros",

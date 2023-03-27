@@ -48,7 +48,7 @@ impl Prover {
         //
         // Process the traces and prepare the witnesses and inputs to the inner circuits
         //
-        let ((circuit, instance), witness_block) = {
+        let ((circuit, instance), num_of_proved_blocks) = {
             let mut block_traces = block_traces.to_vec();
             check_batch_capacity(&mut block_traces)?;
             let witness_block = block_traces_to_witness_block(&block_traces)?;
@@ -57,7 +57,10 @@ impl Prover {
                 total_num_of_blocks,
                 metric_of_witness_block(&witness_block)
             );
-            (C::from_witness_block(&witness_block)?, witness_block)
+            (
+                C::from_witness_block(&witness_block)?,
+                witness_block.context.ctxs.len(),
+            )
         };
 
         //
@@ -70,7 +73,26 @@ impl Prover {
             block_traces[block_traces.len() - 1].header.hash.unwrap(),
             block_traces.len()
         );
+        self.create_target_circuit_proof_from_circuit::<C>(
+            circuit,
+            instance,
+            rng,
+            total_num_of_blocks,
+            num_of_proved_blocks,
+        )
+    }
 
+    ///
+    /// generate the proof for the inner circuit
+    ///
+    pub fn create_target_circuit_proof_from_circuit<C: TargetCircuit>(
+        &mut self,
+        circuit: C::Inner,
+        instance: Vec<Vec<Fr>>,
+        rng: &mut (impl Rng + Send),
+        total_num_of_blocks: usize,
+        num_of_proved_blocks: usize,
+    ) -> anyhow::Result<TargetCircuitProof, Error> {
         if *MOCK_PROVE {
             log::info!("mock prove {} start", C::name());
             let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance.clone())?;
@@ -92,12 +114,6 @@ impl Prover {
         // Generate the SNARK proof for the inner circuit
         let snark_proof = gen_snark_shplonk(&self.params, &pk, circuit, rng, None::<String>);
 
-        info!(
-            "Create {} proof of block {} ... block {} Successfully!",
-            C::name(),
-            block_traces[0].header.hash.unwrap(),
-            block_traces[block_traces.len() - 1].header.hash.unwrap(),
-        );
         let instance_bytes = serialize_instance(&instance);
         let name = C::name();
         log::debug!(
@@ -111,7 +127,7 @@ impl Prover {
             snark: snark_proof,
             vk: serialize_vk(pk.get_vk()),
             total_num_of_blocks,
-            num_of_proved_blocks: witness_block.context.ctxs.len(),
+            num_of_proved_blocks,
         };
         if !self.debug_dir.is_empty() {
             // write vk

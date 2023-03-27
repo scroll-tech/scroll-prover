@@ -6,13 +6,13 @@ use halo2_proofs::{
     plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Fixed, Instance},
     poly::Rotation,
 };
-use rand::{RngCore};
+use rand::RngCore;
 use snark_verifier_sdk::CircuitExt;
 use zkevm::circuit::TargetCircuit;
 use zkevm_circuits::witness;
 
 pub struct MockPlonkCircuit {
-    pub circuit: StandardPlonk
+    pub circuit: StandardPlonk,
 }
 
 impl TargetCircuit for MockPlonkCircuit {
@@ -31,10 +31,9 @@ impl TargetCircuit for MockPlonkCircuit {
     fn dummy_inner_circuit() -> Self::Inner
     where
         Self: Sized,
-    {   
+    {
         StandardPlonk(Fr::zero())
     }
-
 
     /// Build the inner circuit and the instances from the witness block
     fn from_witness_block(

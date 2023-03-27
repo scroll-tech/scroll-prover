@@ -13,11 +13,11 @@ use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use halo2_proofs::poly::kzg::multiopen::VerifierSHPLONK;
 use halo2_proofs::poly::kzg::strategy::{AccumulatorStrategy, SingleStrategy};
 use halo2_proofs::poly::VerificationStrategy;
-use halo2_proofs::transcript::{TranscriptReadBuffer};
+use halo2_proofs::transcript::TranscriptReadBuffer;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
 use snark_verifier_sdk::evm::evm_verify;
-use snark_verifier_sdk::halo2::PoseidonTranscript;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::halo2::PoseidonTranscript;
 
 pub struct Verifier {
     params: ParamsKZG<Bn256>,
@@ -109,7 +109,8 @@ impl Verifier {
 
         let verifier_params = self.params.verifier_params();
 
-        let mut transcript: PoseidonTranscript<_,_> = TranscriptReadBuffer::<_, G1Affine, _>::init(proof.snark.proof.as_slice());
+        let mut transcript: PoseidonTranscript<_, _> =
+            TranscriptReadBuffer::<_, G1Affine, _>::init(proof.snark.proof.as_slice());
         let strategy = SingleStrategy::new(verifier_params);
 
         let vk = self.target_circuit_vks.entry(C::name()).or_insert_with(|| {
@@ -127,7 +128,6 @@ impl Verifier {
         )?;
         Ok(())
     }
-
 
     /// Verifies the proof with EVM byte code.
     /// Panics if verification fails.
