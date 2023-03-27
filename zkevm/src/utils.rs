@@ -62,7 +62,15 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     //   g2: g2 point, 64 bytes
     //   s_g2: g2 point, 64 bytes
     let file_size = f.metadata()?.len();
-    if file_size != (1 << degree) * 64 + 132 {
+    let g1_num = 2 * (1 << degree);
+    let g2_num = 2;
+    let g1_bytes_len = match DEFAULT_SERDE_FORMAT {
+        SerdeFormat::Processed => 32,
+        SerdeFormat::RawBytes | SerdeFormat::RawBytesUnchecked => 64,
+    };
+    let g2_bytes_len = 2 * g1_bytes_len;
+    let expected_len = 4 + g1_num * g1_bytes_len + g2_num * g2_bytes_len;
+    if file_size != expected_len {
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
