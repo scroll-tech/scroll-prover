@@ -2050,7 +2050,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=goerli-0215-dual-hash#1857566070dd2c9e8cad06ce9e90d635e1f40023"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=goerli-0215-dual-hash#ae8acdf37eafbbb5b6dffcb9e977dab465970c83"
 dependencies = [
  "halo2_proofs",
  "hex",
