@@ -14,7 +14,6 @@ use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
 
-//use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
 use anyhow::bail;
@@ -36,7 +35,7 @@ pub fn calculate_row_usage_of_witness_block(
 ) -> Result<Vec<usize>, anyhow::Error> {
     let rows =
         <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
-            &witness_block,
+            witness_block,
         )
         .0;
 

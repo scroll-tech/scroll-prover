@@ -49,14 +49,22 @@ async fn main() {
                     let witness_block = block_traces_to_witness_block(&block_traces)?;
                     let rows = calculate_row_usage_of_witness_block(&witness_block)?;
                     log::info!(
-                        "rows of batch {:?} to {:?}, total gas {}",
+                        "rows of batch {}(block range {:?} to {:?}):",
+                        i,
                         block_traces.first().and_then(|b| b.header.number),
                         block_traces.last().and_then(|b| b.header.number),
-                        gas_total
                     );
                     for (c, r) in SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter()) {
                         log::info!("rows of {}: {}", c, r);
                     }
+                    let row_num = rows.iter().max().unwrap();
+                    log::info!(
+                        "final rows of batch {}: row {}, gas {}, gas/row {:.2}",
+                        i,
+                        row_num,
+                        gas_total,
+                        gas_total as f64 / *row_num as f64
+                    );
                     Ok(())
                 } else {
                     Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces)

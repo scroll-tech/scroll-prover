@@ -1,11 +1,11 @@
 use chrono::Utc;
-use halo2_proofs::plonk::keygen_vk;
+use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::load_or_create_params,
+    utils::{load_or_create_params, load_params},
 };
 
 mod test_util;
@@ -14,6 +14,31 @@ use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
 use once_cell::sync::Lazy;
 use zkevm::utils::read_env_var;
 pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
+
+#[ignore]
+#[test]
+fn test_load_params() {
+    init();
+    log::info!("start");
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        26,
+        SerdeFormat::RawBytesUnchecked,
+    )
+    .unwrap();
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        26,
+        SerdeFormat::RawBytes,
+    )
+    .unwrap();
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params.old",
+        26,
+        SerdeFormat::Processed,
+    )
+    .unwrap();
+}
 
 #[test]
 fn estimate_circuit_rows() {

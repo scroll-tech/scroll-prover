@@ -4,7 +4,7 @@ use std::io::Cursor;
 use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::{deserialize_fr_matrix, load_instances};
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
-use crate::utils::load_params;
+use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::plonk::{keygen_vk, verify_proof};
@@ -60,8 +60,10 @@ impl Verifier {
     }
 
     pub fn from_fpath(params_path: &str, agg_vk: Option<Vec<u8>>) -> Self {
-        let params = load_params(params_path, *DEGREE).expect("failed to init params");
-        let agg_params = load_params(params_path, *AGG_DEGREE).expect("failed to init params");
+        let params =
+            load_params(params_path, *DEGREE, DEFAULT_SERDE_FORMAT).expect("failed to init params");
+        let agg_params = load_params(params_path, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("failed to init params");
         Self::from_params(params, agg_params, agg_vk)
     }
 

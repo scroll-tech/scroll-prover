@@ -34,7 +34,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
     let params_path = format!("{params_dir}/params{degree}");
     log::info!("load_or_create_params {}", params_path);
     if Path::new(&params_path).exists() {
-        match load_params(&params_path, degree) {
+        match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
             Ok(r) => return Ok(r),
             Err(e) => {
                 log::error!("load params err: {}. Recreating...", e)
@@ -45,7 +45,11 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
 }
 
 /// load params from file
-pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
+pub fn load_params(
+    params_dir: &str,
+    degree: usize,
+    serde_format: SerdeFormat,
+) -> Result<ParamsKZG<Bn256>> {
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
@@ -64,7 +68,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     let file_size = f.metadata()?.len();
     let g1_num = 2 * (1 << degree);
     let g2_num = 2;
-    let g1_bytes_len = match DEFAULT_SERDE_FORMAT {
+    let g1_bytes_len = match serde_format {
         SerdeFormat::Processed => 32,
         SerdeFormat::RawBytes | SerdeFormat::RawBytesUnchecked => 64,
     };
@@ -74,7 +78,7 @@ pub fn load_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), DEFAULT_SERDE_FORMAT)?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_format)?;
     log::info!("load params successfully!");
     Ok(p)
 }
