@@ -19,7 +19,10 @@ mod builder;
 
 use crate::utils::read_env_var;
 
-pub use self::builder::{block_traces_to_witness_block, check_batch_capacity};
+pub use self::builder::{
+    block_traces_to_witness_block, calculate_row_usage_of_trace,
+    calculate_row_usage_of_witness_block, check_batch_capacity, SUB_CIRCUIT_NAMES,
+};
 
 ////// params for degree = 19 ////////////
 /*

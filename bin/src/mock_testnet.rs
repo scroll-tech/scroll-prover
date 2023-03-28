@@ -1,10 +1,14 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
+use itertools::Itertools;
 use reqwest::Url;
 use serde::Deserialize;
 use std::env;
 use types::eth::BlockTrace;
-use zkevm::circuit::SuperCircuit;
+use zkevm::circuit::{
+    block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+    SUB_CIRCUIT_NAMES,
+};
 use zkevm::prover::Prover;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
@@ -35,7 +39,30 @@ async fn main() {
             .unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
 
         if let Some(block_traces) = block_traces {
-            match Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces) {
+            let rows_only = true;
+            let result = (|| {
+                if rows_only {
+                    let gas_total: u64 = block_traces
+                        .iter()
+                        .map(|b| b.header.gas_used.as_u64())
+                        .sum();
+                    let witness_block = block_traces_to_witness_block(&block_traces)?;
+                    let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+                    log::info!(
+                        "rows of batch {:?} to {:?}, total gas {}",
+                        block_traces.first().and_then(|b| b.header.number),
+                        block_traces.last().and_then(|b| b.header.number),
+                        gas_total
+                    );
+                    for (c, r) in SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter()) {
+                        log::info!("rows of {}: {}", c, r);
+                    }
+                    Ok(())
+                } else {
+                    Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces)
+                }
+            })();
+            match result {
                 Ok(_) => log::info!("mock-testnet: succeeded to prove batch-{i}"),
                 Err(err) => log::error!("mock-testnet: failed to prove batch-{i}:\n{err:?}"),
             }

@@ -22,13 +22,18 @@ use is_even::IsEven;
 use itertools::Itertools;
 use std::time::Instant;
 
-const SUB_CIRCUIT_NAMES: [&str; 11] = [
+pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "poseidon", "mpt",
 ];
 
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
+    calculate_row_usage_of_witness_block(&witness_block)
+}
+pub fn calculate_row_usage_of_witness_block(
+    witness_block: &Block<Fr>,
+) -> Result<Vec<usize>, anyhow::Error> {
     let rows =
         <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
             &witness_block,
@@ -37,7 +42,7 @@ pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usiz
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx len sum {}, rows needed {:?}",
-        block_trace.header.number,
+        witness_block.context.first_or_default().number,
         witness_block.txs.len(),
         witness_block
             .txs
