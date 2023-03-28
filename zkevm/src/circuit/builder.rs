@@ -384,7 +384,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
 
     // sanity check
     let (existed, data) = sdb.get_account(&addr);
-    if existed && !(data.nonce.is_zero() && data.balance.is_zero()) {
+    if existed && !data.code_size.is_zero() {
         assert_eq!(
             hash, data.code_hash,
             "invalid codehash for existed account {addr:?}, {data:?}"
