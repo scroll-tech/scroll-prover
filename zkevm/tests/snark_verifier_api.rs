@@ -10,7 +10,7 @@ use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
 use std::path::Path;
 use test_util::init;
-use zkevm::prover::{Prover};
+use zkevm::prover::Prover;
 use zkevm::verifier::Verifier;
 
 mod mock_plonk;

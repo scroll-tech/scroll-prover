@@ -5,19 +5,20 @@ use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::load_instances;
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
 use crate::utils::load_params;
+use anyhow::anyhow;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::plonk::{keygen_vk, verify_proof};
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use halo2_proofs::poly::kzg::multiopen::VerifierSHPLONK;
-use halo2_proofs::poly::kzg::strategy::{AccumulatorStrategy, SingleStrategy};
+use halo2_proofs::poly::kzg::strategy::{AccumulatorStrategy};
 use halo2_proofs::poly::VerificationStrategy;
 use halo2_proofs::transcript::TranscriptReadBuffer;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
 use snark_verifier_sdk::evm::evm_verify;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use snark_verifier_sdk::halo2::PoseidonTranscript;
+use snark_verifier_sdk::halo2::verify_snark_shplonk;
 
 pub struct Verifier {
     params: ParamsKZG<Bn256>,
@@ -104,29 +105,17 @@ impl Verifier {
         &mut self,
         proof: &TargetCircuitProof,
     ) -> anyhow::Result<()> {
-        let instances = proof.snark.instances.clone();
-        let instance_slice = instances.iter().map(|x| &x[..]).collect::<Vec<_>>();
-
         let verifier_params = self.params.verifier_params();
-
-        let mut transcript: PoseidonTranscript<_, _> =
-            TranscriptReadBuffer::<_, G1Affine, _>::init(proof.snark.proof.as_slice());
-        let strategy = SingleStrategy::new(verifier_params);
-
         let vk = self.target_circuit_vks.entry(C::name()).or_insert_with(|| {
             let circuit = C::dummy_inner_circuit();
             keygen_vk(&self.params, &circuit)
                 .unwrap_or_else(|_| panic!("failed to generate {} vk", C::name()))
         });
-
-        verify_proof::<_, VerifierSHPLONK<_>, _, _, _>(
-            verifier_params,
-            vk,
-            strategy,
-            &[instance_slice.as_slice()],
-            &mut transcript,
-        )?;
-        Ok(())
+        if verify_snark_shplonk::<C::Inner>(verifier_params, proof.snark.clone(), vk) {
+            Ok(())
+        } else {
+            Err(anyhow!("snark verification failed".to_string()))
+        }
     }
 
     /// Verifies the proof with EVM byte code.
