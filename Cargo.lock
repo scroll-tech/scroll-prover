@@ -3422,7 +3422,7 @@ dependencies = [
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-0215#1eea94a77a2252f2e8ca4eb5b98b66934b32623e"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-0215#b5e9b1440de088648a8661ccefbd28f7ebb3f252"
 dependencies = [
  "bitvec 1.0.1",
  "halo2_proofs",
@@ -5238,7 +5238,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if 1.0.0",
  "digest 0.10.3",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
