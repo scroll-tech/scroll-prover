@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTrace {
-    #[serde(rename = "chainID")]
+    #[serde(rename = "chainID", default)]
     pub chain_id: U256,
     pub coinbase: AccountProofWrapper,
     pub header: EthBlock,
