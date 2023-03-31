@@ -8,7 +8,6 @@ use snark_verifier_sdk::evm::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifie
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
-use std::path::Path;
 use test_util::init;
 use zkevm::prover::Prover;
 use zkevm::verifier::Verifier;
@@ -34,26 +33,22 @@ fn test_snark_verifier_sdk_api() {
         params.downsize(k);
         params
     };
-    let pk_inner = gen_pk(&params_inner, &circuit, Some(Path::new("data/inner.pkey")));
+    let pk_inner = gen_pk(&params_inner, &circuit, None);
     let snarks = (0..3)
-        .map(|i| {
+        .map(|_| {
             gen_snark_shplonk(
                 &params_inner,
                 &pk_inner,
                 circuit.clone(),
                 &mut rng,
-                Some(Path::new(&format!("data/inner_{}.snark", i).to_string())),
+                None::<String>,
             )
         })
         .collect::<Vec<_>>();
     println!("finished snark generation");
 
     let agg_circuit = AggregationCircuit::new(&params_outer, snarks, &mut rng);
-    let pk_outer = gen_pk(
-        &params_outer,
-        &agg_circuit,
-        Some(Path::new("data/outer.pkey")),
-    );
+    let pk_outer = gen_pk(&params_outer, &agg_circuit, None);
     println!("finished outer pk generation");
     let instances = agg_circuit.instances();
     let proof = gen_evm_proof_shplonk(
@@ -69,7 +64,7 @@ fn test_snark_verifier_sdk_api() {
         &params_outer,
         pk_outer.get_vk(),
         agg_circuit.num_instance(),
-        Some(Path::new("data/deployed_code.sol")),
+        None,
     );
 
     println!("finished bytecode generation");
@@ -80,25 +75,11 @@ fn test_snark_verifier_sdk_api() {
 // The inner snark proofs are generated from a mock circuit
 // instead of the trace files.
 #[test]
-fn test_aggregation_api() {
+fn test_partial_aggregation_api() {
     std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
 
     init();
     let num_snarks = 3;
-    let k = 8;
-    let k_agg = 21;
-    let seed = [0u8; 16];
-    let mut rng = XorShiftRng::from_seed(seed);
-
-    let circuit = StandardPlonk::rand(&mut rng);
-    let params_outer = gen_srs(k_agg);
-    let params_inner = {
-        let mut params = params_outer.clone();
-        params.downsize(k);
-        params
-    };
-
-    let mut prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
 
     // ====================================================
     // A whole aggregation procedure takes the following steps
@@ -124,7 +105,8 @@ fn test_aggregation_api() {
         params
     };
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
-
+    let circuit = StandardPlonk::rand(&mut rng);
+    let mut prover = Prover::from_params_and_seed(params_inner.clone(), params_outer.clone(), seed);
     //
     // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
     //

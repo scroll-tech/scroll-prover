@@ -1,155 +1,92 @@
-//! Full integration tests with real trace files.
-//! Currently commented out -- need to implement CircuitExt trait for super circuit.
-//! A partial integration test is in snark_verifier_api.rs
+use halo2_proofs::poly::commitment::Params;
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
+use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
+use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
+use snark_verifier_sdk::gen_pk;
+use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::CircuitExt;
+use test_util::init;
+use test_util::load_block_traces_for_test;
+use zkevm::circuit::SuperCircuit;
+use zkevm::prover::Prover;
+use zkevm::verifier::Verifier;
 
-// use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
-// use halo2_proofs::plonk::VerifyingKey;
-// use halo2_proofs::SerdeFormat;
+mod mock_plonk;
+mod test_util;
 
-// use halo2_proofs::poly::commitment::Params;
-// use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-// // use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
-// // use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
-// use std::fs::{self};
-// use std::io::Cursor;
-// use std::path::{Path, PathBuf};
-// use std::str::FromStr;
+// An end to end integration test.
+// The inner snark proofs are generated from a mock circuit
+// instead of the trace files.
+#[test]
+fn test_aggregation_api() {
+    std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
 
-// use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
-// use zkevm::prover::{AggCircuitInstance, AggCircuitProof};
-// use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
-// use zkevm::verifier::Verifier;
-// use zkevm::{io::*, prover::Prover};
+    init();
 
-// mod test_util;
-// use test_util::{
-//     init, load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH,
-// };
+    let block_traces = load_block_traces_for_test().1;
+    log::info!("loaded block trace");
 
-// fn verifier_circuit_prove(output_dir: &str) {
-//     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
-//     let mut out_dir = PathBuf::from_str(output_dir).unwrap();
+    // ====================================================
+    // A whole aggregation procedure takes the following steps
+    // 1. instantiation the parameters and the prover
+    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    // 3. build an aggregation circuit proof
+    // 4. generate bytecode for evm to verify aggregation circuit proof
+    // 5. validate the proof with evm bytecode
+    // ====================================================
+    //
+    // 1. instantiation the parameters and the prover
+    //
+    let k = 20;
+    let k_agg = 26;
+    let seed = [0u8; 16];
+    let mut rng = XorShiftRng::from_seed(seed);
 
-//     // let params = load_or_create_params(PARAMS_DIR, *DEGREE).expect("failed to init params");
-//     let agg_params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).expect("failed to init params");
-//     let inner_params = {
-//         let mut params = agg_params.clone();
-//         params.downsize(*DEGREE as u32);
-//         params
-//     };
+    // notice that k < k_agg which is not necessary the case in practice
+    let params_outer = gen_srs(k_agg);
+    let params_inner = {
+        let mut params = params_outer.clone();
+        params.downsize(k);
+        params
+    };
+    log::info!("loaded parameters for degrees {} and {}", k, k_agg);
 
-//     let seed = load_seed(SEED_PATH).expect("failed to init rng");
+    let mut prover = Prover::from_params_and_seed(params_inner, params_outer.clone(), seed);
 
-//     let mut prover = Prover::from_params_and_seed(inner_params.clone(), agg_params.clone(), seed);
-//     prover.debug_dir = output_dir.to_string();
+    log::info!("build prover");
 
-//     // auto load inner circuit proofs
-//     let load = Path::new(&format!("{output_dir}/super_proof.json")).exists();
-//     let circuit_results: Vec<AggCircuitInstance> = if load {
-//         let mut v = Verifier::from_params(inner_params, agg_params, None);
-//         log::info!("loading cached inner circuit proofs");
-//         vec![prover
-//             .load_aggregation_circuit_instance::<SuperCircuit>(Some(&mut v))
-//             .unwrap()]
-//     } else {
-//         log::info!("building a new inner circuit proofs");
-//         let block_traces = load_block_traces_for_test().1;
-//         vec![prover
-//             .prove_inner_circuit::<SuperCircuit>(&block_traces)
-//             .unwrap()]
-//     };
+    //
+    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    //
+    let super_circuit_proof = prover
+        .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
+        .unwrap();
 
-//     let agg_proof = prover
-//         .create_agg_circuit_proof_impl(circuit_results)
-//         .unwrap();
-//     agg_proof.write_to_dir(&mut out_dir);
-//     log::info!("output files to {}", output_dir);
-// }
+    log::info!("build super circuit from block traces");
 
-// fn verifier_circuit_generate_solidity(dir: &str) {
-//     let mut folder = PathBuf::from_str(dir).unwrap();
+    // sanity check: the inner proof is correct
 
-//     let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-//     let load_full = true;
-//     let (vk, proof, instance) = if load_full {
-//         let file = fs::File::open(format!("{dir}/full_proof.data")).unwrap();
-//         let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
-//         (agg_proof.vk, agg_proof.proof, agg_proof.instance)
-//     } else {
-//         (
-//             load_verify_circuit_vk(&mut folder),
-//             load_verify_circuit_proof(&mut folder),
-//             load_verify_circuit_instance(&mut folder),
-//         )
-//     };
-//     let vk = VerifyingKey::<G1Affine>::read::<_, AggregationCircuit>(
-//         &mut Cursor::new(&vk),
-//         SerdeFormat::Processed,
-//     )
-//     .unwrap();
-//     // let request = MultiCircuitSolidityGenerate {
-//     //     verify_vk: &vk,
-//     //     verify_params: &params,
-//     //     verify_circuit_instance: load_instances(&instance),
-//     //     proof,
-//     //     verify_public_inputs_size: 4,
-//     // };
-//     // let sol = request.call("".into());
-//     // write_verify_circuit_solidity(&mut folder, &Vec::<u8>::from(sol.as_bytes()));
-//     log::info!("write to {}/verifier.sol", dir);
-// }
+    // 3. build an aggregation circuit proof
+    let agg_circuit =
+        AggregationCircuit::new(&params_outer, [super_circuit_proof.snark.clone()], &mut rng);
+    let pk_outer = gen_pk(&params_outer, &agg_circuit, None);
 
-// #[cfg(feature = "prove_verify")]
-// #[test]
-// fn verifier_circuit_verify_proof() {
-//     init();
-//     use zkevm::utils::read_env_var;
+    let instances = agg_circuit.instances();
+    let proof = gen_evm_proof_shplonk(
+        &params_outer,
+        &pk_outer,
+        agg_circuit.clone(),
+        instances.clone(),
+        &mut rng,
+    );
+    log::info!("finished aggregation generation");
 
-//     let super_proof_file_name = "data/super_proof.json";
-//     let file = fs::File::open(super_proof_file_name).unwrap();
-//     let agg_proof: AggCircuitProof = serde_json::from_reader(file).unwrap();
-//     let verifier = Verifier::from_fpath(PARAMS_DIR, None);
-//     assert!(verifier.verify_agg_circuit_proof(agg_proof).is_ok())
-// }
+    // 4. generate bytecode for evm to verify aggregation circuit proof
+    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk());
+    log::info!("finished byte code generation");
 
-// fn verifier_circuit_verify(d: &str) {
-//     log::info!("start verifier_circuit_verify");
-//     let mut folder = PathBuf::from_str(d).unwrap();
-
-//     let vk = load_verify_circuit_vk(&mut folder);
-//     let verifier = Verifier::from_fpath(PARAMS_DIR, Some(vk.clone()));
-
-//     let proof = load_verify_circuit_proof(&mut folder);
-//     let instance = load_verify_circuit_instance(&mut folder);
-
-//     let agg_proof = AggCircuitProof {
-//         proof,
-//         instance,
-//         vk,
-//         final_pair: vec![], // not used
-//         block_count: 0,     // not used
-//     };
-//     verifier.verify_agg_circuit_proof(agg_proof).unwrap();
-// }
-
-// #[cfg(feature = "prove_verify")]
-// #[test]
-// fn test_agg() {
-//     // use chrono::Utc;
-//     // use zkevm::utils::read_env_var;
-
-//     init();
-//     // let mode = read_env_var("MODE", "multi".to_string());
-//     // let output = read_env_var(
-//     //     "OUTPUT_DIR",
-//     //     format!("output_{}_{}", Utc::now().format("%Y%m%d_%H%M%S"), mode),
-//     // );
-//     let output = "data";
-//     log::info!("output dir {}", output);
-//     let output_dir = PathBuf::from_str(&output).unwrap();
-//     fs::create_dir_all(output_dir).unwrap();
-
-//     verifier_circuit_prove(&output);
-//     verifier_circuit_verify(&output);
-//     verifier_circuit_generate_solidity(&output);
-// }
+    // 5. validate the proof with evm bytecode
+    Verifier::evm_verify(deployment_code, instances, proof);
+    log::info!("end to end test completed");
+}

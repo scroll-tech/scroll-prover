@@ -15,7 +15,7 @@ halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.gi
 
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0323" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0323" }
-#zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","zktrie","poseidon-codehash","enable-sign-verify"] }
+#zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "scroll-stable", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify"] }
 zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0323", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify"] }
 mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "halo2-ecc-snark-verifier-0323" }
 

@@ -12,7 +12,7 @@ use halo2_proofs::plonk::{keygen_vk, verify_proof};
 use halo2_proofs::poly::commitment::ParamsProver;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use halo2_proofs::poly::kzg::multiopen::VerifierSHPLONK;
-use halo2_proofs::poly::kzg::strategy::{AccumulatorStrategy};
+use halo2_proofs::poly::kzg::strategy::AccumulatorStrategy;
 use halo2_proofs::poly::VerificationStrategy;
 use halo2_proofs::transcript::TranscriptReadBuffer;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
