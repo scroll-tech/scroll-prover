@@ -11,9 +11,9 @@ export PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5
 function goerli() {
 #	for d in 2.zip 8.zip
 #	do
-		d=2.zip
+		d=4.zip
 		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/0217-31byte/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
-		d=8.zip
+		d=5.zip
 		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/0217-31byte/traces/${d}/traces-data/` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log.${d}
 #	done
 }
