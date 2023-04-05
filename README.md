@@ -1,4 +1,4 @@
-# scroll-zkevm
+# 📜 scroll-zkevm 📜
 [![Unit Test](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml)
 ![issues](https://img.shields.io/github/issues/scroll-tech/scroll-zkevm)
 
@@ -18,25 +18,24 @@ cargo build --release --bin setup
 ./target/release/setup --params <params-file-path> --seed <seed-file-path>
 ```
 
+If you run into linking issues during setup you may need to run
+```shell
+cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
+```
+to move the zktrielib into a path where your linker can locate it
+
 Prove
 ```shell
 cargo build --release --bin prove
 
-./target/release/prove --params zkevm/test_params --seed zkevm/test_seed --trace zkevm/tests/erc20/multiple.json --evm evm_proof_multiple-erc20 --state state_proof_multiple-erc20
+./target/release/prove --help
 ```
 
 ## Test
-By default, prover tests are disabled due to heavy computations, if you want to run the prover test, please run:
+By default, prover tests are disabled due to heavy computations, if you want to run the prover tests, please run:
 ```
-RUST_LOG=info cargo test --features prove_verify --release test_evm_prove_verify
+RUST_LOG=info cargo test --features prove_verify --release 
 ```
-
-or
-```
-RUST_LOG=info cargo test --features prove_verify --release test_state_prove_verify
-```
-
-(Please don't run `test_evm_prove_verify` and `test_state_prove_verify` concurrently.)
 
 By default, it run the test for a trace corresponding to a block containing multiple erc20 txs. You can config `mode` ENV to test other trace:
 
