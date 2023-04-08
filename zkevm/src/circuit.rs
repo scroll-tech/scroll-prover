@@ -267,7 +267,7 @@ impl TargetCircuit for ZktrieCircuit {
     }
 
     fn get_active_rows(block_traces: &[BlockTrace]) -> (Vec<usize>, Vec<usize>) {
-        // we have compare and pick the maxium for lookup and gate rows, here we
+        // we have compare and pick the maximum for lookup and gate rows, here we
         // just make sure it not less than 64 (so it has contained all constant rows)
         let ret = Self::estimate_rows(block_traces);
         ((0..ret.max(64)).collect(), (0..ret.max(64)).collect())
