@@ -4,7 +4,7 @@ use std::io::Cursor;
 use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::io::{deserialize_fr_matrix, load_instances};
 use crate::prover::{AggCircuitProof, TargetCircuitProof};
-use crate::utils::load_params;
+use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
 use halo2_proofs::plonk::{keygen_vk, verify_proof};
@@ -60,15 +60,21 @@ impl Verifier {
     }
 
     pub fn from_fpath(params_path: &str, agg_vk: Option<Vec<u8>>) -> Self {
-        let params = load_params(params_path, *DEGREE).expect("failed to init params");
-        let agg_params = load_params(params_path, *AGG_DEGREE).expect("failed to init params");
+        let params =
+            load_params(params_path, *DEGREE, DEFAULT_SERDE_FORMAT).expect("failed to init params");
+        let agg_params = load_params(params_path, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("failed to init params");
         Self::from_params(params, agg_params, agg_vk)
     }
 
     pub fn verify_agg_circuit_proof(&self, proof: AggCircuitProof) -> anyhow::Result<()> {
         if let Some(raw_agg_vk) = &self.raw_agg_vk {
             if &proof.vk != raw_agg_vk {
-                log::error!("vk provided in proof != vk in verifier");
+                log::error!(
+                    "vk provided in proof != vk in verifier, proof vk {:?}... vs config vk {:?}...",
+                    &proof.vk[..10],
+                    &raw_agg_vk[..10]
+                );
             }
         }
         let verify_circuit_instance: Vec<Vec<Vec<Fr>>> = {
@@ -91,8 +97,7 @@ impl Verifier {
         let vk_in_proof = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
             &mut Cursor::new(&proof.vk),
             halo2_proofs::SerdeFormat::Processed,
-        )
-        .unwrap();
+        )?;
         verify_proof::<_, VerifierGWC<_>, _, _, _>(
             params,
             self.agg_vk.as_ref().unwrap_or(&vk_in_proof),

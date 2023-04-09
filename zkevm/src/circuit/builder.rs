@@ -3,9 +3,9 @@ use crate::circuit::{
     TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS,
 };
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
-use bus_mapping::state_db::{Account, CodeDB, CodeHash, StateDB};
+use bus_mapping::state_db::{Account, CodeDB, StateDB};
 use eth_types::evm_types::OpcodeId;
-use eth_types::{Hash, ToAddress};
+use eth_types::ToAddress;
 use ethers_core::types::{Bytes, U256};
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 
@@ -14,34 +14,34 @@ use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;
 
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
-
-//use halo2_proofs::arithmetic::FieldExt;
 use halo2_proofs::halo2curves::bn256::Fr;
 
 use anyhow::bail;
 use is_even::IsEven;
 use itertools::Itertools;
-use std::collections::HashMap;
 use std::time::Instant;
 
-const SUB_CIRCUIT_NAMES: [&str; 10] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi",
-    "poseidon", // "mpt",
+pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
+    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "poseidon", "mpt",
 ];
 
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
+    calculate_row_usage_of_witness_block(&witness_block)
+}
+pub fn calculate_row_usage_of_witness_block(
+    witness_block: &Block<Fr>,
+) -> Result<Vec<usize>, anyhow::Error> {
     let rows =
         <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
-            &witness_block,
+            witness_block,
         )
         .0;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx len sum {}, rows needed {:?}",
-        block_trace.header.number,
+        witness_block.context.first_or_default().number,
         witness_block.txs.len(),
         witness_block
             .txs
@@ -118,7 +118,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .sum::<usize>();
     if total_tx_count != 0 && total_tx_count2 == 0 {
         // the circuit cannot even prove the first non-empty block...
-        bail!("ciruit capacity not enough");
+        bail!("circuit capacity not enough");
     }
     Ok(())
 }
@@ -131,7 +131,7 @@ pub fn block_traces_to_witness_block(
     } else {
         block_traces[0].storage_trace.root_before
     };
-    let zktrie_state = ZktrieState::from_trace(
+    let zktrie_state = ZktrieState::from_trace_with_additional(
         old_root,
         block_traces.iter().rev().flat_map(|block| {
             block.storage_trace.proofs.iter().flat_map(|kv_map| {
@@ -151,11 +151,18 @@ pub fn block_traces_to_witness_block(
                         .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
                 })
         }),
+        block_traces.iter().rev().flat_map(|block| {
+            block
+                .storage_trace
+                .deletion_proofs
+                .iter()
+                .map(Bytes::as_ref)
+        }),
     )?;
 
     let chain_ids = block_traces
         .iter()
-        .flat_map(|block_trace| block_trace.transactions.iter().map(|tx| tx.chain_id))
+        .map(|block_trace| block_trace.chain_id)
         .collect::<Vec<U256>>();
 
     let chain_id = if !chain_ids.is_empty() {
@@ -168,27 +175,19 @@ pub fn block_traces_to_witness_block(
 
     let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
     if !zero_coinbase_exist {
-        state_db.set_account(
-            &Default::default(),
-            Account {
-                nonce: Default::default(),
-                balance: Default::default(),
-                storage: HashMap::new(),
-                // FIXME: 0 or keccak(nil)?
-                code_hash: Default::default(),
-            },
-        );
+        state_db.set_account(&Default::default(), Account::zero());
     }
 
     let code_db = build_codedb(&state_db, block_traces)?;
     let circuit_params = CircuitsParams {
+        max_evm_rows: MAX_RWS,
         max_rws: MAX_RWS,
         max_copy_rows: MAX_RWS,
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
         max_bytecode: MAX_CALLDATA,
         max_inner_blocks: MAX_INNER_BLOCKS,
-        keccak_padding: Some(MAX_KECCAK_ROWS),
+        max_keccak_rows: MAX_KECCAK_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
@@ -240,7 +239,6 @@ pub fn block_traces_to_witness_block(
     builder.set_end_block()?;
 
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
-    witness_block.evm_circuit_pad_to = MAX_RWS;
     log::debug!(
         "witness_block.circuits_params {:?}",
         witness_block.circuits_params
@@ -264,7 +262,7 @@ pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
 
     hex::decode(stripped).map_err(|e| e.into())
 }
-
+/*
 #[derive(Debug, Clone)]
 struct PoseidonCodeHash {
     bytes_in_field: usize,
@@ -338,7 +336,7 @@ fn code_hashing() {
         "0x26f706f949ff4faad54ee72308e9d30ece46e37cf8b9968bdb274e750a264937"
     );
 }
-
+*/
 /*
 fn get_account_deployed_codehash(
     execution_result: &ExecutionResult,
@@ -386,7 +384,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
 
     // sanity check
     let (existed, data) = sdb.get_account(&addr);
-    if existed && !(data.nonce.is_zero() && data.balance.is_zero()) {
+    if existed && !data.code_size.is_zero() {
         assert_eq!(
             hash, data.code_hash,
             "invalid codehash for existed account {addr:?}, {data:?}"
@@ -394,8 +392,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
     };
 }
 pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyhow::Error> {
-    let mut cdb =
-        CodeDB::new_with_code_hasher(Box::new(PoseidonCodeHash::new(HASHBLOCK_BYTES_IN_FIELD)));
+    let mut cdb = CodeDB::new();
 
     for block in blocks.iter().rev() {
         // notice empty codehash always kept as keccak256(nil)

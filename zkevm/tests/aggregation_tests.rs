@@ -9,16 +9,14 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
+use zkevm::circuit::{SuperCircuit, AGG_DEGREE, DEGREE};
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
-use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
+use zkevm::utils::{load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
-use test_util::{
-    init, load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH,
-};
+use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
 
 fn verifier_circuit_prove(output_dir: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
