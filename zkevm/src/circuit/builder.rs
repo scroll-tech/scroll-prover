@@ -162,7 +162,7 @@ pub fn block_traces_to_witness_block(
 
     let chain_ids = block_traces
         .iter()
-        .flat_map(|block_trace| block_trace.transactions.iter().map(|tx| tx.chain_id))
+        .map(|block_trace| block_trace.chain_id)
         .collect::<Vec<U256>>();
 
     let chain_id = if !chain_ids.is_empty() {

@@ -6,9 +6,9 @@ PROJ_DIR=$DIR"/.."
 
 pushd $PROJ_DIR
 mkdir -p test_params
-RELEASE_VERSION=release-1220
-wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/test_seed -O test_seed
-wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/test_params/params19 -O ./test_params/params18
-wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/test_params/params26 -O ./test_params/params25
-wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/verify_circuit.vkey -O agg_vk
+RELEASE_VERSION=params-0320
+wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/params20 -O ./test_params/params20
+wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/params26 -O ./test_params/params26
+#wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/test_seed -O test_seed
+#wget https://circuit-release.s3.us-west-2.amazonaws.com/circuit-release/$RELEASE_VERSION/verify_circuit.vkey -O agg_vk
 popd
