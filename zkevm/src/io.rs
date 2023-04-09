@@ -7,6 +7,7 @@ use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fq, Fr, G1Affine},
     plonk::VerifyingKey,
     poly::{commitment::Params, kzg::commitment::ParamsKZG},
+    SerdeFormat,
 };
 use num_bigint::BigUint;
 use zkevm_circuits::tx_circuit::PrimeField;
@@ -122,7 +123,7 @@ pub fn write_verify_circuit_params(folder: &mut PathBuf, verify_circuit_params: 
 
 pub fn serialize_vk(vk: &VerifyingKey<G1Affine>) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
-    vk.write(&mut result).unwrap();
+    vk.write(&mut result, SerdeFormat::Processed).unwrap();
     result
 }
 

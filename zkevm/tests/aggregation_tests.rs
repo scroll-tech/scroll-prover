@@ -1,5 +1,6 @@
 use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::VerifyingKey;
+use halo2_proofs::SerdeFormat;
 
 use halo2_snark_aggregator_circuit::verify_circuit::Halo2VerifierCircuit;
 use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
@@ -8,16 +9,14 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use zkevm::circuit::{PoseidonCircuit, SuperCircuit, ZktrieCircuit, AGG_DEGREE, DEGREE};
+use zkevm::circuit::{SuperCircuit, AGG_DEGREE, DEGREE};
 use zkevm::prover::{AggCircuitProof, ProvedCircuit};
-use zkevm::utils::{get_block_trace_from_file, load_or_create_params, load_seed};
+use zkevm::utils::{load_or_create_params, load_seed};
 use zkevm::verifier::Verifier;
 use zkevm::{io::*, prover::Prover};
 
 mod test_util;
-use test_util::{
-    init, load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR, SEED_PATH,
-};
+use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
 
 fn verifier_circuit_prove(output_dir: &str) {
     log::info!("start verifier_circuit_prove, output_dir {}", output_dir);
@@ -66,9 +65,9 @@ fn verifier_circuit_generate_solidity(dir: &str) {
             load_verify_circuit_instance(&mut folder),
         )
     };
-    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>, Bn256, _>(
+    let vk = VerifyingKey::<G1Affine>::read::<_, Halo2VerifierCircuit<'_, Bn256>>(
         &mut Cursor::new(&vk),
-        &params,
+        SerdeFormat::Processed,
     )
     .unwrap();
     let request = MultiCircuitSolidityGenerate {

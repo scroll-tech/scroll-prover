@@ -1,6 +1,5 @@
 use git_version::git_version;
 use glob::glob;
-use once_cell::sync::Lazy;
 use std::sync::Once;
 use types::eth::BlockTrace;
 use zkevm::utils::get_block_trace_from_file;
@@ -11,8 +10,6 @@ pub const PARAMS_DIR: &str = "./test_params";
 pub const SEED_PATH: &str = "./test_seed";
 
 pub static ENV_LOGGER: Once = Once::new();
-
-pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
 
 pub fn init() {
     ENV_LOGGER.call_once(|| {

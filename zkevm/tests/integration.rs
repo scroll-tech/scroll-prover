@@ -1,19 +1,44 @@
-use std::vec;
-
 use chrono::Utc;
-use halo2_proofs::plonk::keygen_vk;
-use types::eth::BlockTrace;
+use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
+
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{get_block_trace_from_file, load_or_create_params, read_env_var},
+    utils::{load_or_create_params, load_params},
 };
 
 mod test_util;
-use test_util::{
-    init, load_block_traces_for_test, parse_trace_path_from_mode, CIRCUIT, PARAMS_DIR, SEED_PATH,
-};
+use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
+
+use once_cell::sync::Lazy;
+use zkevm::utils::read_env_var;
+pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
+
+#[ignore]
+#[test]
+fn test_load_params() {
+    init();
+    log::info!("start");
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        26,
+        SerdeFormat::RawBytesUnchecked,
+    )
+    .unwrap();
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        26,
+        SerdeFormat::RawBytes,
+    )
+    .unwrap();
+    load_params(
+        "/home/ubuntu/scroll-zkevm/zkevm/test_params.old",
+        26,
+        SerdeFormat::Processed,
+    )
+    .unwrap();
+}
 
 #[test]
 fn estimate_circuit_rows() {
@@ -32,20 +57,17 @@ fn estimate_circuit_rows() {
             "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
             "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
             _ => {
-                log::error!("invalid circuit: {:?}", circuit);
-                0
+                unimplemented!("invalid circuit: {:?}", circuit);
             }
         };
-        log::info!("{} circuit: {}", circuit, rows);
+        log::info!("{} circuit: {:?}", circuit, rows);
     }
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove() {
-    use zkevm::circuit::{
-        self, EvmCircuit, PoseidonCircuit, StateCircuit, SuperCircuit, TargetCircuit, ZktrieCircuit,
-    };
+    use zkevm::circuit;
 
     use crate::test_util::load_block_traces_for_test;
 
@@ -54,30 +76,24 @@ fn test_mock_prove() {
 
     for circuit in CIRCUIT.split(",") {
         match circuit {
-            "evm" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces, true)
+            "evm" => Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces)
+                .unwrap(),
+            "state" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(&block_traces)
                     .unwrap()
             }
-            "state" => Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "zktrie" => Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "poseidon" => Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
-            "super" => Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(
-                &block_traces,
-                true,
-            )
-            .unwrap(),
+            "zktrie" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(&block_traces)
+                    .unwrap()
+            }
+            "poseidon" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(&block_traces)
+                    .unwrap()
+            }
+            "super" => {
+                Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces)
+                    .unwrap()
+            }
             _ => {
                 log::error!("invalid circuit, skip: {:?}", circuit);
             }
@@ -88,7 +104,7 @@ fn test_mock_prove() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_prove_verify() {
-    use zkevm::circuit::{self, TargetCircuit};
+    use zkevm::circuit;
     for circuit in CIRCUIT.split(",") {
         match circuit {
             "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),

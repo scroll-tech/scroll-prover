@@ -1,12 +1,21 @@
 use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
 use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
 use ethers_core::types::{Address, Bytes, U256, U64};
-use mpt_circuits::serde::SMTTrace;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
+
+fn u64_to_word<'de, D>(deserializer: D) -> Result<U256, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let i: u64 = Deserialize::deserialize(deserializer)?;
+    Ok((i).into())
+}
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTrace {
+    #[serde(rename = "chainID", default, deserialize_with = "u64_to_word")]
+    pub chain_id: U256,
     pub coinbase: AccountProofWrapper,
     pub header: EthBlock,
     pub transactions: Vec<TransactionTrace>,
@@ -14,8 +23,8 @@ pub struct BlockTrace {
     pub execution_results: Vec<ExecutionResult>,
     #[serde(rename = "storageTrace")]
     pub storage_trace: StorageTrace,
-    #[serde(rename = "mptwitness", default)]
-    pub mpt_witness: Vec<SMTTrace>,
+    //    #[serde(rename = "mptwitness", default)]
+    //    pub mpt_witness: Vec<SMTTrace>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
@@ -33,6 +42,7 @@ impl From<BlockTrace> for EthBlock {
         }
         EthBlock {
             transactions: txs,
+            difficulty: 0.into(),
             ..b.header
         }
     }
@@ -106,12 +116,16 @@ pub struct StorageTrace {
     pub proofs: Option<AccountTrieProofs>,
     #[serde(rename = "storageProofs", default)]
     pub storage_proofs: StorageTrieProofs,
+    #[serde(rename = "deletionProofs", default)]
+    pub deletion_proofs: Vec<Bytes>,
 }
 
 pub type EthBlock = Block<Transaction>;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ExecutionResult {
+    #[serde(rename = "l1Fee", default)]
+    pub l1_fee: u64,
     pub gas: u64,
     pub failed: bool,
     #[serde(rename = "returnValue", default)]
@@ -122,7 +136,7 @@ pub struct ExecutionResult {
     pub account_after: Vec<AccountProofWrapper>,
     #[serde(rename = "accountCreated")]
     pub account_created: Option<AccountProofWrapper>,
-    #[serde(rename = "codeHash")]
+    #[serde(rename = "poseidonCodeHash")]
     pub code_hash: Option<Hash>,
     #[serde(rename = "byteCode")]
     pub byte_code: Option<String>,
@@ -138,6 +152,7 @@ impl From<&ExecutionResult> for GethExecTrace {
             struct_logs.push(step)
         }
         GethExecTrace {
+            l1_fee: e.l1_fee,
             gas: Gas(e.gas),
             failed: e.failed,
             return_value: e.return_value.clone(),
@@ -194,8 +209,9 @@ pub struct ExtraData {
 }
 
 impl ExtraData {
-    pub fn get_code_at(&self, i: usize) -> Bytes {
-        self.code_list.as_ref().unwrap().get(i).cloned().unwrap()
+    pub fn get_code_at(&self, i: usize) -> Option<Bytes> {
+        let code_list = self.code_list.as_ref().unwrap();
+        code_list.get(i).cloned()
     }
 
     pub fn get_proof_at(&self, i: usize) -> Option<AccountProofWrapper> {
