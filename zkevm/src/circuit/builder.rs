@@ -118,7 +118,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .sum::<usize>();
     if total_tx_count != 0 && total_tx_count2 == 0 {
         // the circuit cannot even prove the first non-empty block...
-        bail!("ciruit capacity not enough");
+        bail!("circuit capacity not enough");
     }
     Ok(())
 }

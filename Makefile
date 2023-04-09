@@ -12,7 +12,7 @@ test-all: test-ci ## Run all available tests
 build-release: ## Check build in release mode
 	@cargo build --release
 
-fmt: ## Check whether the code is formated correctly
+fmt: ## Check whether the code is formatted correctly
 	@cargo fmt --all -- --check
 
 clippy: ## Run clippy checks over all workspace members
