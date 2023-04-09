@@ -137,7 +137,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
         .sum::<usize>();
     if total_tx_count != 0 && total_tx_count2 == 0 {
         // the circuit cannot even prove the first non-empty block...
-        bail!("ciruit capacity not enough");
+        bail!("circuit capacity not enough");
     }
     Ok(())
 }
@@ -443,7 +443,7 @@ pub fn build_statedb_and_codedb(blocks: &[BlockTrace]) -> Result<(StateDB, CodeD
         }
     }
 
-    // A temporary fix: zkgeth do not trace 0 address if it is only refered as coinbase
+    // A temporary fix: zkgeth do not trace 0 address if it is only referred as coinbase
     // (For it is not the "real" coinbase address in PoA) but would still refer it for
     // other reasons (like being transferred or called), in the other way, busmapping
     // seems always refer it as coinbase (?)
