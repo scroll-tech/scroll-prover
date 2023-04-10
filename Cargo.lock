@@ -261,7 +261,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
 name = "bin"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1580,7 +1580,7 @@ dependencies = [
 
 [[package]]
 name = "ffi"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "env_logger",
  "libc",
@@ -5250,7 +5250,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "types"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "base64 0.13.0",
  "blake2",
@@ -5925,7 +5925,7 @@ dependencies = [
 
 [[package]]
 name = "zkevm"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "blake2",
