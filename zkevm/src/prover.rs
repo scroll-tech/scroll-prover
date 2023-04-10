@@ -11,7 +11,7 @@ use crate::io::{
     serialize_verify_circuit_final_pair, serialize_vk, write_verify_circuit_final_pair,
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
-use crate::utils::{load_or_create_params, load_params, read_env_var};
+use crate::utils::{DEFAULT_SERDE_FORMAT, load_or_create_params, load_params, read_env_var};
 use crate::utils::{load_or_create_seed, load_seed, metric_of_witness_block};
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
@@ -182,8 +182,8 @@ impl Prover {
     }
 
     pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
-        let params = load_params(params_fpath, *DEGREE).expect("failed to init params");
-        let agg_params = load_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
+        let params = load_params(params_fpath, *DEGREE, DEFAULT_SERDE_FORMAT).expect("failed to init params");
+        let agg_params = load_params(params_fpath, *AGG_DEGREE, DEFAULT_SERDE_FORMAT).expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         Self::from_params_and_seed(params, agg_params, seed)
     }
