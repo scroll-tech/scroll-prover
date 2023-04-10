@@ -50,19 +50,8 @@ fn estimate_circuit_rows() {
     let (_, block_trace) = load_block_traces_for_test();
 
     log::info!("estimating used rows for batch");
-    for circuit in CIRCUIT.split(",") {
-        let rows = match circuit {
-            "evm" => circuit::EvmCircuit::estimate_rows(&block_trace),
-            "state" => circuit::StateCircuit::estimate_rows(&block_trace),
-            "zktrie" => circuit::ZktrieCircuit::estimate_rows(&block_trace),
-            "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
-            "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
-            _ => {
-                unimplemented!("invalid circuit: {:?}", circuit);
-            }
-        };
-        log::info!("{} circuit: {:?}", circuit, rows);
-    }
+    let rows = circuit::SuperCircuit::estimate_rows(&block_trace);
+    log::info!("super circuit: {:?}", rows);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -74,57 +63,19 @@ fn test_mock_prove() {
 
     init();
     let block_traces = load_block_traces_for_test().1;
-
-    for circuit in CIRCUIT.split(",") {
-        match circuit {
-            "evm" => Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces)
-                .unwrap(),
-            "state" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "zktrie" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "poseidon" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "super" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces)
-                    .unwrap()
-            }
-            _ => {
-                log::error!("invalid circuit, skip: {:?}", circuit);
-            }
-        };
-    }
+    Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_prove_verify() {
-    use zkevm::circuit;
-    for circuit in CIRCUIT.split(",") {
-        match circuit {
-            "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
-            "state" => test_target_circuit_prove_verify::<circuit::StateCircuit>(),
-            "zktrie" => test_target_circuit_prove_verify::<circuit::ZktrieCircuit>(),
-            "poseidon" => test_target_circuit_prove_verify::<circuit::PoseidonCircuit>(),
-            "super" => test_target_circuit_prove_verify::<circuit::SuperCircuit>(),
-            _ => {
-                log::error!("invalid circuit, skip: {:?}", circuit);
-            }
-        };
-    }
+    test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_vk_same() {
     init();
-    //type C = EvmCircuit;
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();

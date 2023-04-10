@@ -112,7 +112,7 @@ impl Prover {
         let pk = &self.target_circuit_pks[&C::name()];
 
         // Generate the SNARK proof for the inner circuit
-        let snark_proof = gen_snark_shplonk(&self.params, &pk, circuit, rng, None::<String>);
+        let snark_proof = gen_snark_shplonk(&self.params, pk, circuit, rng, None::<String>);
 
         let instance_bytes = serialize_instance(&instance);
         let name = C::name();

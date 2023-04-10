@@ -14,7 +14,6 @@ use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use std::time::Instant;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
-use zkevm_circuits::bytecode_circuit::bytecode_unroller::HASHBLOCK_BYTES_IN_FIELD;
 use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
 use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
 use zkevm_circuits::util::SubCircuit;

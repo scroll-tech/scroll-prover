@@ -9,17 +9,15 @@ use types::eth::BlockTrace;
 impl Prover {
     pub fn mock_prove_target_circuit<C: TargetCircuit>(
         block_trace: &BlockTrace,
-        full: bool,
     ) -> anyhow::Result<()> {
-        Self::mock_prove_target_circuit_batch::<C>(&[block_trace.clone()], full)
+        Self::mock_prove_target_circuit_batch::<C>(&[block_trace.clone()])
     }
 
     pub fn mock_prove_target_circuit_batch<C: TargetCircuit>(
         block_traces: &[BlockTrace],
-        full: bool,
     ) -> anyhow::Result<()> {
         log::info!(
-            "start mock prove {}, rows needed {}",
+            "start mock prove {}, rows needed {:?}",
             C::name(),
             C::estimate_rows(block_traces)
         );
@@ -34,18 +32,7 @@ impl Prover {
         );
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
         let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
-        if !full {
-            // FIXME for packing
-            let (gate_rows, lookup_rows) = C::get_active_rows(&block_traces);
-            log::info!("checking {} active rows", gate_rows.len());
-            if !gate_rows.is_empty() || !lookup_rows.is_empty() {
-                if let Err(e) =
-                    prover.verify_at_rows_par(gate_rows.into_iter(), lookup_rows.into_iter())
-                {
-                    bail!("{:?}", e);
-                }
-            }
-        } else if let Err(errs) = prover.verify_par() {
+        if let Err(errs) = prover.verify_par() {
             log::error!("err num: {}", errs.len());
             for err in &errs {
                 log::error!("{}", err);

@@ -60,14 +60,14 @@ impl Prover {
         rng.fill_bytes(&mut seed1);
         let mut seed2 = [0u8; 16];
         rng.fill_bytes(&mut seed2);
-        let mut rng1 = XorShiftRng::from_seed(seed1);
+        let rng1 = XorShiftRng::from_seed(seed1);
         let mut rng2 = XorShiftRng::from_seed(seed2);
 
         // build the aggregation circuit inputs from the inner circuit outputs
         let agg_circuit = AggregationCircuit::new(
             &self.agg_params,
             inner_circuit_results.iter().map(|p| p.snark.clone()),
-            &mut rng1,
+            rng1,
         );
         let pk = match self.agg_pk.clone() {
             Some(pk) => pk,

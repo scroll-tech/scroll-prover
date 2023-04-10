@@ -23,8 +23,6 @@ use snark_verifier_sdk::halo2::verify_snark_shplonk;
 pub struct Verifier {
     params: ParamsKZG<Bn256>,
     agg_params: ParamsKZG<Bn256>,
-    // just for legacy testing code...
-    raw_agg_vk: Option<Vec<u8>>,
     agg_vk: Option<VerifyingKey<G1Affine>>,
     target_circuit_vks: HashMap<String, VerifyingKey<G1Affine>>,
 }
@@ -35,9 +33,6 @@ impl Verifier {
         agg_params: ParamsKZG<Bn256>,
         raw_agg_vk: Option<Vec<u8>>,
     ) -> Self {
-        if raw_agg_vk.is_none() {
-            log::error!("Verifier should better have raw_agg_vk to check consistency");
-        }
         let agg_vk = raw_agg_vk.as_ref().map(|k| {
             VerifyingKey::<G1Affine>::read::<_, AggregationCircuit>(
                 &mut Cursor::new(&k),
@@ -50,7 +45,6 @@ impl Verifier {
             params,
             agg_params,
             agg_vk,
-            raw_agg_vk,
             target_circuit_vks: Default::default(),
         }
     }
@@ -98,7 +92,7 @@ impl Verifier {
                 AccumulatorStrategy::new(&self.params),
                 &verify_circuit_instance2,
                 &mut transcript,
-            )?
+            )?,
         ))
     }
 

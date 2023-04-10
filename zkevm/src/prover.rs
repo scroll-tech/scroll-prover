@@ -1,4 +1,3 @@
-
 use crate::io::{
     write_verify_circuit_instance, write_verify_circuit_proof, write_verify_circuit_vk,
 };
@@ -72,6 +71,4 @@ pub struct Prover {
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,
     pub agg_pk: Option<ProvingKey<G1Affine>>,
     pub debug_dir: String,
-            block_traces.last().and_then(|b| b.header.number),
-        log::info!("rows needed {:?}", C::estimate_rows(block_traces));
 }

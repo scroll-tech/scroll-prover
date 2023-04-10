@@ -9,7 +9,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 use zkevm::{
-    circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
+    circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
     prover::Prover,
     utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
 };
@@ -26,16 +26,12 @@ struct Args {
     /// Get BlockTrace from file or dir.
     #[clap(short, long = "trace")]
     trace_path: Option<String>,
-    /// Option means if generates evm proof.
-    /// Boolean means if output evm proof.
-    #[clap(long = "evm")]
-    evm_proof: Option<bool>,
-    /// Option means if generates state proof.
-    /// Boolean means if output state proof.
-    #[clap(long = "state")]
-    state_proof: Option<bool>,
-    /// Option means if generates agg proof.
-    /// Boolean means if output agg proof.
+    /// Option means if generates super circuit proof.
+    /// Boolean means if output super circuit proof.
+    #[clap(long = "super")]
+    super_proof: Option<bool>,
+    /// Option means if generates agg circuit proof.
+    /// Boolean means if output agg circuit proof.
     #[clap(long = "agg")]
     agg_proof: Option<bool>,
 }
@@ -82,12 +78,12 @@ fn main() {
 
     let outer_now = Instant::now();
     for (trace_name, trace) in traces {
-        if args.evm_proof.is_some() {
-            let proof_path = PathBuf::from(&trace_name).join("evm.proof");
+        if args.super_proof.is_some() {
+            let proof_path = PathBuf::from(&trace_name).join("super.proof");
 
             let now = Instant::now();
-            let evm_proof = prover
-                .create_target_circuit_proof::<EvmCircuit>(&trace, &mut local_rng2)
+            let super_proof = prover
+                .create_target_circuit_proof::<SuperCircuit>(&trace, &mut local_rng2)
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
@@ -95,28 +91,9 @@ fn main() {
                 now.elapsed()
             );
 
-            if args.evm_proof.unwrap() {
+            if args.super_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
-                f.write_all(evm_proof.snark.proof.as_slice()).unwrap();
-            }
-        }
-
-        if args.state_proof.is_some() {
-            let proof_path = PathBuf::from(&trace_name).join("state.proof");
-
-            let now = Instant::now();
-            let state_proof = prover
-                .create_target_circuit_proof::<StateCircuit>(&trace, &mut local_rng2)
-                .expect("cannot generate state_proof");
-            info!(
-                "finish generating state proof of {}, elapsed: {:?}",
-                &trace.header.hash.unwrap(),
-                now.elapsed()
-            );
-
-            if args.state_proof.unwrap() {
-                let mut f = File::create(&proof_path).unwrap();
-                f.write_all(state_proof.snark.proof.as_slice()).unwrap();
+                f.write_all(super_proof.snark.proof.as_slice()).unwrap();
             }
         }
 
