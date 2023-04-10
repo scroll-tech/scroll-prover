@@ -12,7 +12,7 @@ test-all: test-ci ## Run all available tests
 build-release: ## Check build in release mode
 	@cargo build --release
 
-fmt: ## Check whether the code is formated correctly
+fmt: ## Check whether the code is formatted correctly
 	@cargo fmt --all -- --check
 
 clippy: ## Run clippy checks over all workspace members
@@ -34,6 +34,9 @@ mock:
 
 mock-debug:
 	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
+
+mock-testnet:
+	@cargo run --bin mock_testnet --release
 
 test-agg:
 	@cargo test --features prove_verify --release test_agg
