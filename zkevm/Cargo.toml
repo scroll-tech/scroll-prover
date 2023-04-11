@@ -12,11 +12,11 @@ edition = "2021"
 
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/poseidonhash_rlc" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/poseidonhash_rlc" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/poseidonhash_rlc", default-features = false, features = ["test","scroll","enable-sign-verify"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/poseidonhash_rlc" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "fix/poseidonhash_rlc" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","enable-sign-verify"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "develop" }
 
 snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
 snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
@@ -47,8 +47,8 @@ itertools = "0.10.5"
 procfs = "0.13.0"
 
 [features]
-# default = []
-default = ["prove_verify"]
+default = []
+# default = ["prove_verify"]
 prove_verify = []
 
 [dev-dependencies]
