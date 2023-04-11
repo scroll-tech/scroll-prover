@@ -16,6 +16,7 @@ mod mock_plonk;
 mod test_util;
 
 // This is essentially a same test as snark-verifier/evm-verifier
+#[cfg(feature = "prove_verify")]
 #[test]
 fn test_snark_verifier_sdk_api() {
     std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
@@ -74,6 +75,7 @@ fn test_snark_verifier_sdk_api() {
 // A partial integration test.
 // The inner snark proofs are generated from a mock circuit
 // instead of the trace files.
+#[cfg(feature = "prove_verify")]
 #[test]
 fn test_partial_aggregation_api() {
     std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
@@ -93,7 +95,7 @@ fn test_partial_aggregation_api() {
     // 1. instantiation the parameters and the prover
     //
     let k = 8;
-    let k_agg = 21;
+    let k_agg = 23;
     let seed = [0u8; 16];
     let mut rng = XorShiftRng::from_seed(seed);
 

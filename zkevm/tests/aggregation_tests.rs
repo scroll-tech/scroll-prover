@@ -18,6 +18,7 @@ mod test_util;
 // An end to end integration test.
 // The inner snark proofs are generated from a mock circuit
 // instead of the trace files.
+#[cfg(feature = "prove_verify")]
 #[test]
 fn test_aggregation_api() {
     std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");

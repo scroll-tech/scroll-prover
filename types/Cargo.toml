@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 
 [dependencies]
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/poseidonhash_rlc" }
 base64 = "0.13.0"
 blake2 = "0.10.3"
 ethers-core = "0.17.0"
