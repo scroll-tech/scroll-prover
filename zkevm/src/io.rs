@@ -10,7 +10,7 @@ use halo2_proofs::{
     SerdeFormat,
 };
 use num_bigint::BigUint;
-use zkevm_circuits::tx_circuit::PrimeField;
+use snark_verifier::util::arithmetic::PrimeField;
 
 pub fn serialize_fr(f: &Fr) -> Vec<u8> {
     f.to_bytes().to_vec()
