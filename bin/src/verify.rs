@@ -5,7 +5,7 @@ use std::io::Read;
 use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
 use zkevm::verifier::Verifier;
 use zkevm::{
-    circuit::{EvmCircuit, StateCircuit, AGG_DEGREE, DEGREE},
+    circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
     utils::load_or_create_params,
 };
 
@@ -18,13 +18,10 @@ struct Args {
     /// Get vk from the file.
     #[clap(long = "vk")]
     vk_path: Option<String>,
-    /// the path of evm proof to verify.
-    #[clap(long = "evm")]
-    evm_proof: Option<String>,
-    /// the path of state proof to verify.
-    #[clap(long = "state")]
-    state_proof: Option<String>,
-    /// the path of agg proof to verify.
+    /// the path of super circuit proof to verify.
+    #[clap(long = "super")]
+    super_proof: Option<String>,
+    /// the path of agg circuit proof to verify.
     #[clap(long = "agg")]
     agg_proof: Option<String>,
 }
@@ -41,19 +38,13 @@ fn main() {
     let agg_vk = read_from_file(&args.vk_path.unwrap());
 
     let mut v = Verifier::from_params(params, agg_params, Some(agg_vk));
-    if let Some(path) = args.evm_proof {
-        let proof_vec = read_from_file(&path);
-        let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
-        let verified = v.verify_target_circuit_proof::<EvmCircuit>(&proof).is_ok();
-        info!("verify evm proof: {}", verified)
-    }
-    if let Some(path) = args.state_proof {
+    if let Some(path) = args.super_proof {
         let proof_vec = read_from_file(&path);
         let proof = serde_json::from_slice::<TargetCircuitProof>(proof_vec.as_slice()).unwrap();
         let verified = v
-            .verify_target_circuit_proof::<StateCircuit>(&proof)
+            .verify_target_circuit_proof::<SuperCircuit>(&proof)
             .is_ok();
-        info!("verify state proof: {}", verified)
+        info!("verify super proof: {}", verified)
     }
     if let Some(path) = args.agg_proof {
         let proof_vec = read_from_file(&path);

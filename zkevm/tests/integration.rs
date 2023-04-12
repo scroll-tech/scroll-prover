@@ -1,6 +1,7 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
@@ -49,19 +50,8 @@ fn estimate_circuit_rows() {
     let (_, block_trace) = load_block_traces_for_test();
 
     log::info!("estimating used rows for batch");
-    for circuit in CIRCUIT.split(",") {
-        let rows = match circuit {
-            "evm" => circuit::EvmCircuit::estimate_rows(&block_trace),
-            "state" => circuit::StateCircuit::estimate_rows(&block_trace),
-            "zktrie" => circuit::ZktrieCircuit::estimate_rows(&block_trace),
-            "poseidon" => circuit::PoseidonCircuit::estimate_rows(&block_trace),
-            "super" => circuit::SuperCircuit::estimate_rows(&block_trace),
-            _ => {
-                unimplemented!("invalid circuit: {:?}", circuit);
-            }
-        };
-        log::info!("{} circuit: {:?}", circuit, rows);
-    }
+    let rows = circuit::SuperCircuit::estimate_rows(&block_trace);
+    log::info!("super circuit: {:?}", rows);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -73,61 +63,23 @@ fn test_mock_prove() {
 
     init();
     let block_traces = load_block_traces_for_test().1;
-
-    for circuit in CIRCUIT.split(",") {
-        match circuit {
-            "evm" => Prover::mock_prove_target_circuit_batch::<circuit::EvmCircuit>(&block_traces)
-                .unwrap(),
-            "state" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::StateCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "zktrie" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::ZktrieCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "poseidon" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::PoseidonCircuit>(&block_traces)
-                    .unwrap()
-            }
-            "super" => {
-                Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces)
-                    .unwrap()
-            }
-            _ => {
-                log::error!("invalid circuit, skip: {:?}", circuit);
-            }
-        };
-    }
+    Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_prove_verify() {
-    use zkevm::circuit;
-    for circuit in CIRCUIT.split(",") {
-        match circuit {
-            "evm" => test_target_circuit_prove_verify::<circuit::EvmCircuit>(),
-            "state" => test_target_circuit_prove_verify::<circuit::StateCircuit>(),
-            "zktrie" => test_target_circuit_prove_verify::<circuit::ZktrieCircuit>(),
-            "poseidon" => test_target_circuit_prove_verify::<circuit::PoseidonCircuit>(),
-            "super" => test_target_circuit_prove_verify::<circuit::SuperCircuit>(),
-            _ => {
-                log::error!("invalid circuit, skip: {:?}", circuit);
-            }
-        };
-    }
+    test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_vk_same() {
     init();
-    //type C = EvmCircuit;
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
-    let vk_empty = keygen_vk(&params, &C::empty()).unwrap();
+    let vk_empty = keygen_vk(&params, &C::dummy_inner_circuit()).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);
     let vk_real = keygen_vk(&params, &C::from_block_traces(&block_trace).unwrap().0).unwrap();
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
@@ -168,6 +120,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use zkevm::verifier::Verifier;
 
     init();
+    let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
     let (_, block_traces) = load_block_traces_for_test();
 
@@ -175,7 +128,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let now = Instant::now();
     let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
     let proof = prover
-        .create_target_circuit_proof_batch::<C>(&block_traces)
+        .create_target_circuit_proof_batch::<C>(&block_traces, &mut rng)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 

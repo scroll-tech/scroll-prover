@@ -2,6 +2,8 @@
 
 ## About trace examples:
 
+<!-- TODO: Update this table -->
+
 Following shows The cost of each examples 
 
 | Test case |    gas    | evm rows | state rows | storage rows | hash rows | Remarks |
