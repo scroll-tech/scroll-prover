@@ -4,6 +4,8 @@ use super::{AggCircuitProof, Prover};
 use crate::circuit::{SuperCircuit, TargetCircuit};
 use crate::io::{serialize_fr_tensor, serialize_vk};
 use crate::prover::TargetCircuitProof;
+use halo2_proofs::plonk::keygen_pk2;
+use log::error;
 use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
@@ -71,7 +73,11 @@ impl Prover {
         );
         let pk = match self.agg_pk.clone() {
             Some(pk) => pk,
-            None => panic!("aggregation proving key is not found"),
+            None => {
+                error!("aggregation proving key is not found");
+                keygen_pk2(&self.agg_params, &agg_circuit)
+                    .expect("failed to generate aggregation pk")
+            }
         };
 
         let agg_proof = gen_evm_proof_shplonk(
