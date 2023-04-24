@@ -27,7 +27,7 @@ bridge-test:
 	./target/release/prove --params=./test_params --seed=./test_seed --trace=zkevm/tests/traces/bridge --agg=true
 
 test-super-trace: ## test super circuit with real trace
-	CIRCUIT=super cargo test --features prove_verify --release test_prove_verify
+	cargo test --features prove_verify --release test_prove_verify
 
 mock:
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
