@@ -1,6 +1,7 @@
 use super::{MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
 use crate::circuit::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_BYTECODE,MAX_MPT_ROWS
+    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_INNER_BLOCKS,
+    MAX_KECCAK_ROWS, MAX_MPT_ROWS,
 };
 use anyhow::bail;
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
