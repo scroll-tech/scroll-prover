@@ -68,7 +68,7 @@ fn test_aggregation_api() {
     //    convert block traces into
     //
     let super_circuit_proof = prover
-        .read_target_circuit_proof_from_file()
+        .read_target_circuit_proof_from_file::<SuperCircuit>()
         .unwrap()
         .unwrap_or_else(|| {
             log::info!("build super circuit from block traces");
