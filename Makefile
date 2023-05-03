@@ -5,7 +5,7 @@ help: ## Display this help screen
 		-E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-test-ci: fmt clippy test ## Run all the CI checks locally (in your actual toolchain) 
+test-ci: fmt clippy test ## Run all the CI checks locally (in your actual toolchain)
 
 test-all: test-ci ## Run all available tests
 
@@ -39,7 +39,7 @@ mock-testnet:
 	@cargo run --bin mock_testnet --release
 
 test-agg:
-	@cargo test --features prove_verify --release test_agg
+	@cargo test --features prove_verify --release test_aggregation_api
 
 rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows

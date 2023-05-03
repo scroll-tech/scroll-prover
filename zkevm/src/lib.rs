@@ -1,5 +1,4 @@
 pub mod circuit;
-// pub mod inner;
 pub mod io;
 pub mod prover;
 pub mod utils;
