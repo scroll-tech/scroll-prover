@@ -1,4 +1,6 @@
 use halo2_proofs::poly::commitment::Params;
+use halo2_proofs::SerdeFormat;
+use halo2_snark_aggregator_solidity::MultiCircuitSolidityGenerate;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
@@ -6,11 +8,13 @@ use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
 use snark_verifier_sdk::gen_pk;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
-use test_util::create_output_dir;
-use test_util::init;
-use test_util::load_block_traces_for_test;
+use std::path::PathBuf;
+use std::str::FromStr;
+use test_util::{create_output_dir, init, load_block_traces_for_test};
 use zkevm::circuit::SuperCircuit;
+use zkevm::io::{load_instances, write_verify_circuit_solidity};
 use zkevm::prover::Prover;
+use zkevm::utils::load_or_create_params;
 use zkevm::verifier::Verifier;
 
 mod mock_plonk;
@@ -40,6 +44,7 @@ fn test_aggregation_api() {
     // 3. build an aggregation circuit proof
     // 4. generate bytecode for evm to verify aggregation circuit proof
     // 5. validate the proof with evm bytecode
+    // 6. dump solidity verifier
     // ====================================================
     //
     // 1. instantiation the parameters and the prover
@@ -58,8 +63,8 @@ fn test_aggregation_api() {
     };
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
 
-    let mut prover = Prover::from_params_and_seed(params_inner, params_outer.clone(), seed);
-    prover.debug_dir = output_dir;
+    let mut prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
+    prover.debug_dir = output_dir.clone();
 
     log::info!("build prover");
 
@@ -82,25 +87,41 @@ fn test_aggregation_api() {
     // sanity check: the inner proof is correct
 
     // 3. build an aggregation circuit proof
-    let agg_circuit =
-        AggregationCircuit::new(&params_outer, [super_circuit_proof.snark.clone()], &mut rng);
-    let pk_outer = gen_pk(&params_outer, &agg_circuit, None);
-
-    let instances = agg_circuit.instances();
-    let proof = gen_evm_proof_shplonk(
-        &params_outer,
-        &pk_outer,
-        agg_circuit.clone(),
-        instances.clone(),
+    let agg_circuit = AggregationCircuit::new(
+        &prover.agg_params,
+        [super_circuit_proof.snark.clone()],
         &mut rng,
     );
+
+    let proved_block_count = super_circuit_proof.num_of_proved_blocks;
+    let proof = prover
+        .create_agg_proof_by_agg_circuit(&agg_circuit, &mut rng, proved_block_count)
+        .unwrap();
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk());
+    let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
+    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk);
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    Verifier::evm_verify(deployment_code, instances, proof);
+    Verifier::evm_verify(
+        deployment_code,
+        agg_circuit.instances(),
+        proof.proof.clone(),
+    );
     log::info!("end to end test completed");
+
+    // 6. dump solidity verifier
+    let sol = MultiCircuitSolidityGenerate {
+        verify_vk: agg_vk,
+        verify_params: &prover.agg_params,
+        verify_circuit_instance: load_instances(&proof.instance),
+        proof: proof.proof,
+        verify_public_inputs_size: 4, // not used now
+    }
+    .call("".into());
+    let mut sol_dir = PathBuf::from_str(&output_dir).unwrap();
+    write_verify_circuit_solidity(&mut sol_dir, sol.as_bytes());
+    log::info!("write to {}/verifier.sol", output_dir);
 }
