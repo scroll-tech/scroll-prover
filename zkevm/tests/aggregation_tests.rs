@@ -6,6 +6,7 @@ use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
 use snark_verifier_sdk::gen_pk;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
+use test_util::create_output_dir;
 use test_util::init;
 use test_util::load_block_traces_for_test;
 use zkevm::circuit::SuperCircuit;
@@ -25,13 +26,17 @@ fn test_aggregation_api() {
 
     init();
 
+    let output_dir = create_output_dir();
+    log::info!("created output dir {}", output_dir);
+
     let block_traces = load_block_traces_for_test().1;
     log::info!("loaded block trace");
 
     // ====================================================
     // A whole aggregation procedure takes the following steps
     // 1. instantiation the parameters and the prover
-    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
+    //    convert block traces into
     // 3. build an aggregation circuit proof
     // 4. generate bytecode for evm to verify aggregation circuit proof
     // 5. validate the proof with evm bytecode
@@ -54,17 +59,25 @@ fn test_aggregation_api() {
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
 
     let mut prover = Prover::from_params_and_seed(params_inner, params_outer.clone(), seed);
+    prover.debug_dir = output_dir;
 
     log::info!("build prover");
 
     //
-    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
+    //    convert block traces into
     //
     let super_circuit_proof = prover
-        .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
-        .unwrap();
+        .read_target_circuit_proof_from_file()
+        .unwrap()
+        .unwrap_or_else(|| {
+            log::info!("build super circuit from block traces");
+            prover
+                .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
+                .unwrap()
+        });
 
-    log::info!("build super circuit from block traces");
+    log::info!("got super circuit proof");
 
     // sanity check: the inner proof is correct
 
