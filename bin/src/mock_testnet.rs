@@ -28,7 +28,7 @@ async fn main() {
         .expect("mock-testnet: failed to initialize ethers Provider");
 
     for i in setting.begin_batch..=setting.end_batch {
-        log::info!("move-testnet: requesting block traces of batch {i}");
+        log::info!("mock-testnet: requesting block traces of batch {i}");
 
         let block_traces = match setting.prove_type {
             ProveType::Batch => get_traces_by_batch_api(&provider, &setting, i).await,
@@ -80,7 +80,7 @@ async fn main() {
         }
     }
 
-    log::info!("move-testnet: end");
+    log::info!("mock-testnet: end");
 }
 
 /// Request block traces by API `l2_getTracesByBatchIndex`. Return None for no more batches.
@@ -113,7 +113,7 @@ async fn get_traces_by_block_api(
     Ok(if let Some(batch) = resp.batch {
         let mut traces = vec![];
         for i in batch.start_block_number..=batch.end_block_number {
-            log::info!("move-testnet: requesting trace of block {i}");
+            log::info!("mock-testnet: requesting trace of block {i}");
 
             let trace = provider
                 .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
