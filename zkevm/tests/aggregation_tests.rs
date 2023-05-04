@@ -4,11 +4,10 @@ use rand_xorshift::XorShiftRng;
 use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use test_util::{create_output_dir, init, load_block_traces_for_test};
 use zkevm::circuit::{SuperCircuit, TargetCircuit};
-use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
 use zkevm::verifier::Verifier;
 
@@ -98,11 +97,9 @@ fn test_aggregation_api() {
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
     let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
-    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk);
-
-    // Dump deployment code.
-    write_file(&mut output_path, "verifier.sol", &deployment_code);
-
+    let yul_file_path = format!("{}/verifier.sol", output_dir);
+    let deployment_code =
+        prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk, Some(Path::new(&yul_file_path)));
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode

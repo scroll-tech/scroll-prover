@@ -158,7 +158,8 @@ fn test_partial_aggregation_api() {
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk());
+    let deployment_code =
+        prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk(), None);
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
