@@ -1,22 +1,17 @@
 //! Inner circuit related APIs
 
+use super::{Prover, TargetCircuitProof};
 use crate::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE};
 use crate::io::{serialize_instance, serialize_vk};
 use crate::prover::MOCK_PROVE;
 use crate::utils::metric_of_witness_block;
-
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::Fr;
-use halo2_proofs::SerdeFormat;
 use log::info;
 use rand::Rng;
 use snark_verifier_sdk::halo2::gen_snark_shplonk;
-use std::fs::File;
-use std::path::Path;
 use types::eth::BlockTrace;
-
-use super::{Prover, TargetCircuitProof};
 
 impl Prover {
     /// Input a list of traces, generate an instance for the outer circuit.
@@ -125,43 +120,13 @@ impl Prover {
             instance_bytes.len()
         );
         let target_proof = TargetCircuitProof {
-            name: name.clone(),
+            name,
             snark: snark_proof,
             vk: serialize_vk(pk.get_vk()),
             total_num_of_blocks,
             num_of_proved_blocks,
         };
-        if !self.debug_dir.is_empty() {
-            // write vk
-            let mut fd = File::create(format!("{}/{}.vk", self.debug_dir, &name)).unwrap();
-            pk.get_vk().write(&mut fd, SerdeFormat::Processed).unwrap();
-            drop(fd);
 
-            // write proof
-            let output_file = format!("{}/{}_proof.json", self.debug_dir, name);
-            let mut fd = File::create(output_file).unwrap();
-            serde_json::to_writer_pretty(&mut fd, &target_proof).unwrap();
-        }
         Ok(target_proof)
-    }
-
-    ///
-    /// Read and deserialize proof for a JSON file.
-    ///
-    pub fn read_target_circuit_proof_from_file<C: TargetCircuit>(
-        &self,
-    ) -> anyhow::Result<Option<TargetCircuitProof>, Error> {
-        if self.debug_dir.is_empty() {
-            return Ok(None);
-        }
-
-        let filename = format!("{}/{}_proof.json", self.debug_dir, C::name());
-        if !Path::new(&filename).exists() {
-            return Ok(None);
-        }
-
-        let file = File::open(filename)?;
-
-        Ok(Some(serde_json::from_reader(file)?))
     }
 }

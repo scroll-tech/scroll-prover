@@ -1,7 +1,7 @@
 //! This module implements outer circuit related APIs for Prover.
 
 use super::{AggCircuitProof, Prover};
-use crate::circuit::{SuperCircuit, TargetCircuit};
+use crate::circuit::SuperCircuit;
 use crate::io::{serialize_fr_tensor, serialize_vk};
 use crate::prover::TargetCircuitProof;
 use rand::{Rng, SeedableRng};
@@ -12,19 +12,6 @@ use snark_verifier_sdk::{gen_pk, CircuitExt};
 use types::eth::BlockTrace;
 
 impl Prover {
-    /// Load a proved aggregation circuit instance from the disc.
-    /// Used for Debugging only.
-    pub fn load_aggregation_circuit_instance<C: TargetCircuit>(
-        &self,
-    ) -> anyhow::Result<TargetCircuitProof> {
-        assert!(!self.debug_dir.is_empty());
-        log::debug!("load aggregation circuit instance: {}", C::name());
-        let file_name = format!("{}/{}_proof.json", self.debug_dir, C::name());
-        let file = std::fs::File::open(file_name)?;
-        let proof: TargetCircuitProof = serde_json::from_reader(file)?;
-        Ok(proof)
-    }
-
     /// Input a block trace, generate a proof for the aggregation circuit.
     /// This proof is verifiable by the evm.
     pub fn create_agg_circuit_proof(
