@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use test_util::{create_output_dir, init, load_block_traces_for_test};
 use zkevm::circuit::{SuperCircuit, TargetCircuit};
+use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
 use zkevm::verifier::Verifier;
 
@@ -97,9 +98,15 @@ fn test_aggregation_api() {
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
     let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
-    let yul_file_path = format!("{}/verifier.sol", output_dir);
+
+    // Create bytecode and dump yul-code.
+    let yul_file_path = format!("{}/verifier.yul", output_dir);
     let deployment_code =
         prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk, Some(Path::new(&yul_file_path)));
+
+    // Dump bytecode.
+    write_file(&mut output_path, "verifier.bin", &deployment_code);
+
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
