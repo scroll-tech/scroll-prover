@@ -114,17 +114,17 @@ impl Verifier {
     }
 }
 
-pub struct EvmVerifier<'a> {
-    bytecode: &'a [u8],
+pub struct EvmVerifier {
+    bytecode: Vec<u8>,
 }
 
-impl<'a> EvmVerifier<'a> {
-    pub fn new(bytecode: &'a [u8]) -> Self {
+impl EvmVerifier {
+    pub fn new(bytecode: Vec<u8>) -> Self {
         Self { bytecode }
     }
 
     /// Verifies the proof with EVM byte code. Panics if verification fails.
     pub fn verify(&self, instances: Vec<Vec<Fr>>, proof: Vec<u8>) {
-        evm_verify(self.bytecode.into(), instances, proof)
+        evm_verify(self.bytecode.clone(), instances, proof)
     }
 }

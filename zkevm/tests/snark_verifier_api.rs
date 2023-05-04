@@ -163,6 +163,6 @@ fn test_partial_aggregation_api() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    EvmVerifier::new(&deployment_code).verify(instances, proof);
+    EvmVerifier::new(deployment_code).verify(instances, proof);
     log::info!("end to end test completed");
 }

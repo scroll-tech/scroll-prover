@@ -110,6 +110,6 @@ fn test_aggregation_api() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    EvmVerifier::new(&deployment_code).verify(agg_circuit.instances(), outer_proof.proof);
+    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), outer_proof.proof);
     log::info!("end to end test completed");
 }
