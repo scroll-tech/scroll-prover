@@ -10,7 +10,7 @@ use test_util::{create_output_dir, init, load_block_traces_for_test};
 use zkevm::circuit::{SuperCircuit, TargetCircuit};
 use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
-use zkevm::verifier::Verifier;
+use zkevm::verifier::EvmVerifier;
 
 mod mock_plonk;
 mod test_util;
@@ -110,6 +110,6 @@ fn test_aggregation_api() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    Verifier::evm_verify(deployment_code, agg_circuit.instances(), outer_proof.proof);
+    EvmVerifier::new(&deployment_code).verify(agg_circuit.instances(), outer_proof.proof);
     log::info!("end to end test completed");
 }

@@ -10,7 +10,7 @@ use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
 use test_util::init;
 use zkevm::prover::Prover;
-use zkevm::verifier::Verifier;
+use zkevm::verifier::{EvmVerifier, Verifier};
 
 mod mock_plonk;
 mod test_util;
@@ -163,6 +163,6 @@ fn test_partial_aggregation_api() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    Verifier::evm_verify(deployment_code, instances, proof);
+    EvmVerifier::new(&deployment_code).verify(instances, proof);
     log::info!("end to end test completed");
 }
