@@ -76,10 +76,19 @@ impl Prover {
         Self::from_params_and_rng(params, agg_params, rng)
     }
 
-    pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
+    pub fn from_fpath_or_create(params_fpath: &str, seed_fpath: &str) -> Self {
         let params = load_or_create_params(params_fpath, *DEGREE).expect("failed to init params");
         let agg_params =
             load_or_create_params(params_fpath, *AGG_DEGREE).expect("failed to init params");
+        let seed = load_or_create_seed(seed_fpath).expect("failed to init rng");
+        Self::from_params_and_seed(params, agg_params, seed)
+    }
+
+    pub fn from_fpath(params_fpath: &str, seed_fpath: &str) -> Self {
+        let params = load_params(params_fpath, *DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("failed to init params");
+        let agg_params = load_params(params_fpath, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("failed to init params");
         let seed = load_seed(seed_fpath).expect("failed to init rng");
         Self::from_params_and_seed(params, agg_params, seed)
     }
