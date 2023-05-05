@@ -112,7 +112,7 @@ fn main() {
 
             if args.agg_proof.unwrap() {
                 fs::create_dir_all(&proof_path).unwrap();
-                agg_proof.write_to_dir(&mut proof_path);
+                agg_proof.dump(&mut proof_path).unwrap();
             }
         }
     }
