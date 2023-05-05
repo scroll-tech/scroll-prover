@@ -13,7 +13,7 @@ Import as an dependency to use.
 
 Setup 
 ```shell
-cargo build --release --bin setup   
+cargo build --release --bin setup
 
 ./target/release/setup --params <params-file-path> --seed <seed-file-path>
 ```
@@ -34,10 +34,10 @@ cargo build --release --bin prove
 ## Test
 By default, prover tests are disabled due to heavy computations, if you want to run the prover tests, please run:
 ```
-RUST_LOG=info cargo test --features prove_verify --release 
+RUST_LOG=info cargo test --features prove_verify --release
 ```
 
-By default, it run the test for a trace corresponding to a block containing multiple erc20 txs. You can config `mode` ENV to test other trace:
+By default, it runs the test for a trace corresponding to a block containing multiple erc20 txs. You can config `mode` ENV to test other trace:
 
 + `MODE=single` for a block containing 1 erc20 tx.
 + `MODE=native` for a block containing 1 native ETH transfer tx.

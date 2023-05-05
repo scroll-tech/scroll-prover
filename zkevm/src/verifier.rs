@@ -112,10 +112,19 @@ impl Verifier {
             Err(anyhow!("snark verification failed".to_string()))
         }
     }
+}
 
-    /// Verifies the proof with EVM byte code.
-    /// Panics if verification fails.
-    pub fn evm_verify(bytecode: Vec<u8>, instances: Vec<Vec<Fr>>, proof: Vec<u8>) {
-        evm_verify(bytecode, instances, proof)
+pub struct EvmVerifier {
+    bytecode: Vec<u8>,
+}
+
+impl EvmVerifier {
+    pub fn new(bytecode: Vec<u8>) -> Self {
+        Self { bytecode }
+    }
+
+    /// Verifies the proof with EVM byte code. Panics if verification fails.
+    pub fn verify(&self, instances: Vec<Vec<Fr>>, proof: Vec<u8>) {
+        evm_verify(self.bytecode.clone(), instances, proof)
     }
 }
