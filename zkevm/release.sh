@@ -26,6 +26,9 @@ function run_agg_tests() {
 	#RUST_LOG=trace PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 MODE=native cargo test --features prove_verify --release test_aggregation_api -- --nocapture 2>&1 | tee logs/agg.log.native
 }
 
-goerli
+
+RUST_LOG=debug cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.1.log
+RUST_LOG=debug cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.2.log
+#goerli
 #run_agg_tests
 

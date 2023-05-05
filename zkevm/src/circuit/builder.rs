@@ -1,6 +1,7 @@
 use super::{MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
 use crate::circuit::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS,
+    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_INNER_BLOCKS,
+    MAX_KECCAK_ROWS, MAX_MPT_ROWS,
 };
 use anyhow::bail;
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
@@ -184,10 +185,11 @@ pub fn block_traces_to_witness_block(
         max_copy_rows: MAX_RWS,
         max_txs: MAX_TXS,
         max_calldata: MAX_CALLDATA,
-        max_bytecode: MAX_CALLDATA,
+        max_bytecode: MAX_BYTECODE,
         max_inner_blocks: MAX_INNER_BLOCKS,
         max_keccak_rows: MAX_KECCAK_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
+        max_mpt_rows: MAX_MPT_ROWS,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.chain_id = chain_id;

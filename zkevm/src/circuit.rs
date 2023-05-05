@@ -29,10 +29,12 @@ const MAX_EXP_STEPS: usize = 10_000;
 pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 20));
 const MAX_TXS: usize = 32;
 const MAX_INNER_BLOCKS: usize = 100;
-const MAX_CALLDATA: usize = 400_000;
-const MAX_RWS: usize = 1_000_000;
-const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_EXP_STEPS: usize = 10_000;
+const MAX_CALLDATA: usize = 400_000;
+const MAX_BYTECODE: usize = 400_000;
+const MAX_MPT_ROWS: usize = 400_000;
+const MAX_KECCAK_ROWS: usize = 524_000;
+const MAX_RWS: usize = 1_000_000;
 
 pub static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
 pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
