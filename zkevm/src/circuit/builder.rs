@@ -131,6 +131,7 @@ pub fn block_traces_to_witness_block(
     } else {
         block_traces[0].storage_trace.root_before
     };
+    log::debug!("building partial statedb");
     let zktrie_state = ZktrieState::from_trace_with_additional(
         old_root,
         block_traces.iter().rev().flat_map(|block| {
@@ -159,6 +160,7 @@ pub fn block_traces_to_witness_block(
                 .map(Bytes::as_ref)
         }),
     )?;
+    log::debug!("building partial statedb done");
 
     let chain_ids = block_traces
         .iter()
@@ -209,10 +211,10 @@ pub fn block_traces_to_witness_block(
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
         }
-
-        builder.block.headers.insert(header.number.as_u64(), header);
+        let block_num = header.number.as_u64();
+        builder.block.headers.insert(block_num, header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
-
+        log::debug!("handle_block_inner done for block {:?}",block_num);
         let per_block_metric = false;
         if per_block_metric {
             let t = Instant::now();
@@ -239,13 +241,15 @@ pub fn block_traces_to_witness_block(
     builder.set_value_ops_call_context_rwc_eor();
     builder.set_end_block()?;
 
+    log::debug!("converting builder.block to witness block");
     let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
     log::debug!(
-        "witness_block.circuits_params {:?}",
+        "witness_block built with circuits_params {:?}",
         witness_block.circuits_params
     );
 
     block_apply_mpt_state(&mut witness_block, zktrie_state);
+    log::debug!("finish replay trie updates");
     Ok(witness_block)
 }
 
@@ -394,6 +398,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
 }
 pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyhow::Error> {
     let mut cdb = CodeDB::new();
+    log::debug!("building codedb");
 
     for block in blocks.iter().rev() {
         // notice empty codehash always kept as keccak256(nil)
@@ -445,6 +450,7 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyh
         }
     }
 
+    log::debug!("building codedb done");
     Ok(cdb)
 }
 

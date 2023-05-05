@@ -1,9 +1,9 @@
 pub mod circuit;
-// pub mod inner;
 pub mod io;
 pub mod prover;
 pub mod utils;
 pub mod verifier;
+pub mod sealer;
 
 // Terminology used throughout this library.
 //

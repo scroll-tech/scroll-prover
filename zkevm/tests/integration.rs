@@ -6,7 +6,7 @@ use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{load_or_create_params, load_params},
+    utils::{load_or_create_params, load_params}, sealer::RealtimeRowEstimator,
 };
 
 mod test_util;
@@ -40,6 +40,42 @@ fn test_load_params() {
         SerdeFormat::Processed,
     )
     .unwrap();
+}
+
+
+#[test]
+fn test_sealer() {
+    init();
+
+    let (_, batch) = load_block_traces_for_test();
+
+    log::info!("estimating circuit rows tx by tx");
+
+    let mut sealer = RealtimeRowEstimator::new();
+
+    for (block_idx, block) in batch.iter().enumerate() {
+        for i in 0..block.transactions.len() {
+            log::info!("processing {}th block {}th tx", block_idx, i);
+            // the sealer is expected to be used inside sequencer, where we don't have the
+            // traces of blocks, instead we only have traces of tx.
+            // For the "TxTrace":
+            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
+            //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
+            //   storage_trace: 
+            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts.
+            //     as long as `storage_trace` contains storage_trace for current tx, it will be ok.
+            //     But currenly we put storage_traces of all txs together in block trace,
+            //     so here we have to keep the storage_trace as is at the cost of a small performance penalty.
+            //     In the future, we may consider change block_trace.storage_trace to a vector, of same len with txs.
+            let mut realtime_trace = block.clone();
+            realtime_trace.transactions = vec![realtime_trace.transactions[i].clone()];
+            realtime_trace.execution_results = vec![realtime_trace.execution_results[i].clone()];
+            let results = sealer.add_tx(&realtime_trace);
+            log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
+        }
+    }
+
+    log::info!("sealer test done");
 }
 
 #[test]
