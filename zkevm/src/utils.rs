@@ -13,7 +13,7 @@ use std::str::FromStr;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 
-pub(crate) const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
+pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 
 fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
     //format!("{params_dir}/kzg_bn254_{degree}.srs")
