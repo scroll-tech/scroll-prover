@@ -1,5 +1,9 @@
+use chrono::Utc;
 use git_version::git_version;
 use glob::glob;
+use std::fs;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Once;
 use types::eth::BlockTrace;
 use zkevm::utils::get_block_trace_from_file;
@@ -17,6 +21,19 @@ pub fn init() {
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
         log::info!("git version {}", GIT_VERSION);
     });
+}
+
+pub fn create_output_dir() -> String {
+    let mode = read_env_var("MODE", "multi".to_string());
+    let output = read_env_var(
+        "OUTPUT_DIR",
+        format!("output_{}_{}", Utc::now().format("%Y%m%d_%H%M%S"), mode),
+    );
+
+    let output_dir = PathBuf::from_str(&output).unwrap();
+    fs::create_dir_all(output_dir).unwrap();
+
+    output
 }
 
 pub fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<types::eth::BlockTrace>) {
