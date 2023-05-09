@@ -1,7 +1,11 @@
 use itertools::Itertools;
+use mpt_zktrie::state::ZktrieState;
 use types::eth::BlockTrace;
 
-use crate::circuit::{calculate_row_usage_of_trace, SUB_CIRCUIT_NAMES, DEGREE};
+use crate::circuit::{
+    block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
+    update_state, DEGREE, SUB_CIRCUIT_NAMES,
+};
 
 #[derive(Debug, Clone)]
 pub struct RowUsage {
@@ -23,7 +27,7 @@ impl RowUsage {
         Self {
             row_usage_details: row_usage_details.clone(),
             row_number,
-            is_ok: row_number < 1<<*DEGREE - 256,
+            is_ok: row_number < 1 << *DEGREE - 256,
         }
     }
     pub fn add(&mut self, other: &RowUsage) {
@@ -36,32 +40,66 @@ impl RowUsage {
             }
         }
 
-        self.row_number = *self.row_usage_details.iter().map(|(_name, n)| n).max().unwrap();
-        self.is_ok = self.row_number < 1<<*DEGREE - 256;
+        self.row_number = *self
+            .row_usage_details
+            .iter()
+            .map(|(_name, n)| n)
+            .max()
+            .unwrap();
+        self.is_ok = self.row_number < 1 << *DEGREE - 256;
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct RealtimeRowEstimator {
-    pub current_row_usage: RowUsage,
+pub struct Sealer {
+    /// When "light_mode" enabled, we skip zktrie subcircuit in row estimation to avoid the heavy poseidon cost.
+    pub light_mode: bool,
+    pub acc_row_usage: RowUsage,
+    pub row_usages: Vec<RowUsage>,
+    pub state: Option<ZktrieState>,
 }
 
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of len 1,
-// "storageProofs" should contain "slot touched" during when executing this tx. 
+// "storageProofs" should contain "slot touched" during when executing this tx.
 pub type TxTrace = BlockTrace;
 
 // Used inside sequencer to estimate the row usage, so sequencer can decide when to deal a block.
-impl RealtimeRowEstimator {
+impl Sealer {
     pub fn new() -> Self {
         Self {
-            current_row_usage: RowUsage::new(),
+            acc_row_usage: RowUsage::new(),
+            row_usages: Vec::new(),
+            state: None,
+            light_mode: true,
         }
     }
-    pub fn add_tx(&mut self, tx: &BlockTrace) -> Result<(RowUsage, RowUsage), anyhow::Error> {
-        let rows = calculate_row_usage_of_trace(tx)?;
-        let row_usage_details: Vec<(String, usize)> = SUB_CIRCUIT_NAMES.into_iter().map(|s| s.to_string()).zip_eq(rows.into_iter()).collect_vec();
+    pub fn reset(&mut self) {
+        self.state = None;
+        self.acc_row_usage = RowUsage::new();
+        self.row_usages = Vec::new();
+    }
+    pub fn add_tx(&mut self, txs: &[BlockTrace]) -> Result<(RowUsage, RowUsage), anyhow::Error> {
+        assert!(!txs.is_empty());
+        if self.state.is_none() {
+            self.state = Some(ZktrieState::construct(txs[0].storage_trace.root_before));
+        }
+        let traces = txs;
+        let state = self.state.as_mut().unwrap();
+        //if self.row_usages.is_empty() {
+        // FIXME
+        update_state(state, traces, self.light_mode)?;
+        //}
+        let witness_block =
+            block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
+        let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+        let row_usage_details: Vec<(String, usize)> = SUB_CIRCUIT_NAMES
+            .into_iter()
+            .map(|s| s.to_string())
+            .zip_eq(rows.into_iter())
+            .collect_vec();
         let tx_row_usage = RowUsage::from_row_usage_details(&row_usage_details);
-        self.current_row_usage.add(&tx_row_usage);
-        Ok((self.current_row_usage.clone(), tx_row_usage))
+        self.row_usages.push(tx_row_usage.clone());
+        self.acc_row_usage.add(&tx_row_usage);
+        Ok((self.acc_row_usage.clone(), tx_row_usage))
     }
 }

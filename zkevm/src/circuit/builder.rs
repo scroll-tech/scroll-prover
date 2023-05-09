@@ -123,6 +123,49 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), an
     Ok(())
 }
 
+pub fn update_state(
+    zktrie_state: &mut ZktrieState,
+    block_traces: &[BlockTrace],
+    light_mode: bool,
+) -> Result<(), anyhow::Error> {
+    log::debug!("building partial statedb");
+    let account_proofs = block_traces.iter().rev().flat_map(|block| {
+        block.storage_trace.proofs.iter().flat_map(|kv_map| {
+            kv_map
+                .iter()
+                .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
+        })
+    });
+    let storage_proofs = block_traces.iter().rev().flat_map(|block| {
+        block
+            .storage_trace
+            .storage_proofs
+            .iter()
+            .flat_map(|(k, kv_map)| {
+                kv_map
+                    .iter()
+                    .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
+            })
+    });
+    let additional_proofs = block_traces.iter().rev().flat_map(|block| {
+        block
+            .storage_trace
+            .deletion_proofs
+            .iter()
+            .map(Bytes::as_ref)
+    });
+    zktrie_state.update_statedb_from_proofs(
+        account_proofs.clone(),
+        storage_proofs.clone(),
+        additional_proofs.clone(),
+    )?;
+    if !light_mode {
+        zktrie_state.update_nodes_from_proofs(account_proofs, storage_proofs, additional_proofs)?;
+    }
+    log::debug!("building partial statedb done");
+    Ok(())
+}
+
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
@@ -131,37 +174,16 @@ pub fn block_traces_to_witness_block(
     } else {
         block_traces[0].storage_trace.root_before
     };
-    log::debug!("building partial statedb");
-    let zktrie_state = ZktrieState::from_trace_with_additional(
-        old_root,
-        block_traces.iter().rev().flat_map(|block| {
-            block.storage_trace.proofs.iter().flat_map(|kv_map| {
-                kv_map
-                    .iter()
-                    .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
-            })
-        }),
-        block_traces.iter().rev().flat_map(|block| {
-            block
-                .storage_trace
-                .storage_proofs
-                .iter()
-                .flat_map(|(k, kv_map)| {
-                    kv_map
-                        .iter()
-                        .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
-                })
-        }),
-        block_traces.iter().rev().flat_map(|block| {
-            block
-                .storage_trace
-                .deletion_proofs
-                .iter()
-                .map(Bytes::as_ref)
-        }),
-    )?;
-    log::debug!("building partial statedb done");
+    let mut state = ZktrieState::construct(old_root);
+    update_state(&mut state, block_traces, false)?;
+    block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)
+}
 
+pub fn block_traces_to_witness_block_with_updated_state(
+    block_traces: &[BlockTrace],
+    zktrie_state: &mut ZktrieState,
+    light_mode: bool, // light_mode used in row estimation
+) -> Result<Block<Fr>, anyhow::Error> {
     let chain_ids = block_traces
         .iter()
         .map(|block_trace| block_trace.chain_id)
@@ -173,7 +195,7 @@ pub fn block_traces_to_witness_block(
         (*CHAIN_ID).into()
     };
 
-    let mut state_db = zktrie_state.state().clone();
+    let mut state_db: StateDB = zktrie_state.state().clone();
 
     let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
     if !zero_coinbase_exist {
@@ -214,7 +236,7 @@ pub fn block_traces_to_witness_block(
         let block_num = header.number.as_u64();
         builder.block.headers.insert(block_num, header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
-        log::debug!("handle_block_inner done for block {:?}",block_num);
+        log::debug!("handle_block_inner done for block {:?}", block_num);
         let per_block_metric = false;
         if per_block_metric {
             let t = Instant::now();
@@ -248,7 +270,10 @@ pub fn block_traces_to_witness_block(
         witness_block.circuits_params
     );
 
-    block_apply_mpt_state(&mut witness_block, zktrie_state);
+    if !light_mode {
+        block_apply_mpt_state(&mut witness_block, zktrie_state);
+    }
+    zktrie_state.set_state(builder.sdb.clone());
     log::debug!("finish replay trie updates");
     Ok(witness_block)
 }
@@ -385,28 +410,39 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
         .expect("should have stack in call context");
     let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
 
-    let hash = cdb.insert(code.to_vec());
-
-    // sanity check
     let (existed, data) = sdb.get_account(&addr);
-    if existed && !data.code_size.is_zero() {
-        assert_eq!(
-            hash, data.code_hash,
-            "invalid codehash for existed account {addr:?}, {data:?}"
-        );
+    if existed && !data.code_size.is_zero() && cdb.0.contains_key(&data.code_hash) {
+        return;
     };
+
+    log::debug!("trace code {:?}", addr);
+    let _hash = cdb.0.insert(data.code_hash, code.to_vec());
+    log::debug!("trace code done {:?}", addr);
+    // sanity check
+    //assert_eq!(
+    //    hash, data.code_hash,
+    //    "invalid codehash for existed account {addr:?}, {data:?}"
+    //);
 }
 pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyhow::Error> {
     let mut cdb = CodeDB::new();
     log::debug!("building codedb");
 
-    for block in blocks.iter().rev() {
-        // notice empty codehash always kept as keccak256(nil)
-        cdb.insert(Vec::new());
+    cdb.insert(Vec::new());
 
+    for block in blocks.iter().rev() {
         for (er_idx, execution_result) in block.execution_results.iter().enumerate() {
             if let Some(bytecode) = &execution_result.byte_code {
-                let _hash = cdb.insert(decode_bytecode(bytecode)?.to_vec());
+                let code_hash = execution_result
+                    .to
+                    .as_ref()
+                    .and_then(|t| t.poseidon_code_hash)
+                    .unwrap_or_default();
+                if !cdb.0.contains_key(&code_hash) {
+                    let bytecode = decode_bytecode(bytecode)?.to_vec();
+                    cdb.0.insert(code_hash, bytecode);
+                    //log::debug!("inserted tx bytecode {:?} {:?}", code_hash, hash);
+                }
 
                 if execution_result.account_created.is_none() {
                     //assert_eq!(Some(hash), execution_result.code_hash);

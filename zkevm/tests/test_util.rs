@@ -14,7 +14,9 @@ pub static ENV_LOGGER: Once = Once::new();
 pub fn init() {
     ENV_LOGGER.call_once(|| {
         dotenv::dotenv().ok();
-        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
+            .format_timestamp_millis()
+            .init();
         log::info!("git version {}", GIT_VERSION);
     });
 }

@@ -6,7 +6,8 @@ use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{load_or_create_params, load_params}, sealer::RealtimeRowEstimator,
+    sealer::Sealer,
+    utils::{load_or_create_params, load_params},
 };
 
 mod test_util;
@@ -42,7 +43,6 @@ fn test_load_params() {
     .unwrap();
 }
 
-
 #[test]
 fn test_sealer() {
     init();
@@ -51,7 +51,11 @@ fn test_sealer() {
 
     log::info!("estimating circuit rows tx by tx");
 
-    let mut sealer = RealtimeRowEstimator::new();
+    let mut sealer = Sealer::new();
+    let results = sealer.add_tx(&batch);
+    log::info!("after whole block: {:?}", results);
+
+    let mut sealer = Sealer::new();
 
     for (block_idx, block) in batch.iter().enumerate() {
         for i in 0..block.transactions.len() {
@@ -61,7 +65,7 @@ fn test_sealer() {
             // For the "TxTrace":
             //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
             //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
-            //   storage_trace: 
+            //   storage_trace:
             //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts.
             //     as long as `storage_trace` contains storage_trace for current tx, it will be ok.
             //     But currenly we put storage_traces of all txs together in block trace,
@@ -70,7 +74,7 @@ fn test_sealer() {
             let mut realtime_trace = block.clone();
             realtime_trace.transactions = vec![realtime_trace.transactions[i].clone()];
             realtime_trace.execution_results = vec![realtime_trace.execution_results[i].clone()];
-            let results = sealer.add_tx(&realtime_trace);
+            let results = sealer.add_tx(&[realtime_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
     }

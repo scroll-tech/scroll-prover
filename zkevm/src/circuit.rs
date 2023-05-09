@@ -11,8 +11,9 @@ pub use super_circuit::SuperCircuit;
 use crate::utils::read_env_var;
 
 pub use self::builder::{
-    block_traces_to_witness_block, calculate_row_usage_of_trace,
-    calculate_row_usage_of_witness_block, check_batch_capacity, SUB_CIRCUIT_NAMES,
+    block_traces_to_witness_block, block_traces_to_witness_block_with_updated_state,
+    calculate_row_usage_of_trace, calculate_row_usage_of_witness_block, check_batch_capacity,
+    update_state, SUB_CIRCUIT_NAMES,
 };
 
 ////// params for degree = 19 ////////////
