@@ -14,6 +14,12 @@ pub struct RowUsage {
     pub row_usage_details: Vec<(String, usize)>,
 }
 
+impl Default for RowUsage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RowUsage {
     pub fn new() -> Self {
         Self {
@@ -22,12 +28,12 @@ impl RowUsage {
             row_usage_details: Vec::new(),
         }
     }
-    pub fn from_row_usage_details(row_usage_details: &Vec<(String, usize)>) -> Self {
+    pub fn from_row_usage_details(row_usage_details: Vec<(String, usize)>) -> Self {
         let row_number = *row_usage_details.iter().map(|(_name, n)| n).max().unwrap();
         Self {
-            row_usage_details: row_usage_details.clone(),
+            row_usage_details,
             row_number,
-            is_ok: row_number < 1 << *DEGREE - 256,
+            is_ok: row_number < (1 << *DEGREE) - 256,
         }
     }
     pub fn add(&mut self, other: &RowUsage) {
@@ -46,7 +52,7 @@ impl RowUsage {
             .map(|(_name, n)| n)
             .max()
             .unwrap();
-        self.is_ok = self.row_number < 1 << *DEGREE - 256;
+        self.is_ok = self.row_number < (1 << *DEGREE) - 256;
     }
 }
 
@@ -62,6 +68,12 @@ pub struct Sealer {
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of len 1,
 // "storageProofs" should contain "slot touched" during when executing this tx.
 pub type TxTrace = BlockTrace;
+
+impl Default for Sealer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 // Used inside sequencer to estimate the row usage, so sequencer can decide when to deal a block.
 impl Sealer {
@@ -97,7 +109,7 @@ impl Sealer {
             .map(|s| s.to_string())
             .zip_eq(rows.into_iter())
             .collect_vec();
-        let tx_row_usage = RowUsage::from_row_usage_details(&row_usage_details);
+        let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());
         self.acc_row_usage.add(&tx_row_usage);
         Ok((self.acc_row_usage.clone(), tx_row_usage))

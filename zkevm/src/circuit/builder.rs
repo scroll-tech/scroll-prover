@@ -13,6 +13,7 @@ use halo2_proofs::halo2curves::bn256::Fr;
 use is_even::IsEven;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
+use std::collections::hash_map::Entry;
 use std::time::Instant;
 use types::eth::{BlockTrace, EthBlock, ExecStep};
 use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
@@ -438,12 +439,11 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyh
                     .as_ref()
                     .and_then(|t| t.poseidon_code_hash)
                     .unwrap_or_default();
-                if !cdb.0.contains_key(&code_hash) {
+                if let Entry::Vacant(e) = cdb.0.entry(code_hash) {
                     let bytecode = decode_bytecode(bytecode)?.to_vec();
-                    cdb.0.insert(code_hash, bytecode);
+                    e.insert(bytecode);
                     //log::debug!("inserted tx bytecode {:?} {:?}", code_hash, hash);
                 }
-
                 if execution_result.account_created.is_none() {
                     //assert_eq!(Some(hash), execution_result.code_hash);
                 }
