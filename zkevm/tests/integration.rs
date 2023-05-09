@@ -1,26 +1,22 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
+    sealer::Sealer,
     utils::{load_or_create_params, load_params},
 };
 
-mod test_util;
-use test_util::{init, load_block_traces_for_test, PARAMS_DIR, SEED_PATH};
+use test_util::{init_env_and_log, load_block_traces_for_test, PARAMS_DIR};
+use zkevm::test_util;
 
-use once_cell::sync::Lazy;
-use zkevm::utils::read_env_var;
 use zkevm_circuits::util::SubCircuit;
-pub static CIRCUIT: Lazy<String> = Lazy::new(|| read_env_var("CIRCUIT", "super".to_string()));
 
 #[ignore]
 #[test]
 fn test_load_params() {
-    init();
+    init_env_and_log();
     log::info!("start");
     load_params(
         "/home/ubuntu/scroll-zkevm/zkevm/test_params",
@@ -43,10 +39,49 @@ fn test_load_params() {
 }
 
 #[test]
+fn test_sealer() {
+    init_env_and_log();
+
+    let (_, batch) = load_block_traces_for_test();
+
+    log::info!("estimating circuit rows tx by tx");
+
+    let mut sealer = Sealer::new();
+    let results = sealer.add_tx(&batch);
+    log::info!("after whole block: {:?}", results);
+
+    let mut sealer = Sealer::new();
+
+    for (block_idx, block) in batch.iter().enumerate() {
+        for i in 0..block.transactions.len() {
+            log::info!("processing {}th block {}th tx", block_idx, i);
+            // the sealer is expected to be used inside sequencer, where we don't have the
+            // traces of blocks, instead we only have traces of tx.
+            // For the "TxTrace":
+            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
+            //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
+            //   storage_trace:
+            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts.
+            //     as long as `storage_trace` contains storage_trace for current tx, it will be ok.
+            //     But currenly we put storage_traces of all txs together in block trace,
+            //     so here we have to keep the storage_trace as is at the cost of a small performance penalty.
+            //     In the future, we may consider change block_trace.storage_trace to a vector, of same len with txs.
+            let mut realtime_trace = block.clone();
+            realtime_trace.transactions = vec![realtime_trace.transactions[i].clone()];
+            realtime_trace.execution_results = vec![realtime_trace.execution_results[i].clone()];
+            let results = sealer.add_tx(&[realtime_trace]);
+            log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
+        }
+    }
+
+    log::info!("sealer test done");
+}
+
+#[test]
 fn estimate_circuit_rows() {
     use zkevm::circuit::{self, TargetCircuit};
 
-    init();
+    init_env_and_log();
 
     let (_, block_trace) = load_block_traces_for_test();
 
@@ -62,7 +97,7 @@ fn test_mock_prove() {
 
     use crate::test_util::load_block_traces_for_test;
 
-    init();
+    init_env_and_log();
     let block_traces = load_block_traces_for_test().1;
     Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces).unwrap();
 }
@@ -77,7 +112,7 @@ fn test_prove_verify() {
 #[test]
 fn test_deterministic() {
     use halo2_proofs::dev::MockProver;
-    init();
+    init_env_and_log();
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
 
@@ -110,7 +145,7 @@ fn test_deterministic() {
 #[test]
 fn test_vk_same() {
     use halo2_proofs::dev::MockProver;
-    init();
+    init_env_and_log();
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
@@ -180,16 +215,15 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     use zkevm::verifier::Verifier;
 
-    init();
-    let mut rng = XorShiftRng::from_seed([0u8; 16]);
+    init_env_and_log();
 
     let (_, block_traces) = load_block_traces_for_test();
 
     log::info!("start generating {} proof", C::name());
     let now = Instant::now();
-    let mut prover = Prover::from_fpath(PARAMS_DIR, SEED_PATH);
+    let mut prover = Prover::from_param_dir(PARAMS_DIR);
     let proof = prover
-        .create_target_circuit_proof_batch::<C>(&block_traces, &mut rng)
+        .create_target_circuit_proof_batch::<C>(&block_traces)
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 

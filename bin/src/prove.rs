@@ -1,7 +1,5 @@
 use clap::Parser;
 use log::info;
-use rand::{RngCore, SeedableRng};
-use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
@@ -9,9 +7,9 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 use zkevm::{
-    circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
+    circuit::{SuperCircuit, AGG_DEGREE},
     prover::Prover,
-    utils::{get_block_trace_from_file, load_or_create_params, load_or_create_seed},
+    utils::{get_block_trace_from_file, load_or_create_params},
 };
 
 #[derive(Parser, Debug)]
@@ -20,9 +18,6 @@ struct Args {
     /// Get params and write into file.
     #[clap(short, long = "params")]
     params_path: Option<String>,
-    /// Get seed and write into file.
-    #[clap(long = "seed")]
-    seed_path: Option<String>,
     /// Get BlockTrace from file or dir.
     #[clap(short, long = "trace")]
     trace_path: Option<String>,
@@ -41,25 +36,10 @@ fn main() {
     env_logger::init();
 
     let args = Args::parse();
-    let params = load_or_create_params(&args.params_path.clone().unwrap(), *DEGREE)
-        .expect("failed to load or create params");
     let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
         .expect("failed to load or create params");
-    let seed =
-        load_or_create_seed(&args.seed_path.unwrap()).expect("failed to load or create seed");
 
-    let (local_rng1, mut local_rng2) = {
-        let mut rng = XorShiftRng::from_seed(seed);
-        let mut seed1 = [0u8; 16];
-        rng.fill_bytes(&mut seed1);
-        let local_rng1 = XorShiftRng::from_seed(seed1);
-        let mut seed2 = [0u8; 16];
-        rng.fill_bytes(&mut seed2);
-        let local_rng2 = XorShiftRng::from_seed(seed2);
-        (local_rng1, local_rng2)
-    };
-
-    let mut prover = Prover::from_params_and_rng(params, agg_params, local_rng1);
+    let mut prover = Prover::from_params(agg_params);
 
     let mut traces = HashMap::new();
     let trace_path = PathBuf::from(&args.trace_path.unwrap());
@@ -83,7 +63,7 @@ fn main() {
 
             let now = Instant::now();
             let super_proof = prover
-                .create_target_circuit_proof::<SuperCircuit>(&trace, &mut local_rng2)
+                .create_target_circuit_proof::<SuperCircuit>(&trace)
                 .expect("cannot generate evm_proof");
             info!(
                 "finish generating evm proof of {}, elapsed: {:?}",
@@ -102,7 +82,7 @@ fn main() {
 
             let now = Instant::now();
             let agg_proof = prover
-                .create_agg_circuit_proof(&trace, &mut local_rng2)
+                .create_agg_circuit_proof(&trace)
                 .expect("cannot generate agg_proof");
             info!(
                 "finish generating agg proof of {}, elapsed: {:?}",

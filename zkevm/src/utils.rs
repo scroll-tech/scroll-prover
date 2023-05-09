@@ -15,6 +15,11 @@ use zkevm_circuits::witness;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 
+fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
+    //format!("{params_dir}/kzg_bn254_{degree}.srs")
+    format!("{params_dir}/params{degree}")
+}
+
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     let _path = PathBuf::from(params_dir);
@@ -31,7 +36,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
         }
     };
 
-    let params_path = format!("{params_dir}/params{degree}");
+    let params_path = param_path_for_degree(params_dir, degree);
     log::info!("load_or_create_params {}", params_path);
     if Path::new(&params_path).exists() {
         match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
@@ -53,7 +58,7 @@ pub fn load_params(
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
-        format!("{params_dir}/params{degree}")
+        param_path_for_degree(params_dir, degree)
     } else {
         params_dir.to_string()
     };
@@ -106,36 +111,6 @@ pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256
     log::info!("create params successfully!");
 
     Ok(params)
-}
-
-/// return random seed by reading from file or generate new one
-pub fn load_or_create_seed(seed_path: &str) -> Result<[u8; 16]> {
-    if Path::new(seed_path).exists() {
-        load_seed(seed_path)
-    } else {
-        create_seed(seed_path)
-    }
-}
-
-/// load seed from the file
-pub fn load_seed(seed_path: &str) -> Result<[u8; 16]> {
-    let mut seed_fs = File::open(seed_path)?;
-    let mut seed = [0_u8; 16];
-    seed_fs.read_exact(&mut seed)?;
-    Ok(seed)
-}
-
-/// create the seed and write it into file
-pub fn create_seed(seed_path: &str) -> Result<[u8; 16]> {
-    // TODO: use better randomness source
-    const RNG_SEED_BYTES: [u8; 16] = [
-        0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
-        0xe5,
-    ];
-
-    let mut seed_file = File::create(seed_path)?;
-    seed_file.write_all(RNG_SEED_BYTES.as_slice())?;
-    Ok(RNG_SEED_BYTES)
 }
 
 /// get a block-result from file

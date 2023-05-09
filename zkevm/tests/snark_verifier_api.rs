@@ -3,32 +3,35 @@ use mock_plonk::MockPlonkCircuit;
 use mock_plonk::StandardPlonk;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
 use snark_verifier_sdk::evm::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
-use test_util::init;
+use test_util::mock_plonk;
+use zkevm::test_util;
+
+use test_util::init_env_and_log;
 use zkevm::prover::Prover;
 use zkevm::verifier::{EvmVerifier, Verifier};
-
-mod mock_plonk;
-mod test_util;
 
 // This is essentially a same test as snark-verifier/evm-verifier
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_snark_verifier_sdk_api() {
-    std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
+    use zkevm::utils::load_or_create_params;
+
+    use crate::test_util::PARAMS_DIR;
+
+    std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
     let k = 8;
     let k_agg = 21;
 
-    init();
+    init_env_and_log();
 
     let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
     let circuit = StandardPlonk::rand(&mut rng);
-    let params_outer = gen_srs(k_agg);
+    let params_outer = load_or_create_params(PARAMS_DIR, k_agg).unwrap();
     let params_inner = {
         let mut params = params_outer.clone();
         params.downsize(k);
@@ -78,9 +81,13 @@ fn test_snark_verifier_sdk_api() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_partial_aggregation_api() {
-    std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
+    use zkevm::utils::load_or_create_params;
 
-    init();
+    use crate::test_util::PARAMS_DIR;
+
+    std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
+
+    init_env_and_log();
     let num_snarks = 3;
 
     // ====================================================
@@ -100,7 +107,7 @@ fn test_partial_aggregation_api() {
     let mut rng = XorShiftRng::from_seed(seed);
 
     // notice that k < k_agg which is not necessary the case in practice
-    let params_outer = gen_srs(k_agg);
+    let params_outer = load_or_create_params(PARAMS_DIR, k_agg).unwrap();
     let params_inner = {
         let mut params = params_outer.clone();
         params.downsize(k);
@@ -108,7 +115,7 @@ fn test_partial_aggregation_api() {
     };
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
     let circuit = StandardPlonk::rand(&mut rng);
-    let mut prover = Prover::from_params_and_seed(params_inner.clone(), params_outer.clone(), seed);
+    let mut prover = Prover::from_params(params_outer.clone());
     //
     // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
     //

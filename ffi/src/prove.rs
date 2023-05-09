@@ -1,6 +1,5 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
 use libc::c_char;
-use rand::rngs::OsRng;
 use std::cell::OnceCell;
 use types::eth::BlockTrace;
 use zkevm::prover::Prover;
@@ -9,12 +8,11 @@ static mut PROVER: OnceCell<Prover> = OnceCell::new();
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn init_prover(params_path: *const c_char, seed_path: *const c_char) {
+pub unsafe extern "C" fn init_prover(params_path: *const c_char, _seed_path: *const c_char) {
     env_logger::init();
 
     let params_path = c_char_to_str(params_path);
-    let seed_path = c_char_to_str(seed_path);
-    let p = Prover::from_fpath(params_path, seed_path);
+    let p = Prover::from_param_dir(params_path);
     PROVER.set(p).unwrap();
 }
 
@@ -26,7 +24,7 @@ pub unsafe extern "C" fn create_agg_proof(trace_char: *const c_char) -> *const c
     let proof = PROVER
         .get_mut()
         .unwrap()
-        .create_agg_circuit_proof(&trace, &mut OsRng)
+        .create_agg_circuit_proof(&trace)
         .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
@@ -40,7 +38,7 @@ pub unsafe extern "C" fn create_agg_proof_multi(trace_char: *const c_char) -> *c
     let proof = PROVER
         .get_mut()
         .unwrap()
-        .create_agg_circuit_proof_batch(traces.as_slice(), &mut OsRng)
+        .create_agg_circuit_proof_batch(traces.as_slice())
         .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)

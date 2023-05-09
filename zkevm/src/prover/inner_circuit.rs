@@ -9,7 +9,8 @@ use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::Fr;
 use log::info;
-use rand::Rng;
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::halo2::gen_snark_shplonk;
 use types::eth::BlockTrace;
 
@@ -19,9 +20,8 @@ impl Prover {
     pub fn prove_inner_circuit<C: TargetCircuit>(
         &mut self,
         block_traces: &[BlockTrace],
-        rng: &mut (impl Rng + Send),
     ) -> anyhow::Result<TargetCircuitProof> {
-        self.create_target_circuit_proof_batch::<C>(block_traces, rng)
+        self.create_target_circuit_proof_batch::<C>(block_traces)
     }
 
     /// Input a trace, generate a proof for the outer circuit.
@@ -29,16 +29,14 @@ impl Prover {
     pub fn create_target_circuit_proof<C: TargetCircuit>(
         &mut self,
         block_trace: &BlockTrace,
-        rng: &mut (impl Rng + Send),
     ) -> anyhow::Result<TargetCircuitProof, Error> {
-        self.create_target_circuit_proof_batch::<C>(&[block_trace.clone()], rng)
+        self.create_target_circuit_proof_batch::<C>(&[block_trace.clone()])
     }
 
     /// Create a target circuit proof for a list of block traces
     pub fn create_target_circuit_proof_batch<C: TargetCircuit>(
         &mut self,
         block_traces: &[BlockTrace],
-        rng: &mut (impl Rng + Send),
     ) -> anyhow::Result<TargetCircuitProof, Error> {
         let total_num_of_blocks = block_traces.len();
 
@@ -70,10 +68,13 @@ impl Prover {
             block_traces[block_traces.len() - 1].header.hash.unwrap(),
             block_traces.len()
         );
+
+        let seed = [0u8; 16];
+        let mut rng = XorShiftRng::from_seed(seed);
         self.create_target_circuit_proof_from_circuit::<C>(
             circuit,
             instance,
-            rng,
+            &mut rng,
             total_num_of_blocks,
             num_of_proved_blocks,
         )
