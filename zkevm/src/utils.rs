@@ -13,7 +13,7 @@ use std::str::FromStr;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 
-pub(crate) const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
+pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
