@@ -2,15 +2,15 @@ use halo2_proofs::poly::commitment::Params;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
-use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
-use snark_verifier_sdk::gen_pk;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
-use test_util::init;
-use test_util::load_block_traces_for_test;
-use zkevm::circuit::SuperCircuit;
-use zkevm::prover::Prover;
-use zkevm::verifier::Verifier;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
+use test_util::{create_output_dir, init, load_block_traces_for_test};
+use zkevm::circuit::{SuperCircuit, TargetCircuit};
+use zkevm::io::write_file;
+use zkevm::prover::{Prover, TargetCircuitProof};
+use zkevm::verifier::EvmVerifier;
 
 mod mock_plonk;
 mod test_util;
@@ -25,13 +25,18 @@ fn test_aggregation_api() {
 
     init();
 
+    let output_dir = create_output_dir();
+    let mut output_path = PathBuf::from_str(&output_dir).unwrap();
+    log::info!("created output dir {}", output_dir);
+
     let block_traces = load_block_traces_for_test().1;
     log::info!("loaded block trace");
 
     // ====================================================
     // A whole aggregation procedure takes the following steps
     // 1. instantiation the parameters and the prover
-    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
+    //    convert block traces into
     // 3. build an aggregation circuit proof
     // 4. generate bytecode for evm to verify aggregation circuit proof
     // 5. validate the proof with evm bytecode
@@ -53,41 +58,58 @@ fn test_aggregation_api() {
     };
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
 
-    let mut prover = Prover::from_params_and_seed(params_inner, params_outer.clone(), seed);
-
+    let mut prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
     log::info!("build prover");
 
     //
-    // 2. convert block traces into inner circuit proofs, a.k.a. SNARKs
+    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
+    //    convert block traces into
     //
-    let super_circuit_proof = prover
-        .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
-        .unwrap();
+    let inner_proof_file_path = format!("{}/{}_proof.json", output_dir, SuperCircuit::name());
+    let inner_proof = TargetCircuitProof::restore_from_file(&inner_proof_file_path)
+        .unwrap()
+        .unwrap_or_else(|| {
+            let proof = prover
+                .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
+                .unwrap();
 
-    log::info!("build super circuit from block traces");
+            // Dump inner circuit proof.
+            proof.dump_to_file(&inner_proof_file_path).unwrap();
+
+            proof
+        });
+    log::info!("got super circuit proof");
 
     // sanity check: the inner proof is correct
 
     // 3. build an aggregation circuit proof
     let agg_circuit =
-        AggregationCircuit::new(&params_outer, [super_circuit_proof.snark.clone()], &mut rng);
-    let pk_outer = gen_pk(&params_outer, &agg_circuit, None);
+        AggregationCircuit::new(&prover.agg_params, [inner_proof.snark.clone()], &mut rng);
 
-    let instances = agg_circuit.instances();
-    let proof = gen_evm_proof_shplonk(
-        &params_outer,
-        &pk_outer,
-        agg_circuit.clone(),
-        instances.clone(),
-        &mut rng,
-    );
+    let proved_block_count = inner_proof.num_of_proved_blocks;
+    let outer_proof = prover
+        .create_agg_proof_by_agg_circuit(&agg_circuit, &mut rng, proved_block_count)
+        .unwrap();
+
+    // Dump aggregation proof, vk and instance.
+    outer_proof.dump(&mut output_path).unwrap();
+
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let deployment_code = prover.create_evm_verifier_bytecode(&agg_circuit, pk_outer.get_vk());
+    let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
+
+    // Create bytecode and dump yul-code.
+    let yul_file_path = format!("{}/verifier.yul", output_dir);
+    let deployment_code =
+        prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk, Some(Path::new(&yul_file_path)));
+
+    // Dump bytecode.
+    write_file(&mut output_path, "verifier.bin", &deployment_code);
+
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    Verifier::evm_verify(deployment_code, instances, proof);
+    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), outer_proof.proof);
     log::info!("end to end test completed");
 }

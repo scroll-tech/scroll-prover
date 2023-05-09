@@ -20,7 +20,6 @@ impl Prover {
             rng,
             target_circuit_pks: Default::default(),
             agg_pk: None,
-            debug_dir: Default::default(),
         }
     }
 
