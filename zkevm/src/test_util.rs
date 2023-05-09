@@ -1,3 +1,5 @@
+use crate::utils::get_block_trace_from_file;
+use crate::utils::read_env_var;
 use chrono::Utc;
 use git_version::git_version;
 use glob::glob;
@@ -6,16 +8,15 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Once;
 use types::eth::BlockTrace;
-use zkevm::utils::get_block_trace_from_file;
-use zkevm::utils::read_env_var;
+
+pub mod mock_plonk;
 
 pub const GIT_VERSION: &str = git_version!();
-pub const PARAMS_DIR: &str = "./test_params";
-pub const SEED_PATH: &str = "./test_seed";
+pub const PARAMS_DIR: &str = "./params";
 
 pub static ENV_LOGGER: Once = Once::new();
 
-pub fn init() {
+pub fn init_env_and_log() {
     ENV_LOGGER.call_once(|| {
         dotenv::dotenv().ok();
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))

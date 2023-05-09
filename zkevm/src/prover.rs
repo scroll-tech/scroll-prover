@@ -3,7 +3,6 @@ use halo2_proofs::halo2curves::bn256::{Bn256, G1Affine};
 use halo2_proofs::plonk::ProvingKey;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use once_cell::sync::Lazy;
-use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 
 mod evm;
@@ -29,7 +28,6 @@ pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", fals
 pub struct Prover {
     pub params: ParamsKZG<Bn256>,
     pub agg_params: ParamsKZG<Bn256>,
-    pub rng: XorShiftRng,
     /// We may have a list of public keys for different inner circuits.
     /// Those keys are stored as a hash map, and keyed by a `name` String.
     pub target_circuit_pks: HashMap<String, ProvingKey<G1Affine>>,

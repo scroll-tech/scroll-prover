@@ -1,29 +1,26 @@
-use halo2_proofs::poly::commitment::Params;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier::loader::halo2::halo2_ecc::halo2_base::utils::fs::gen_srs;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use test_util::{create_output_dir, init, load_block_traces_for_test};
+use test_util::{create_output_dir, init_env_and_log, load_block_traces_for_test};
 use zkevm::circuit::{SuperCircuit, TargetCircuit};
 use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
+use zkevm::test_util::{self, PARAMS_DIR};
+use zkevm::utils::load_or_create_params;
 use zkevm::verifier::EvmVerifier;
-
-mod mock_plonk;
-mod test_util;
 
 // An end to end integration test.
 // The inner snark proofs are generated from a mock circuit
 // instead of the trace files.
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_aggregation_api() {
-    std::env::set_var("VERIFY_CONFIG", "./configs/example_evm_accumulator.config");
+    std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
-    init();
+    init_env_and_log();
 
     let output_dir = create_output_dir();
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
@@ -46,19 +43,12 @@ fn test_aggregation_api() {
     //
     let k = 20;
     let k_agg = 26;
-    let seed = [0u8; 16];
-    let mut rng = XorShiftRng::from_seed(seed);
 
     // notice that k < k_agg which is not necessary the case in practice
-    let params_outer = gen_srs(k_agg);
-    let params_inner = {
-        let mut params = params_outer.clone();
-        params.downsize(k);
-        params
-    };
+    let params = load_or_create_params(PARAMS_DIR, k_agg as usize).unwrap();
     log::info!("loaded parameters for degrees {} and {}", k, k_agg);
 
-    let mut prover = Prover::from_params_and_seed(params_inner, params_outer, seed);
+    let mut prover = Prover::from_params(params);
     log::info!("build prover");
 
     //
@@ -70,7 +60,7 @@ fn test_aggregation_api() {
         .unwrap()
         .unwrap_or_else(|| {
             let proof = prover
-                .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref(), &mut rng)
+                .create_target_circuit_proof_batch::<SuperCircuit>(block_traces.as_ref())
                 .unwrap();
 
             // Dump inner circuit proof.
@@ -83,12 +73,15 @@ fn test_aggregation_api() {
     // sanity check: the inner proof is correct
 
     // 3. build an aggregation circuit proof
-    let agg_circuit =
-        AggregationCircuit::new(&prover.agg_params, [inner_proof.snark.clone()], &mut rng);
+    let agg_circuit = AggregationCircuit::new(
+        &prover.agg_params,
+        [inner_proof.snark.clone()],
+        XorShiftRng::from_seed([0u8; 16]),
+    );
 
     let proved_block_count = inner_proof.num_of_proved_blocks;
     let outer_proof = prover
-        .create_agg_proof_by_agg_circuit(&agg_circuit, &mut rng, proved_block_count)
+        .create_agg_proof_by_agg_circuit(&agg_circuit, proved_block_count)
         .unwrap();
 
     // Dump aggregation proof, vk and instance.

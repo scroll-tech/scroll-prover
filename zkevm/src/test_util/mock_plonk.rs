@@ -1,5 +1,6 @@
 //! A module for Mock Plonk circuit.
 //!
+use crate::circuit::TargetCircuit;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::{
     circuit::{Layouter, SimpleFloorPlanner, Value},
@@ -8,7 +9,6 @@ use halo2_proofs::{
 };
 use rand::RngCore;
 use snark_verifier_sdk::CircuitExt;
-use zkevm::circuit::TargetCircuit;
 use zkevm_circuits::witness;
 
 pub struct MockPlonkCircuit {
