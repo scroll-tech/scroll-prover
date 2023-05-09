@@ -18,9 +18,6 @@ struct Args {
     /// Get params and write into file.
     #[clap(short, long = "params")]
     params_path: Option<String>,
-    /// Get seed and write into file.
-    #[clap(long = "seed")]
-    seed_path: Option<String>,
     /// Get BlockTrace from file or dir.
     #[clap(short, long = "trace")]
     trace_path: Option<String>,

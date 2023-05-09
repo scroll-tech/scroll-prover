@@ -45,7 +45,7 @@ glob = "0.3.0"
 procfs = "0.13.0"
 
 [features]
-#default = []
- default = ["prove_verify"]
+default = []
+# default = ["prove_verify"]
 prove_verify = []
 

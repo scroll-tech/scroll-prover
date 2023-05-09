@@ -7,9 +7,6 @@ struct Args {
     /// generate params and write into file
     #[clap(short, long = "params")]
     params_path: Option<String>,
-    /// generate seed and write into file
-    #[clap(short, long = "seed")]
-    seed_path: Option<String>,
 }
 
 fn main() {
