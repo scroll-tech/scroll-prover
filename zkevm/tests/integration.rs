@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use chrono::Utc;
+use eth_types::Bytes;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
@@ -53,6 +56,7 @@ fn test_sealer() {
     let mut sealer = Sealer::new();
 
     for (block_idx, block) in batch.iter().enumerate() {
+        let coinbase = block.coinbase.address.unwrap_or_default();
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
             // the sealer is expected to be used inside sequencer, where we don't have the
@@ -62,14 +66,34 @@ fn test_sealer() {
             //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
             //   storage_trace:
             //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts.
+            //     <del>
             //     as long as `storage_trace` contains storage_trace for current tx, it will be ok.
             //     But currenly we put storage_traces of all txs together in block trace,
             //     so here we have to keep the storage_trace as is at the cost of a small performance penalty.
             //     In the future, we may consider change block_trace.storage_trace to a vector, of same len with txs.
-            let mut realtime_trace = block.clone();
-            realtime_trace.transactions = vec![realtime_trace.transactions[i].clone()];
-            realtime_trace.execution_results = vec![realtime_trace.execution_results[i].clone()];
-            let results = sealer.add_tx(&[realtime_trace]);
+            //     </del>
+            let mut tx_trace = block.clone();
+            tx_trace.transactions = vec![tx_trace.transactions[i].clone()];
+            tx_trace.execution_results = vec![tx_trace.execution_results[i].clone()];
+
+            // add coinbase proof into tx proof
+            let mut storage_trace = tx_trace.tx_storage_trace[i].clone();
+            let coinbase_account_proof =
+                &tx_trace.storage_trace.proofs.as_ref().unwrap()[&coinbase];
+
+            match storage_trace.proofs {
+                Some(ref mut hashmap) => {
+                    hashmap.insert(coinbase, coinbase_account_proof.clone());
+                }
+                None => {
+                    let mut new_hashmap = HashMap::new();
+                    new_hashmap.insert(coinbase, coinbase_account_proof.clone());
+                    storage_trace.proofs = Some(new_hashmap);
+                }
+            }
+
+            tx_trace.storage_trace = storage_trace;
+            let results = sealer.add_tx(&[tx_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
     }
