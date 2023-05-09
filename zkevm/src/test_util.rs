@@ -12,7 +12,7 @@ use types::eth::BlockTrace;
 pub mod mock_plonk;
 
 pub const GIT_VERSION: &str = git_version!();
-pub const PARAMS_DIR: &str = "./params";
+pub const PARAMS_DIR: &str = "./test_params";
 
 pub static ENV_LOGGER: Once = Once::new();
 

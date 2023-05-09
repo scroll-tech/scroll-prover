@@ -15,6 +15,11 @@ use zkevm_circuits::witness;
 
 pub(crate) const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 
+fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
+    //format!("{params_dir}/kzg_bn254_{degree}.srs")
+    format!("{params_dir}/params{degree}")
+}
+
 /// return setup params by reading from file or generate new one
 pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     let _path = PathBuf::from(params_dir);
@@ -31,7 +36,7 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
         }
     };
 
-    let params_path = format!("{params_dir}/kzg_bn254_{degree}.srs");
+    let params_path = param_path_for_degree(params_dir, degree);
     log::info!("load_or_create_params {}", params_path);
     if Path::new(&params_path).exists() {
         match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
@@ -53,7 +58,7 @@ pub fn load_params(
     log::info!("start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
-        format!("{params_dir}/kzg_bn254_{degree}.srs")
+        param_path_for_degree(params_dir, degree)
     } else {
         params_dir.to_string()
     };
