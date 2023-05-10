@@ -1,7 +1,7 @@
+pub mod capacity_checker;
 pub mod circuit;
 pub mod io;
 pub mod prover;
-pub mod sealer;
 pub mod utils;
 pub mod verifier;
 

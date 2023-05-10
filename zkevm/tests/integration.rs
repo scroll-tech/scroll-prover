@@ -4,10 +4,10 @@ use chrono::Utc;
 use eth_types::Bytes;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use zkevm::{
+    capacity_checker::CircuitCapacityChecker,
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    sealer::Sealer,
     utils::{load_or_create_params, load_params},
 };
 
@@ -42,24 +42,24 @@ fn test_load_params() {
 }
 
 #[test]
-fn test_sealer() {
+fn test_capacity_checker() {
     init_env_and_log();
 
     let (_, batch) = load_block_traces_for_test();
 
     log::info!("estimating circuit rows tx by tx");
 
-    let mut sealer = Sealer::new();
-    let results = sealer.add_tx(&batch);
+    let mut checker = CircuitCapacityChecker::new();
+    let results = checker.estimate_circuit_capacity(&batch);
     log::info!("after whole block: {:?}", results);
 
-    let mut sealer = Sealer::new();
+    let mut checker = CircuitCapacityChecker::new();
 
     for (block_idx, block) in batch.iter().enumerate() {
         let coinbase = block.coinbase.address.unwrap_or_default();
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
-            // the sealer is expected to be used inside sequencer, where we don't have the
+            // the capacity_checker is expected to be used inside sequencer, where we don't have the
             // traces of blocks, instead we only have traces of tx.
             // For the "TxTrace":
             //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
@@ -93,7 +93,7 @@ fn test_sealer() {
             }
 
             tx_trace.storage_trace = storage_trace;
-            let results = sealer.add_tx(&[tx_trace]);
+            let results = checker.estimate_circuit_capacity(&[tx_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
     }
