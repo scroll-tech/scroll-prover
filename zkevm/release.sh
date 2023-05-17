@@ -27,8 +27,7 @@ function run_agg_tests() {
 }
 
 
-RUST_LOG=debug cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.1.log
-RUST_LOG=debug cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.2.log
+RUST_LOG=debug cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.log
 #goerli
 #run_agg_tests
 

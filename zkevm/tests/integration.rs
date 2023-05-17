@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+
 use chrono::Utc;
+use eth_types::Bytes;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use zkevm::{
+    capacity_checker::CircuitCapacityChecker,
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    sealer::Sealer,
     utils::{load_or_create_params, load_params},
 };
 
@@ -39,42 +42,40 @@ fn test_load_params() {
 }
 
 #[test]
-fn test_sealer() {
+fn test_capacity_checker() {
     init_env_and_log();
 
     let (_, batch) = load_block_traces_for_test();
 
     log::info!("estimating circuit rows tx by tx");
 
-    let mut sealer = Sealer::new();
-    let results = sealer.add_tx(&batch);
+    let mut checker = CircuitCapacityChecker::new();
+    let results = checker.estimate_circuit_capacity(&batch);
     log::info!("after whole block: {:?}", results);
 
-    let mut sealer = Sealer::new();
+    let mut checker = CircuitCapacityChecker::new();
 
     for (block_idx, block) in batch.iter().enumerate() {
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
-            // the sealer is expected to be used inside sequencer, where we don't have the
+            // the capacity_checker is expected to be used inside sequencer, where we don't have the
             // traces of blocks, instead we only have traces of tx.
             // For the "TxTrace":
             //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
             //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
             //   storage_trace:
-            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts.
-            //     as long as `storage_trace` contains storage_trace for current tx, it will be ok.
-            //     But currenly we put storage_traces of all txs together in block trace,
-            //     so here we have to keep the storage_trace as is at the cost of a small performance penalty.
-            //     In the future, we may consider change block_trace.storage_trace to a vector, of same len with txs.
-            let mut realtime_trace = block.clone();
-            realtime_trace.transactions = vec![realtime_trace.transactions[i].clone()];
-            realtime_trace.execution_results = vec![realtime_trace.execution_results[i].clone()];
-            let results = sealer.add_tx(&[realtime_trace]);
+            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
+            let mut tx_trace = block.clone();
+            tx_trace.transactions = vec![tx_trace.transactions[i].clone()];
+            tx_trace.execution_results = vec![tx_trace.execution_results[i].clone()];
+            tx_trace.storage_trace = tx_trace.tx_storage_trace[i].clone();
+
+            let results = checker.estimate_circuit_capacity(&[tx_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
     }
 
-    log::info!("sealer test done");
+    log::info!("capacity_checker test done");
 }
 
 #[test]

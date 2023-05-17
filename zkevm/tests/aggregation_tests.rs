@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use test_util::{create_output_dir, init_env_and_log, load_block_traces_for_test};
 use zkevm::circuit::{SuperCircuit, TargetCircuit};
+use zkevm::circuit::{AGG_DEGREE, DEGREE};
 use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
 use zkevm::test_util::{self, PARAMS_DIR};
@@ -41,13 +42,8 @@ fn test_aggregation_api() {
     //
     // 1. instantiation the parameters and the prover
     //
-    let k = 20;
-    let k_agg = 26;
 
-    // notice that k < k_agg which is not necessary the case in practice
-    let params = load_or_create_params(PARAMS_DIR, k_agg as usize).unwrap();
-    log::info!("loaded parameters for degrees {} and {}", k, k_agg);
-
+    let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let mut prover = Prover::from_params(params);
     log::info!("build prover");
 

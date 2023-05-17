@@ -57,7 +57,7 @@ impl RowUsage {
 }
 
 #[derive(Debug, Clone)]
-pub struct Sealer {
+pub struct CircuitCapacityChecker {
     /// When "light_mode" enabled, we skip zktrie subcircuit in row estimation to avoid the heavy poseidon cost.
     pub light_mode: bool,
     pub acc_row_usage: RowUsage,
@@ -69,14 +69,14 @@ pub struct Sealer {
 // "storageProofs" should contain "slot touched" during when executing this tx.
 pub type TxTrace = BlockTrace;
 
-impl Default for Sealer {
+impl Default for CircuitCapacityChecker {
     fn default() -> Self {
         Self::new()
     }
 }
 
 // Used inside sequencer to estimate the row usage, so sequencer can decide when to deal a block.
-impl Sealer {
+impl CircuitCapacityChecker {
     pub fn new() -> Self {
         Self {
             acc_row_usage: RowUsage::new(),
@@ -90,7 +90,10 @@ impl Sealer {
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
     }
-    pub fn add_tx(&mut self, txs: &[BlockTrace]) -> Result<(RowUsage, RowUsage), anyhow::Error> {
+    pub fn estimate_circuit_capacity(
+        &mut self,
+        txs: &[BlockTrace],
+    ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
         assert!(!txs.is_empty());
         if self.state.is_none() {
             self.state = Some(ZktrieState::construct(txs[0].storage_trace.root_before));

@@ -45,8 +45,16 @@ impl Prover {
     }
 
     pub fn from_params(agg_params: ParamsKZG<Bn256>) -> Self {
+        assert!(agg_params.k() == *AGG_DEGREE as u32);
         let mut params = agg_params.clone();
         params.downsize(*DEGREE as u32);
+
+        // notice that k < k_agg which is not necessary the case in practice
+        log::info!(
+            "loaded parameters for degrees {} and {}",
+            *DEGREE,
+            *AGG_DEGREE
+        );
 
         // this check can be skipped since the `params` is downsized?
         {

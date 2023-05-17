@@ -30,6 +30,12 @@ impl TargetCircuitProof {
         }
 
         let fd = File::open(file_path)?;
-        Ok(Some(serde_json::from_reader(fd)?))
+
+        let mut deserializer = serde_json::Deserializer::from_reader(fd);
+        deserializer.disable_recursion_limit();
+        let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+        let proof = serde::Deserialize::deserialize(deserializer)?;
+
+        Ok(Some(proof))
     }
 }

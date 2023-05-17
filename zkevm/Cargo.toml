@@ -1,6 +1,6 @@
 [package]
 name = "zkevm"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,11 +8,11 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/sealer_api" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/sealer_api" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/sealer_api", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/sealer_api" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "feat/sealer_api" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "develop" }
 
 snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
 snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
@@ -25,7 +25,8 @@ sha2 ="0.10.2"
 hex = "0.4.3"
 serde = "1.0"
 serde_derive = "1.0"
-serde_json = "1.0.66"
+serde_stacker = "0.1"
+serde_json = { version = "1.0.66", features = ["unbounded_depth"] }
 types = { path = "../types", features = ["test"] }
 log = "0.4"
 anyhow = "1.0"
