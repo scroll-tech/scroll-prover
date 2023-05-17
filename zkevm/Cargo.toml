@@ -25,7 +25,8 @@ sha2 ="0.10.2"
 hex = "0.4.3"
 serde = "1.0"
 serde_derive = "1.0"
-serde_json = "1.0.66"
+serde_stacker = "0.1"
+serde_json = { version = "1.0.66", features = ["unbounded_depth"] }
 types = { path = "../types", features = ["test"] }
 log = "0.4"
 anyhow = "1.0"
