@@ -271,7 +271,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode {
+    if !light_mode && !block_traces.is_empty() {
         block_apply_mpt_state(&mut witness_block, zktrie_state);
     }
     zktrie_state.set_state(builder.sdb.clone());

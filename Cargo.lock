@@ -1741,12 +1741,11 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0411#da63fcc93077a43f44eadb2e1eff20d66b693d8c"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=scroll-dev-0411#ea87f9542097f03773a3a63f7b793141689afe41"
 dependencies = [
  "halo2_proofs",
  "hex",
  "lazy_static",
- "log",
  "num-bigint",
  "poseidon-circuit",
  "rand",

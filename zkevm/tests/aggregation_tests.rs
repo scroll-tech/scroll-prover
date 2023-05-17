@@ -43,7 +43,7 @@ fn test_aggregation_api() {
     // 1. instantiation the parameters and the prover
     //
 
-    let params = load_or_create_params(PARAMS_DIR, 26).unwrap();
+    let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let mut prover = Prover::from_params(params);
     log::info!("build prover");
 
