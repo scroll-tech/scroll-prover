@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
+use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
 
 use crate::circuit::{
@@ -7,7 +8,7 @@ use crate::circuit::{
     update_state, DEGREE, SUB_CIRCUIT_NAMES,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RowUsage {
     pub is_ok: bool,
     pub row_number: usize,
