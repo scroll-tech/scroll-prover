@@ -17,6 +17,7 @@ use super::{
 /// BatchCircuit
 #[derive(Clone, Debug, Default)]
 pub struct BatchHashCircuit<F: Field> {
+    pub(crate) chain_id: u8,
     pub(crate) chunks: Vec<ChunkHash>,
     pub(crate) batch: BatchHash,
     _phantom: PhantomData<F>,
@@ -45,6 +46,7 @@ impl<F: Field> BatchHashCircuit<F> {
     pub(crate) fn construct(chunk_hashes: &[ChunkHash], chain_id: u8) -> Self {
         let batch = BatchHash::construct(chunk_hashes, chain_id);
         Self {
+            chain_id,
             chunks: chunk_hashes.to_vec(),
             batch,
             _phantom: PhantomData::default(),
@@ -70,9 +72,14 @@ impl<F: Field> BatchHashCircuit<F> {
         let mut res = vec![];
 
         // batchPiHash =
-        // keccak(chunk[0].prevStateRoot || chunk[k-1].postStateRoot || chunk[k-1].withdrawRoot ||
-        //        batchDataHash)
+        //  keccak(
+        //      chain_id ||
+        //      chunk[0].prev_state_root ||
+        //      chunk[k-1].post_state_root ||
+        //      chunk[k-1].withdraw_root ||
+        //      data_hash )
         let batch_public_input_hash_preimage = [
+            &[self.chain_id],
             self.chunks[0].prev_state_root.as_bytes(),
             self.chunks.last().unwrap().post_state_root.as_bytes(),
             self.chunks.last().unwrap().withdraw_root.as_bytes(),
@@ -96,6 +103,7 @@ impl<F: Field> BatchHashCircuit<F> {
         //        chunk[i].datahash)
         for chunk in self.chunks.iter() {
             let chunk_pi_hash_preimage = [
+                &[self.chain_id],
                 chunk.prev_state_root.as_bytes(),
                 chunk.post_state_root.as_bytes(),
                 chunk.withdraw_root.as_bytes(),

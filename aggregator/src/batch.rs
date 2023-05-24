@@ -23,7 +23,7 @@ impl BatchHash {
         }
 
         // batch's data hash is build as
-        //  keccak( chunk[0].data_hash ... chunk[k-1].data_hash)
+        //  keccak( chunk[0].data_hash || ... || chunk[k-1].data_hash)
         let preimage = chunk_hashes
             .iter()
             .flat_map(|chunk_hash| chunk_hash.data_hash.0.iter())
@@ -33,10 +33,10 @@ impl BatchHash {
 
         // public input hash is build as
         //  keccak(
-        //      chain_id |
-        //      chunk[0].prev_state_root |
-        //      chunk[k-1].post_state_root |
-        //      chunk[k-1].withdraw_root |
+        //      chain_id ||
+        //      chunk[0].prev_state_root ||
+        //      chunk[k-1].post_state_root ||
+        //      chunk[k-1].withdraw_root ||
         //      data_hash )
         let preimage = [
             &[chain_id],

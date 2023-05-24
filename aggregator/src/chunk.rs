@@ -42,7 +42,7 @@ impl ChunkHash {
     }
 
     /// Public input hash for a given chunk is defined as
-    ///  keccak( chain id | prev state root | post state root | withdraw root | data hash )
+    ///  keccak( chain id || prev state root || post state root || withdraw root || data hash )
     pub(crate) fn public_input_hash(&self, chain_id: u8) -> H256 {
         let preimage = [
             &[chain_id],

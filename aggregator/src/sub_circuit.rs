@@ -4,9 +4,9 @@ use halo2_proofs::{
     plonk::Error,
 };
 
+use super::{circuit::BatchHashCircuit, config::BatchCircuitConfig, LOG_DEGREE};
 use zkevm_circuits::util::{Challenges, SubCircuit};
 use zkevm_circuits::witness::Block;
-use super::{circuit::BatchHashCircuit, config::BatchCircuitConfig, LOG_DEGREE};
 
 impl<F: Field> SubCircuit<F> for BatchHashCircuit<F> {
     type Config = BatchCircuitConfig<F>;

@@ -1,12 +1,12 @@
-use zkevm_circuits::{
-    keccak_circuit::{KeccakCircuitConfig, KeccakCircuitConfigArgs},
-    table::KeccakTable,
-    util::{Challenges, SubCircuitConfig},
-};
 use eth_types::Field;
 use halo2_proofs::{
     circuit::{AssignedCell, Layouter, Value},
     plonk::{Column, ConstraintSystem, Error, Expression, Instance},
+};
+use zkevm_circuits::{
+    keccak_circuit::{KeccakCircuitConfig, KeccakCircuitConfigArgs},
+    table::KeccakTable,
+    util::{Challenges, SubCircuitConfig},
 };
 
 use crate::LOG_DEGREE;
