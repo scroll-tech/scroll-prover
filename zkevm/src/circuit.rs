@@ -38,7 +38,7 @@ const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_RWS: usize = 1_000_000;
 
 pub static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
-pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 26));
+pub static AGG_DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("AGG_DEGREE", 25));
 pub static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
 
 /// A target circuit trait is a wrapper of inner circuit, with convenient APIs for building
