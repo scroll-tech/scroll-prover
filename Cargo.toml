@@ -4,6 +4,7 @@ members = [
     "zkevm",
     "bin",
     "ffi",
+    "aggregator"
 ]
 
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
