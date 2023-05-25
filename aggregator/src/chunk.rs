@@ -11,6 +11,8 @@ use ethers_core::utils::keccak256;
 /// - the withdraw root of this chunk
 /// - the data hash of this chunk
 pub struct ChunkHash {
+    /// Chain identifier
+    pub(crate) chain_id: u8,
     /// state root before this chunk
     pub(crate) prev_state_root: H256,
     /// state root after this chunk
@@ -34,6 +36,7 @@ impl ChunkHash {
         let mut data_hash = [0u8; 32];
         r.fill_bytes(&mut data_hash);
         Self {
+            chain_id: 0,
             prev_state_root: prev_state_root.into(),
             post_state_root: post_state_root.into(),
             withdraw_root: withdraw_root.into(),
@@ -43,9 +46,9 @@ impl ChunkHash {
 
     /// Public input hash for a given chunk is defined as
     ///  keccak( chain id || prev state root || post state root || withdraw root || data hash )
-    pub fn public_input_hash(&self, chain_id: u8) -> H256 {
+    pub fn public_input_hash(&self) -> H256 {
         let preimage = [
-            &[chain_id],
+            &[self.chain_id],
             self.prev_state_root.as_bytes(),
             self.post_state_root.as_bytes(),
             self.withdraw_root.as_bytes(),

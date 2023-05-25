@@ -47,12 +47,14 @@ impl<F: Field> BatchHashCircuit<F> {
             chunks[i + 1].prev_state_root = chunks[i].post_state_root;
         }
 
-        Self::construct(&chunks, 0)
+        Self::construct(&chunks)
     }
 
     /// Build Batch hash circuit from a list of chunks
-    pub fn construct(chunk_hashes: &[ChunkHash], chain_id: u8) -> Self {
-        let batch = BatchHash::construct(chunk_hashes, chain_id);
+    pub fn construct(chunk_hashes: &[ChunkHash]) -> Self {
+        let chain_id = chunk_hashes[0].chain_id;
+        // BatchHash::construct will check chunks are well-formed
+        let batch = BatchHash::construct(chunk_hashes);
         Self {
             chain_id,
             chunks: chunk_hashes.to_vec(),

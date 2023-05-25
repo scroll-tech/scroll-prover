@@ -13,13 +13,14 @@ pub struct BatchHash {
 
 impl BatchHash {
     /// Build Batch hash from a list of chunks
-    pub(crate) fn construct(chunk_hashes: &[ChunkHash], chain_id: u8) -> Self {
+    pub(crate) fn construct(chunk_hashes: &[ChunkHash]) -> Self {
         // sanity: the chunks are continuous
         for i in 0..chunk_hashes.len() - 1 {
             assert_eq!(
                 chunk_hashes[i].post_state_root,
                 chunk_hashes[i + 1].prev_state_root,
-            )
+            );
+            assert_eq!(chunk_hashes[i].chain_id, chunk_hashes[i + 1].chain_id,)
         }
 
         // batch's data hash is build as
@@ -39,7 +40,7 @@ impl BatchHash {
         //      chunk[k-1].withdraw_root ||
         //      batch_data_hash )
         let preimage = [
-            &[chain_id],
+            &[chunk_hashes[0].chain_id],
             chunk_hashes[0].prev_state_root.as_bytes(),
             chunk_hashes.last().unwrap().post_state_root.as_bytes(),
             chunk_hashes.last().unwrap().withdraw_root.as_bytes(),

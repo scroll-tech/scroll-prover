@@ -21,7 +21,7 @@
 //! - batch_data_hash := keccak(chunk_0.data_hash      ||
 //!                         ...                        ||
 //!                         chunk_k-1.data_hash)
-//! 
+//!
 //! - batch_pi_hash   := keccak(chain_id               ||  
 //!                         chunk_0.prev_state_root    ||
 //!                         chunk_k-1.post_state_root  ||
@@ -57,7 +57,6 @@
 //! # Example
 //!
 //! See tests::test_pi_aggregation_circuit
-
 
 // This module implements `Chunk` related data types.
 // A chunk is a list of blocks.
