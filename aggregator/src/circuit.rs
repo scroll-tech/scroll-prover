@@ -14,7 +14,10 @@ use super::{
     config::{BatchCircuitConfig, BatchCircuitConfigArgs},
 };
 
-/// BatchCircuit
+/// BatchCircuit struct.
+///
+/// Contains public inputs and witnesses that are needed to
+/// generate the circuit.
 #[derive(Clone, Debug, Default)]
 pub struct BatchHashCircuit<F: Field> {
     pub(crate) chain_id: u8,
@@ -23,8 +26,10 @@ pub struct BatchHashCircuit<F: Field> {
     _phantom: PhantomData<F>,
 }
 
-/// Public Input for batch circuit
+/// Public input to a batch circuit.
+/// In raw format. I.e., before converting to field elements.
 pub struct BatchHashCircuitPublicInput {
+    pub(crate) chain_id: u8,
     pub(crate) first_chunk_prev_state_root: H256,
     pub(crate) last_chunk_post_state_root: H256,
     pub(crate) last_chunk_withdraw_root: H256,
@@ -59,6 +64,7 @@ impl<F: Field> BatchHashCircuit<F> {
     /// The public input to the BatchHashCircuit
     pub fn public_input(&self) -> BatchHashCircuitPublicInput {
         BatchHashCircuitPublicInput {
+            chain_id: self.chain_id,
             first_chunk_prev_state_root: self.chunks[0].prev_state_root,
             last_chunk_post_state_root: self.chunks.last().unwrap().post_state_root,
             last_chunk_withdraw_root: self.chunks.last().unwrap().withdraw_root,

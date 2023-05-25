@@ -25,7 +25,6 @@ impl<F: Field> SubCircuit<F> for BatchHashCircuit<F> {
     /// Compute the public inputs for this circuit.
     fn instance(&self) -> Vec<Vec<F>> {
         let public_input = self.public_input();
-        let chain_id = F::from(self.chain_id as u64);
         let first_chunk_prev_state_root = public_input
             .first_chunk_prev_state_root
             .as_bytes()
@@ -54,7 +53,7 @@ impl<F: Field> SubCircuit<F> for BatchHashCircuit<F> {
             .chain(last_chunk_withdraw_root)
             .chain(batch_public_input_hash)
             .collect::<Vec<_>>();
-        res.push(chain_id);
+        res.push(F::from(public_input.chain_id as u64));
 
         vec![res]
     }

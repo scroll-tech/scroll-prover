@@ -23,6 +23,7 @@ pub struct BatchCircuitConfig<F: Field> {
     pub(crate) keccak_circuit_config: KeccakCircuitConfig<F>,
 }
 
+/// Auxiliary arguments for BatchCircuit's Config
 #[derive(Clone, Debug)]
 pub struct BatchCircuitConfigArgs<F: Field> {
     pub challenges: Challenges<Expression<F>>,
@@ -172,9 +173,9 @@ impl<F: Field> BatchCircuitConfig<F> {
                     }
                 }
 
-                // 2.2 batchPiHash used same roots as the chunk's
+                // 2.2 batch_pi_hash used same roots as chunk_pi_hash
                 //
-                // batchPiHash =
+                // batch_pi_hash =
                 //   keccak(
                 //      chain_id ||
                 //      chunk[0].prev_state_root ||
@@ -184,7 +185,7 @@ impl<F: Field> BatchCircuitConfig<F> {
                 //
                 // chunk[i].piHash =
                 //   keccak(
-                //        &[chain id]
+                //        chain id ||
                 //        chunk[i].prevStateRoot || chunk[i].postStateRoot || chunk[i].withdrawRoot ||
                 //        chunk[i].datahash)
                 for i in 0..32 {
@@ -234,7 +235,7 @@ impl<F: Field> BatchCircuitConfig<F> {
                     }
                 }
 
-                // 2.4 chunks are linked together via the state roots
+                // 2.4  chunks are continuous: they are linked via the state roots
                 for i in 0..num_chunks - 1 {
                     for j in 0..32 {
                         // sanity check
