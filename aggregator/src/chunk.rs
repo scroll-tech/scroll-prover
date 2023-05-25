@@ -12,7 +12,7 @@ use ethers_core::utils::keccak256;
 /// - the data hash of this chunk
 pub struct ChunkHash {
     /// Chain identifier
-    pub(crate) chain_id: u8,
+    pub(crate) chain_id: u32,
     /// state root before this chunk
     pub(crate) prev_state_root: H256,
     /// state root after this chunk
@@ -48,7 +48,7 @@ impl ChunkHash {
     ///  keccak( chain id || prev state root || post state root || withdraw root || data hash )
     pub fn public_input_hash(&self) -> H256 {
         let preimage = [
-            &[self.chain_id],
+            self.chain_id.to_le_bytes().as_ref(),
             self.prev_state_root.as_bytes(),
             self.post_state_root.as_bytes(),
             self.withdraw_root.as_bytes(),

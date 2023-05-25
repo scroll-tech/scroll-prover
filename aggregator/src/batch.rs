@@ -40,7 +40,7 @@ impl BatchHash {
         //      chunk[k-1].withdraw_root ||
         //      batch_data_hash )
         let preimage = [
-            &[chunk_hashes[0].chain_id],
+            chunk_hashes[0].chain_id.to_le_bytes().as_ref(),
             chunk_hashes[0].prev_state_root.as_bytes(),
             chunk_hashes.last().unwrap().post_state_root.as_bytes(),
             chunk_hashes.last().unwrap().withdraw_root.as_bytes(),

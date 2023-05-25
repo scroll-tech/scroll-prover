@@ -11,7 +11,10 @@ use zkevm_circuits::{
     util::{Challenges, SubCircuitConfig},
 };
 
-use crate::util::{assert_equal, capacity, get_indices};
+use crate::{
+    util::{assert_equal, capacity, get_indices},
+    LOG_DEGREE,
+};
 
 /// Config for BatchCircuit
 #[derive(Clone, Debug)]
@@ -91,7 +94,7 @@ impl<F: Field> BatchCircuitConfig<F> {
         Error,
     > {
         let mut is_first_time = true;
-        let num_rows = 1 << 18;
+        let num_rows = 1 << LOG_DEGREE;
         let witness = multi_keccak(preimages, challenges, capacity(num_rows))?;
 
         // extract the indices of the rows for which the preimage and the digest cells lie in
@@ -162,12 +165,12 @@ impl<F: Field> BatchCircuitConfig<F> {
                     for j in 0..8 {
                         // sanity check
                         assert_equal(
-                            &hash_input_cells[0][i * 8 + j + 97],
+                            &hash_input_cells[0][i * 8 + j + 100],
                             &hash_output_cells[1][(3 - i) * 8 + j],
                         );
                         region.constrain_equal(
                             // preimage and digest has different endianness
-                            hash_input_cells[0][i * 8 + j + 97].cell(),
+                            hash_input_cells[0][i * 8 + j + 100].cell(),
                             hash_output_cells[1][(3 - i) * 8 + j].cell(),
                         )?;
                     }
@@ -191,29 +194,29 @@ impl<F: Field> BatchCircuitConfig<F> {
                 for i in 0..32 {
                     // 2.2.1 chunk[0].prev_state_root
                     // sanity check
-                    assert_equal(&hash_input_cells[0][i + 1], &hash_input_cells[2][i + 1]);
+                    assert_equal(&hash_input_cells[0][i + 4], &hash_input_cells[2][i + 4]);
                     region.constrain_equal(
-                        hash_input_cells[0][i + 1].cell(),
-                        hash_input_cells[2][i + 1].cell(),
+                        hash_input_cells[0][i + 4].cell(),
+                        hash_input_cells[2][i + 4].cell(),
                     )?;
                     // 2.2.2 chunk[k-1].post_state_root
                     // sanity check
                     assert_equal(
-                        &hash_input_cells[0][i + 33],
-                        &hash_input_cells[hash_num - 1][i + 33],
+                        &hash_input_cells[0][i + 36],
+                        &hash_input_cells[hash_num - 1][i + 36],
                     );
                     region.constrain_equal(
-                        hash_input_cells[0][i + 33].cell(),
-                        hash_input_cells[hash_num - 1][i + 33].cell(),
+                        hash_input_cells[0][i + 36].cell(),
+                        hash_input_cells[hash_num - 1][i + 36].cell(),
                     )?;
                     // 2.2.3 chunk[k-1].withdraw_root
                     assert_equal(
-                        &hash_input_cells[0][i + 65],
-                        &hash_input_cells[hash_num - 1][i + 65],
+                        &hash_input_cells[0][i + 68],
+                        &hash_input_cells[hash_num - 1][i + 68],
                     );
                     region.constrain_equal(
-                        hash_input_cells[0][i + 65].cell(),
-                        hash_input_cells[hash_num - 1][i + 65].cell(),
+                        hash_input_cells[0][i + 68].cell(),
+                        hash_input_cells[hash_num - 1][i + 68].cell(),
                     )?;
                 }
 
@@ -229,9 +232,11 @@ impl<F: Field> BatchCircuitConfig<F> {
                 for (i, chunk) in hash_input_cells[1].chunks(32).enumerate().take(num_chunks) {
                     for (j, cell) in chunk.iter().enumerate() {
                         // sanity check
-                        assert_equal(cell, &hash_input_cells[2 + i][j + 97]);
-                        region
-                            .constrain_equal(cell.cell(), hash_input_cells[2 + i][j + 97].cell())?;
+                        assert_equal(cell, &hash_input_cells[2 + i][j + 100]);
+                        region.constrain_equal(
+                            cell.cell(),
+                            hash_input_cells[2 + i][j + 100].cell(),
+                        )?;
                     }
                 }
 
@@ -240,28 +245,30 @@ impl<F: Field> BatchCircuitConfig<F> {
                     for j in 0..32 {
                         // sanity check
                         assert_equal(
-                            &hash_input_cells[i + 3][1 + j],
-                            &hash_input_cells[i + 2][33 + j],
+                            &hash_input_cells[i + 3][4 + j],
+                            &hash_input_cells[i + 2][36 + j],
                         );
                         region.constrain_equal(
                             // chunk[i+1].prevStateRoot
-                            hash_input_cells[i + 3][1 + j].cell(),
+                            hash_input_cells[i + 3][4 + j].cell(),
                             // chunk[i].postStateRoot
-                            hash_input_cells[i + 2][33 + j].cell(),
+                            hash_input_cells[i + 2][36 + j].cell(),
                         )?;
                     }
                 }
 
                 // 2.5 assert hashes uses a same chain id
                 for i in 0..num_chunks {
-                    // sanity check
-                    assert_equal(&hash_input_cells[0][0], &hash_input_cells[i + 2][0]);
-                    region.constrain_equal(
-                        // chunk[i+1].prevStateRoot
-                        hash_input_cells[0][0].cell(),
-                        // chunk[i].postStateRoot
-                        hash_input_cells[i + 2][0].cell(),
-                    )?;
+                    for j in 0..4 {
+                        // sanity check
+                        assert_equal(&hash_input_cells[0][j], &hash_input_cells[i + 2][j]);
+                        region.constrain_equal(
+                            // chunk[i+1].prevStateRoot
+                            hash_input_cells[0][j].cell(),
+                            // chunk[i].postStateRoot
+                            hash_input_cells[i + 2][j].cell(),
+                        )?;
+                    }
                 }
 
                 self.keccak_circuit_config
@@ -279,19 +286,19 @@ impl<F: Field> BatchCircuitConfig<F> {
             for i in 0..32 {
                 // first_chunk_prev_state_root
                 layouter.constrain_instance(
-                    hash_input_cells[2][1 + i].cell(),
+                    hash_input_cells[2][4 + i].cell(),
                     self.hash_digest_column,
                     i,
                 )?;
                 // last_chunk_post_state_root
                 layouter.constrain_instance(
-                    hash_input_cells.last().unwrap()[33 + i].cell(),
+                    hash_input_cells.last().unwrap()[36 + i].cell(),
                     self.hash_digest_column,
                     i + 32,
                 )?;
                 // last_chunk_withdraw_root
                 layouter.constrain_instance(
-                    hash_input_cells.last().unwrap()[65 + i].cell(),
+                    hash_input_cells.last().unwrap()[68 + i].cell(),
                     self.hash_digest_column,
                     i + 64,
                 )?;
@@ -307,12 +314,14 @@ impl<F: Field> BatchCircuitConfig<F> {
                     )?;
                 }
             }
-            // last input is the chain id
-            layouter.constrain_instance(
-                hash_input_cells[0][0].cell(),
-                self.hash_digest_column,
-                128,
-            )?;
+            // last 4 inputs are the chain id
+            for i in 0..4 {
+                layouter.constrain_instance(
+                    hash_input_cells[0][i].cell(),
+                    self.hash_digest_column,
+                    128 + i,
+                )?;
+            }
         }
 
         Ok((hash_input_cells, hash_output_cells))

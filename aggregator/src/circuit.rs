@@ -20,7 +20,7 @@ use super::{
 /// generate the circuit.
 #[derive(Clone, Debug, Default)]
 pub struct BatchHashCircuit<F: Field> {
-    pub(crate) chain_id: u8,
+    pub(crate) chain_id: u32,
     pub(crate) chunks: Vec<ChunkHash>,
     pub(crate) batch: BatchHash,
     _phantom: PhantomData<F>,
@@ -29,7 +29,7 @@ pub struct BatchHashCircuit<F: Field> {
 /// Public input to a batch circuit.
 /// In raw format. I.e., before converting to field elements.
 pub struct BatchHashCircuitPublicInput {
-    pub(crate) chain_id: u8,
+    pub(crate) chain_id: u32,
     pub(crate) first_chunk_prev_state_root: H256,
     pub(crate) last_chunk_post_state_root: H256,
     pub(crate) last_chunk_withdraw_root: H256,
@@ -90,7 +90,7 @@ impl<F: Field> BatchHashCircuit<F> {
         //      chunk[k-1].withdraw_root ||
         //      batch_data_hash )
         let batch_public_input_hash_preimage = [
-            &[self.chain_id],
+            self.chain_id.to_le_bytes().as_ref(),
             self.chunks[0].prev_state_root.as_bytes(),
             self.chunks.last().unwrap().post_state_root.as_bytes(),
             self.chunks.last().unwrap().withdraw_root.as_bytes(),
@@ -116,7 +116,7 @@ impl<F: Field> BatchHashCircuit<F> {
         //        chunk[i].datahash)
         for chunk in self.chunks.iter() {
             let chunk_pi_hash_preimage = [
-                &[self.chain_id],
+                self.chain_id.to_le_bytes().as_ref(),
                 chunk.prev_state_root.as_bytes(),
                 chunk.post_state_root.as_bytes(),
                 chunk.withdraw_root.as_bytes(),

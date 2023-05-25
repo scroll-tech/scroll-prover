@@ -35,12 +35,12 @@
 //! A BatchHashCircuit asserts that the batch is well-formed.
 //!
 //! ## Public Input
-//! The public inputs of the circuit (129 Field elements) is constructed as
+//! The public inputs of the circuit (132 Field elements) is constructed as
 //! - first_chunk_prev_state_root: 32 Field elements
 //! - last_chunk_post_state_root: 32 Field elements
 //! - last_chunk_withdraw_root: 32 Field elements
 //! - batch_public_input_hash: 32 Field elements
-//! - chain_id: 1 Field element
+//! - chain_id: 4 Field elements
 //!
 //! ## Constraints
 //! The circuit attests the following statements:
@@ -52,7 +52,7 @@
 //!     - same data_hash is used to compute batch_data_hash and chunk_pi_hash for all chunks
 //!     - chunks are continuous: they are linked via the state roots
 //!     - all hashes uses a same chain_id
-//! 3. the hash data matches the circuit's public input (129 field elements) above
+//! 3. the hash data matches the circuit's public input (132 field elements) above
 //!
 //! # Example
 //!
