@@ -13,12 +13,24 @@ mod circuit;
 mod sub_circuit;
 // Circuit and SubCircuit configurations
 mod config;
+/// utilities
+mod util;
+
+pub use batch::BatchHash;
+pub use chunk::ChunkHash;
+pub use circuit::{BatchHashCircuit, BatchHashCircuitPublicInput};
+pub use config::{BatchCircuitConfig, BatchCircuitConfigArgs};
 
 // TODO(ZZ): update to the right degree
 pub(crate) const LOG_DEGREE: u32 = 19;
 
-// TODO(ZZ): update to the right size
-pub(crate) const MAX_TXS: usize = 20;
+// Each round requires (NUM_ROUNDS+1) * DEFAULT_KECCAK_ROWS = 300 rows.
+// This library is hard coded for this parameter.
+// Modifying the following parameters may result into bugs.
+// Adopted from keccak circuit
+pub(crate) const DEFAULT_KECCAK_ROWS: usize = 12;
+// Adopted from keccak circuit
+pub(crate) const NUM_ROUNDS: usize = 24;
 
 #[cfg(test)]
 mod tests;

@@ -35,15 +35,18 @@ impl<F: Field> BatchHashCircuit<F> {
     /// Sample a batch hash circuit from random (for testing)
     #[cfg(test)]
     pub(crate) fn mock_batch_hash_circuit<R: rand::RngCore>(r: &mut R, size: usize) -> Self {
-        let chunks = (0..size)
+        let mut chunks = (0..size)
             .map(|_| ChunkHash::mock_chunk_hash(r))
             .collect::<Vec<_>>();
+        for i in 0..size - 1 {
+            chunks[i + 1].prev_state_root = chunks[i].post_state_root;
+        }
 
         Self::construct(&chunks, 0)
     }
 
     /// Build Batch hash circuit from a list of chunks
-    pub(crate) fn construct(chunk_hashes: &[ChunkHash], chain_id: u8) -> Self {
+    pub fn construct(chunk_hashes: &[ChunkHash], chain_id: u8) -> Self {
         let batch = BatchHash::construct(chunk_hashes, chain_id);
         Self {
             chain_id,
@@ -54,7 +57,7 @@ impl<F: Field> BatchHashCircuit<F> {
     }
 
     /// The public input to the BatchHashCircuit
-    pub(crate) fn public_input(&self) -> BatchHashCircuitPublicInput {
+    pub fn public_input(&self) -> BatchHashCircuitPublicInput {
         BatchHashCircuitPublicInput {
             first_chunk_prev_state_root: self.chunks[0].prev_state_root,
             last_chunk_post_state_root: self.chunks.last().unwrap().post_state_root,
@@ -77,13 +80,13 @@ impl<F: Field> BatchHashCircuit<F> {
         //      chunk[0].prev_state_root ||
         //      chunk[k-1].post_state_root ||
         //      chunk[k-1].withdraw_root ||
-        //      data_hash )
+        //      batch_data_hash )
         let batch_public_input_hash_preimage = [
             &[self.chain_id],
             self.chunks[0].prev_state_root.as_bytes(),
             self.chunks.last().unwrap().post_state_root.as_bytes(),
             self.chunks.last().unwrap().withdraw_root.as_bytes(),
-            self.batch.public_input_hash.as_bytes(),
+            self.batch.data_hash.as_bytes(),
         ]
         .concat();
         res.push(batch_public_input_hash_preimage);
@@ -99,7 +102,9 @@ impl<F: Field> BatchHashCircuit<F> {
 
         // compute piHash for each chunk for i in [0..k)
         // chunk[i].piHash =
-        // keccak(chunk[i].prevStateRoot || chunk[i].postStateRoot || chunk[i].withdrawRoot ||
+        // keccak(
+        //        chain id ||
+        //        chunk[i].prevStateRoot || chunk[i].postStateRoot || chunk[i].withdrawRoot ||
         //        chunk[i].datahash)
         for chunk in self.chunks.iter() {
             let chunk_pi_hash_preimage = [
@@ -140,7 +145,16 @@ impl<F: Field> Circuit<F> for BatchHashCircuit<F> {
         config: Self::Config,
         mut layouter: impl Layouter<F>,
     ) -> Result<(), Error> {
-        // todo
+        let (config, challenge) = config;
+        let challenges = challenge.values(&layouter);
+
+        // extract all the hashes and load them to the hash table
+        let preimages = self.extract_hash_preimages();
+
+        config
+            .keccak_circuit_config
+            .load_aux_tables(&mut layouter)?;
+        config.assign(&mut layouter, challenges, &preimages)?;
 
         Ok(())
     }

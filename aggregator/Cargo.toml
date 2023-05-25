@@ -11,3 +11,4 @@ zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", br
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 ethers-core = "0.17.0"
 rand = "0.8"
+ark-std = "0.4.0"

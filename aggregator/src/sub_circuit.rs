@@ -25,7 +25,7 @@ impl<F: Field> SubCircuit<F> for BatchHashCircuit<F> {
     /// Compute the public inputs for this circuit.
     fn instance(&self) -> Vec<Vec<F>> {
         let public_input = self.public_input();
-
+        let chain_id = F::from(self.chain_id as u64);
         let first_chunk_prev_state_root = public_input
             .first_chunk_prev_state_root
             .as_bytes()
@@ -49,21 +49,29 @@ impl<F: Field> SubCircuit<F> for BatchHashCircuit<F> {
             .as_bytes()
             .iter()
             .map(|&x| F::from(x as u64));
-
-        vec![first_chunk_prev_state_root
+        let mut res = first_chunk_prev_state_root
             .chain(last_chunk_post_state_root)
             .chain(last_chunk_withdraw_root)
             .chain(batch_public_input_hash)
-            .collect()]
+            .collect::<Vec<_>>();
+        res.push(chain_id);
+
+        vec![res]
     }
 
-    /// Make the assignments to the PiCircuit
+    /// Make the assignments to the BatchHashCircuit
     fn synthesize_sub(
         &self,
         config: &Self::Config,
         challenges: &Challenges<Value<F>>,
         layouter: &mut impl Layouter<F>,
     ) -> Result<(), Error> {
+        // extract all the hashes and load them to the hash table
+        let preimages = self.extract_hash_preimages();
+
+        config.keccak_circuit_config.load_aux_tables(layouter)?;
+        config.assign(layouter, *challenges, &preimages)?;
+
         Ok(())
     }
 }
