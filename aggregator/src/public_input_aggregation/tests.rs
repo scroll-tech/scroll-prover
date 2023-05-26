@@ -1,8 +1,10 @@
 use ark_std::test_rng;
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
 
-use crate::{circuit::BatchHashCircuit, LOG_DEGREE};
+use crate::BatchHashCircuit;
 use zkevm_circuits::util::SubCircuit;
+
+use super::LOG_DEGREE;
 
 #[test]
 fn test_pi_aggregation_circuit() {

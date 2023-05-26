@@ -11,10 +11,9 @@ use zkevm_circuits::{
     util::{Challenges, SubCircuitConfig},
 };
 
-use crate::{
-    util::{assert_equal, capacity, get_indices},
-    LOG_DEGREE,
-};
+use crate::util::{assert_equal, capacity, get_indices};
+
+use super::LOG_DEGREE;
 
 /// Config for BatchCircuit
 #[derive(Clone, Debug)]

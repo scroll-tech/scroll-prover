@@ -8,10 +8,10 @@ use halo2_proofs::{
 
 use zkevm_circuits::util::{Challenges, SubCircuitConfig};
 
-use super::{
+use crate::{
     batch::BatchHash,
     chunk::ChunkHash,
-    config::{BatchCircuitConfig, BatchCircuitConfigArgs},
+    public_input_aggregation::config::{BatchCircuitConfig, BatchCircuitConfigArgs},
 };
 
 /// BatchCircuit struct.
