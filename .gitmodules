@@ -1,0 +1,3 @@
+[submodule "test-traces"]
+	path = zkevm/tests/traces
+	url = https://github.com/scroll-tech/test-traces

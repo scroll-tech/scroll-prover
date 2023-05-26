@@ -3,7 +3,6 @@ set -u
 #set -e 
 set -o pipefail
 
-export KECCAK_ROWS=20
 export RUST_LOG=trace
 
 function check_batch() {
@@ -15,11 +14,10 @@ function check_batch() {
 }
 
 function check_block() {
-	TRACE_VER=0303-tencent
-	for t in $(ls ~/zip-traces/${TRACE_VER}); do
-		TRACE_PATH=$(realpath ~/zip-traces/${TRACE_VER}/${t}) make mock 2>&1 | tee /tmp/mock_${t}.log
+	for t in zkevm/tests/extra_traces/tx_storage_proof.json zkevm/tests/extra_traces/hash_precompile_2.json zkevm/tests/extra_traces/hash_precompile_1.json zkevm/tests/traces/sushi/sushi_chef-withdraw.json zkevm/tests/traces/erc20/erc20_10_transfer.json; do
+		TRACE_PATH=`realpath $t` make mock 2>&1 | tee /tmp/mock_`basename $t`.log
 	done
 }
 
-#check_block
-check_batch
+check_block
+#check_batch

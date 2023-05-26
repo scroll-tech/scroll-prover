@@ -8,7 +8,7 @@ use zkevm::{
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{load_or_create_params, load_params},
+    utils::{get_block_trace_from_file, load_or_create_params, load_params},
 };
 
 use test_util::{init_env_and_log, load_block_traces_for_test, PARAMS_DIR};
@@ -45,8 +45,9 @@ fn test_load_params() {
 fn test_capacity_checker() {
     init_env_and_log();
 
-    let (_, batch) = load_block_traces_for_test();
-
+    let batch = vec![get_block_trace_from_file(
+        "./tests/extra_traces/tx_storage_proof.json",
+    )];
     log::info!("estimating circuit rows tx by tx");
 
     let mut checker = CircuitCapacityChecker::new();
