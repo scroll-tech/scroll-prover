@@ -89,7 +89,7 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
         // use mode
         let mode = read_env_var("MODE", "multiple".to_string());
         if mode.to_lowercase() == "batch" || mode.to_lowercase() == "pack" {
-            (1..=10)
+            (1..=22)
                 .map(|i| format!("tests/traces/bridge/{i:02}.json"))
                 .collect()
         } else {
