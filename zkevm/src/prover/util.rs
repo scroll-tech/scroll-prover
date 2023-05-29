@@ -9,16 +9,6 @@ use halo2_proofs::poly::commitment::{Params, ParamsProver};
 use halo2_proofs::poly::kzg::commitment::{ParamsKZG, ParamsVerifierKZG};
 
 impl Prover {
-    /// Build a new Prover from parameters.
-    pub fn new(params: ParamsKZG<Bn256>, agg_params: ParamsKZG<Bn256>) -> Self {
-        Self {
-            params,
-            agg_params,
-            target_circuit_pks: Default::default(),
-            agg_pk: None,
-        }
-    }
-
     /// Memory usage tracker.
     pub(crate) fn tick(desc: &str) {
         #[cfg(target_os = "linux")]
@@ -33,15 +23,6 @@ impl Prover {
             desc,
             memory / 1024 / 1024 / 1024
         );
-    }
-
-    /// Initiates the public key for a given inner circuit.
-    pub(crate) fn init_pk<C: TargetCircuit>(&mut self, circuit: &<C as TargetCircuit>::Inner) {
-        Self::tick(&format!("before init pk of {}", C::name()));
-        let pk = keygen_pk2(&self.params, circuit)
-            .unwrap_or_else(|e| panic!("failed to generate {} pk: {:?}", C::name(), e));
-        self.target_circuit_pks.insert(C::name(), pk);
-        Self::tick(&format!("after init pk of {}", C::name()));
     }
 
     pub fn from_params(agg_params: ParamsKZG<Bn256>) -> Self {

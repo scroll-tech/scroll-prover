@@ -29,6 +29,32 @@ pub struct BlockTrace {
     //    pub mpt_witness: Vec<SMTTrace>,
 }
 
+#[derive(Debug)]
+pub struct ChunkTrace(pub [BlockTrace]);
+
+impl ChunkTrace {
+    pub fn num_blocks(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn first(&self) -> Option<&BlockTrace> {
+        if self.num_blocks() > 0 {
+            Some(&self.0[0])
+        } else {
+            None
+        }
+    }
+
+    pub fn last(&self) -> Option<&BlockTrace> {
+        let n = self.num_blocks();
+        if n > 0 {
+            Some(&self.0[n - 1])
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTraceJsonRpcResult {
     pub result: BlockTrace,
