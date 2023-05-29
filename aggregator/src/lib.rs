@@ -8,9 +8,13 @@ mod chunk;
 // This module implements `Batch` related data types.
 // A batch is a list of chunk.
 mod batch;
+// Proof aggregation.
+mod proof_aggregation;
 // Public input aggregation.
 // see `public_input_aggregation.rs` for the spec.
 mod public_input_aggregation;
+/// Super circuit for aggregation
+mod super_aggregation_circuit;
 /// utilities
 mod util;
 
