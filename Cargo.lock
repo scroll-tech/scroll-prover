@@ -5250,7 +5250,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "types"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "base64 0.13.0",
  "blake2",
@@ -5925,7 +5925,7 @@ dependencies = [
 
 [[package]]
 name = "zkevm"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "blake2",
