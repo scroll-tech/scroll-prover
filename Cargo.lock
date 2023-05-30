@@ -29,7 +29,7 @@ dependencies = [
  "ethers-core 0.17.0",
  "halo2_proofs",
  "rand",
- "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier.git?branch=minimize-diff)",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier.git?branch=documentations)",
  "zkevm-circuits 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=expose-keccak-circuit-config)",
 ]
 
@@ -3845,12 +3845,12 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#a3d0a5ab48522bc533686da3ea8400282c91f536"
+source = "git+https://github.com/scroll-tech/snark-verifier.git?branch=documentations#b2adb478c5ea8d54bec60b8f1252b291f9cf12e5"
 dependencies = [
  "bytes",
  "ethereum-types 0.14.1",
- "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
- "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
+ "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
  "hex",
  "itertools",
  "lazy_static",
@@ -3869,12 +3869,12 @@ dependencies = [
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier.git?branch=minimize-diff#1fb95e09fc51448e48515eea10ebaa1e857f735b"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#a3d0a5ab48522bc533686da3ea8400282c91f536"
 dependencies = [
  "bytes",
  "ethereum-types 0.14.1",
- "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
- "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
+ "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
  "hex",
  "itertools",
  "lazy_static",

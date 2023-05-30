@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "expose-keccak-circuit-config" }
-snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier.git", branch = "minimize-diff" }
+snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier.git", branch = "documentations" }
 zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "expose-keccak-circuit-config" }
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 ethers-core = "0.17.0"
