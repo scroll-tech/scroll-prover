@@ -43,13 +43,17 @@ pub(crate) fn get_indices(preimages: &[Vec<u8>]) -> (Vec<usize>, Vec<usize>) {
             if i == num_rounds - 1 {
                 for j in 0..4 {
                     for k in 0..8 {
-                        digest_indices.push(round_ctr * 300 + (3 - j) * 12 + k + 252)
+                        digest_indices.push(round_ctr * 300 + j * 12 + k + 252)
                     }
                 }
             }
             round_ctr += 1;
         }
     }
+
+    debug_assert!(is_ascending(&preimage_indices));
+    debug_assert!(is_ascending(&digest_indices));
+
     (preimage_indices, digest_indices)
 }
 
@@ -62,4 +66,10 @@ pub(crate) fn assert_equal<F: Field>(a: &AssignedCell<F, F>, b: &AssignedCell<F,
     a.value().map(|f| t1 = *f);
     b.value().map(|f| t2 = *f);
     assert_eq!(t1, t2)
+}
+
+#[inline]
+// assert that the slice is ascending
+fn is_ascending(a: &[usize]) -> bool {
+    a.windows(2).all(|w| w[0] <= w[1])
 }

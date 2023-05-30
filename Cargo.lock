@@ -25,10 +25,15 @@ name = "aggregator"
 version = "0.1.0"
 dependencies = [
  "ark-std 0.4.0",
+ "env_logger 0.10.0",
  "eth-types 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=expose-keccak-circuit-config)",
  "ethers-core 0.17.0",
+ "halo2-base",
  "halo2_proofs",
+ "log",
  "rand",
+ "snark-verifier",
+ "snark-verifier-sdk",
  "zkevm-circuits 0.1.0 (git+https://github.com/scroll-tech/zkevm-circuits.git?branch=expose-keccak-circuit-config)",
 ]
 

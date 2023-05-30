@@ -1,3 +1,4 @@
+use ark_std::{end_timer, start_timer};
 use eth_types::Field;
 use halo2_proofs::{
     circuit::{AssignedCell, Layouter, Value},
@@ -95,13 +96,21 @@ impl<F: Field> BatchCircuitConfig<F> {
     > {
         let mut is_first_time = true;
         let num_rows = 1 << LOG_DEGREE;
+
+        let timer = start_timer!(|| ("multi keccak").to_string());
         let witness = multi_keccak(preimages, challenges, capacity(num_rows))?;
+        end_timer!(timer);
 
         // extract the indices of the rows for which the preimage and the digest cells lie in
         let (preimage_indices, digest_indices) = get_indices(preimages);
+        let mut preimage_indices_iter = preimage_indices.iter();
+        let mut digest_indices_iter = digest_indices.iter();
 
         let mut hash_input_cells = vec![];
         let mut hash_output_cells = vec![];
+
+        let mut cur_preimage_index = preimage_indices_iter.next();
+        let mut cur_digest_index = digest_indices_iter.next();
 
         layouter.assign_region(
             || "assign keccak rows",
@@ -119,16 +128,19 @@ impl<F: Field> BatchCircuitConfig<F> {
                 let mut current_hash_input_cells = vec![];
                 let mut current_hash_output_cells = vec![];
 
+                let timer = start_timer!(|| "assign row");
                 for (offset, keccak_row) in witness.iter().enumerate() {
                     let row =
                         self.keccak_circuit_config
                             .set_row(&mut region, offset, keccak_row)?;
 
-                    if preimage_indices.contains(&offset) {
+                    if cur_preimage_index.is_some() && *cur_preimage_index.unwrap() == offset {
                         current_hash_input_cells.push(row[6].clone());
+                        cur_preimage_index = preimage_indices_iter.next();
                     }
-                    if digest_indices.contains(&offset) {
+                    if cur_digest_index.is_some() && *cur_digest_index.unwrap() == offset {
                         current_hash_output_cells.push(row.last().unwrap().clone());
+                        cur_digest_index = digest_indices_iter.next();
                     }
 
                     // we reset the current hash when it is finalized
@@ -141,6 +153,7 @@ impl<F: Field> BatchCircuitConfig<F> {
                         current_hash_output_cells = vec![];
                     }
                 }
+                end_timer!(timer);
 
                 // sanity: we have same number of hash input and output
                 let hash_num = hash_input_cells.len();

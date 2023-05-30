@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use ark_std::{end_timer, start_timer};
 use eth_types::{Field, H256};
 use halo2_proofs::{
     circuit::{Layouter, SimpleFloorPlanner},
@@ -157,13 +158,19 @@ impl<F: Field> Circuit<F> for BatchHashCircuit<F> {
         let challenges = challenge.values(&layouter);
 
         // extract all the hashes and load them to the hash table
+        let timer = start_timer!(|| ("extract hash").to_string());
         let preimages = self.extract_hash_preimages();
+        end_timer!(timer);
 
+        let timer = start_timer!(|| ("load aux table").to_string());
         config
             .keccak_circuit_config
             .load_aux_tables(&mut layouter)?;
-        config.assign(&mut layouter, challenges, &preimages)?;
+        end_timer!(timer);
 
+        let timer = start_timer!(|| ("assign  cells").to_string());
+        config.assign(&mut layouter, challenges, &preimages)?;
+        end_timer!(timer);
         Ok(())
     }
 }
