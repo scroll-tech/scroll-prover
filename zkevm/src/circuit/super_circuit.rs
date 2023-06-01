@@ -6,7 +6,7 @@ use halo2_proofs::halo2curves::bn256::Fr;
 use zkevm_circuits::util::SubCircuit;
 use zkevm_circuits::{super_circuit::SuperCircuit as SuperCircuitTpl, witness};
 
-type SuperCircuitImpl = SuperCircuitTpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000>;
+type SuperCircuitImpl = SuperCircuitTpl<MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000>;
 
 pub struct SuperCircuit {}
 

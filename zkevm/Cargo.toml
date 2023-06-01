@@ -8,11 +8,11 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "develop" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "repro/trace_dumper-debugging" }
 
 snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
 snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
