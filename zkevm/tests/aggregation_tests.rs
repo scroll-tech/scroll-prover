@@ -4,13 +4,12 @@ use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use test_util::{create_output_dir, init_env_and_log, load_block_traces_for_test};
-use zkevm::circuit::{SuperCircuit, TargetCircuit};
-use zkevm::circuit::{AGG_DEGREE, DEGREE};
+use test_util::load_block_traces_for_test;
+use zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
 use zkevm::io::write_file;
 use zkevm::prover::{Prover, TargetCircuitProof};
 use zkevm::test_util::{self, PARAMS_DIR};
-use zkevm::utils::load_or_create_params;
+use zkevm::utils::{init_env_and_log, load_or_create_params};
 use zkevm::verifier::EvmVerifier;
 
 // An end to end integration test.
@@ -21,9 +20,8 @@ use zkevm::verifier::EvmVerifier;
 fn test_aggregation_api() {
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
-    init_env_and_log();
+    let output_dir = init_env_and_log("agg_tests");
 
-    let output_dir = create_output_dir();
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
     log::info!("created output dir {}", output_dir);
 

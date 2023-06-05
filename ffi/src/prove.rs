@@ -3,13 +3,14 @@ use libc::c_char;
 use std::cell::OnceCell;
 use types::eth::BlockTrace;
 use zkevm::prover::Prover;
+use zkevm::utils::init_env_and_log;
 
 static mut PROVER: OnceCell<Prover> = OnceCell::new();
 
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn init_prover(params_path: *const c_char, _seed_path: *const c_char) {
-    env_logger::init();
+    init_env_and_log("ffi_prove");
 
     let params_path = c_char_to_str(params_path);
     let p = Prover::from_param_dir(params_path);

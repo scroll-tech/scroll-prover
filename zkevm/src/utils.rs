@@ -1,19 +1,29 @@
 use anyhow::Result;
+use chrono::Utc;
+use git_version::git_version;
 use halo2_proofs::arithmetic::Field;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use halo2_proofs::halo2curves::FieldExt;
-use halo2_proofs::SerdeFormat;
-
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
+use halo2_proofs::SerdeFormat;
+use log::LevelFilter;
+use log4rs::append::console::{ConsoleAppender, Target};
+use log4rs::append::file::FileAppender;
+use log4rs::config::{Appender, Config, Root};
 use rand::rngs::OsRng;
 use std::fs::{self, metadata, File};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::Once;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
+
+pub const GIT_VERSION: &str = git_version!();
+
+pub static LOGGER: Once = Once::new();
 
 fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
     //format!("{params_dir}/kzg_bn254_{degree}.srs")
@@ -153,4 +163,59 @@ pub fn metric_of_witness_block(block: &witness::Block<Fr>) -> BatchMetric {
         num_tx: block.txs.len(),
         num_step: block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>(),
     }
+}
+
+// Return the output dir.
+pub fn init_env_and_log(id: &str) -> String {
+    dotenv::dotenv().ok();
+    let output_dir = create_output_dir(id);
+
+    LOGGER.call_once(|| {
+        // TODO: cannot support complicated `RUST_LOG` for now.
+        let log_level = read_env_var("RUST_LOG", "INFO".to_string());
+        let log_level = LevelFilter::from_str(&log_level).unwrap_or(LevelFilter::Info);
+
+        let mut log_file_path = PathBuf::from(output_dir.clone());
+        log_file_path.push("log.txt");
+        let log_file = FileAppender::builder().build(log_file_path).unwrap();
+
+        let stderr = ConsoleAppender::builder().target(Target::Stderr).build();
+
+        let config = Config::builder()
+            .appenders([
+                Appender::builder().build("log-file", Box::new(log_file)),
+                Appender::builder().build("stderr", Box::new(stderr)),
+            ])
+            .build(
+                Root::builder()
+                    .appender("log-file")
+                    .appender("stderr")
+                    .build(log_level),
+            )
+            .unwrap();
+
+        log4rs::init_config(config).unwrap();
+
+        log::info!("git version {}", GIT_VERSION);
+    });
+
+    output_dir
+}
+
+fn create_output_dir(id: &str) -> String {
+    let mode = read_env_var("MODE", "multi".to_string());
+    let output = read_env_var(
+        "OUTPUT_DIR",
+        format!(
+            "{}_output_{}_{}",
+            id,
+            mode,
+            Utc::now().format("%Y%m%d_%H%M%S")
+        ),
+    );
+
+    let output_dir = PathBuf::from_str(&output).unwrap();
+    fs::create_dir_all(output_dir).unwrap();
+
+    output
 }

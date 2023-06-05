@@ -1,17 +1,14 @@
-use std::collections::HashMap;
-
 use chrono::Utc;
-use eth_types::Bytes;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use zkevm::{
     capacity_checker::CircuitCapacityChecker,
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
     prover::Prover,
-    utils::{get_block_trace_from_file, load_or_create_params, load_params},
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params},
 };
 
-use test_util::{init_env_and_log, load_block_traces_for_test, PARAMS_DIR};
+use test_util::{load_block_traces_for_test, PARAMS_DIR};
 use zkevm::test_util;
 
 use zkevm_circuits::util::SubCircuit;
@@ -19,7 +16,7 @@ use zkevm_circuits::util::SubCircuit;
 #[ignore]
 #[test]
 fn test_load_params() {
-    init_env_and_log();
+    init_env_and_log("integration");
     log::info!("start");
     load_params(
         "/home/ubuntu/scroll-zkevm/zkevm/test_params",
@@ -43,7 +40,7 @@ fn test_load_params() {
 
 #[test]
 fn test_capacity_checker() {
-    init_env_and_log();
+    init_env_and_log("integration");
 
     let batch = vec![get_block_trace_from_file(
         "./tests/extra_traces/tx_storage_proof.json",
@@ -83,7 +80,7 @@ fn test_capacity_checker() {
 fn estimate_circuit_rows() {
     use zkevm::circuit::{self, TargetCircuit};
 
-    init_env_and_log();
+    init_env_and_log("integration");
 
     let (_, block_trace) = load_block_traces_for_test();
 
@@ -99,7 +96,7 @@ fn test_mock_prove() {
 
     use crate::test_util::load_block_traces_for_test;
 
-    init_env_and_log();
+    init_env_and_log("integration");
     let block_traces = load_block_traces_for_test().1;
     Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces).unwrap();
 }
@@ -114,7 +111,7 @@ fn test_prove_verify() {
 #[test]
 fn test_deterministic() {
     use halo2_proofs::dev::MockProver;
-    init_env_and_log();
+    init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
 
@@ -147,7 +144,7 @@ fn test_deterministic() {
 #[test]
 fn test_vk_same() {
     use halo2_proofs::dev::MockProver;
-    init_env_and_log();
+    init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
     let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
@@ -217,7 +214,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     use zkevm::verifier::Verifier;
 
-    init_env_and_log();
+    init_env_and_log("integration");
 
     let (_, block_traces) = load_block_traces_for_test();
 

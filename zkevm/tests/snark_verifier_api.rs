@@ -8,10 +8,9 @@ use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
 use test_util::mock_plonk;
-use zkevm::test_util;
-
-use test_util::init_env_and_log;
 use zkevm::prover::Prover;
+use zkevm::test_util;
+use zkevm::utils::init_env_and_log;
 use zkevm::verifier::{EvmVerifier, Verifier};
 
 // This is essentially a same test as snark-verifier/evm-verifier
@@ -26,7 +25,7 @@ fn test_snark_verifier_sdk_api() {
     let k = 8;
     let k_agg = 21;
 
-    init_env_and_log();
+    init_env_and_log("snark_verifier_api");
 
     let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
@@ -87,7 +86,7 @@ fn test_partial_aggregation_api() {
 
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
-    init_env_and_log();
+    init_env_and_log("snark_verifier_api");
     let num_snarks = 3;
 
     // ====================================================

@@ -10,14 +10,14 @@ use zkevm::circuit::{
     SUB_CIRCUIT_NAMES,
 };
 use zkevm::prover::Prover;
+use zkevm::utils::init_env_and_log;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
-    env_logger::init();
+    init_env_and_log("mock_testnet");
 
     log::info!("mock-testnet: begin");
 

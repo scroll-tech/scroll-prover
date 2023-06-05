@@ -9,7 +9,7 @@ use std::time::Instant;
 use zkevm::{
     circuit::{SuperCircuit, AGG_DEGREE},
     prover::Prover,
-    utils::{get_block_trace_from_file, load_or_create_params},
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
 };
 
 #[derive(Parser, Debug)]
@@ -32,8 +32,7 @@ struct Args {
 }
 
 fn main() {
-    dotenv::dotenv().ok();
-    env_logger::init();
+    init_env_and_log("prove");
 
     let args = Args::parse();
     let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
