@@ -14,7 +14,7 @@ function goerli() {
 		d="617365.json"
 		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/${d}` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.${d}.log
 		d="617366.json"
-		RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/${d}` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.${d}.log
+		#RUST_LOG=debug TRACE_PATH=`realpath ~/zip-traces/${TRACE_DIR}/${d}` cargo test --features prove_verify --release test_agg -- --nocapture 2>&1 | tee logs/agg.${d}.log
 }
 
 function run_agg_tests() {
