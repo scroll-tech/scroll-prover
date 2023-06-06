@@ -12,10 +12,10 @@ halo2-snark-aggregator-api = { git = "https://github.com/scroll-tech/halo2-snark
 
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "v0.3" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "v0.3" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "v0.3", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify","scroll","zktrie"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "v0.3" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.3.0-hotfix1" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.3.0-hotfix1" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.3.0-hotfix1", default-features = false, features = ["test","poseidon-codehash","enable-sign-verify","scroll","zktrie"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.3.0-hotfix1" }
 
 rand = "0.8"
 rand_xorshift = "0.3"
