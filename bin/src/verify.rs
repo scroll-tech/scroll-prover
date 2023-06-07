@@ -6,7 +6,7 @@ use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
 use zkevm::verifier::Verifier;
 use zkevm::{
     circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
-    utils::load_or_create_params,
+    utils::{init_env_and_log, load_or_create_params},
 };
 
 #[derive(Parser, Debug)]
@@ -27,8 +27,7 @@ struct Args {
 }
 
 fn main() {
-    dotenv::dotenv().ok();
-    env_logger::init();
+    init_env_and_log("verify");
 
     let args = Args::parse();
     let params = load_or_create_params(&args.params_path.clone().unwrap(), *DEGREE)

@@ -3,6 +3,7 @@ use libc::c_char;
 use std::fs::File;
 use std::io::Read;
 use zkevm::prover::AggCircuitProof;
+use zkevm::utils::init_env_and_log;
 use zkevm::verifier::Verifier;
 
 static mut VERIFIER: Option<&Verifier> = None;
@@ -10,7 +11,7 @@ static mut VERIFIER: Option<&Verifier> = None;
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn init_verifier(params_path: *const c_char, agg_vk_path: *const c_char) {
-    env_logger::init();
+    init_env_and_log("ffi_verify");
 
     let params_path = c_char_to_str(params_path);
     let agg_vk_path = c_char_to_str(agg_vk_path);
