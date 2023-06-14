@@ -10,7 +10,7 @@ use halo2_proofs::dev::MockProver;
 use halo2_proofs::halo2curves::bn256::Fr;
 use log::info;
 use rand::Rng;
-use snark_verifier_sdk::halo2::gen_snark_shplonk;
+use snark_verifier_sdk::halo2::{gen_snark_shplonk, verify_snark_shplonk};
 use types::eth::BlockTrace;
 
 impl Prover {
@@ -111,14 +111,20 @@ impl Prover {
         // Generate the SNARK proof for the inner circuit
         let snark_proof = gen_snark_shplonk(&self.params, pk, circuit, rng, None::<String>);
 
+        let is_proof_valid = verify_snark_shplonk::<C::Inner>(&self.params, snark_proof.clone(), pk.get_vk());
         let instance_bytes = serialize_instance(&instance);
         let name = C::name();
+
+        log::debug!("proof raw bytes: {}, instance: {}", hex::encode(snark_proof.proof.as_slice()), hex::encode(instance_bytes.as_slice()));
         log::debug!(
-            "{} circuit: proof {:?}, instance len {}",
+            "{} circuit: proof {:?}, instance len {}, verify succeed: {}",
             name,
             &snark_proof.proof[0..15],
-            instance_bytes.len()
+            instance_bytes.len(),
+            is_proof_valid,
         );
+        assert!(is_proof_valid);
+
         let target_proof = TargetCircuitProof {
             name,
             snark: snark_proof,
