@@ -14,7 +14,7 @@ halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.gi
 
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "parallel-syn-dev" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "parallel-syn-dev" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "parallel-syn-dev", default-features = false, features = ["test","scroll","enable-sign-verify"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "parallel-syn-dev", default-features = false, features = ["test","scroll","enable-sign-verify", "parallel_syn"] }
 mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "parallel-syn-dev" }
 mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "parallel-syn-dev" }
 
