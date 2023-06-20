@@ -215,6 +215,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         max_keccak_rows: MAX_KECCAK_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
         max_mpt_rows: MAX_MPT_ROWS,
+        max_rlp_rows: MAX_CALLDATA,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.chain_id = chain_id;
