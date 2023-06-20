@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
 use zkevm::{
-    circuit::{AGG_DEGREE},
+    circuit::AGG_DEGREE,
     prover::Prover,
     utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
 };
@@ -55,10 +55,7 @@ fn main() {
         let agg_proof = prover
             .create_agg_circuit_proof_batch(traces.as_slice())
             .expect("cannot generate agg_proof");
-        info!(
-            "finish generating agg proof, elapsed: {:?}",
-            now.elapsed()
-        );
+        info!("finish generating agg proof, elapsed: {:?}", now.elapsed());
 
         if args.agg_proof.unwrap() {
             fs::create_dir_all(&proof_path).unwrap();
