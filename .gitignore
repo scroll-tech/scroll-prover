@@ -25,3 +25,5 @@ zkevm/tests/traces/bridge/*.proof
 *.instance
 *.sol
 *.vk
+
+test_params/*
