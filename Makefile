@@ -44,4 +44,9 @@ test-agg:
 rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows
 
+# Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
+# As default `degree=25` and `params_dir=./zkevm/test_params`.
+download-setup:
+	sh download_setup.sh ${degree} ${params_dir}
+
 .PHONY: help fmt clippy test test-ci test-all
