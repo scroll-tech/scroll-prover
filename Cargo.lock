@@ -398,7 +398,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -1098,7 +1098,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1364,7 +1364,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1593,7 +1593,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1633,10 +1633,10 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "env_logger 0.9.3",
- "gobuild",
+ "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
  "log",
 ]
 
@@ -1691,6 +1691,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gobuild"
+version = "0.1.0-alpha.2"
+source = "git+https://github.com/scroll-tech/gobuild.git#8b84111fc3b58e2134e4794a06d1f199412cf2b0"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "group"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1728,7 +1736,21 @@ dependencies = [
  "ff",
  "halo2_proofs",
  "itertools",
- "jemallocator",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "rand_chacha",
+ "rustc-hash",
+]
+
+[[package]]
+name = "halo2-base"
+version = "0.2.2"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff#b1d1567063eb13fd1fc868fa9ed6b438961ef9e9"
+dependencies = [
+ "ff",
+ "halo2_proofs",
+ "itertools",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -1743,7 +1765,26 @@ source = "git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-ve
 dependencies = [
  "ff",
  "group",
- "halo2-base",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
+ "itertools",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "rand",
+ "rand_chacha",
+ "rand_core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "halo2-ecc"
+version = "0.2.2"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff#b1d1567063eb13fd1fc868fa9ed6b438961ef9e9"
+dependencies = [
+ "ff",
+ "group",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
  "itertools",
  "num-bigint",
  "num-integer",
@@ -2177,26 +2218,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 
 [[package]]
-name = "jemalloc-sys"
-version = "0.5.3+5.3.0-patched"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9bd5d616ea7ed58b571b2e209a65759664d7fb021a0819d7a790afc67e47ca1"
-dependencies = [
- "cc",
- "libc",
-]
-
-[[package]]
-name = "jemallocator"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16c2514137880c52b0b4822b563fadd38257c1f380858addb74a400889696ea6"
-dependencies = [
- "jemalloc-sys",
- "libc",
-]
-
-[[package]]
 name = "js-sys"
 version = "0.3.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2230,7 +2251,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2430,7 +2451,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2445,7 +2466,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -3743,12 +3764,12 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#a3d0a5ab48522bc533686da3ea8400282c91f536"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#ae6a9ef1ba0f5296f98cd6ba2a94f791278be851"
 dependencies = [
  "bytes",
  "ethereum-types 0.14.1",
- "halo2-base",
- "halo2-ecc",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
+ "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
  "hex",
  "itertools",
  "lazy_static",
@@ -3767,12 +3788,12 @@ dependencies = [
 [[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#a3d0a5ab48522bc533686da3ea8400282c91f536"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=halo2-ecc-snark-verifier-0323#ae6a9ef1ba0f5296f98cd6ba2a94f791278be851"
 dependencies = [
  "bincode",
  "env_logger 0.10.0",
  "ethereum-types 0.14.1",
- "halo2-base",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=minimize-diff)",
  "hex",
  "itertools",
  "lazy_static",
@@ -4668,7 +4689,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#6c9df1a7ecc80bd8eb71f2a182d59012c44b89b3"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#d815e8db559d1730947b2ebca866c422bf5dea8a"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -4677,8 +4698,8 @@ dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
  "gadgets",
- "halo2-base",
- "halo2-ecc",
+ "halo2-base 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
+ "halo2-ecc 0.2.2 (git+https://github.com/scroll-tech/halo2-lib?branch=halo2-ecc-snark-verifier-0323)",
  "halo2_proofs",
  "hex",
  "itertools",
@@ -4709,5 +4730,5 @@ name = "zktrie"
 version = "0.1.2"
 source = "git+https://github.com/scroll-tech/zktrie.git?branch=scroll-dev-0226#1a5562f663a81ff903383db69dc6c9404b63e69d"
 dependencies = [
- "gobuild",
+ "gobuild 0.1.0-alpha.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
