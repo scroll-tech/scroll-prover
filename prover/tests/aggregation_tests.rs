@@ -1,5 +1,5 @@
 use prover::io::write_file;
-use prover::test_util::{self, PARAMS_DIR};
+use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
 use prover::utils::{init_env_and_log, load_or_create_params};
 use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
 use prover::zkevm::{EvmVerifier, Prover, TargetCircuitProof};
@@ -9,7 +9,6 @@ use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use test_util::load_block_traces_for_test;
 
 // An end to end integration test.
 // The inner snark proofs are generated from a mock circuit
