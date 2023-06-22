@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["staticlib"]
 
 [dependencies]
-zkevm = { path = "../zkevm" }
+prover = { path = "../prover" }
 types = { path = "../types" }
 
 rand = "0.8"

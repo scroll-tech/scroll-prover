@@ -1,10 +1,10 @@
 use crate::utils::{c_char_to_str, c_char_to_vec};
 use libc::c_char;
+use prover::prover::AggCircuitProof;
+use prover::utils::init_env_and_log;
+use prover::verifier::Verifier;
 use std::fs::File;
 use std::io::Read;
-use zkevm::prover::AggCircuitProof;
-use zkevm::utils::init_env_and_log;
-use zkevm::verifier::Verifier;
 
 static mut VERIFIER: Option<&Verifier> = None;
 

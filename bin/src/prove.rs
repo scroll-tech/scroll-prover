@@ -1,16 +1,16 @@
 use clap::Parser;
 use log::info;
+use prover::{
+    circuit::{SuperCircuit, AGG_DEGREE},
+    prover::Prover,
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
+};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
-use zkevm::{
-    circuit::{SuperCircuit, AGG_DEGREE},
-    prover::Prover,
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
-};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

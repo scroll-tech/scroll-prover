@@ -1,5 +1,5 @@
 use clap::Parser;
-use zkevm::{
+use prover::{
     circuit::DEGREE,
     utils::{init_env_and_log, load_or_create_params},
 };

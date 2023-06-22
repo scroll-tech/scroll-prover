@@ -1,6 +1,6 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use zkevm::{
+use prover::{
     capacity_checker::CircuitCapacityChecker,
     circuit::{SuperCircuit, TargetCircuit, DEGREE},
     io::serialize_vk,
@@ -8,8 +8,8 @@ use zkevm::{
     utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params},
 };
 
+use prover::test_util;
 use test_util::{load_block_traces_for_test, PARAMS_DIR};
-use zkevm::test_util;
 
 use zkevm_circuits::util::SubCircuit;
 
@@ -19,19 +19,19 @@ fn test_load_params() {
     init_env_and_log("integration");
     log::info!("start");
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
         SerdeFormat::RawBytesUnchecked,
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
         SerdeFormat::RawBytes,
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params.old",
+        "/home/ubuntu/scroll-zkevm/prover/test_params.old",
         26,
         SerdeFormat::Processed,
     )
@@ -78,7 +78,7 @@ fn test_capacity_checker() {
 
 #[test]
 fn estimate_circuit_rows() {
-    use zkevm::circuit::{self, TargetCircuit};
+    use prover::circuit::{self, TargetCircuit};
 
     init_env_and_log("integration");
 
@@ -92,7 +92,7 @@ fn estimate_circuit_rows() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove() {
-    use zkevm::circuit;
+    use prover::circuit;
 
     use crate::test_util::load_block_traces_for_test;
 
@@ -212,7 +212,7 @@ fn test_vk_same() {
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
 
-    use zkevm::verifier::Verifier;
+    use prover::verifier::Verifier;
 
     init_env_and_log("integration");
 

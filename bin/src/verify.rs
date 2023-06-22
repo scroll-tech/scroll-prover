@@ -1,13 +1,13 @@
 use clap::Parser;
 use log::info;
-use std::fs::File;
-use std::io::Read;
-use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
-use zkevm::verifier::Verifier;
-use zkevm::{
+use prover::prover::{AggCircuitProof, TargetCircuitProof};
+use prover::verifier::Verifier;
+use prover::{
     circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
     utils::{init_env_and_log, load_or_create_params},
 };
+use std::fs::File;
+use std::io::Read;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

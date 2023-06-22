@@ -1,9 +1,9 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
 use libc::c_char;
+use prover::prover::Prover;
+use prover::utils::init_env_and_log;
 use std::cell::OnceCell;
 use types::eth::BlockTrace;
-use zkevm::prover::Prover;
-use zkevm::utils::init_env_and_log;
 
 static mut PROVER: OnceCell<Prover> = OnceCell::new();
 

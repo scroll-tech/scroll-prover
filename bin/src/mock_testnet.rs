@@ -1,16 +1,16 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use itertools::Itertools;
+use prover::circuit::{
+    block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+    SUB_CIRCUIT_NAMES,
+};
+use prover::prover::Prover;
+use prover::utils::init_env_and_log;
 use reqwest::Url;
 use serde::Deserialize;
 use std::env;
 use types::eth::BlockTrace;
-use zkevm::circuit::{
-    block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-    SUB_CIRCUIT_NAMES,
-};
-use zkevm::prover::Prover;
-use zkevm::utils::init_env_and_log;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
