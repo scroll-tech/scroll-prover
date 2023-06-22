@@ -1,3 +1,4 @@
+pub mod aggregator;
 pub mod io;
 pub mod utils;
 pub mod test_util;
