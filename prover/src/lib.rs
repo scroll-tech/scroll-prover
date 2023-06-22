@@ -1,9 +1,8 @@
 pub mod aggregator;
 pub mod io;
-pub mod utils;
 pub mod test_util;
+pub mod utils;
 pub mod zkevm;
-
 
 // Terminology used throughout this library.
 //

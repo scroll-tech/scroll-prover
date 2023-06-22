@@ -1,9 +1,8 @@
 use prover::io::write_file;
 use prover::test_util::{self, PARAMS_DIR};
 use prover::utils::{init_env_and_log, load_or_create_params};
+use prover::zkevm::{EvmVerifier, Prover, TargetCircuitProof};
 use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
-use prover::zkevm::prover::{Prover, TargetCircuitProof};
-use prover::zkevm::verifier::EvmVerifier;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;

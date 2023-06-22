@@ -1,12 +1,12 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
-use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
-use prover::{
-    io::serialize_vk,
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params},
-};
+use prover::io::serialize_vk;
 use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
+use prover::utils::{
+    get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params,
+};
+use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
+use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
 
 use zkevm_circuits::util::SubCircuit;
 
@@ -75,7 +75,6 @@ fn test_capacity_checker() {
 
 #[test]
 fn estimate_circuit_rows() {
-
     init_env_and_log("integration");
 
     let (_, block_trace) = load_block_traces_for_test();

@@ -93,7 +93,7 @@ impl CircuitCapacityChecker {
     }
     pub fn estimate_circuit_capacity(
         &mut self,
-        txs: &[BlockTrace],
+        txs: &[TxTrace],
     ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
         assert!(!txs.is_empty());
         if self.state.is_none() {

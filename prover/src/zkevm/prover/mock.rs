@@ -1,4 +1,6 @@
-use super::super::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE};
+use super::super::circuit::{
+    block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE,
+};
 use super::Prover;
 use crate::utils::metric_of_witness_block;
 use anyhow::bail;
