@@ -1,8 +1,6 @@
 use clap::Parser;
-use prover::{
-    circuit::DEGREE,
-    utils::{init_env_and_log, load_or_create_params},
-};
+use prover::zkevm::circuit::DEGREE;
+use prover::utils::{init_env_and_log, load_or_create_params};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

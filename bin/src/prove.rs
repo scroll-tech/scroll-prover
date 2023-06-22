@@ -1,10 +1,10 @@
 use clap::Parser;
 use log::info;
-use prover::{
+use prover::zkevm::{
+    Prover,
     circuit::{SuperCircuit, AGG_DEGREE},
-    prover::Prover,
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
 };
+use prover::utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;

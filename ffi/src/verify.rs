@@ -1,12 +1,11 @@
 use crate::utils::{c_char_to_str, c_char_to_vec};
 use libc::c_char;
-use prover::prover::AggCircuitProof;
 use prover::utils::init_env_and_log;
-use prover::verifier::Verifier;
+use prover::zkevm;
 use std::fs::File;
 use std::io::Read;
 
-static mut VERIFIER: Option<&Verifier> = None;
+static mut VERIFIER: Option<&zkevm::Verifier> = None;
 
 /// # Safety
 #[no_mangle]
@@ -19,7 +18,7 @@ pub unsafe extern "C" fn init_verifier(params_path: *const c_char, agg_vk_path: 
     let mut agg_vk = vec![];
     f.read_to_end(&mut agg_vk).unwrap();
 
-    let v = Box::new(Verifier::from_fpath(params_path, Some(agg_vk)));
+    let v = Box::new(zkevm::Verifier::from_fpath(params_path, Some(agg_vk)));
     VERIFIER = Some(Box::leak(v))
 }
 
@@ -27,7 +26,7 @@ pub unsafe extern "C" fn init_verifier(params_path: *const c_char, agg_vk_path: 
 #[no_mangle]
 pub unsafe extern "C" fn verify_agg_proof(proof: *const c_char) -> c_char {
     let proof_vec = c_char_to_vec(proof);
-    let agg_proof = serde_json::from_slice::<AggCircuitProof>(proof_vec.as_slice()).unwrap();
+    let agg_proof = serde_json::from_slice::<zkevm::AggCircuitProof>(proof_vec.as_slice()).unwrap();
     let verified = VERIFIER
         .unwrap()
         .verify_agg_circuit_proof(agg_proof)

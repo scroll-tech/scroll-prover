@@ -1,11 +1,8 @@
-pub mod capacity_checker;
-pub mod circuit;
 pub mod io;
-pub mod prover;
 pub mod utils;
-pub mod verifier;
-
 pub mod test_util;
+pub mod zkevm;
+
 
 // Terminology used throughout this library.
 //
@@ -24,7 +21,7 @@ pub mod test_util;
 // a proof that can be verified on chain
 
 pub mod proof {
-    use crate::prover::AggCircuitProof;
+    use crate::zkevm::AggCircuitProof;
     use serde_derive::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug)]

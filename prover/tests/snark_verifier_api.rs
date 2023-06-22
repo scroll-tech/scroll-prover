@@ -1,10 +1,10 @@
 use halo2_proofs::poly::commitment::Params;
 use mock_plonk::MockPlonkCircuit;
 use mock_plonk::StandardPlonk;
-use prover::prover::Prover;
+use prover::zkevm::Prover;
 use prover::test_util;
 use prover::utils::init_env_and_log;
-use prover::verifier::{EvmVerifier, Verifier};
+use prover::zkevm::verifier::{EvmVerifier, Verifier};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::evm::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};

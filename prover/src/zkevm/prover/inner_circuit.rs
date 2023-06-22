@@ -1,9 +1,8 @@
 //! Inner circuit related APIs
 
-use super::{Prover, TargetCircuitProof};
-use crate::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE};
+use super::super::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE};
+use super::{MOCK_PROVE, Prover, TargetCircuitProof};
 use crate::io::{serialize_instance, serialize_vk};
-use crate::prover::MOCK_PROVE;
 use crate::utils::metric_of_witness_block;
 use anyhow::{bail, Error};
 use halo2_proofs::dev::MockProver;

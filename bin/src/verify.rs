@@ -1,11 +1,8 @@
 use clap::Parser;
 use log::info;
-use prover::prover::{AggCircuitProof, TargetCircuitProof};
-use prover::verifier::Verifier;
-use prover::{
-    circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
-    utils::{init_env_and_log, load_or_create_params},
-};
+use prover::zkevm::{AggCircuitProof, TargetCircuitProof, Verifier};
+use prover::zkevm::circuit::{SuperCircuit, AGG_DEGREE, DEGREE};
+use prover::utils::{init_env_and_log, load_or_create_params};
 use std::fs::File;
 use std::io::Read;
 
