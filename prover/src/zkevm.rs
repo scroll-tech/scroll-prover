@@ -3,6 +3,6 @@ pub mod circuit;
 mod prover;
 mod verifier;
 
-pub use self::prover::{AggCircuitProof, Prover, TargetCircuitProof};
+pub use self::prover::Prover;
 pub use capacity_checker::CircuitCapacityChecker;
-pub use verifier::{EvmVerifier, Verifier};
+pub use verifier::Verifier;

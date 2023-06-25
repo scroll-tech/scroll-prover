@@ -25,10 +25,10 @@ struct Args {
     /// Boolean means if output super circuit proof.
     #[clap(long = "super")]
     super_proof: Option<bool>,
-    /// Option means if generates agg circuit proof.
-    /// Boolean means if output agg circuit proof.
-    #[clap(long = "agg")]
-    agg_proof: Option<bool>,
+    /// Option means if generates compressed chunk proof.
+    /// Boolean means if output chunk proof.
+    #[clap(long = "chunk")]
+    chunk_proof: Option<bool>,
 }
 
 fn main() {
@@ -59,39 +59,41 @@ fn main() {
     for (trace_name, trace) in traces {
         if args.super_proof.is_some() {
             let proof_path = PathBuf::from(&trace_name).join("super.proof");
+            let block_hash = trace.header.hash.unwrap();
 
             let now = Instant::now();
             let super_proof = prover
-                .create_target_circuit_proof::<SuperCircuit>(&trace)
-                .expect("cannot generate evm_proof");
+                .gen_inner_proof::<SuperCircuit>(&[trace.clone()])
+                .expect("cannot generate super circuit proof");
             info!(
-                "finish generating evm proof of {}, elapsed: {:?}",
-                &trace.header.hash.unwrap(),
+                "finish generating super circuit proof for block {}, elapsed: {:?}",
+                block_hash,
                 now.elapsed()
             );
 
             if args.super_proof.unwrap() {
                 let mut f = File::create(&proof_path).unwrap();
-                f.write_all(super_proof.snark.proof.as_slice()).unwrap();
+                f.write_all(super_proof.proof.as_slice()).unwrap();
             }
         }
 
-        if args.agg_proof.is_some() {
+        if args.chunk_proof.is_some() {
             let mut proof_path = PathBuf::from(&trace_name).join("agg.proof");
+            let block_hash = trace.header.hash.unwrap();
 
             let now = Instant::now();
-            let agg_proof = prover
-                .create_agg_circuit_proof(&trace)
-                .expect("cannot generate agg_proof");
+            let chunk_proof = prover
+                .gen_chunk_proof(&[trace])
+                .expect("cannot generate chunk proof");
             info!(
-                "finish generating agg proof of {}, elapsed: {:?}",
-                &trace.header.hash.unwrap(),
+                "finish generating chunk proof for block {}, elapsed: {:?}",
+                block_hash,
                 now.elapsed()
             );
 
-            if args.agg_proof.unwrap() {
+            if args.chunk_proof.unwrap() {
                 fs::create_dir_all(&proof_path).unwrap();
-                agg_proof.dump(&mut proof_path).unwrap();
+                chunk_proof.dump(&mut proof_path, "chunk").unwrap();
             }
         }
     }

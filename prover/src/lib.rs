@@ -1,8 +1,13 @@
 pub mod aggregator;
+mod evm_verifier;
 pub mod io;
+pub mod proof;
 pub mod test_util;
 pub mod utils;
 pub mod zkevm;
+
+pub use evm_verifier::EvmVerifier;
+pub use proof::Proof;
 
 // Terminology used throughout this library.
 //
@@ -20,13 +25,13 @@ pub mod zkevm;
 // I.e., aggregation prover that takes in a list of traces, produces
 // a proof that can be verified on chain
 
-pub mod proof {
-    use crate::zkevm::AggCircuitProof;
-    use serde_derive::{Deserialize, Serialize};
+// pub mod proof {
+//     use crate::zkevm::AggCircuitProof;
+//     use serde_derive::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug)]
-    pub struct ZkProof {
-        pub id: u64,
-        pub agg_proof: AggCircuitProof,
-    }
-}
+//     #[derive(Serialize, Deserialize, Debug)]
+//     pub struct ZkProof {
+//         pub id: u64,
+//         pub agg_proof: AggCircuitProof,
+//     }
+// }
