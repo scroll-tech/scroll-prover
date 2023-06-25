@@ -81,11 +81,9 @@ fn main() {
             let mut proof_path = PathBuf::from(&trace_name).join("agg.proof");
             let block_hash = trace.header.hash.unwrap();
 
-            let agg_pk_path = PathBuf::from(&trace_name).join("agg.pk");
-
             let now = Instant::now();
             let chunk_proof = prover
-                .gen_chunk_proof(&[trace], Some(&agg_pk_path))
+                .gen_chunk_proof(&[trace])
                 .expect("cannot generate chunk proof");
             info!(
                 "finish generating chunk proof for block {}, elapsed: {:?}",
