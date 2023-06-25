@@ -211,7 +211,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let now = Instant::now();
     let mut prover = Prover::from_param_dir(PARAMS_DIR);
     let proof = prover
-        .create_target_circuit_proof_batch::<C>(&block_traces)
+        .gen_inner_proof::<C>(block_traces.as_slice())
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
@@ -227,6 +227,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     log::info!("start verifying proof");
     let now = Instant::now();
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
+    assert!(verifier.verify_inner_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }

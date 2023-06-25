@@ -1,6 +1,9 @@
+use anyhow;
+use num_bigint::BigUint;
 use std::{
+    fs::File,
     io::{Cursor, Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use halo2_proofs::{
@@ -9,8 +12,8 @@ use halo2_proofs::{
     poly::{commitment::Params, kzg::commitment::ParamsKZG},
     SerdeFormat,
 };
-use num_bigint::BigUint;
 use snark_verifier::util::arithmetic::PrimeField;
+use snark_verifier_sdk::Snark;
 
 pub fn serialize_fr(f: &Fr) -> Vec<u8> {
     f.to_bytes().to_vec()
@@ -195,6 +198,24 @@ pub fn write_verify_circuit_proof_be(folder: &mut PathBuf, buf: &[u8]) {
 
 pub fn write_verify_circuit_solidity(folder: &mut PathBuf, buf: &[u8]) {
     write_file(folder, "verifier.sol", buf)
+}
+
+pub fn write_snark(file_path: &str, snark: &Snark) {
+    let mut fd = std::fs::File::create(file_path).unwrap();
+    serde_json::to_writer_pretty(&mut fd, snark).unwrap()
+}
+
+pub fn load_snark(file_path: &str) -> anyhow::Result<Option<Snark>> {
+    if !Path::new(file_path).exists() {
+        return Ok(None);
+    }
+
+    let fd = File::open(file_path)?;
+    let mut deserializer = serde_json::Deserializer::from_reader(fd);
+    deserializer.disable_recursion_limit();
+    let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+    let snark = serde::Deserialize::deserialize(deserializer)?;
+    Ok(Some(snark))
 }
 
 pub fn load_instances(buf: &[u8]) -> Vec<Vec<Vec<Fr>>> {
