@@ -18,9 +18,6 @@ struct Args {
     /// Get vk from the file.
     #[clap(long = "vk")]
     vk_path: Option<String>,
-    /// the path of agg circuit proof to verify.
-    #[clap(long = "agg")]
-    agg_proof: Option<String>,
 }
 
 fn main() {
@@ -35,12 +32,10 @@ fn main() {
 
     let v = Verifier::from_params(params, agg_params, Some(agg_vk));
 
-    if let Some(path) = args.agg_proof {
-        let proof_vec = read_from_file(&path);
-        let proof = serde_json::from_slice::<AggCircuitProof>(proof_vec.as_slice()).unwrap();
-        let verified = v.verify_agg_circuit_proof(proof).is_ok();
-        info!("verify agg proof: {}", verified)
-    }
+    let proof_vec = read_from_file("agg.proof");
+    let proof = serde_json::from_slice::<AggCircuitProof>(proof_vec.as_slice()).unwrap();
+    let verified = v.verify_agg_circuit_proof(proof).is_ok();
+    info!("verify agg proof: {}", verified)
 }
 
 fn read_from_file(path: &str) -> Vec<u8> {
