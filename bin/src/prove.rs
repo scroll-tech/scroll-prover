@@ -22,6 +22,7 @@ struct Args {
 
 fn main() {
     init_env_and_log("prove");
+    std::env::set_var("VERIFY_CONFIG", "./zkevm/configs/verify_circuit.config");
 
     let args = Args::parse();
     let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
