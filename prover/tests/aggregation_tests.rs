@@ -1,6 +1,6 @@
 use prover::{
     io::{load_snark, write_file, write_snark},
-    test_util::{load_block_traces_for_test, PARAMS_DIR},
+    test_util::{load_block_traces_for_test, AGG_PK_PATH, PARAMS_DIR},
     utils::{init_env_and_log, load_or_create_params},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE},
@@ -75,7 +75,9 @@ fn test_aggregation_api() {
         XorShiftRng::from_seed([0u8; 16]),
     );
 
-    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_proof]).unwrap();
+    let chunk_proof = prover
+        .gen_agg_evm_proof(vec![inner_proof], Some(Path::new(AGG_PK_PATH)))
+        .unwrap();
 
     // Dump aggregation proof, vk and instance.
     chunk_proof.dump(&mut output_path, &"chunk").unwrap();

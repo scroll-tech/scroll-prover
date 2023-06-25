@@ -5,6 +5,7 @@ use types::eth::BlockTrace;
 
 pub mod mock_plonk;
 
+pub const AGG_PK_PATH: &str = "./test_agg.pk";
 pub const PARAMS_DIR: &str = "./test_params";
 
 pub fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<types::eth::BlockTrace>) {

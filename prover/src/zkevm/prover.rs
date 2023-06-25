@@ -3,7 +3,7 @@ use log::info;
 use once_cell::sync::Lazy;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 use types::eth::BlockTrace;
 
 use super::circuit::{
@@ -62,18 +62,26 @@ impl Prover {
 
     // Generate the chunk proof given the chunk trace using Poseidon hash for challenges.
     // The returned proof is expected to be verified by only rust verifier not solidity verifier.
-    pub fn gen_chunk_proof(&mut self, chunk_trace: &[BlockTrace]) -> anyhow::Result<Proof> {
+    pub fn gen_chunk_proof(
+        &mut self,
+        chunk_trace: &[BlockTrace],
+        agg_pk_path: Option<&Path>,
+    ) -> anyhow::Result<Proof> {
         let inner_proof = self.gen_inner_proof::<SuperCircuit>(chunk_trace)?;
         // compress the inner proof using the aggregation proof
-        self.gen_agg_proof(vec![inner_proof])
+        self.gen_agg_proof(vec![inner_proof], agg_pk_path)
     }
 
     // Generate the chunk proof given the chunk trace using Keccak hash for challenges.
     // The returned proof can be efficiently verified by solidity verifier.
-    pub fn gen_chunk_evm_proof(&mut self, chunk_trace: &[BlockTrace]) -> anyhow::Result<Proof> {
+    pub fn gen_chunk_evm_proof(
+        &mut self,
+        chunk_trace: &[BlockTrace],
+        agg_pk_path: Option<&Path>,
+    ) -> anyhow::Result<Proof> {
         let inner_proof = self.gen_inner_proof::<SuperCircuit>(chunk_trace)?;
         // compress the inner proof using the aggregation proof
-        self.gen_agg_evm_proof(vec![inner_proof])
+        self.gen_agg_evm_proof(vec![inner_proof], agg_pk_path)
     }
 
     // Generate the proof of the inner circuit
@@ -137,7 +145,11 @@ impl Prover {
     }
 
     // Generate the aggregation proof given the proofs of inner circuit
-    pub fn gen_agg_proof(&mut self, snarks: Vec<Snark>) -> anyhow::Result<Proof> {
+    pub fn gen_agg_proof(
+        &mut self,
+        snarks: Vec<Snark>,
+        agg_pk_path: Option<&Path>,
+    ) -> anyhow::Result<Proof> {
         // build the aggregation circuit inputs from the inner circuit outputs
         let seed = [0u8; 16];
         let mut rng = XorShiftRng::from_seed(seed);
@@ -145,7 +157,7 @@ impl Prover {
         let agg_circuit = AggregationCircuit::new(&self.agg_params, snarks, &mut rng);
         let agg_pk = self
             .agg_pk
-            .get_or_insert_with(|| gen_pk(&self.agg_params, &agg_circuit, None));
+            .get_or_insert_with(|| gen_pk(&self.agg_params, &agg_circuit, agg_pk_path));
 
         let agg_proof = gen_snark_shplonk(
             &self.agg_params,
@@ -159,7 +171,11 @@ impl Prover {
     }
 
     // Generate the aggregation evm proof given the proofs of inner circuit
-    pub fn gen_agg_evm_proof(&mut self, snarks: Vec<Snark>) -> anyhow::Result<Proof> {
+    pub fn gen_agg_evm_proof(
+        &mut self,
+        snarks: Vec<Snark>,
+        agg_pk_path: Option<&Path>,
+    ) -> anyhow::Result<Proof> {
         // build the aggregation circuit inputs from the inner circuit outputs
         let seed = [0u8; 16];
         let mut rng = XorShiftRng::from_seed(seed);
@@ -167,7 +183,7 @@ impl Prover {
         let agg_circuit = AggregationCircuit::new(&self.agg_params, snarks, &mut rng);
         let agg_pk = self
             .agg_pk
-            .get_or_insert_with(|| gen_pk(&self.agg_params, &agg_circuit, None));
+            .get_or_insert_with(|| gen_pk(&self.agg_params, &agg_circuit, agg_pk_path));
 
         let agg_proof = gen_evm_proof_shplonk(
             &self.agg_params,
