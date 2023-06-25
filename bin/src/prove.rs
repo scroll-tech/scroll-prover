@@ -18,10 +18,6 @@ struct Args {
     /// Get BlockTrace from file or dir.
     #[clap(short, long = "trace")]
     trace_path: Option<String>,
-    /// Option means if generates agg circuit proof.
-    /// Boolean means if output agg circuit proof.
-    #[clap(long = "agg")]
-    agg_proof: Option<bool>,
 }
 
 fn main() {
@@ -48,18 +44,14 @@ fn main() {
         traces.push(block_trace);
     }
 
-    if args.agg_proof.is_some() {
-        let mut proof_path = PathBuf::from("agg.proof");
+    let mut proof_path = PathBuf::from("agg.proof");
 
-        let now = Instant::now();
-        let agg_proof = prover
-            .create_agg_circuit_proof_batch(traces.as_slice())
-            .expect("cannot generate agg_proof");
-        info!("finish generating agg proof, elapsed: {:?}", now.elapsed());
+    let now = Instant::now();
+    let agg_proof = prover
+        .create_agg_circuit_proof_batch(traces.as_slice())
+        .expect("cannot generate agg_proof");
+    info!("finish generating agg proof, elapsed: {:?}", now.elapsed());
 
-        if args.agg_proof.unwrap() {
-            fs::create_dir_all(&proof_path).unwrap();
-            agg_proof.dump(&mut proof_path).unwrap();
-        }
-    }
+    fs::create_dir_all(&proof_path).unwrap();
+    agg_proof.dump(&mut proof_path).unwrap();
 }

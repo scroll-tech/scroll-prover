@@ -2,10 +2,10 @@ use clap::Parser;
 use log::info;
 use std::fs::File;
 use std::io::Read;
-use zkevm::prover::{AggCircuitProof, TargetCircuitProof};
+use zkevm::prover::AggCircuitProof;
 use zkevm::verifier::Verifier;
 use zkevm::{
-    circuit::{SuperCircuit, AGG_DEGREE, DEGREE},
+    circuit::{AGG_DEGREE, DEGREE},
     utils::{init_env_and_log, load_or_create_params},
 };
 
@@ -33,7 +33,7 @@ fn main() {
         .expect("failed to load or create params");
     let agg_vk = read_from_file(&args.vk_path.unwrap());
 
-    let mut v = Verifier::from_params(params, agg_params, Some(agg_vk));
+    let v = Verifier::from_params(params, agg_params, Some(agg_vk));
 
     if let Some(path) = args.agg_proof {
         let proof_vec = read_from_file(&path);
