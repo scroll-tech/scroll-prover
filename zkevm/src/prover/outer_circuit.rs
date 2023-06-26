@@ -6,9 +6,7 @@ use crate::io::{serialize_fr_tensor, serialize_vk};
 use crate::prover::TargetCircuitProof;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::evm::gen_evm_proof_shplonk;
-use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use snark_verifier_sdk::{gen_pk, CircuitExt};
+use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, AggregationCircuit, CircuitExt};
 use types::eth::BlockTrace;
 
 impl Prover {

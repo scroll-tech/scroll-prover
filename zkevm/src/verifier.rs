@@ -16,9 +16,9 @@ use halo2_proofs::poly::kzg::strategy::AccumulatorStrategy;
 use halo2_proofs::poly::VerificationStrategy;
 use halo2_proofs::transcript::TranscriptReadBuffer;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
-use snark_verifier_sdk::evm::evm_verify;
-use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
-use snark_verifier_sdk::halo2::verify_snark_shplonk;
+use snark_verifier_sdk::evm_verify;
+use snark_verifier_sdk::verify_snark_shplonk;
+use snark_verifier_sdk::AggregationCircuit;
 
 pub struct Verifier {
     params: ParamsKZG<Bn256>,
