@@ -3,21 +3,13 @@ use eth_types::{
     Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
 };
 use ethers_core::types::{Address, Bytes, U256, U64};
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-fn u64_to_word<'de, D>(deserializer: D) -> Result<U256, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let i: u64 = Deserialize::deserialize(deserializer)?;
-    Ok((i).into())
-}
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct BlockTrace {
-    #[serde(rename = "chainID", default, deserialize_with = "u64_to_word")]
-    pub chain_id: U256,
+    #[serde(rename = "chainID", default)]
+    pub chain_id: u64,
     pub coinbase: AccountProofWrapper,
     pub header: EthBlock,
     pub transactions: Vec<TransactionTrace>,

@@ -6,16 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2022_09_10" }
+halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","scroll-trace"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "develop" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "proof-aggregation-circuit" }
 
-snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
-snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
+snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
+snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
 
 anyhow = "1.0"
 blake2 = "0.10.3"
@@ -50,4 +50,3 @@ procfs = "0.13.0"
 default = []
 # default = ["prove_verify"]
 prove_verify = []
-

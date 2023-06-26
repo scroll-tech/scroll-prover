@@ -7,7 +7,7 @@ use bus_mapping::{
     circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams},
     state_db::{Account, CodeDB, StateDB},
 };
-use eth_types::{evm_types::OpcodeId, ToAddress};
+use eth_types::{evm_types::opcode_ids::OpcodeId, ToAddress};
 use ethers_core::types::{Bytes, U256};
 use halo2_proofs::halo2curves::bn256::Fr;
 use is_even::IsEven;
@@ -187,12 +187,12 @@ pub fn block_traces_to_witness_block_with_updated_state(
     let chain_ids = block_traces
         .iter()
         .map(|block_trace| block_trace.chain_id)
-        .collect::<Vec<U256>>();
+        .collect::<Vec<_>>();
 
     let chain_id = if !chain_ids.is_empty() {
         chain_ids[0]
     } else {
-        (*CHAIN_ID).into()
+        *CHAIN_ID
     };
 
     let mut state_db: StateDB = zktrie_state.state().clone();
@@ -217,7 +217,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         max_rlp_rows: MAX_CALLDATA,
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
-    builder_block.chain_id = chain_id.as_u64();
+    builder_block.chain_id = chain_id;
     builder_block.prev_state_root = U256::from(zktrie_state.root());
     let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
@@ -229,7 +229,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
-        let mut header = BlockHead::new(chain_id.as_u64(), Vec::new(), &eth_block)?;
+        let mut header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
         // override zeroed minder field with additional "coinbase" field in blocktrace
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
