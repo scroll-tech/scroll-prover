@@ -398,7 +398,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -1098,7 +1098,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1364,7 +1364,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1593,7 +1593,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1633,7 +1633,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -1765,7 +1765,7 @@ dependencies = [
 [[package]]
 name = "halo2-mpt-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=v0.4#f47013661d95de36be030dcb1afbf66349c27533"
+source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=v0.4#85f6f96d1da2ddff5fb2d7cf4852b9f356b326a7"
 dependencies = [
  "ethers-core 0.17.0",
  "halo2_proofs",
@@ -2223,7 +2223,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2423,7 +2423,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2438,7 +2438,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4662,7 +4662,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#b480692a22c5be06b72dbcdf2be2cefe8e222342"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=repro/trace_dumper-debugging_2#5e02aaa4f1b7f136d90764e3c7a9551e60ebfae7"
 dependencies = [
  "array-init",
  "bus-mapping",

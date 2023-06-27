@@ -10,7 +10,7 @@ halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.gi
 
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging_2" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging_2" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging_2", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging_2", default-features = false, features = ["test","scroll","scroll-trace"] }
 mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "repro/trace_dumper-debugging_2" }
 mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "repro/trace_dumper-debugging_2" }
 
