@@ -24,7 +24,7 @@ test: ## Run tests for all the workspace members
 
 bridge-test:
 	cargo build --release
-	./target/release/prove --params=./test_params --seed=./test_seed --trace=zkevm/tests/traces/bridge --agg=true
+	./target/release/prove --params=./test_params --seed=./test_seed --trace=prover/tests/traces/bridge --agg=true
 
 test-super-trace: ## test super circuit with real trace
 	cargo test --features prove_verify --release test_prove_verify
@@ -43,5 +43,10 @@ test-agg:
 
 rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows
+
+# Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
+# As default `degree=25` and `params_dir=./prover/test_params`.
+download-setup:
+	sh download_setup.sh ${degree} ${params_dir}
 
 .PHONY: help fmt clippy test test-ci test-all

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
-use crate::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
+use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
+use super::prover::{AggCircuitProof, TargetCircuitProof};
 use crate::io::load_instances;
-use crate::prover::{AggCircuitProof, TargetCircuitProof};
 use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
 use anyhow::anyhow;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr, G1Affine};

@@ -13,7 +13,7 @@ target/
 .cargo
 
 # for testing
-zkevm/tests/traces/bridge/*.proof
+prover/tests/traces/bridge/*.proof
 
 # ignore local logs
 *.log
