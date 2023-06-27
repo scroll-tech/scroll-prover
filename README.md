@@ -34,6 +34,10 @@ cargo build --release --bin prove
 
 ./target/release/prove --help
 ```
+Or you can use it like the following:
+```shell
+cargo run --release --bin prove -- --params=./params --trace=./test.json
+```
 
 ## License
 

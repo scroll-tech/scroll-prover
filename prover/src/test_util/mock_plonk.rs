@@ -1,6 +1,6 @@
 //! A module for Mock Plonk circuit.
 //!
-use crate::circuit::TargetCircuit;
+use crate::zkevm::circuit::TargetCircuit;
 use halo2_proofs::halo2curves::bn256::Fr;
 use halo2_proofs::{
     circuit::{Layouter, SimpleFloorPlanner, Value},

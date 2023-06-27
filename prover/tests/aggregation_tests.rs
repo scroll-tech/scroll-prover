@@ -1,16 +1,14 @@
+use prover::io::write_file;
+use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
+use prover::utils::{init_env_and_log, load_or_create_params};
+use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
+use prover::zkevm::{EvmVerifier, Prover, TargetCircuitProof};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use test_util::load_block_traces_for_test;
-use zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
-use zkevm::io::write_file;
-use zkevm::prover::{Prover, TargetCircuitProof};
-use zkevm::test_util::{self, PARAMS_DIR};
-use zkevm::utils::{init_env_and_log, load_or_create_params};
-use zkevm::verifier::EvmVerifier;
 
 // An end to end integration test.
 // The inner snark proofs are generated from a mock circuit

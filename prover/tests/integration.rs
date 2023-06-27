@@ -1,15 +1,12 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use zkevm::{
-    capacity_checker::CircuitCapacityChecker,
-    circuit::{SuperCircuit, TargetCircuit, DEGREE},
-    io::serialize_vk,
-    prover::Prover,
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params},
+use prover::io::serialize_vk;
+use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
+use prover::utils::{
+    get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params,
 };
-
-use test_util::{load_block_traces_for_test, PARAMS_DIR};
-use zkevm::test_util;
+use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
+use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
 
 use zkevm_circuits::util::SubCircuit;
 
@@ -19,19 +16,19 @@ fn test_load_params() {
     init_env_and_log("integration");
     log::info!("start");
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
         SerdeFormat::RawBytesUnchecked,
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params",
+        "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
         SerdeFormat::RawBytes,
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/zkevm/test_params.old",
+        "/home/ubuntu/scroll-zkevm/prover/test_params.old",
         26,
         SerdeFormat::Processed,
     )
@@ -78,27 +75,21 @@ fn test_capacity_checker() {
 
 #[test]
 fn estimate_circuit_rows() {
-    use zkevm::circuit::{self, TargetCircuit};
-
     init_env_and_log("integration");
 
     let (_, block_trace) = load_block_traces_for_test();
 
     log::info!("estimating used rows for batch");
-    let rows = circuit::SuperCircuit::estimate_rows(&block_trace);
+    let rows = SuperCircuit::estimate_rows(&block_trace);
     log::info!("super circuit: {:?}", rows);
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove() {
-    use zkevm::circuit;
-
-    use crate::test_util::load_block_traces_for_test;
-
     init_env_and_log("integration");
     let block_traces = load_block_traces_for_test().1;
-    Prover::mock_prove_target_circuit_batch::<circuit::SuperCircuit>(&block_traces).unwrap();
+    Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -211,8 +202,6 @@ fn test_vk_same() {
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     use std::time::Instant;
-
-    use zkevm::verifier::Verifier;
 
     init_env_and_log("integration");
 

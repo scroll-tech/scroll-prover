@@ -1,5 +1,5 @@
 [package]
-name = "zkevm"
+name = "prover"
 version = "0.4.0"
 edition = "2021"
 

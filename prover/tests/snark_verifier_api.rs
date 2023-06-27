@@ -1,6 +1,9 @@
 use halo2_proofs::poly::commitment::Params;
 use mock_plonk::MockPlonkCircuit;
 use mock_plonk::StandardPlonk;
+use prover::test_util;
+use prover::utils::init_env_and_log;
+use prover::zkevm::{EvmVerifier, Prover, Verifier};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::AggregationCircuit;
@@ -8,16 +11,12 @@ use snark_verifier_sdk::CircuitExt;
 use snark_verifier_sdk::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};
 use snark_verifier_sdk::{gen_pk, gen_snark_shplonk};
 use test_util::mock_plonk;
-use zkevm::prover::Prover;
-use zkevm::test_util;
-use zkevm::utils::init_env_and_log;
-use zkevm::verifier::{EvmVerifier, Verifier};
 
 // This is essentially a same test as snark-verifier/evm-verifier
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_snark_verifier_sdk_api() {
-    use zkevm::utils::load_or_create_params;
+    use prover::utils::load_or_create_params;
 
     use crate::test_util::PARAMS_DIR;
 
@@ -80,7 +79,7 @@ fn test_snark_verifier_sdk_api() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_partial_aggregation_api() {
-    use zkevm::utils::load_or_create_params;
+    use prover::utils::load_or_create_params;
 
     use crate::test_util::PARAMS_DIR;
 

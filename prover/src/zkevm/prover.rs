@@ -19,6 +19,7 @@ pub use outer_proof::AggCircuitProof;
 #[cfg(target_os = "linux")]
 extern crate procfs;
 
+#[allow(dead_code)]
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 

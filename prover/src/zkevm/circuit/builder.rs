@@ -1,7 +1,6 @@
-use super::{MAX_CALLDATA, MAX_EXP_STEPS, MAX_RWS, MAX_TXS};
-use crate::circuit::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_INNER_BLOCKS,
-    MAX_KECCAK_ROWS, MAX_MPT_ROWS,
+use super::{
+    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
+    MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_RWS, MAX_TXS,
 };
 use anyhow::bail;
 use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
@@ -29,14 +28,14 @@ pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usiz
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
     calculate_row_usage_of_witness_block(&witness_block)
 }
+
 pub fn calculate_row_usage_of_witness_block(
     witness_block: &Block<Fr>,
 ) -> Result<Vec<usize>, anyhow::Error> {
-    let rows =
-        <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
-            witness_block,
-        )
-        .0;
+    let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
+        witness_block,
+    )
+    .0;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx len sum {}, rows needed {:?}",
@@ -244,8 +243,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             let t = Instant::now();
             let block = block_convert::<Fr>(&builder.block, &builder.code_db)?;
             log::debug!("block convert time {:?}", t.elapsed());
-            let rows =
-                <crate::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
+            let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
             log::debug!(
                 "after block {}, tx num {:?}, tx len sum {}, rows needed {:?}. estimate time: {:?}",
                 idx,

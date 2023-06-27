@@ -214,6 +214,7 @@ dependencies = [
  "itertools",
  "log",
  "log4rs",
+ "prover",
  "rand",
  "rand_xorshift",
  "reqwest",
@@ -222,7 +223,6 @@ dependencies = [
  "serde_json",
  "tokio",
  "types",
- "zkevm",
 ]
 
 [[package]]
@@ -1423,12 +1423,12 @@ dependencies = [
  "log",
  "log4rs",
  "once_cell",
+ "prover",
  "rand",
  "serde",
  "serde_derive",
  "serde_json",
  "types",
- "zkevm",
 ]
 
 [[package]]
@@ -2930,6 +2930,45 @@ dependencies = [
  "hex",
  "lazy_static",
  "rustix 0.35.13",
+]
+
+[[package]]
+name = "prover"
+version = "0.4.0"
+dependencies = [
+ "anyhow",
+ "blake2",
+ "bus-mapping",
+ "chrono",
+ "dotenv",
+ "eth-types",
+ "ethers-core 0.17.0",
+ "git-version",
+ "glob",
+ "halo2_proofs",
+ "hex",
+ "is-even",
+ "itertools",
+ "log",
+ "log4rs",
+ "mock",
+ "mpt-zktrie",
+ "num-bigint",
+ "once_cell",
+ "procfs",
+ "rand",
+ "rand_xorshift",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_stacker",
+ "sha2 0.10.6",
+ "snark-verifier",
+ "snark-verifier-sdk",
+ "strum",
+ "strum_macros",
+ "types",
+ "zkevm-circuits",
 ]
 
 [[package]]
@@ -4619,45 +4658,6 @@ name = "zeroize"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
-
-[[package]]
-name = "zkevm"
-version = "0.4.0"
-dependencies = [
- "anyhow",
- "blake2",
- "bus-mapping",
- "chrono",
- "dotenv",
- "eth-types",
- "ethers-core 0.17.0",
- "git-version",
- "glob",
- "halo2_proofs",
- "hex",
- "is-even",
- "itertools",
- "log",
- "log4rs",
- "mock",
- "mpt-zktrie",
- "num-bigint",
- "once_cell",
- "procfs",
- "rand",
- "rand_xorshift",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_stacker",
- "sha2 0.10.6",
- "snark-verifier",
- "snark-verifier-sdk",
- "strum",
- "strum_macros",
- "types",
- "zkevm-circuits",
-]
 
 [[package]]
 name = "zkevm-circuits"

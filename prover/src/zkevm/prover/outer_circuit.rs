@@ -1,9 +1,8 @@
 //! This module implements outer circuit related APIs for Prover.
 
-use super::{AggCircuitProof, Prover};
-use crate::circuit::SuperCircuit;
+use super::super::circuit::SuperCircuit;
+use super::{AggCircuitProof, Prover, TargetCircuitProof};
 use crate::io::{serialize_fr_tensor, serialize_vk};
-use crate::prover::TargetCircuitProof;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, AggregationCircuit, CircuitExt};

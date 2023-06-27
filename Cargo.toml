@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "types",
-    "zkevm",
     "bin",
     "ffi",
+    "prover",
+    "types",
 ]
 
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
