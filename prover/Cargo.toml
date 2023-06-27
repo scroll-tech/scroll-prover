@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 
+aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }
 zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "proof-aggregation-circuit" }

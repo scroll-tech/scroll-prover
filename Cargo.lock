@@ -21,6 +21,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "aggregator"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+dependencies = [
+ "ark-std 0.4.0",
+ "env_logger 0.10.0",
+ "eth-types",
+ "ethers-core 0.17.0",
+ "halo2_proofs",
+ "itertools",
+ "log",
+ "rand",
+ "serde",
+ "serde_json",
+ "snark-verifier",
+ "snark-verifier-sdk",
+ "zkevm-circuits",
+]
+
+[[package]]
 name = "ahash"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -77,6 +97,16 @@ name = "ark-std"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1df2c09229cbc5a028b1d70e00fdb2acee28b1055dfb5ca73eea49c5a25c4e7c"
+dependencies = [
+ "num-traits",
+ "rand",
+]
+
+[[package]]
+name = "ark-std"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94893f1e0c6eeab764ade8dc4c0db24caf4fe7cbbaafc0eba0a9030f447b5185"
 dependencies = [
  "num-traits",
  "rand",
@@ -1783,7 +1813,7 @@ name = "halo2_proofs"
 version = "0.2.0"
 source = "git+https://github.com/scroll-tech/halo2.git?branch=develop#9bf3562083dd9bed8a19f651b52bc810f5e2235f"
 dependencies = [
- "ark-std",
+ "ark-std 0.3.0",
  "blake2b_simd",
  "cfg-if 0.1.10",
  "crossbeam",
@@ -2935,6 +2965,7 @@ checksum = "8bccbff07d5ed689c4087d20d7307a52ab6141edeedf487c3876a55b86cf63df"
 name = "prover"
 version = "0.4.0"
 dependencies = [
+ "aggregator",
  "anyhow",
  "blake2",
  "bus-mapping",
