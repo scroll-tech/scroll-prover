@@ -3,7 +3,7 @@ use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
 
-use crate::circuit::{
+use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
     update_state, DEGREE, SUB_CIRCUIT_NAMES,
 };
@@ -93,7 +93,7 @@ impl CircuitCapacityChecker {
     }
     pub fn estimate_circuit_capacity(
         &mut self,
-        txs: &[BlockTrace],
+        txs: &[TxTrace],
     ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
         assert!(!txs.is_empty());
         if self.state.is_none() {

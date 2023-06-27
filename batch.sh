@@ -14,7 +14,7 @@ function check_batch() {
 }
 
 function check_block() {
-	for t in zkevm/tests/extra_traces/tx_storage_proof.json zkevm/tests/extra_traces/hash_precompile_2.json zkevm/tests/extra_traces/hash_precompile_1.json zkevm/tests/traces/sushi/sushi_chef-withdraw.json zkevm/tests/traces/erc20/erc20_10_transfer.json; do
+	for t in prover/tests/extra_traces/tx_storage_proof.json prover/tests/extra_traces/hash_precompile_2.json prover/tests/extra_traces/hash_precompile_1.json prover/tests/traces/sushi/sushi_chef-withdraw.json prover/tests/traces/erc20/erc20_10_transfer.json; do
 		TRACE_PATH=`realpath $t` make mock 2>&1 | tee /tmp/mock_`basename $t`.log
 	done
 }
