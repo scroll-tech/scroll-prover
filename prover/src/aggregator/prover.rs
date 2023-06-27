@@ -7,11 +7,12 @@ use std::collections::HashMap;
 
 mod aggregation;
 mod chunk;
+mod common;
 mod compression;
 mod utils;
 
 #[derive(Debug)]
 pub struct Prover {
-    inner_params: ParamsKZG<Bn256>,
-    inner_pks: HashMap<String, ProvingKey<G1Affine>>,
+    params: ParamsKZG<Bn256>,
+    pks: HashMap<String, ProvingKey<G1Affine>>,
 }
