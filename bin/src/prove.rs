@@ -1,10 +1,7 @@
 use clap::Parser;
 use log::info;
 use prover::utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params};
-use prover::zkevm::{
-    circuit::{SuperCircuit, AGG_DEGREE},
-    Prover,
-};
+use prover::zkevm::{circuit::AGG_DEGREE, Prover};
 use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
