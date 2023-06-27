@@ -6,10 +6,10 @@ use prover::utils::init_env_and_log;
 use prover::zkevm::{EvmVerifier, Prover, Verifier};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::evm::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};
-use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
-use snark_verifier_sdk::{gen_pk, halo2::gen_snark_shplonk};
+use snark_verifier_sdk::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};
+use snark_verifier_sdk::{gen_pk, gen_snark_shplonk};
 use test_util::mock_plonk;
 
 // This is essentially a same test as snark-verifier/evm-verifier

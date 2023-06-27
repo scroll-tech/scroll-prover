@@ -5,7 +5,7 @@ use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE};
 use prover::zkevm::{EvmVerifier, Prover, TargetCircuitProof};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::halo2::aggregation::AggregationCircuit;
+use snark_verifier_sdk::AggregationCircuit;
 use snark_verifier_sdk::CircuitExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;

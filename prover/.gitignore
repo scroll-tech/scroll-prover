@@ -15,4 +15,4 @@ Cargo.lock
 test_params*
 test_seed
 
-output_*
+*output_*

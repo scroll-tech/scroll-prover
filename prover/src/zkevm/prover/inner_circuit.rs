@@ -12,7 +12,7 @@ use halo2_proofs::halo2curves::bn256::Fr;
 use log::info;
 use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::halo2::gen_snark_shplonk;
+use snark_verifier_sdk::gen_snark_shplonk;
 use types::eth::BlockTrace;
 
 impl Prover {
