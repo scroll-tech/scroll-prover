@@ -3,12 +3,11 @@ set -e
 set -o pipefail
 
 export OPT_MEM=true
-export MOCK_PROVE=true
+#export MOCK_PROVE=true
 #export KECCAK_ROWS=20
 #export KECCAK_DEGREE=19
 export RUST_MIN_STACK=100000000
 export PARAM_SEED=bb4b94a1bbef58c4b5fcda6c900629b5 
-#export COINBASE=5300000000000000000000000000000000000005
 
 function goerli() {
 		TRACE_DIR="0327-correct-deletion"
