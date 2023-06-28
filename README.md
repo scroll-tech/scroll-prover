@@ -44,7 +44,7 @@ cargo build --release --bin prove
 
 ./target/release/prove --help
 ```
-Or specify arguments as
+Could specify arguments as
 ```shell
 cargo run --release --bin prove -- --params=./prover/test_params --trace=./prover/tests/traces/erc20/10_transfer.json
 ```
@@ -55,7 +55,7 @@ cargo build --release --bin verify
 
 ./target/release/verify --help
 ```
-Or specify arguments as
+Could specify arguments as
 ```shell
 cargo run --release --bin verify -- --params=./prover/test_params --vk=./proof_data/chunk.vkey
 ```

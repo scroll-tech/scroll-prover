@@ -26,7 +26,7 @@ bridge-test:
 	cargo build --release
 	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
 
-test-inner-prove: ## test super circuit with real trace
+test-inner-prove: ## Test inner circuit with real trace
 	cargo test --features prove_verify --release test_prove_verify
 
 mock:
