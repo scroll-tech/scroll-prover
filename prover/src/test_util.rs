@@ -7,34 +7,6 @@ pub mod mock_plonk;
 
 pub const PARAMS_DIR: &str = "./test_params";
 
-pub fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<types::eth::BlockTrace>) {
-    let file_names: Vec<String> = glob(&format!("{batch_dir}/**/*.json"))
-        .unwrap()
-        .map(|p| p.unwrap().to_str().unwrap().to_string())
-        .collect();
-    log::info!("test batch with {:?}", file_names);
-    let mut names_and_traces = file_names
-        .into_iter()
-        .map(|trace_path| {
-            let trace: BlockTrace = get_block_trace_from_file(trace_path.clone());
-            (
-                trace_path,
-                trace.clone(),
-                trace.header.number.unwrap().as_u64(),
-            )
-        })
-        .collect::<Vec<_>>();
-    names_and_traces.sort_by(|a, b| a.2.cmp(&b.2));
-    log::info!(
-        "sorted: {:?}",
-        names_and_traces
-            .iter()
-            .map(|(f, _, _)| f.clone())
-            .collect::<Vec<String>>()
-    );
-    names_and_traces.into_iter().map(|(f, t, _)| (f, t)).unzip()
-}
-
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {
         "empty" => "./tests/traces/empty.json",
@@ -71,4 +43,32 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     log::info!("test cases traces: {:?}", paths);
     let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
     (paths, traces)
+}
+
+fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<types::eth::BlockTrace>) {
+    let file_names: Vec<String> = glob(&format!("{batch_dir}/**/*.json"))
+        .unwrap()
+        .map(|p| p.unwrap().to_str().unwrap().to_string())
+        .collect();
+    log::info!("test batch with {:?}", file_names);
+    let mut names_and_traces = file_names
+        .into_iter()
+        .map(|trace_path| {
+            let trace: BlockTrace = get_block_trace_from_file(trace_path.clone());
+            (
+                trace_path,
+                trace.clone(),
+                trace.header.number.unwrap().as_u64(),
+            )
+        })
+        .collect::<Vec<_>>();
+    names_and_traces.sort_by(|a, b| a.2.cmp(&b.2));
+    log::info!(
+        "sorted: {:?}",
+        names_and_traces
+            .iter()
+            .map(|(f, _, _)| f.clone())
+            .collect::<Vec<String>>()
+    );
+    names_and_traces.into_iter().map(|(f, t, _)| (f, t)).unzip()
 }

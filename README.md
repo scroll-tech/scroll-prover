@@ -7,9 +7,9 @@
 
 ### Testing
 
-`make test-agg` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers can understand how the system works by reading the codes of this test.
+`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers can understand how the system works by reading the codes of this test.
 
-Besides, `make test-super-trace` can be used to test the first-level circuit.
+Besides, `make test-inner-prove` can be used to test the first-level circuit.
 
 ### Binaries
 
