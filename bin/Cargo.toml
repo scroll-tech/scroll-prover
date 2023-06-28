@@ -24,10 +24,6 @@ types = { path = "../types" }
 prover = { path = "../prover" }
 
 [[bin]]
-name = "setup"
-path = "src/setup.rs"
-
-[[bin]]
 name = "prove"
 path = "src/prove.rs"
 
