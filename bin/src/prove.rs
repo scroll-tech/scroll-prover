@@ -10,25 +10,29 @@ use std::{fs, path::PathBuf, time::Instant};
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Get params and write into file.
-    #[clap(short, long = "params")]
-    params_path: Option<String>,
+    #[clap(short, long = "params", default_value = "prover/test_params")]
+    params_path: String,
     /// Get BlockTrace from file or dir.
-    #[clap(short, long = "trace")]
-    trace_path: Option<String>,
+    #[clap(
+        short,
+        long = "trace",
+        default_value = "prover/tests/traces/empty.json"
+    )]
+    trace_path: String,
 }
 
 fn main() {
     init_env_and_log("prove");
-    std::env::set_var("VERIFY_CONFIG", "./zkevm/configs/verify_circuit.config");
+    std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let agg_params = load_or_download_params(&args.params_path.unwrap(), *AGG_DEGREE)
+    let agg_params = load_or_download_params(&args.params_path, *AGG_DEGREE)
         .expect("failed to load or create params");
 
     let mut prover = Prover::from_params(agg_params);
 
     let mut traces = Vec::new();
-    let trace_path = PathBuf::from(&args.trace_path.unwrap());
+    let trace_path = PathBuf::from(&args.trace_path);
     if trace_path.is_dir() {
         for entry in fs::read_dir(trace_path).unwrap() {
             let path = entry.unwrap().path();
@@ -42,7 +46,7 @@ fn main() {
         traces.push(block_trace);
     }
 
-    let mut proof_dir = PathBuf::from("proof");
+    let mut proof_dir = PathBuf::from("proof_data");
 
     let now = Instant::now();
     let chunk_proof = prover

@@ -4,15 +4,13 @@
 
 ## Usage
 
-### Testing
+### Prerequisite
 
-`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers can understand how the system works by reading the codes of this test.
-
-Besides, `make test-inner-prove` can be used to test the first-level circuit.
-
-### Binaries
-
-This repository is designed to be used as a Rust crate, rather than a standalone running process. However, you can still use the following command to run binaries locally.
+Fetch git-submodule of test traces
+```shell
+git submodule init
+git submodule update --checkout
+```
 
 Download setup params
 ```shell
@@ -24,29 +22,43 @@ Or specify degree and target directory to download
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
 
-Prove
-```shell
-cargo build --release --bin prove
+### Testing
 
-./target/release/prove --help
-```
-Or you can use it like the following:
-```shell
-cargo run --release --bin prove -- --params=./params --trace=./test.json
-```
+`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers could understand how the system works by reading the codes of this test.
 
-Verify
-```shell
-cargo build --release --bin verify
+Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 
-./target/release/verify --help
-```
+### Binaries
+
+This repository is designed to be used as a Rust crate, rather than a standalone running process. However, you can still use the following command to run binaries locally.
 
 If you run into linking issues you may need to run
 ```shell
 cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
 To move the zktrielib into a path where your linker could locate it.
+
+Run prover
+```shell
+cargo build --release --bin prove
+
+./target/release/prove --help
+```
+Or specify arguments as
+```shell
+cargo run --release --bin prove -- --params=./prover/test_params --trace=./prover/tests/traces/erc20/10_transfer.json
+```
+
+Run verifier
+```shell
+cargo build --release --bin verify
+
+./target/release/verify --help
+```
+Or specify arguments as
+```shell
+cargo run --release --bin verify -- --params=./prover/test_params --vk=./proof_data/chunk.vkey
+```
 
 ## License
 

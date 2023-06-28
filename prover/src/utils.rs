@@ -18,7 +18,7 @@ use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
     str::FromStr,
     sync::Once,
 };
@@ -206,6 +206,7 @@ fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     let download_script_path = project_root::get_project_root()?.join("download_setup.sh");
 
     Command::new("sh")
+        .stdout(Stdio::null())
         .args([
             download_script_path.to_string_lossy().as_ref(),
             &degree.to_string(),
