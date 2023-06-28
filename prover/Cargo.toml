@@ -10,12 +10,12 @@ halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.gi
 
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","poseidon-codehash-lookup"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","scroll-trace"] }
 mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
 mock = { git = "https://github.com/scroll-tech/zkevm-circuits", branch = "develop" }
 
-snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
-snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "halo2-ecc-snark-verifier-0323" }
+snark-verifier =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
+snark-verifier-sdk =  { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
 
 rand = "0.8"
 rand_xorshift = "0.3"

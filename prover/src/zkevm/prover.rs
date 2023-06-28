@@ -20,10 +20,7 @@ use halo2_proofs::{
     poly::kzg::commitment::ParamsKZG,
 };
 use snark_verifier_sdk::{
-    evm::gen_evm_proof_shplonk,
-    gen_pk,
-    halo2::{aggregation::AggregationCircuit, gen_snark_shplonk},
-    CircuitExt, Snark,
+    gen_evm_proof_shplonk, gen_pk, gen_snark_shplonk, AggregationCircuit, CircuitExt, Snark,
 };
 
 mod evm;

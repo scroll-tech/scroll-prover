@@ -18,10 +18,7 @@ use halo2_proofs::{
     transcript::TranscriptReadBuffer,
 };
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
-use snark_verifier_sdk::{
-    halo2::{aggregation::AggregationCircuit, verify_snark_shplonk},
-    Snark,
-};
+use snark_verifier_sdk::{verify_snark_shplonk, AggregationCircuit, Snark};
 
 pub struct Verifier {
     zkevm_params: ParamsKZG<Bn256>,

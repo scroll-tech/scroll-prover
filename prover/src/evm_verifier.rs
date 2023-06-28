@@ -1,6 +1,6 @@
 use super::Proof;
 use halo2_proofs::halo2curves::bn256::Fr;
-use snark_verifier_sdk::evm::evm_verify;
+use snark_verifier_sdk::evm_verify;
 
 pub struct EvmVerifier {
     bytecode: Vec<u8>,

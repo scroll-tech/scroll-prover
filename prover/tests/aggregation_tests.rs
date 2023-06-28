@@ -10,9 +10,11 @@ use prover::{
 };
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::{halo2::aggregation::AggregationCircuit, CircuitExt};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
+use snark_verifier_sdk::{AggregationCircuit, CircuitExt};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 // An end to end integration test.
 // The inner snark proofs are generated from a mock circuit
