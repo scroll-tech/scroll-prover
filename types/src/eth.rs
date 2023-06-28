@@ -1,5 +1,7 @@
-use eth_types::evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage};
-use eth_types::{Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256};
+use eth_types::{
+    evm_types::{Gas, GasCost, OpcodeId, ProgramCounter, Stack, Storage},
+    Block, GethExecStep, GethExecTrace, Hash, Transaction, Word, H256,
+};
 use ethers_core::types::{Address, Bytes, U256, U64};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;

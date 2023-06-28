@@ -1,8 +1,7 @@
 use crate::utils::{c_char_to_str, c_char_to_vec};
 use libc::c_char;
 use prover::{utils::init_env_and_log, zkevm, Proof};
-use std::fs::File;
-use std::io::Read;
+use std::{fs::File, io::Read};
 
 static mut VERIFIER: Option<&zkevm::Verifier> = None;
 

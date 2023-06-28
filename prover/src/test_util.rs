@@ -1,5 +1,4 @@
-use crate::utils::get_block_trace_from_file;
-use crate::utils::read_env_var;
+use crate::utils::{get_block_trace_from_file, read_env_var};
 use glob::glob;
 use types::eth::BlockTrace;
 

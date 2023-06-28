@@ -1,7 +1,9 @@
 use crate::io::{deserialize_fr_matrix, serialize_fr_matrix, serialize_vk, write_file};
 use anyhow::Result;
-use halo2_proofs::halo2curves::bn256::{Fr, G1Affine};
-use halo2_proofs::plonk::ProvingKey;
+use halo2_proofs::{
+    halo2curves::bn256::{Fr, G1Affine},
+    plonk::ProvingKey,
+};
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier::{
     util::{
@@ -11,8 +13,10 @@ use snark_verifier::{
     Protocol,
 };
 use snark_verifier_sdk::Snark;
-use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 use types::base64;
 
 #[derive(Deserialize, Serialize, Debug, Default)]

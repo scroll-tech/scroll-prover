@@ -1,11 +1,12 @@
 use anyhow::anyhow;
 use itertools::Itertools;
-use std::collections::HashMap;
-use std::io::Cursor;
+use std::{collections::HashMap, io::Cursor};
 
 use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
-use crate::proof::Proof;
-use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
+use crate::{
+    proof::Proof,
+    utils::{load_params, DEFAULT_SERDE_FORMAT},
+};
 
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},

@@ -1,12 +1,14 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use prover::io::serialize_vk;
-use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
-use prover::utils::{
-    get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params,
+use prover::{
+    io::serialize_vk,
+    test_util::{load_block_traces_for_test, PARAMS_DIR},
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params},
+    zkevm::{
+        circuit::{SuperCircuit, TargetCircuit, DEGREE},
+        CircuitCapacityChecker, Prover, Verifier,
+    },
 };
-use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
-use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
 
 use zkevm_circuits::util::SubCircuit;
 
@@ -56,10 +58,11 @@ fn test_capacity_checker() {
             // the capacity_checker is expected to be used inside sequencer, where we don't have the
             // traces of blocks, instead we only have traces of tx.
             // For the "TxTrace":
-            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
-            //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
-            //   storage_trace:
-            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
+            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of
+            // len 1 now.   execution_results: tx execution trace. Similar with above,
+            // it is also of len 1 vevtor.   storage_trace:
+            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and
+            // accounts of this tx.
             let mut tx_trace = block.clone();
             tx_trace.transactions = vec![tx_trace.transactions[i].clone()];
             tx_trace.execution_results = vec![tx_trace.execution_results[i].clone()];

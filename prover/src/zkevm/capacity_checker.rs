@@ -59,15 +59,16 @@ impl RowUsage {
 
 #[derive(Debug, Clone)]
 pub struct CircuitCapacityChecker {
-    /// When "light_mode" enabled, we skip zktrie subcircuit in row estimation to avoid the heavy poseidon cost.
+    /// When "light_mode" enabled, we skip zktrie subcircuit in row estimation to avoid the heavy
+    /// poseidon cost.
     pub light_mode: bool,
     pub acc_row_usage: RowUsage,
     pub row_usages: Vec<RowUsage>,
     pub state: Option<ZktrieState>,
 }
 
-// Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of len 1,
-// "storageProofs" should contain "slot touched" during when executing this tx.
+// Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of
+// len 1, "storageProofs" should contain "slot touched" during when executing this tx.
 pub type TxTrace = BlockTrace;
 
 impl Default for CircuitCapacityChecker {

@@ -1,7 +1,6 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
 use libc::c_char;
-use prover::utils::init_env_and_log;
-use prover::zkevm;
+use prover::{utils::init_env_and_log, zkevm};
 use std::cell::OnceCell;
 use types::eth::BlockTrace;
 

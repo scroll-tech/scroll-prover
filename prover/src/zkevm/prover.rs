@@ -9,9 +9,11 @@ use types::eth::BlockTrace;
 use super::circuit::{
     block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit, DEGREE,
 };
-use crate::io::{serialize_fr_matrix, serialize_vk};
-use crate::proof::Proof;
-use crate::utils::{metric_of_witness_block, read_env_var};
+use crate::{
+    io::{serialize_fr_matrix, serialize_vk},
+    proof::Proof,
+    utils::{metric_of_witness_block, read_env_var},
+};
 
 use halo2_proofs::{
     dev::MockProver,

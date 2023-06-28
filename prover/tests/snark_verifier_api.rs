@@ -1,16 +1,17 @@
 use halo2_proofs::poly::commitment::Params;
-use mock_plonk::MockPlonkCircuit;
-use mock_plonk::StandardPlonk;
-use prover::test_util;
-use prover::utils::init_env_and_log;
-use prover::zkevm::{Prover, Verifier};
-use prover::EvmVerifier;
+use mock_plonk::{MockPlonkCircuit, StandardPlonk};
+use prover::{
+    test_util,
+    utils::init_env_and_log,
+    zkevm::{Prover, Verifier},
+    EvmVerifier,
+};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::AggregationCircuit;
-use snark_verifier_sdk::CircuitExt;
-use snark_verifier_sdk::{evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk};
-use snark_verifier_sdk::{gen_pk, gen_snark_shplonk};
+use snark_verifier_sdk::{
+    evm_verify, gen_evm_proof_shplonk, gen_evm_verifier_shplonk, gen_pk, gen_snark_shplonk,
+    AggregationCircuit, CircuitExt,
+};
 use test_util::mock_plonk;
 
 // This is essentially a same test as snark-verifier/evm-verifier

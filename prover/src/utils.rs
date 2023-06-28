@@ -1,19 +1,27 @@
 use anyhow::Result;
 use chrono::Utc;
 use git_version::git_version;
-use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
-use halo2_proofs::poly::kzg::commitment::ParamsKZG;
-use halo2_proofs::SerdeFormat;
+use halo2_proofs::{
+    halo2curves::bn256::{Bn256, Fr},
+    poly::kzg::commitment::ParamsKZG,
+    SerdeFormat,
+};
 use log::LevelFilter;
-use log4rs::append::console::{ConsoleAppender, Target};
-use log4rs::append::file::FileAppender;
-use log4rs::config::{Appender, Config, Root};
-use std::fs::{self, metadata, File};
-use std::io::{BufReader, Read};
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::str::FromStr;
-use std::sync::Once;
+use log4rs::{
+    append::{
+        console::{ConsoleAppender, Target},
+        file::FileAppender,
+    },
+    config::{Appender, Config, Root},
+};
+use std::{
+    fs::{self, metadata, File},
+    io::{BufReader, Read},
+    path::{Path, PathBuf},
+    process::Command,
+    str::FromStr,
+    sync::Once,
+};
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 

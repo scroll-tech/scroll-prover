@@ -3,21 +3,22 @@ use super::{
     MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_RWS, MAX_TXS,
 };
 use anyhow::bail;
-use bus_mapping::circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams};
-use bus_mapping::state_db::{Account, CodeDB, StateDB};
-use eth_types::evm_types::OpcodeId;
-use eth_types::ToAddress;
+use bus_mapping::{
+    circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams},
+    state_db::{Account, CodeDB, StateDB},
+};
+use eth_types::{evm_types::OpcodeId, ToAddress};
 use ethers_core::types::{Bytes, U256};
 use halo2_proofs::halo2curves::bn256::Fr;
 use is_even::IsEven;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
-use std::collections::hash_map::Entry;
-use std::time::Instant;
+use std::{collections::hash_map::Entry, time::Instant};
 use types::eth::{BlockTrace, EthBlock, ExecStep};
-use zkevm_circuits::evm_circuit::witness::block_apply_mpt_state;
-use zkevm_circuits::evm_circuit::witness::{block_convert, Block};
-use zkevm_circuits::util::SubCircuit;
+use zkevm_circuits::{
+    evm_circuit::witness::{block_apply_mpt_state, block_convert, Block},
+    util::SubCircuit,
+};
 
 pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "poseidon", "mpt",

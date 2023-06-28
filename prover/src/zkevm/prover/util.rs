@@ -1,11 +1,16 @@
 //! Initialization and utility APIs for Prover.
-//!
-use super::super::circuit::{AGG_DEGREE, DEGREE};
-use super::Prover;
+use super::{
+    super::circuit::{AGG_DEGREE, DEGREE},
+    Prover,
+};
 use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
-use halo2_proofs::halo2curves::bn256::Bn256;
-use halo2_proofs::poly::commitment::{Params, ParamsProver};
-use halo2_proofs::poly::kzg::commitment::{ParamsKZG, ParamsVerifierKZG};
+use halo2_proofs::{
+    halo2curves::bn256::Bn256,
+    poly::{
+        commitment::{Params, ParamsProver},
+        kzg::commitment::{ParamsKZG, ParamsVerifierKZG},
+    },
+};
 
 impl Prover {
     /// Memory usage tracker.

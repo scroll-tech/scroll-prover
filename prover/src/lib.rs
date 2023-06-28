@@ -12,12 +12,14 @@ pub use proof::Proof;
 // Terminology used throughout this library.
 //
 // - Inner Circuit / Target Circuit / Super Circuit: they all mean the same thing.
-// The first circuit. It takes inputs from block traces, and produces proofs pi_1 that are NOT verified on chain.
+// The first circuit. It takes inputs from block traces, and produces proofs pi_1 that are NOT
+// verified on chain.
 //
 // - Target Circuit proof: proof for the Inner circuit.
 //
 // - Aggregation Circuit.
-// The second circuit. It takes pi_1 from previous section, and produces proofs pi_2 that are verified on chain.
+// The second circuit. It takes pi_1 from previous section, and produces proofs pi_2 that are
+// verified on chain.
 //
 // - AggCircuitProof: proof for the aggregation circuit.
 //
