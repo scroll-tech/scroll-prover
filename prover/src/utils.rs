@@ -203,13 +203,17 @@ fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
 
     log::info!("Start to download setup params");
 
-    let degree_arg = format!("degree={degree}");
-    let params_dir_arg = format!("params_dir={params_dir}");
-    Command::new("make")
-        .args(["download-setup", "-e", &degree_arg, &params_dir_arg])
+    let download_script_path = project_root::get_project_root()?.join("download_setup.sh");
+
+    Command::new("sh")
+        .args([
+            download_script_path.to_string_lossy().as_ref(),
+            &degree.to_string(),
+            params_dir,
+        ])
         .status()
         .unwrap_or_else(|e| {
-            panic!("Failed to download setup params with {degree_arg} and {params_dir_arg}: {e}")
+            panic!("Failed to download setup params with {degree} and {params_dir}: {e}")
         });
 
     log::info!("Finish downloading setup params");
