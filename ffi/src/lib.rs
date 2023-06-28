@@ -4,8 +4,10 @@ pub mod prove;
 pub mod verify;
 
 pub(crate) mod utils {
-    use std::ffi::{CStr, CString};
-    use std::os::raw::c_char;
+    use std::{
+        ffi::{CStr, CString},
+        os::raw::c_char,
+    };
 
     pub(crate) fn c_char_to_str(c: *const c_char) -> &'static str {
         let cstr = unsafe { CStr::from_ptr(c) };

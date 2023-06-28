@@ -3,8 +3,7 @@ use super::{TargetCircuit, DEGREE};
 use super::{MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_TXS};
 use anyhow::bail;
 use halo2_proofs::halo2curves::bn256::Fr;
-use zkevm_circuits::util::SubCircuit;
-use zkevm_circuits::{super_circuit::SuperCircuit as SuperCircuitTpl, witness};
+use zkevm_circuits::{super_circuit::SuperCircuit as SuperCircuitTpl, util::SubCircuit, witness};
 
 type SuperCircuitImpl = SuperCircuitTpl<Fr, MAX_TXS, MAX_CALLDATA, MAX_INNER_BLOCKS, 0x1000>;
 

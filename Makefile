@@ -24,9 +24,9 @@ test: ## Run tests for all the workspace members
 
 bridge-test:
 	cargo build --release
-	./target/release/prove --params=./test_params --seed=./test_seed --trace=prover/tests/traces/bridge --agg=true
+	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
 
-test-super-trace: ## test super circuit with real trace
+test-inner-prove: ## Test inner circuit with real trace
 	cargo test --features prove_verify --release test_prove_verify
 
 mock:
@@ -38,7 +38,7 @@ mock-debug:
 mock-testnet:
 	@cargo run --bin mock_testnet --release
 
-test-agg:
+test-chunk-prove:
 	@cargo test --features prove_verify --release test_aggregation_api
 
 rows:

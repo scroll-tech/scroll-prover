@@ -1,34 +1,38 @@
 use clap::Parser;
 use log::info;
-use prover::utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params};
-use prover::zkevm::{circuit::AGG_DEGREE, Prover};
-use std::fs;
-use std::path::PathBuf;
-use std::time::Instant;
+use prover::{
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params},
+    zkevm::{circuit::AGG_DEGREE, Prover},
+};
+use std::{fs, path::PathBuf, time::Instant};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Get params and write into file.
-    #[clap(short, long = "params")]
-    params_path: Option<String>,
+    #[clap(short, long = "params", default_value = "prover/test_params")]
+    params_path: String,
     /// Get BlockTrace from file or dir.
-    #[clap(short, long = "trace")]
-    trace_path: Option<String>,
+    #[clap(
+        short,
+        long = "trace",
+        default_value = "prover/tests/traces/empty.json"
+    )]
+    trace_path: String,
 }
 
 fn main() {
     init_env_and_log("prove");
-    std::env::set_var("VERIFY_CONFIG", "./zkevm/configs/verify_circuit.config");
+    std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
+    let agg_params = load_or_download_params(&args.params_path, *AGG_DEGREE)
         .expect("failed to load or create params");
 
     let mut prover = Prover::from_params(agg_params);
 
     let mut traces = Vec::new();
-    let trace_path = PathBuf::from(&args.trace_path.unwrap());
+    let trace_path = PathBuf::from(&args.trace_path);
     if trace_path.is_dir() {
         for entry in fs::read_dir(trace_path).unwrap() {
             let path = entry.unwrap().path();
@@ -42,14 +46,17 @@ fn main() {
         traces.push(block_trace);
     }
 
-    let mut proof_path = PathBuf::from("agg.proof");
+    let mut proof_dir = PathBuf::from("proof_data");
 
     let now = Instant::now();
-    let agg_proof = prover
-        .create_agg_circuit_proof_batch(traces.as_slice())
-        .expect("cannot generate agg_proof");
-    info!("finish generating agg proof, elapsed: {:?}", now.elapsed());
+    let chunk_proof = prover
+        .gen_chunk_proof(traces.as_slice())
+        .expect("cannot generate chunk proof");
+    info!(
+        "finish generating chunk proof, elapsed: {:?}",
+        now.elapsed()
+    );
 
-    fs::create_dir_all(&proof_path).unwrap();
-    agg_proof.dump(&mut proof_path).unwrap();
+    fs::create_dir_all(&proof_dir).unwrap();
+    chunk_proof.dump(&mut proof_dir, "chunk").unwrap();
 }

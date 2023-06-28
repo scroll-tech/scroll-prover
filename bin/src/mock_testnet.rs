@@ -1,12 +1,16 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use itertools::Itertools;
-use prover::utils::init_env_and_log;
-use prover::zkevm::circuit::{
-    block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-    SUB_CIRCUIT_NAMES,
+use prover::{
+    utils::init_env_and_log,
+    zkevm::{
+        circuit::{
+            block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+            SUB_CIRCUIT_NAMES,
+        },
+        Prover,
+    },
 };
-use prover::zkevm::Prover;
 use reqwest::Url;
 use serde::Deserialize;
 use std::env;
@@ -97,7 +101,8 @@ async fn get_traces_by_batch_api(
     ))
 }
 
-/// Request block traces by API `scroll_getBlockTraceByNumberOrHash`. Return None for no more batches.
+/// Request block traces by API `scroll_getBlockTraceByNumberOrHash`. Return None for no more
+/// batches.
 async fn get_traces_by_block_api(
     provider: &Provider<Http>,
     setting: &Setting,

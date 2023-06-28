@@ -4,39 +4,60 @@
 
 ## Usage
 
+### Prerequisite
+
+Fetch git-submodule of test traces
+```shell
+git submodule init
+git submodule update --checkout
+```
+
+Download setup params
+```shell
+make download-setup
+```
+Or specify degree and target directory to download
+```shell
+# As default `degree=25` and `params_dir=./prover/test_params`.
+make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
+```
 
 ### Testing
 
-`make test-agg` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers can understand how the system works by reading the codes of this test.
+`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers could understand how the system works by reading the codes of this test.
 
-Besides, `make test-super-trace` can be used to test the first-level circuit.
+Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 
 ### Binaries
 
 This repository is designed to be used as a Rust crate, rather than a standalone running process. However, you can still use the following command to run binaries locally.
 
-Setup 
-```shell
-cargo build --release --bin setup
-
-./target/release/setup --params <params-file-path>
-```
-
-If you run into linking issues during setup you may need to run
+If you run into linking issues you may need to run
 ```shell
 cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
-to move the zktrielib into a path where your linker can locate it
+To move the zktrielib into a path where your linker could locate it.
 
-Prove
+Run prover
 ```shell
 cargo build --release --bin prove
 
 ./target/release/prove --help
 ```
-Or you can use it like the following:
+Could specify arguments as
 ```shell
-cargo run --release --bin prove -- --params=./params --trace=./test.json
+cargo run --release --bin prove -- --params=./prover/test_params --trace=./prover/tests/traces/erc20/10_transfer.json
+```
+
+Run verifier
+```shell
+cargo build --release --bin verify
+
+./target/release/verify --help
+```
+Could specify arguments as
+```shell
+cargo run --release --bin verify -- --params=./prover/test_params --vk=./proof_data/chunk.vkey
 ```
 
 ## License

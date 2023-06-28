@@ -1,12 +1,14 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
-use prover::io::serialize_vk;
-use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
-use prover::utils::{
-    get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params,
+use prover::{
+    io::serialize_vk,
+    test_util::{load_block_traces_for_test, PARAMS_DIR},
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params},
+    zkevm::{
+        circuit::{SuperCircuit, TargetCircuit, DEGREE},
+        CircuitCapacityChecker, Prover, Verifier,
+    },
 };
-use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
-use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
 
 use zkevm_circuits::util::SubCircuit;
 
@@ -56,10 +58,11 @@ fn test_capacity_checker() {
             // the capacity_checker is expected to be used inside sequencer, where we don't have the
             // traces of blocks, instead we only have traces of tx.
             // For the "TxTrace":
-            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of len 1 now.
-            //   execution_results: tx execution trace. Similar with above, it is also of len 1 vevtor.
-            //   storage_trace:
-            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
+            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of
+            // len 1 now.   execution_results: tx execution trace. Similar with above,
+            // it is also of len 1 vevtor.   storage_trace:
+            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and
+            // accounts of this tx.
             let mut tx_trace = block.clone();
             tx_trace.transactions = vec![tx_trace.transactions[i].clone()];
             tx_trace.execution_results = vec![tx_trace.execution_results[i].clone()];
@@ -138,7 +141,7 @@ fn test_vk_same() {
     init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
-    let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
+    let params = load_or_download_params(PARAMS_DIR, *DEGREE).unwrap();
 
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
@@ -211,7 +214,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     let now = Instant::now();
     let mut prover = Prover::from_param_dir(PARAMS_DIR);
     let proof = prover
-        .create_target_circuit_proof_batch::<C>(&block_traces)
+        .gen_inner_proof::<C>(block_traces.as_slice())
         .unwrap();
     log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
 
@@ -227,6 +230,6 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
     log::info!("start verifying proof");
     let now = Instant::now();
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier.verify_target_circuit_proof::<C>(&proof).is_ok());
+    assert!(verifier.verify_inner_proof::<C>(&proof).is_ok());
     log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
 }

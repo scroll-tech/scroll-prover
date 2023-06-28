@@ -1,9 +1,7 @@
 use crate::utils::{c_char_to_str, c_char_to_vec};
 use libc::c_char;
-use prover::utils::init_env_and_log;
-use prover::zkevm;
-use std::fs::File;
-use std::io::Read;
+use prover::{utils::init_env_and_log, zkevm, Proof};
+use std::{fs::File, io::Read};
 
 static mut VERIFIER: Option<&zkevm::Verifier> = None;
 
@@ -24,12 +22,9 @@ pub unsafe extern "C" fn init_verifier(params_path: *const c_char, agg_vk_path: 
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn verify_agg_proof(proof: *const c_char) -> c_char {
+pub unsafe extern "C" fn verify_chunk_proof(proof: *const c_char) -> c_char {
     let proof_vec = c_char_to_vec(proof);
-    let agg_proof = serde_json::from_slice::<zkevm::AggCircuitProof>(proof_vec.as_slice()).unwrap();
-    let verified = VERIFIER
-        .unwrap()
-        .verify_agg_circuit_proof(agg_proof)
-        .is_ok();
+    let chunk_proof = serde_json::from_slice::<Proof>(proof_vec.as_slice()).unwrap();
+    let verified = VERIFIER.unwrap().verify_chunk_proof(chunk_proof).is_ok();
     verified as c_char
 }
