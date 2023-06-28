@@ -1,7 +1,7 @@
 use clap::Parser;
 use log::info;
 use prover::{
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_create_params},
+    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params},
     zkevm::{circuit::AGG_DEGREE, Prover},
 };
 use std::{fs, path::PathBuf, time::Instant};
@@ -22,7 +22,7 @@ fn main() {
     std::env::set_var("VERIFY_CONFIG", "./zkevm/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
+    let agg_params = load_or_download_params(&args.params_path.unwrap(), *AGG_DEGREE)
         .expect("failed to load or create params");
 
     let mut prover = Prover::from_params(agg_params);

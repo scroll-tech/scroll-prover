@@ -3,7 +3,7 @@ use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::io::serialize_vk;
 use prover::test_util::{load_block_traces_for_test, PARAMS_DIR};
 use prover::utils::{
-    get_block_trace_from_file, init_env_and_log, load_or_create_params, load_params,
+    get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params,
 };
 use prover::zkevm::circuit::{SuperCircuit, TargetCircuit, DEGREE};
 use prover::zkevm::{CircuitCapacityChecker, Prover, Verifier};
@@ -138,7 +138,7 @@ fn test_vk_same() {
     init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
-    let params = load_or_create_params(PARAMS_DIR, *DEGREE).unwrap();
+    let params = load_or_download_params(PARAMS_DIR, *DEGREE).unwrap();
 
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;

@@ -17,7 +17,7 @@ use test_util::mock_plonk;
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_snark_verifier_sdk_api() {
-    use prover::utils::load_or_create_params;
+    use prover::utils::load_or_download_params;
 
     use crate::test_util::PARAMS_DIR;
 
@@ -30,7 +30,7 @@ fn test_snark_verifier_sdk_api() {
     let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
     let circuit = StandardPlonk::rand(&mut rng);
-    let params_outer = load_or_create_params(PARAMS_DIR, k_agg).unwrap();
+    let params_outer = load_or_download_params(PARAMS_DIR, k_agg).unwrap();
     let params_inner = {
         let mut params = params_outer.clone();
         params.downsize(k);
@@ -80,7 +80,7 @@ fn test_snark_verifier_sdk_api() {
 // #[cfg(feature = "prove_verify")]
 // #[test]
 // fn test_partial_aggregation_api() {
-//     use prover::utils::load_or_create_params;
+//     use prover::utils::load_or_download_params;
 
 //     use crate::test_util::PARAMS_DIR;
 
@@ -106,7 +106,7 @@ fn test_snark_verifier_sdk_api() {
 //     let mut rng = XorShiftRng::from_seed(seed);
 
 //     // notice that k < k_agg which is not necessary the case in practice
-//     let params_outer = load_or_create_params(PARAMS_DIR, k_agg).unwrap();
+//     let params_outer = load_or_download_params(PARAMS_DIR, k_agg).unwrap();
 //     let params_inner = {
 //         let mut params = params_outer.clone();
 //         params.downsize(k);

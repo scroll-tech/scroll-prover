@@ -1,39 +1,28 @@
 use anyhow::Result;
 use chrono::Utc;
 use git_version::git_version;
-use halo2_proofs::arithmetic::Field;
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
-use halo2_proofs::halo2curves::FieldExt;
 use halo2_proofs::poly::kzg::commitment::ParamsKZG;
 use halo2_proofs::SerdeFormat;
 use log::LevelFilter;
 use log4rs::append::console::{ConsoleAppender, Target};
 use log4rs::append::file::FileAppender;
 use log4rs::config::{Appender, Config, Root};
-use rand::rngs::OsRng;
 use std::fs::{self, metadata, File};
-use std::io::{BufReader, Read, Write};
+use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::str::FromStr;
 use std::sync::Once;
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::witness;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
-
 pub const GIT_VERSION: &str = git_version!();
-
 pub static LOGGER: Once = Once::new();
 
-fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
-    //format!("{params_dir}/kzg_bn254_{degree}.srs")
-    format!("{params_dir}/params{degree}")
-}
-
-/// return setup params by reading from file or generate new one
-pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
-    let _path = PathBuf::from(params_dir);
-
+/// Get setup params by reading from a file or downloading a new one.
+pub fn load_or_download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
     match metadata(params_dir) {
         Ok(md) => {
             if md.is_file() {
@@ -41,25 +30,30 @@ pub fn load_or_create_params(params_dir: &str, degree: usize) -> Result<ParamsKZ
             }
         }
         Err(_) => {
-            // not exist
+            // Not exist
             fs::create_dir_all(params_dir)?;
         }
     };
 
     let params_path = param_path_for_degree(params_dir, degree);
-    log::info!("load_or_create_params {}", params_path);
+    log::info!("load_or_download_params {}", params_path);
+
     if Path::new(&params_path).exists() {
         match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
             Ok(r) => return Ok(r),
             Err(e) => {
-                log::error!("load params err: {}. Recreating...", e)
+                log::error!(
+                    "An error occurred when loading setup params: {}. Re-downloading ...",
+                    e
+                )
             }
         }
     }
-    create_params(&params_path, degree)
+
+    download_params(params_dir, degree)
 }
 
-/// load params from file
+/// Load setup params from a file.
 pub fn load_params(
     params_dir: &str,
     degree: usize,
@@ -96,31 +90,6 @@ pub fn load_params(
     let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_format)?;
     log::info!("load params successfully!");
     Ok(p)
-}
-
-/// create params and write it into file
-pub fn create_params(params_path: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
-    log::info!("start creating params with degree {}", degree);
-    // The params used for production need to be generated from a trusted setup ceremony.
-    // Here we use a deterministic seed to generate params. This method is unsafe for production usage.
-    let seed_str = read_env_var("PARAM_SEED", "bb4b94a1bbef58c4b5fcda6c900629b5".to_string());
-    let seed_fr = if seed_str.is_empty() {
-        log::info!("use OsRng to create params");
-        Fr::random(OsRng)
-    } else {
-        let bytes = &mut [0u8; 64];
-        bytes[..32].clone_from_slice(&seed_str.as_bytes()[..32]);
-        Fr::from_bytes_wide(bytes)
-    };
-    let params: ParamsKZG<Bn256> = ParamsKZG::<Bn256>::unsafe_setup_with_s(degree as u32, seed_fr);
-    let mut params_buf = Vec::new();
-    params.write_custom(&mut params_buf, DEFAULT_SERDE_FORMAT)?;
-
-    let mut params_file = File::create(params_path)?;
-    params_file.write_all(&params_buf[..])?;
-    log::info!("create params successfully!");
-
-    Ok(params)
 }
 
 /// get a block-result from file
@@ -218,4 +187,32 @@ fn create_output_dir(id: &str) -> String {
     fs::create_dir_all(output_dir).unwrap();
 
     output
+}
+
+// Download setup params and write it into a file.
+fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
+    log::warn!("Would be better to run `make download-setup` before any bins or tests");
+
+    log::info!("Start to download setup params");
+
+    let degree_arg = format!("degree={degree}");
+    let params_dir_arg = format!("params_dir={params_dir}");
+    Command::new("make")
+        .args(["download-setup", "-e", &degree_arg, &params_dir_arg])
+        .status()
+        .unwrap_or_else(|e| {
+            panic!("Failed to download setup params with {degree_arg} and {params_dir_arg}: {e}")
+        });
+
+    log::info!("Finish downloading setup params");
+
+    load_params(
+        &param_path_for_degree(params_dir, degree),
+        degree,
+        DEFAULT_SERDE_FORMAT,
+    )
+}
+
+fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
+    format!("{params_dir}/params{degree}")
 }

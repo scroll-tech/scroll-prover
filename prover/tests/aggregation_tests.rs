@@ -1,7 +1,7 @@
 use prover::{
     io::{load_snark, write_file, write_snark},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{init_env_and_log, load_or_create_params},
+    utils::{init_env_and_log, load_or_download_params},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE},
         Prover,
@@ -45,7 +45,7 @@ fn test_aggregation_api() {
     // 1. instantiation the parameters and the prover
     //
 
-    let params = load_or_create_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
+    let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let mut prover = Prover::from_params(params);
     log::info!("build prover");
 

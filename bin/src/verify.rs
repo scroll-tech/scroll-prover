@@ -1,7 +1,7 @@
 use clap::Parser;
 use log::info;
 use prover::{
-    utils::{init_env_and_log, load_or_create_params},
+    utils::{init_env_and_log, load_or_download_params},
     zkevm::{
         circuit::{AGG_DEGREE, DEGREE},
         Verifier,
@@ -26,9 +26,9 @@ fn main() {
     std::env::set_var("VERIFY_CONFIG", "./zkevm/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let params = load_or_create_params(&args.params_path.clone().unwrap(), *DEGREE)
+    let params = load_or_download_params(&args.params_path.clone().unwrap(), *DEGREE)
         .expect("failed to load or create params");
-    let agg_params = load_or_create_params(&args.params_path.unwrap(), *AGG_DEGREE)
+    let agg_params = load_or_download_params(&args.params_path.unwrap(), *AGG_DEGREE)
         .expect("failed to load or create params");
     let agg_vk = read_from_file(&args.vk_path.unwrap());
 
