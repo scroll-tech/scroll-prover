@@ -97,7 +97,7 @@ fn test_mock_prove() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_prove_verify() {
+fn test_inner_prove_verify() {
     test_target_circuit_prove_verify::<SuperCircuit>();
 }
 

@@ -1,5 +1,4 @@
-use rand::Rng;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 
 pub(crate) fn gen_rng() -> impl Rng + Send {

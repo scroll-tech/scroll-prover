@@ -26,9 +26,6 @@ bridge-test:
 	cargo build --release
 	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
 
-test-inner-prove: ## Test inner circuit with real trace
-	cargo test --features prove_verify --release test_prove_verify
-
 mock:
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
 
@@ -38,8 +35,14 @@ mock-debug:
 mock-testnet:
 	@cargo run --bin mock_testnet --release
 
+test-inner-prove:
+	cargo test --features prove_verify --release test_inner_prove_verify
+
 test-chunk-prove:
-	@cargo test --features prove_verify --release test_aggregation_api
+	@cargo test --features prove_verify --release test_chunk_prove_verify
+
+test-agg-prove:
+	@cargo test --features prove_verify --release test_agg_prove_verify
 
 rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows

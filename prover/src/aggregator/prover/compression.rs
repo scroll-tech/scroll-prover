@@ -17,7 +17,6 @@ impl Prover {
         params.downsize(degree);
 
         let circuit = CompressionCircuit::new(&params, prev_snark, is_fresh, &mut rng);
-
         self.gen_snark(id, &mut rng, &params, circuit)
     }
 }

@@ -18,12 +18,10 @@ use std::{
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_agg_prove_verify() {
-    // TODO: need to update
-
+fn test_chunk_prove_verify() {
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
-    let output_dir = init_env_and_log("agg_tests");
+    let output_dir = init_env_and_log("chunk_tests");
 
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
     log::info!("created output dir {}", output_dir);
