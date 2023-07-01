@@ -1,6 +1,6 @@
-use super::{utils::gen_rng, Prover};
+use super::Prover;
 use crate::{
-    utils::{metric_of_witness_block, read_env_var},
+    utils::{gen_rng, metric_of_witness_block, read_env_var},
     zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE},
 };
 use anyhow::{bail, Result};

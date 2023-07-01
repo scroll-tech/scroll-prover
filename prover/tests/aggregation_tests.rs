@@ -19,34 +19,16 @@ use std::{
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_agg_prove_verify() {
-    // TODO: need to update
-
-    std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
-
     let output_dir = init_env_and_log("agg_tests");
-
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
-    log::info!("created output dir {}", output_dir);
+    log::info!("Inited ENV and created output-dir {output_dir}");
 
     let block_traces = load_block_traces_for_test().1;
-    log::info!("loaded block trace");
-
-    // ====================================================
-    // A whole aggregation procedure takes the following steps
-    // 1. instantiation the parameters and the prover
-    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
-    //    convert block traces into
-    // 3. build an aggregation circuit proof
-    // 4. generate bytecode for evm to verify aggregation circuit proof
-    // 5. validate the proof with evm bytecode
-    // ====================================================
-    //
-    // 1. instantiation the parameters and the prover
-    //
+    log::info!("Loaded block-traces");
 
     let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
     let mut prover = Prover::from_params(params);
-    log::info!("build prover");
+    log::info!("Build agg-prover");
 
     //
     // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or

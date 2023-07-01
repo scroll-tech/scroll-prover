@@ -30,9 +30,9 @@ impl Prover {
     }
 
     pub fn from_params(agg_params: ParamsKZG<Bn256>) -> Self {
-        assert!(agg_params.k() == *AGG_DEGREE as u32);
+        assert!(agg_params.k() == *AGG_DEGREE);
         let mut params = agg_params.clone();
-        params.downsize(*DEGREE as u32);
+        params.downsize(*DEGREE);
 
         // notice that k < k_agg which is not necessary the case in practice
         log::info!(

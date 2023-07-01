@@ -23,7 +23,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "ark-std 0.4.0",
  "env_logger 0.10.0",
@@ -428,7 +428,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -1128,7 +1128,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1394,7 +1394,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1623,7 +1623,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1663,7 +1663,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -1761,7 +1761,7 @@ dependencies = [
 [[package]]
 name = "halo2-base"
 version = "0.2.2"
-source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#c2ea19569db5fedd85a7465ee3841f23be8e7b22"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#2c225864227e74b207d9f4b9e08c4d5f1afc69a1"
 dependencies = [
  "ff",
  "halo2_proofs",
@@ -1776,7 +1776,7 @@ dependencies = [
 [[package]]
 name = "halo2-ecc"
 version = "0.2.2"
-source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#c2ea19569db5fedd85a7465ee3841f23be8e7b22"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#2c225864227e74b207d9f4b9e08c4d5f1afc69a1"
 dependencies = [
  "ff",
  "group",
@@ -2247,7 +2247,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2447,7 +2447,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2462,7 +2462,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4693,7 +4693,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#ec604b63af83156cd439f7e70f164e4ec4c4b432"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=proof-aggregation-circuit#a04b1f014b161dbbe4cac443e3783f3773d8aa7d"
 dependencies = [
  "array-init",
  "bus-mapping",

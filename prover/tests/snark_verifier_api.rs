@@ -1,11 +1,6 @@
 use halo2_proofs::poly::commitment::Params;
-use mock_plonk::{MockPlonkCircuit, StandardPlonk};
-use prover::{
-    test_util,
-    utils::init_env_and_log,
-    zkevm::{Prover, Verifier},
-    EvmVerifier,
-};
+use mock_plonk::StandardPlonk;
+use prover::{test_util, utils::init_env_and_log};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::{

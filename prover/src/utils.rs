@@ -14,6 +14,8 @@ use log4rs::{
     },
     config::{Appender, Config, Root},
 };
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
@@ -30,7 +32,7 @@ pub const GIT_VERSION: &str = git_version!();
 pub static LOGGER: Once = Once::new();
 
 /// Get setup params by reading from a file or downloading a new one.
-pub fn load_or_download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
+pub fn load_or_download_params(params_dir: &str, degree: u32) -> Result<ParamsKZG<Bn256>> {
     match metadata(params_dir) {
         Ok(md) => {
             if md.is_file() {
@@ -64,7 +66,7 @@ pub fn load_or_download_params(params_dir: &str, degree: usize) -> Result<Params
 /// Load setup params from a file.
 pub fn load_params(
     params_dir: &str,
-    degree: usize,
+    degree: u32,
     serde_format: SerdeFormat,
 ) -> Result<ParamsKZG<Bn256>> {
     log::info!("start loading params with degree {}", degree);
@@ -198,7 +200,7 @@ fn create_output_dir(id: &str) -> String {
 }
 
 // Download setup params and write it into a file.
-fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
+fn download_params(params_dir: &str, degree: u32) -> Result<ParamsKZG<Bn256>> {
     log::warn!("Would be better to run `make download-setup` before any bins or tests");
 
     log::info!("Start to download setup params");
@@ -226,6 +228,26 @@ fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> 
     )
 }
 
-fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
+fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
     format!("{params_dir}/params{degree}")
+}
+
+pub fn gen_rng() -> impl Rng + Send {
+    let seed = [0u8; 16];
+    XorShiftRng::from_seed(seed)
+}
+
+pub fn tick(desc: &str) {
+    #[cfg(target_os = "linux")]
+    let memory = match procfs::Meminfo::new() {
+        Ok(m) => m.mem_total - m.mem_free,
+        Err(_) => 0,
+    };
+    #[cfg(not(target_os = "linux"))]
+    let memory = 0;
+    log::debug!(
+        "memory usage when {}: {:?}GB",
+        desc,
+        memory / 1024 / 1024 / 1024
+    );
 }

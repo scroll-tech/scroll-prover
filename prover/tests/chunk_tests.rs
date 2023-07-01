@@ -22,12 +22,11 @@ fn test_chunk_prove_verify() {
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
     let output_dir = init_env_and_log("chunk_tests");
-
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
-    log::info!("created output dir {}", output_dir);
+    log::info!("Inited ENV and created output-dir {output_dir}");
 
     let block_traces = load_block_traces_for_test().1;
-    log::info!("loaded block trace");
+    log::info!("Loaded block-traces");
 
     // ====================================================
     // A whole aggregation procedure takes the following steps

@@ -1,5 +1,5 @@
-use super::{utils::tick, Prover};
-use crate::zkevm::circuit::TargetCircuit;
+use super::Prover;
+use crate::{utils::tick, zkevm::circuit::TargetCircuit};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr},
