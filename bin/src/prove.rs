@@ -58,5 +58,5 @@ fn main() {
     );
 
     fs::create_dir_all(&proof_dir).unwrap();
-    chunk_proof.dump_to_file(&mut proof_dir, "chunk").unwrap();
+    chunk_proof.dump(&mut proof_dir, "chunk").unwrap();
 }

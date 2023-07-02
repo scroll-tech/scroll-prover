@@ -76,9 +76,7 @@ fn test_chunk_prove_verify() {
     let chunk_proof = prover.gen_agg_evm_proof(vec![inner_snark]).unwrap();
 
     // Dump aggregation proof, vk and instance.
-    chunk_proof
-        .dump_to_file(&mut output_path, &"chunk")
-        .unwrap();
+    chunk_proof.dump(&mut output_path, &"chunk").unwrap();
 
     log::info!("finished aggregation generation");
 

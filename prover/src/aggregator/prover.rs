@@ -1,8 +1,7 @@
-use crate::zkevm::circuit::AGG_DEGREE;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
     plonk::ProvingKey,
-    poly::{commitment::Params, kzg::commitment::ParamsKZG},
+    poly::kzg::commitment::ParamsKZG,
 };
 use std::collections::HashMap;
 
@@ -19,8 +18,6 @@ pub struct Prover {
 
 impl Prover {
     pub fn from_params(params: ParamsKZG<Bn256>) -> Self {
-        assert!(params.k() == *AGG_DEGREE);
-
         Self {
             params,
             pks: HashMap::new(),

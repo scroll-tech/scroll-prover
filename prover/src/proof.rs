@@ -64,7 +64,7 @@ impl Proof {
         Ok(Some(proof))
     }
 
-    pub fn dump_to_file(&self, dir: &mut PathBuf, name: &str) -> Result<()> {
+    pub fn dump(&self, dir: &mut PathBuf, name: &str) -> Result<()> {
         write_file(dir, &format!("{name}_proof.data"), &self.proof);
         write_file(dir, &format!("{name}.vkey"), &self.vk);
         write_file(dir, &format!("{name}_instances.data"), &self.instances);
@@ -103,8 +103,8 @@ impl Proof {
         &self.proof
     }
 
-    pub fn vk<ConcreteCircuit: Circuit<Fr>>(&self) -> Result<VerifyingKey<G1Affine>> {
-        Ok(VerifyingKey::<G1Affine>::from_bytes::<ConcreteCircuit>(
+    pub fn vk<C: Circuit<Fr>>(&self) -> Result<VerifyingKey<G1Affine>> {
+        Ok(VerifyingKey::<G1Affine>::from_bytes::<C>(
             &self.vk,
             SerdeFormat::Processed,
         )?)
@@ -116,8 +116,8 @@ impl Proof {
         deserialize_fr_matrix(buf)
     }
 
-    pub fn num_instance(&self) -> &Option<Vec<usize>> {
-        &self.num_instance
+    pub fn num_instance(&self) -> Option<&Vec<usize>> {
+        self.num_instance.as_ref()
     }
 }
 

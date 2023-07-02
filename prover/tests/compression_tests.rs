@@ -1,5 +1,6 @@
+use aggregator::CompressionCircuit;
 use prover::{
-    aggregator::Prover,
+    aggregator::{Prover, Verifier},
     io::{load_snark, write_snark},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{gen_rng, init_env_and_log, load_or_download_params},
@@ -7,13 +8,16 @@ use prover::{
     Proof,
 };
 use snark_verifier_sdk::Snark;
-use std::{env::set_var, path::PathBuf};
+use std::{
+    env::set_var,
+    path::{Path, PathBuf},
+};
 use types::eth::BlockTrace;
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_comp_prove_verify() {
-    // 1. Init, load block traces and build prover.
+    // 1. Init, load block traces, construct prover and verifier.
 
     let output_dir = init_env_and_log("comp_tests");
     log::info!("Inited ENV and created output-dir {output_dir}");
@@ -22,7 +26,8 @@ fn test_comp_prove_verify() {
     log::info!("Loaded block-traces");
 
     let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    let mut prover = Prover::from_params(params);
+    let mut prover = Prover::from_params(params.clone());
+    let verifier = Verifier::from_params(params);
     log::info!("Build agg-prover");
 
     // 2. Load or generate chunk snark.
@@ -44,7 +49,9 @@ fn test_comp_prove_verify() {
     );
     log::info!("Got compression EVM proof (layer-2)");
 
-    // TODO
+    // 5. Verify the proof.
+    let yul_file_path = format!("{output_dir}/comp_verifier.yul");
+    verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));
 }
 
 fn load_or_gen_chunk_snark(
@@ -98,9 +105,7 @@ fn load_or_gen_comp_evm_proof(
             let proof = prover
                 .gen_comp_evm_proof(id, is_fresh, *AGG_DEGREE, rng, prev_snark)
                 .unwrap();
-            proof
-                .dump_to_file(&mut PathBuf::from(output_dir), id)
-                .unwrap();
+            proof.dump(&mut PathBuf::from(output_dir), id).unwrap();
 
             proof
         })
