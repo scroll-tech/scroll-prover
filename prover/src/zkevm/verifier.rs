@@ -1,13 +1,9 @@
-use anyhow::anyhow;
-use itertools::Itertools;
-use std::{collections::HashMap, io::Cursor};
-
 use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
 use crate::{
     proof::Proof,
     utils::{load_params, DEFAULT_SERDE_FORMAT},
 };
-
+use anyhow::anyhow;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
     plonk::{keygen_vk, verify_proof, VerifyingKey},
@@ -18,8 +14,10 @@ use halo2_proofs::{
     },
     transcript::TranscriptReadBuffer,
 };
+use itertools::Itertools;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
 use snark_verifier_sdk::{verify_snark_shplonk, AggregationCircuit, Snark};
+use std::{collections::HashMap, io::Cursor};
 
 pub struct Verifier {
     zkevm_params: ParamsKZG<Bn256>,
@@ -85,10 +83,10 @@ impl Verifier {
             None => panic!("aggregation verification key is missing"),
         };
 
-        let mut transcript = TranscriptReadBuffer::<_, G1Affine, _>::init(proof.proof.as_slice());
+        let mut transcript = TranscriptReadBuffer::<_, G1Affine, _>::init(proof.proof());
 
         // deserialize instances
-        let instances = proof.deserialize_instance();
+        let instances = proof.instances();
         let instances = instances.iter().map(|ins| ins.as_slice()).collect_vec();
 
         Ok(VerificationStrategy::<_, VerifierSHPLONK<Bn256>>::finalize(

@@ -10,7 +10,6 @@ use super::circuit::{
     block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit, DEGREE,
 };
 use crate::{
-    io::{serialize_fr_matrix, serialize_vk},
     proof::Proof,
     utils::{metric_of_witness_block, read_env_var},
 };
@@ -62,21 +61,21 @@ impl Prover {
     // Generate the chunk proof given the chunk trace using Poseidon hash for challenges.
     // The returned proof is expected to be verified by only rust verifier not solidity verifier.
     pub fn gen_chunk_proof(&mut self, chunk_trace: &[BlockTrace]) -> anyhow::Result<Proof> {
-        let inner_proof = self.gen_inner_proof::<SuperCircuit>(chunk_trace)?;
-        // compress the inner proof using the aggregation proof
-        self.gen_agg_proof(vec![inner_proof])
+        let inner_snark = self.gen_inner_snark::<SuperCircuit>(chunk_trace)?;
+        // Compress the inner snark using the aggregation proof.
+        self.gen_agg_proof(vec![inner_snark])
     }
 
     // Generate the chunk proof given the chunk trace using Keccak hash for challenges.
     // The returned proof can be efficiently verified by solidity verifier.
     pub fn gen_chunk_evm_proof(&mut self, chunk_trace: &[BlockTrace]) -> anyhow::Result<Proof> {
-        let inner_proof = self.gen_inner_proof::<SuperCircuit>(chunk_trace)?;
-        // compress the inner proof using the aggregation proof
-        self.gen_agg_evm_proof(vec![inner_proof])
+        let inner_snark = self.gen_inner_snark::<SuperCircuit>(chunk_trace)?;
+        // Compress the inner snark using the aggregation proof.
+        self.gen_agg_evm_proof(vec![inner_snark])
     }
 
-    // Generate the proof of the inner circuit
-    pub fn gen_inner_proof<C: TargetCircuit>(
+    // Generate the snark of the inner circuit
+    pub fn gen_inner_snark<C: TargetCircuit>(
         &mut self,
         chunk_trace: &[BlockTrace],
     ) -> anyhow::Result<Snark> {
@@ -113,7 +112,7 @@ impl Prover {
 
         if *MOCK_PROVE {
             log::info!("mock prove {} start", C::name());
-            let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
+            let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
                 for err in &errs {
@@ -176,14 +175,12 @@ impl Prover {
             &mut rng,
         );
 
-        let instances = serialize_fr_matrix(agg_circuit.instances().as_slice());
-        let instance_bytes = serde_json::to_vec(&instances)?;
-
-        Ok(Proof {
-            proof: agg_proof,
-            instance: instance_bytes,
-            vk: serialize_vk(agg_pk.get_vk()),
-        })
+        Proof::new(
+            agg_proof,
+            agg_pk.get_vk(),
+            &agg_circuit.instances(),
+            Some(agg_circuit.num_instance()),
+        )
     }
 
     // Initiates the public key for a given inner circuit.

@@ -32,7 +32,7 @@ impl Prover {
             metric_of_witness_block(&witness_block)
         );
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
-        let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
+        let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
         if let Err(errs) = prover.verify_par() {
             log::error!("err num: {}", errs.len());
             for err in &errs {

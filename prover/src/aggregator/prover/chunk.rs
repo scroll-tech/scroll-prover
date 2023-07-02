@@ -12,7 +12,7 @@ use types::eth::BlockTrace;
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
 impl Prover {
-    pub fn gen_chunk_proof<C: TargetCircuit>(
+    pub fn gen_chunk_snark<C: TargetCircuit>(
         &mut self,
         mut chunk_trace: Vec<BlockTrace>,
     ) -> Result<Snark> {
@@ -43,7 +43,7 @@ impl Prover {
 
         if *MOCK_PROVE {
             log::info!("Mock prove {} start", C::name());
-            let prover = MockProver::<Fr>::run(*DEGREE as u32, &circuit, instance)?;
+            let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
                 for err in &errs {

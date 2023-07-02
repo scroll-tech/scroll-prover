@@ -1,7 +1,6 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
-    io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params},
     zkevm::{
@@ -147,8 +146,8 @@ fn test_vk_same() {
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
     let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
     let vk_real = keygen_vk(&params, &real_circuit).unwrap();
-    let vk_empty_bytes = serialize_vk(&vk_empty);
-    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
+    let vk_empty_bytes = vk_empty.to_bytes(SerdeFormat::Processed);
+    let vk_real_bytes: Vec<_> = vk_real.to_bytes(SerdeFormat::Processed);
 
     let prover1 =
         MockProver::<_>::run(*DEGREE as u32, &dummy_circuit, dummy_circuit.instance()).unwrap();
@@ -210,13 +209,13 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     let (_, block_traces) = load_block_traces_for_test();
 
-    log::info!("start generating {} proof", C::name());
+    log::info!("start generating {} snark", C::name());
     let now = Instant::now();
     let mut prover = Prover::from_param_dir(PARAMS_DIR);
-    let proof = prover
-        .gen_inner_proof::<C>(block_traces.as_slice())
+    let snark = prover
+        .gen_inner_snark::<C>(block_traces.as_slice())
         .unwrap();
-    log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
+    log::info!("finish generating snark, elapsed: {:?}", now.elapsed());
 
     let output_file = format!(
         "/tmp/{}_{}.json",
@@ -224,12 +223,12 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
         Utc::now().format("%Y%m%d_%H%M%S")
     );
     let mut fd = std::fs::File::create(&output_file).unwrap();
-    serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
-    log::info!("write proof to {}", output_file);
+    serde_json::to_writer_pretty(&mut fd, &snark).unwrap();
+    log::info!("write snark to {}", output_file);
 
-    log::info!("start verifying proof");
+    log::info!("start verifying snark");
     let now = Instant::now();
     let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier.verify_inner_proof::<C>(&proof).is_ok());
-    log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
+    assert!(verifier.verify_inner_proof::<C>(&snark).is_ok());
+    log::info!("finish verifying snark, elapsed: {:?}", now.elapsed());
 }

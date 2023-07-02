@@ -6,7 +6,7 @@ use snark_verifier_sdk::Snark;
 use zkevm_circuits::evm_circuit::witness::Block;
 
 impl Prover {
-    pub fn gen_agg_proof(
+    pub fn gen_agg_snark(
         &mut self,
         id: &str,
         degree: u32,

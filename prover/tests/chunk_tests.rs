@@ -49,16 +49,16 @@ fn test_chunk_prove_verify() {
     // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
     //    convert block traces into
     //
-    let inner_proof_file_path = format!("{}/{}_snark.json", output_dir, SuperCircuit::name());
-    let inner_proof = load_snark(&inner_proof_file_path)
+    let inner_snark_file_path = format!("{}/{}_snark.json", output_dir, SuperCircuit::name());
+    let inner_snark = load_snark(&inner_snark_file_path)
         .unwrap()
         .unwrap_or_else(|| {
             let snark = prover
-                .gen_inner_proof::<SuperCircuit>(block_traces.as_slice())
+                .gen_inner_snark::<SuperCircuit>(block_traces.as_slice())
                 .unwrap();
 
             // Dump inner circuit proof.
-            write_snark(&inner_proof_file_path, &snark);
+            write_snark(&inner_snark_file_path, &snark);
 
             snark
         });
@@ -69,14 +69,16 @@ fn test_chunk_prove_verify() {
     // 3. build an aggregation circuit proof
     let agg_circuit = AggregationCircuit::new(
         &prover.agg_params,
-        vec![inner_proof.clone()],
+        vec![inner_snark.clone()],
         XorShiftRng::from_seed([0u8; 16]),
     );
 
-    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_proof]).unwrap();
+    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_snark]).unwrap();
 
     // Dump aggregation proof, vk and instance.
-    chunk_proof.dump(&mut output_path, &"chunk").unwrap();
+    chunk_proof
+        .dump_to_file(&mut output_path, &"chunk")
+        .unwrap();
 
     log::info!("finished aggregation generation");
 
@@ -94,6 +96,6 @@ fn test_chunk_prove_verify() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), chunk_proof.proof);
+    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), chunk_proof.proof().to_vec());
     log::info!("end to end test completed");
 }

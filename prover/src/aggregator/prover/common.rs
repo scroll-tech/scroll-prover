@@ -1,5 +1,5 @@
 use super::Prover;
-use crate::{utils::tick, zkevm::circuit::TargetCircuit};
+use crate::{utils::tick, zkevm::circuit::TargetCircuit, Proof};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr},
@@ -7,7 +7,7 @@ use halo2_proofs::{
     poly::kzg::commitment::ParamsKZG,
 };
 use rand::Rng;
-use snark_verifier_sdk::{gen_pk, gen_snark_shplonk, verify_snark_shplonk, CircuitExt, Snark};
+use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, gen_snark_shplonk, CircuitExt, Snark};
 
 impl Prover {
     pub(crate) fn gen_snark(
@@ -26,16 +26,24 @@ impl Prover {
         gen_snark_shplonk(params, pk, circuit, rng, None::<&str>)
     }
 
-    pub(crate) fn verify_snark<C: CircuitExt<Fr>>(
-        &self,
+    pub(crate) fn gen_evm_proof(
+        &mut self,
         id: &str,
+        rng: &mut (impl Rng + Send),
         params: &ParamsKZG<Bn256>,
-        snark: Snark,
-    ) -> bool {
-        // Must have cached pk.
+        circuit: impl CircuitExt<Fr> + Clone,
+    ) -> Result<Proof> {
+        // Reuse pk.
+        if !self.pks.contains_key(id) {
+            self.gen_outer_pk(id, params, circuit.clone());
+        }
         let pk = &self.pks[id];
 
-        verify_snark_shplonk::<C>(params, snark, pk.get_vk())
+        let instances = circuit.instances();
+        let num_instance = circuit.num_instance();
+        let proof = gen_evm_proof_shplonk(params, pk, circuit, instances.clone(), rng);
+
+        Proof::new(proof, pk.get_vk(), &instances, Some(num_instance))
     }
 
     pub(crate) fn gen_inner_pk<C: TargetCircuit>(

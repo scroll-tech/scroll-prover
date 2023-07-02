@@ -4,9 +4,10 @@ use prover::{
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{gen_rng, init_env_and_log, load_or_download_params},
     zkevm::circuit::{SuperCircuit, AGG_DEGREE},
+    Proof,
 };
 use snark_verifier_sdk::Snark;
-use std::env::set_var;
+use std::{env::set_var, path::PathBuf};
 use types::eth::BlockTrace;
 
 #[cfg(feature = "prove_verify")]
@@ -33,15 +34,15 @@ fn test_comp_prove_verify() {
         load_or_gen_comp_snark(&output_dir, "comp_wide", true, &mut prover, chunk_snark);
     log::info!("Got compression wide snark (layer-1)");
 
-    // 4. Load or generate compression thin snark (layer-2).
-    let comp_thin_snark = load_or_gen_comp_snark(
+    // 4. Load or generate compression EVM proof (layer-2).
+    let proof = load_or_gen_comp_evm_proof(
         &output_dir,
         "comp_thin",
         false,
         &mut prover,
         comp_wide_snark,
     );
-    log::info!("Got compression thin snark (layer-2)");
+    log::info!("Got compression EVM proof (layer-2)");
 
     // TODO
 }
@@ -54,7 +55,7 @@ fn load_or_gen_chunk_snark(
     let file_path = format!("{output_dir}/chunk_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
-        let snark = prover.gen_chunk_proof::<SuperCircuit>(chunk_trace).unwrap();
+        let snark = prover.gen_chunk_snark::<SuperCircuit>(chunk_trace).unwrap();
         write_snark(&file_path, &snark);
 
         snark
@@ -73,9 +74,34 @@ fn load_or_gen_comp_snark(
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
         let rng = gen_rng();
-        let snark = prover.gen_comp_proof(id, is_fresh, *AGG_DEGREE, rng, prev_snark);
+        let snark = prover.gen_comp_snark(id, is_fresh, *AGG_DEGREE, rng, prev_snark);
         write_snark(&file_path, &snark);
 
         snark
     })
+}
+
+fn load_or_gen_comp_evm_proof(
+    output_dir: &str,
+    id: &str,
+    is_fresh: bool,
+    prover: &mut Prover,
+    prev_snark: Snark,
+) -> Proof {
+    set_var("VERIFY_CONFIG", "./configs/{id}.config");
+    let file_path = format!("{output_dir}/{id}_full_proof.json");
+
+    Proof::from_json_file(&file_path)
+        .unwrap()
+        .unwrap_or_else(|| {
+            let rng = gen_rng();
+            let proof = prover
+                .gen_comp_evm_proof(id, is_fresh, *AGG_DEGREE, rng, prev_snark)
+                .unwrap();
+            proof
+                .dump_to_file(&mut PathBuf::from(output_dir), id)
+                .unwrap();
+
+            proof
+        })
 }

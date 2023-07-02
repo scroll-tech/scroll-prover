@@ -19,7 +19,7 @@ pub struct Prover {
 
 impl Prover {
     pub fn from_params(params: ParamsKZG<Bn256>) -> Self {
-        assert!(params.k() == *AGG_DEGREE as u32);
+        assert!(params.k() == *AGG_DEGREE);
 
         Self {
             params,
