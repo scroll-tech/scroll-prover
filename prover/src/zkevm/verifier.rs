@@ -1,8 +1,5 @@
 use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
-use crate::{
-    proof::Proof,
-    utils::{load_params, DEFAULT_SERDE_FORMAT},
-};
+use crate::{proof::Proof, utils::load_or_download_params};
 use anyhow::anyhow;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -57,10 +54,9 @@ impl Verifier {
     }
 
     pub fn from_fpath(params_path: &str, agg_vk: Option<Vec<u8>>) -> Self {
-        let params =
-            load_params(params_path, *DEGREE, DEFAULT_SERDE_FORMAT).expect("failed to init params");
-        let agg_params = load_params(params_path, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
-            .expect("failed to init params");
+        let params = load_or_download_params(params_path, *DEGREE).expect("failed to init params");
+        let agg_params =
+            load_or_download_params(params_path, *AGG_DEGREE).expect("failed to init params");
         Self::from_params(params, agg_params, agg_vk)
     }
 
