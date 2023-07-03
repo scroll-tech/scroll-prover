@@ -69,7 +69,7 @@ impl Proof {
         write_file(dir, &format!("{name}.vkey"), &self.vk);
         write_file(dir, &format!("{name}_instances.data"), &self.instances);
 
-        dir.push("{name}_full_proof.json");
+        dir.push(format!("{name}_full_proof.json"));
         let mut fd = std::fs::File::create(dir.as_path())?;
         dir.pop();
         serde_json::to_writer_pretty(&mut fd, &self)?;
