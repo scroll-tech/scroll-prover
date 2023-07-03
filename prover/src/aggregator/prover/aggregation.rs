@@ -1,9 +1,7 @@
 use super::Prover;
-use aggregator::AggregationCircuit;
-use halo2_proofs::halo2curves::bn256::Fr;
+use aggregator::{AggregationCircuit, ChunkHash};
 use rand::Rng;
 use snark_verifier_sdk::Snark;
-use zkevm_circuits::evm_circuit::witness::Block;
 
 impl Prover {
     pub fn gen_agg_snark(
@@ -11,12 +9,11 @@ impl Prover {
         id: &str,
         degree: u32,
         mut rng: impl Rng + Send,
-        blocks: &[Block<Fr>],
-        snarks: Vec<Snark>,
+        chunk_hashes: &[ChunkHash],
+        prev_snarks: &[Snark],
     ) -> Snark {
-        let chunk_hashes: Vec<_> = blocks.iter().map(Into::into).collect();
         let circuit =
-            AggregationCircuit::new(self.params(degree), &snarks, &mut rng, &chunk_hashes);
+            AggregationCircuit::new(self.params(degree), prev_snarks, &mut rng, chunk_hashes);
 
         self.gen_snark(id, degree, &mut rng, circuit)
     }

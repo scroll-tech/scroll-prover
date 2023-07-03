@@ -1,4 +1,5 @@
 pub mod aggregator;
+pub mod config;
 mod evm_verifier;
 pub mod io;
 pub mod proof;

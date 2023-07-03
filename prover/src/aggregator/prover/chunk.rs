@@ -1,7 +1,8 @@
 use super::Prover;
 use crate::{
+    config::INNER_DEGREE,
     utils::{gen_rng, metric_of_witness_block, read_env_var},
-    zkevm::circuit::{TargetCircuit, DEGREE},
+    zkevm::circuit::TargetCircuit,
 };
 use anyhow::{bail, Result};
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
@@ -18,15 +19,15 @@ impl Prover {
     ) -> Result<Snark> {
         log::info!(
             "Proving the chunk: {:?}",
-            metric_of_witness_block(&witness_block)
+            metric_of_witness_block(witness_block)
         );
 
-        let (circuit, instance) = C::from_witness_block(&witness_block)?;
+        let (circuit, instance) = C::from_witness_block(witness_block)?;
         log::info!("Create {} proof", C::name());
 
         if *MOCK_PROVE {
             log::info!("Mock prove {} start", C::name());
-            let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
+            let prover = MockProver::<Fr>::run(*INNER_DEGREE, &circuit, instance)?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
                 for err in &errs {

@@ -1,6 +1,5 @@
-use super::{TargetCircuit, DEGREE};
-
-use super::{MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_TXS};
+use super::{TargetCircuit, MAX_CALLDATA, MAX_INNER_BLOCKS, MAX_TXS};
+use crate::config::INNER_DEGREE;
 use anyhow::bail;
 use halo2_proofs::halo2curves::bn256::Fr;
 use zkevm_circuits::{super_circuit::SuperCircuit as SuperCircuitTpl, util::SubCircuit, witness};
@@ -23,10 +22,10 @@ impl TargetCircuit for SuperCircuit {
         Self: Sized,
     {
         let (k, inner, instance) = Self::Inner::build_from_witness_block(witness_block.clone())?;
-        if k > *DEGREE {
+        if k > *INNER_DEGREE {
             bail!(
-                "circuit not enough: DEGREE = {}, less than k needed: {}",
-                *DEGREE,
+                "circuit not enough: INNER_DEGREE = {}, less than k needed: {}",
+                *INNER_DEGREE,
                 k
             );
         }

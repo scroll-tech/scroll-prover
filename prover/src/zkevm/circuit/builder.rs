@@ -1,7 +1,8 @@
 use super::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
+    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
     MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_RWS, MAX_TXS,
 };
+use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
     circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams},
@@ -102,7 +103,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
             rows,
             rows_and_names
         );
-        if *rows >= (1 << *DEGREE) - 256 {
+        if *rows >= (1 << *INNER_DEGREE) - 256 {
             log::warn!("truncate blocks [{}..{})", idx, block_traces_len);
             truncate_idx = idx;
             break;

@@ -1,10 +1,10 @@
 //! Initialization and utility APIs for Prover.
 
-use super::{
-    super::circuit::{AGG_DEGREE, DEGREE},
-    Prover,
+use super::Prover;
+use crate::{
+    config::{CHUNK_DEGREE, INNER_DEGREE},
+    utils::{downsize_params, load_params, DEFAULT_SERDE_FORMAT},
 };
-use crate::utils::{load_params, DEFAULT_SERDE_FORMAT};
 use halo2_proofs::{
     halo2curves::bn256::Bn256,
     poly::{
@@ -31,15 +31,15 @@ impl Prover {
     }
 
     pub fn from_params(agg_params: ParamsKZG<Bn256>) -> Self {
-        assert!(agg_params.k() == *AGG_DEGREE);
+        assert!(agg_params.k() == *CHUNK_DEGREE);
         let mut params = agg_params.clone();
-        params.downsize(*DEGREE);
+        downsize_params(&mut params, *INNER_DEGREE);
 
         // notice that k < k_agg which is not necessary the case in practice
         log::info!(
             "loaded parameters for degrees {} and {}",
-            *DEGREE,
-            *AGG_DEGREE
+            *INNER_DEGREE,
+            *CHUNK_DEGREE
         );
 
         // this check can be skipped since the `params` is downsized?
@@ -59,7 +59,7 @@ impl Prover {
     }
 
     pub fn from_params_dir(params_dir: &str) -> Self {
-        let agg_params = load_params(params_dir, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+        let agg_params = load_params(params_dir, *CHUNK_DEGREE, DEFAULT_SERDE_FORMAT)
             .expect("Failed to load params");
         Self::from_params(agg_params)
     }

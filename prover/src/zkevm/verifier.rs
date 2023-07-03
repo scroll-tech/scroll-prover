@@ -1,7 +1,8 @@
-use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
+use super::circuit::TargetCircuit;
 use crate::{
+    config::{CHUNK_DEGREE, INNER_DEGREE},
     proof::Proof,
-    utils::{load_params, DEFAULT_SERDE_FORMAT},
+    utils::{downsize_params, load_params, DEFAULT_SERDE_FORMAT},
 };
 use anyhow::anyhow;
 use halo2_proofs::{
@@ -49,15 +50,15 @@ impl Verifier {
     }
 
     pub fn from_params(agg_params: ParamsKZG<Bn256>, agg_vk: Option<Vec<u8>>) -> Self {
-        assert!(agg_params.k() == *AGG_DEGREE);
+        assert!(agg_params.k() == *CHUNK_DEGREE);
         let mut params = agg_params.clone();
-        params.downsize(*DEGREE);
+        downsize_params(&mut params, *INNER_DEGREE);
 
         Self::new(params, agg_params, agg_vk)
     }
 
     pub fn from_params_dir(params_dir: &str, agg_vk: Option<Vec<u8>>) -> Self {
-        let agg_params = load_params(params_dir, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+        let agg_params = load_params(params_dir, *CHUNK_DEGREE, DEFAULT_SERDE_FORMAT)
             .expect("Failed to load params");
         Self::from_params(agg_params, agg_vk)
     }

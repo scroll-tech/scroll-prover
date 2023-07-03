@@ -1,9 +1,10 @@
 use prover::{
+    config::{AGG_DEGREE, CHUNK_DEGREE},
     io::{load_snark, write_file, write_snark},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{init_env_and_log, load_or_download_params},
+    utils::{downsize_params, init_env_and_log, load_or_download_params},
     zkevm::{
-        circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE},
+        circuit::{SuperCircuit, TargetCircuit},
         Prover,
     },
     EvmVerifier,
@@ -41,7 +42,8 @@ fn test_chunk_prove_verify() {
     // 1. instantiation the parameters and the prover
     //
 
-    let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
+    let mut params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
+    downsize_params(&mut params, *CHUNK_DEGREE);
     let mut prover = Prover::from_params(params);
     log::info!("build prover");
 

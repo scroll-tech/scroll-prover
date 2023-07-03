@@ -1,8 +1,9 @@
 use clap::Parser;
 use log::info;
 use prover::{
-    utils::{init_env_and_log, load_or_download_params},
-    zkevm::{circuit::AGG_DEGREE, Verifier},
+    config::{AGG_DEGREE, CHUNK_DEGREE},
+    utils::{downsize_params, init_env_and_log, load_or_download_params},
+    zkevm::Verifier,
     Proof,
 };
 use std::{fs::File, io::Read, path::PathBuf};
@@ -23,11 +24,11 @@ fn main() {
     std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let agg_params = load_or_download_params(&args.params_path, *AGG_DEGREE)
-        .expect("failed to load or create params");
+    let mut params = load_or_download_params(&args.params_path, *AGG_DEGREE)
+        .expect("Failed to load or download params");
+    downsize_params(&mut params, *CHUNK_DEGREE);
     let agg_vk = read_from_file(&args.vk_path);
-
-    let v = Verifier::from_params(agg_params, Some(agg_vk));
+    let v = Verifier::from_params(params, Some(agg_vk));
 
     let proof_path = PathBuf::from("proof_data").join("chunk_full_proof.json");
     let proof_vec = read_from_file(&proof_path.to_string_lossy());

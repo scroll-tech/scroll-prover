@@ -1,10 +1,14 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
+    config::{AGG_DEGREE, INNER_DEGREE},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params},
+    utils::{
+        downsize_params, get_block_trace_from_file, init_env_and_log, load_or_download_params,
+        load_params,
+    },
     zkevm::{
-        circuit::{SuperCircuit, TargetCircuit, DEGREE},
+        circuit::{SuperCircuit, TargetCircuit},
         CircuitCapacityChecker, Prover, Verifier,
     },
 };
@@ -109,10 +113,10 @@ fn test_deterministic() {
     let block_trace = load_block_traces_for_test().1;
 
     let circuit1 = C::from_block_traces(&block_trace).unwrap().0;
-    let prover1 = MockProver::<_>::run(*DEGREE as u32, &circuit1, circuit1.instance()).unwrap();
+    let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
 
     let circuit2 = C::from_block_traces(&block_trace).unwrap().0;
-    let prover2 = MockProver::<_>::run(*DEGREE as u32, &circuit2, circuit2.instance()).unwrap();
+    let prover2 = MockProver::<_>::run(*INNER_DEGREE, &circuit2, circuit2.instance()).unwrap();
 
     let advice1 = prover1.advices();
     let advice2 = prover2.advices();
@@ -140,7 +144,8 @@ fn test_vk_same() {
     init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
-    let params = load_or_download_params(PARAMS_DIR, *DEGREE).unwrap();
+    let mut params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
+    downsize_params(&mut params, *INNER_DEGREE);
 
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
@@ -150,9 +155,9 @@ fn test_vk_same() {
     let vk_real_bytes: Vec<_> = vk_real.to_bytes(SerdeFormat::Processed);
 
     let prover1 =
-        MockProver::<_>::run(*DEGREE as u32, &dummy_circuit, dummy_circuit.instance()).unwrap();
+        MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();
     let prover2 =
-        MockProver::<_>::run(*DEGREE as u32, &real_circuit, real_circuit.instance()).unwrap();
+        MockProver::<_>::run(*INNER_DEGREE, &real_circuit, real_circuit.instance()).unwrap();
 
     let fixed1 = prover1.fixed();
     let fixed2 = prover2.fixed();

@@ -1,14 +1,15 @@
 use super::Prover;
 use crate::{
-    utils::tick,
-    zkevm::circuit::{TargetCircuit, DEGREE},
+    config::INNER_DEGREE,
+    utils::{downsize_params, tick},
+    zkevm::circuit::TargetCircuit,
     Proof,
 };
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr, G1Affine},
     plonk::{keygen_pk2, Circuit, ProvingKey},
-    poly::{commitment::Params, kzg::commitment::ParamsKZG},
+    poly::kzg::commitment::ParamsKZG,
 };
 use rand::Rng;
 use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, gen_snark_shplonk, CircuitExt, Snark};
@@ -51,28 +52,30 @@ impl Prover {
         // Reuse pk.
         if !self.pk_map.contains_key(&id) {
             tick(&format!("Before generate inner pk of {}", &id));
-            let pk = keygen_pk2(self.params(*DEGREE), circuit)?;
+            let pk = keygen_pk2(self.params(*INNER_DEGREE), circuit)?;
             tick(&format!("After generate inner pk of {}", &id));
 
             self.pk_map.insert(id.clone(), pk);
         }
-        assert!(self.params_map.contains_key(&*DEGREE));
+        assert!(self.params_map.contains_key(&*INNER_DEGREE));
 
-        Ok((&self.params_map[&*DEGREE], &self.pk_map[&id]))
+        Ok((&self.params_map[&*INNER_DEGREE], &self.pk_map[&id]))
     }
 
     pub(crate) fn params(&mut self, degree: u32) -> &ParamsKZG<Bn256> {
         assert!(degree <= self.max_degree);
 
         // Reuse params.
-        if !self.params_map.contains_key(&degree) {
-            tick(&format!("Before generate params of {degree}"));
-            let mut new_params = self.max_params().clone();
-            new_params.downsize(degree);
-            tick(&format!("After generate params of {degree}"));
-
-            self.params_map.insert(degree, new_params);
+        if self.params_map.contains_key(&degree) {
+            return &self.params_map[&degree];
         }
+
+        tick(&format!("Before generate params of {degree}"));
+        let mut new_params = self.max_params().clone();
+        downsize_params(&mut new_params, degree);
+        tick(&format!("After generate params of {degree}"));
+
+        self.params_map.insert(degree, new_params);
 
         &self.params_map[&degree]
     }
@@ -88,14 +91,15 @@ impl Prover {
         degree: u32,
     ) -> (&ParamsKZG<Bn256>, &ProvingKey<G1Affine>) {
         // Reuse pk.
-        if !self.pk_map.contains_key(id) {
-            tick(&format!("Before generate outer pk of {}", &id));
-            let pk = gen_pk(self.params(degree), circuit, None);
-            tick(&format!("After generate outer pk of {}", &id));
-
-            self.pk_map.insert(id.to_string(), pk);
+        if self.pk_map.contains_key(id) {
+            return (&self.params_map[&degree], &self.pk_map[id]);
         }
-        assert!(self.params_map.contains_key(&degree));
+
+        tick(&format!("Before generate outer pk of {}", &id));
+        let pk = gen_pk(self.params(degree), circuit, None);
+        tick(&format!("After generate outer pk of {}", &id));
+
+        self.pk_map.insert(id.to_string(), pk);
 
         (&self.params_map[&degree], &self.pk_map[id])
     }

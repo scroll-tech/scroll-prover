@@ -1,8 +1,8 @@
 use super::{
-    super::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE},
+    super::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit},
     Prover,
 };
-use crate::utils::metric_of_witness_block;
+use crate::{config::INNER_DEGREE, utils::metric_of_witness_block};
 use anyhow::bail;
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
 use types::eth::BlockTrace;
@@ -32,7 +32,7 @@ impl Prover {
             metric_of_witness_block(&witness_block)
         );
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
-        let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
+        let prover = MockProver::<Fr>::run(*INNER_DEGREE, &circuit, instance)?;
         if let Err(errs) = prover.verify_par() {
             log::error!("err num: {}", errs.len());
             for err in &errs {

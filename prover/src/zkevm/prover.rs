@@ -1,3 +1,11 @@
+use super::circuit::{
+    block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit,
+};
+use crate::{
+    config::INNER_DEGREE,
+    proof::Proof,
+    utils::{metric_of_witness_block, read_env_var},
+};
 use anyhow::bail;
 use log::info;
 use once_cell::sync::Lazy;
@@ -5,14 +13,6 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 use types::eth::BlockTrace;
-
-use super::circuit::{
-    block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit, DEGREE,
-};
-use crate::{
-    proof::Proof,
-    utils::{metric_of_witness_block, read_env_var},
-};
 
 use halo2_proofs::{
     dev::MockProver,
@@ -112,7 +112,7 @@ impl Prover {
 
         if *MOCK_PROVE {
             log::info!("mock prove {} start", C::name());
-            let prover = MockProver::<Fr>::run(*DEGREE, &circuit, instance)?;
+            let prover = MockProver::<Fr>::run(*INNER_DEGREE, &circuit, instance)?;
             if let Err(errs) = prover.verify_par() {
                 log::error!("err num: {}", errs.len());
                 for err in &errs {

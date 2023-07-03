@@ -5,10 +5,31 @@ use crate::{
     zkevm::circuit::SuperCircuit,
     Proof,
 };
+use aggregator::ChunkHash;
 use halo2_proofs::halo2curves::bn256::Fr;
 use snark_verifier_sdk::Snark;
 use std::{env::set_var, path::PathBuf};
 use zkevm_circuits::evm_circuit::witness::Block;
+
+pub fn load_or_gen_agg_snark(
+    output_dir: &str,
+    id: &str,
+    degree: u32,
+    prover: &mut Prover,
+    chunk_hashes: &[ChunkHash],
+    prev_snarks: &[Snark],
+) -> Snark {
+    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
+    let file_path = format!("{output_dir}/{id}_snark.json");
+
+    load_snark(&file_path).unwrap().unwrap_or_else(|| {
+        let rng = gen_rng();
+        let snark = prover.gen_agg_snark(id, degree, rng, chunk_hashes, prev_snarks);
+        write_snark(&file_path, &snark);
+
+        snark
+    })
+}
 
 pub fn load_or_gen_chunk_snark(
     output_dir: &str,

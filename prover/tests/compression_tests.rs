@@ -1,12 +1,12 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
+    config::AGG_DEGREE,
     test_util::{
         aggregator::{load_or_gen_chunk_snark, load_or_gen_comp_evm_proof, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
     },
     utils::{chunk_trace_to_witness_block, init_env_and_log, load_or_download_params},
-    zkevm::circuit::AGG_DEGREE,
 };
 use std::path::Path;
 

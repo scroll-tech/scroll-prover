@@ -4,7 +4,7 @@ use chrono::Utc;
 use git_version::git_version;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr},
-    poly::kzg::commitment::ParamsKZG,
+    poly::{commitment::Params, kzg::commitment::ParamsKZG},
     SerdeFormat,
 };
 use log::LevelFilter;
@@ -31,6 +31,11 @@ use zkevm_circuits::evm_circuit::witness::Block;
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
 pub static LOGGER: Once = Once::new();
+
+/// Downsize the halo2 Params to specified degree.
+pub fn downsize_params(params: &mut ParamsKZG<Bn256>, degree: u32) {
+    params.downsize(degree);
+}
 
 /// Get setup params by reading from a file or downloading a new one.
 pub fn load_or_download_params(params_dir: &str, degree: u32) -> Result<ParamsKZG<Bn256>> {
