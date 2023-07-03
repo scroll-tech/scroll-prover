@@ -1,21 +1,14 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
-    io::{load_snark, write_snark},
     test_util::{
         aggregator::{load_or_gen_chunk_snark, load_or_gen_comp_evm_proof, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
     },
-    utils::{gen_rng, init_env_and_log, load_or_download_params},
-    zkevm::circuit::{SuperCircuit, AGG_DEGREE},
-    Proof,
+    utils::{init_env_and_log, load_or_download_params},
+    zkevm::circuit::AGG_DEGREE,
 };
-use snark_verifier_sdk::Snark;
-use std::{
-    env::set_var,
-    path::{Path, PathBuf},
-};
-use types::eth::BlockTrace;
+use std::path::Path;
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -39,7 +32,7 @@ fn test_comp_prove_verify() {
 
     // 3. Load or generate compression wide snark (layer-1).
     let comp_wide_snark =
-        load_or_gen_comp_snark(&output_dir, "comp_wide", true, &mut prover, chunk_snark);
+        load_or_gen_comp_snark(&output_dir, "comp_wide", true, 22, &mut prover, chunk_snark);
     log::info!("Got compression wide snark (layer-1)");
 
     // 4. Load or generate compression EVM proof (layer-2).
@@ -47,6 +40,7 @@ fn test_comp_prove_verify() {
         &output_dir,
         "comp_thin",
         false,
+        *AGG_DEGREE,
         &mut prover,
         comp_wide_snark,
     );
