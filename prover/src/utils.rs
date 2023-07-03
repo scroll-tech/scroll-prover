@@ -1,4 +1,5 @@
-use anyhow::Result;
+use crate::zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity};
+use anyhow::{bail, Result};
 use chrono::Utc;
 use git_version::git_version;
 use halo2_proofs::{
@@ -25,7 +26,7 @@ use std::{
     sync::Once,
 };
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
-use zkevm_circuits::witness;
+use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
@@ -136,12 +137,23 @@ pub struct BatchMetric {
     pub num_step: usize,
 }
 
-pub fn metric_of_witness_block(block: &witness::Block<Fr>) -> BatchMetric {
+pub fn metric_of_witness_block(block: &Block<Fr>) -> BatchMetric {
     BatchMetric {
         num_block: block.context.ctxs.len(),
         num_tx: block.txs.len(),
         num_step: block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>(),
     }
+}
+
+pub fn chunk_trace_to_witness_block(mut chunk_trace: Vec<BlockTrace>) -> Result<Block<Fr>> {
+    if chunk_trace.is_empty() {
+        bail!("Empty chunk trace");
+    }
+
+    // Check if the trace exceeds the circuit capacity.
+    check_batch_capacity(&mut chunk_trace)?;
+
+    block_traces_to_witness_block(&chunk_trace)
 }
 
 // Return the output dir.

@@ -1,45 +1,28 @@
 use super::Prover;
 use crate::{
     utils::{gen_rng, metric_of_witness_block, read_env_var},
-    zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit, DEGREE},
+    zkevm::circuit::{TargetCircuit, DEGREE},
 };
 use anyhow::{bail, Result};
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
 use once_cell::sync::Lazy;
 use snark_verifier_sdk::{gen_snark_shplonk, Snark};
-use types::eth::BlockTrace;
+use zkevm_circuits::evm_circuit::witness::Block;
 
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
 impl Prover {
     pub fn gen_chunk_snark<C: TargetCircuit>(
         &mut self,
-        mut chunk_trace: Vec<BlockTrace>,
+        witness_block: &Block<Fr>,
     ) -> Result<Snark> {
-        if chunk_trace.is_empty() {
-            bail!("Empty chunk trace");
-        }
-
-        // Will return early if the check finds out the trace exceeds the
-        // circuit capacity.
-        check_batch_capacity(&mut chunk_trace)?;
-
-        let witness_block = block_traces_to_witness_block(&chunk_trace)?;
         log::info!(
             "Proving the chunk: {:?}",
             metric_of_witness_block(&witness_block)
         );
 
         let (circuit, instance) = C::from_witness_block(&witness_block)?;
-
-        // Generate the proof for the inner circuit.
-        log::info!(
-            "Create {} proof of block {} ... block {}, batch len {}",
-            C::name(),
-            chunk_trace.first().unwrap().header.hash.unwrap(),
-            chunk_trace.last().unwrap().header.hash.unwrap(),
-            chunk_trace.len()
-        );
+        log::info!("Create {} proof", C::name());
 
         if *MOCK_PROVE {
             log::info!("Mock prove {} start", C::name());

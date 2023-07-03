@@ -1,11 +1,14 @@
 use super::circuit::{TargetCircuit, AGG_DEGREE, DEGREE};
-use crate::{proof::Proof, utils::load_or_download_params};
+use crate::{
+    proof::Proof,
+    utils::{load_params, DEFAULT_SERDE_FORMAT},
+};
 use anyhow::anyhow;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
     plonk::{keygen_vk, verify_proof, VerifyingKey},
     poly::{
-        commitment::ParamsProver,
+        commitment::{Params, ParamsProver},
         kzg::{commitment::ParamsKZG, multiopen::VerifierSHPLONK, strategy::AccumulatorStrategy},
         VerificationStrategy,
     },
@@ -45,19 +48,18 @@ impl Verifier {
         }
     }
 
-    pub fn from_params(
-        params: ParamsKZG<Bn256>,
-        agg_params: ParamsKZG<Bn256>,
-        agg_vk: Option<Vec<u8>>,
-    ) -> Self {
+    pub fn from_params(agg_params: ParamsKZG<Bn256>, agg_vk: Option<Vec<u8>>) -> Self {
+        assert!(agg_params.k() == *AGG_DEGREE);
+        let mut params = agg_params.clone();
+        params.downsize(*DEGREE);
+
         Self::new(params, agg_params, agg_vk)
     }
 
-    pub fn from_fpath(params_path: &str, agg_vk: Option<Vec<u8>>) -> Self {
-        let params = load_or_download_params(params_path, *DEGREE).expect("failed to init params");
-        let agg_params =
-            load_or_download_params(params_path, *AGG_DEGREE).expect("failed to init params");
-        Self::from_params(params, agg_params, agg_vk)
+    pub fn from_params_dir(params_dir: &str, agg_vk: Option<Vec<u8>>) -> Self {
+        let agg_params = load_params(params_dir, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("Failed to load params");
+        Self::from_params(agg_params, agg_vk)
     }
 
     pub fn verify_chunk_proof(&self, proof: Proof) -> anyhow::Result<bool> {

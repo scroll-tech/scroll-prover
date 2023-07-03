@@ -5,19 +5,22 @@ use crate::{
     zkevm::circuit::SuperCircuit,
     Proof,
 };
+use halo2_proofs::halo2curves::bn256::Fr;
 use snark_verifier_sdk::Snark;
 use std::{env::set_var, path::PathBuf};
-use types::eth::BlockTrace;
+use zkevm_circuits::evm_circuit::witness::Block;
 
 pub fn load_or_gen_chunk_snark(
     output_dir: &str,
     prover: &mut Prover,
-    chunk_trace: Vec<BlockTrace>,
+    witness_block: Block<Fr>,
 ) -> Snark {
     let file_path = format!("{output_dir}/chunk_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
-        let snark = prover.gen_chunk_snark::<SuperCircuit>(chunk_trace).unwrap();
+        let snark = prover
+            .gen_chunk_snark::<SuperCircuit>(&witness_block)
+            .unwrap();
         write_snark(&file_path, &snark);
 
         snark

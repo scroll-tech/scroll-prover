@@ -2,7 +2,7 @@ use super::{
     TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, DEGREE, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
     MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_RWS, MAX_TXS,
 };
-use anyhow::bail;
+use anyhow::{bail, Result};
 use bus_mapping::{
     circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams},
     state_db::{Account, CodeDB, StateDB},
@@ -25,14 +25,12 @@ pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
 ];
 
 // TODO: optimize it later
-pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>, anyhow::Error> {
+pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
     calculate_row_usage_of_witness_block(&witness_block)
 }
 
-pub fn calculate_row_usage_of_witness_block(
-    witness_block: &Block<Fr>,
-) -> Result<Vec<usize>, anyhow::Error> {
+pub fn calculate_row_usage_of_witness_block(witness_block: &Block<Fr>) -> Result<Vec<usize>> {
     let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
         witness_block,
     )
@@ -54,7 +52,7 @@ pub fn calculate_row_usage_of_witness_block(
 
 // FIXME: we need better API name for this.
 // This function also mutates the block trace.
-pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<(), anyhow::Error> {
+pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
     let block_traces_len = block_traces.len();
     let total_tx_count = block_traces
         .iter()
@@ -127,7 +125,7 @@ pub fn update_state(
     zktrie_state: &mut ZktrieState,
     block_traces: &[BlockTrace],
     light_mode: bool,
-) -> Result<(), anyhow::Error> {
+) -> Result<()> {
     log::debug!("building partial statedb");
     let account_proofs = block_traces.iter().rev().flat_map(|block| {
         block.storage_trace.proofs.iter().flat_map(|kv_map| {
@@ -166,9 +164,7 @@ pub fn update_state(
     Ok(())
 }
 
-pub fn block_traces_to_witness_block(
-    block_traces: &[BlockTrace],
-) -> Result<Block<Fr>, anyhow::Error> {
+pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -183,7 +179,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
     block_traces: &[BlockTrace],
     zktrie_state: &mut ZktrieState,
     light_mode: bool, // light_mode used in row estimation
-) -> Result<Block<Fr>, anyhow::Error> {
+) -> Result<Block<Fr>> {
     let chain_ids = block_traces
         .iter()
         .map(|block_trace| block_trace.chain_id)
@@ -278,7 +274,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
     Ok(witness_block)
 }
 
-pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>, anyhow::Error> {
+pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>> {
     let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
         stripped.to_string()
     } else {
@@ -370,7 +366,7 @@ fn code_hashing() {
 /*
 fn get_account_deployed_codehash(
     execution_result: &ExecutionResult,
-) -> Result<eth_types::H256, anyhow::Error> {
+) -> Result<eth_types::H256> {
     let created_acc = execution_result
         .account_created
         .as_ref()
@@ -385,7 +381,7 @@ fn get_account_deployed_codehash(
     }
     Err(anyhow!("can not find created address in account after"))
 }
-fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256, anyhow::Error> {
+fn get_account_created_codehash(step: &ExecStep) -> Result<eth_types::H256> {
     let extra_data = step
         .extra_data
         .as_ref()
@@ -424,7 +420,7 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
     //    "invalid codehash for existed account {addr:?}, {data:?}"
     //);
 }
-pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB, anyhow::Error> {
+pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
     let mut cdb = CodeDB::new();
     log::debug!("building codedb");
 

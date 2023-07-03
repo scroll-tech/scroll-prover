@@ -1,4 +1,5 @@
 //! Initialization and utility APIs for Prover.
+
 use super::{
     super::circuit::{AGG_DEGREE, DEGREE},
     Prover,
@@ -57,9 +58,9 @@ impl Prover {
         Self::new(params, agg_params)
     }
 
-    pub fn from_param_dir(params_fpath: &str) -> Self {
-        let agg_params = load_params(params_fpath, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
-            .expect("failed to init params");
+    pub fn from_params_dir(params_dir: &str) -> Self {
+        let agg_params = load_params(params_dir, *AGG_DEGREE, DEFAULT_SERDE_FORMAT)
+            .expect("Failed to load params");
         Self::from_params(agg_params)
     }
 }

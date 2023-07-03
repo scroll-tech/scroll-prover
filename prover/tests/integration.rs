@@ -211,7 +211,8 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     log::info!("start generating {} snark", C::name());
     let now = Instant::now();
-    let mut prover = Prover::from_param_dir(PARAMS_DIR);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR);
+    log::info!("build prover");
     let snark = prover
         .gen_inner_snark::<C>(block_traces.as_slice())
         .unwrap();
@@ -228,7 +229,7 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     log::info!("start verifying snark");
     let now = Instant::now();
-    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
+    let mut verifier = Verifier::from_params_dir(PARAMS_DIR, None);
     assert!(verifier.verify_inner_proof::<C>(&snark).is_ok());
     log::info!("finish verifying snark, elapsed: {:?}", now.elapsed());
 }
