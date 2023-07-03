@@ -35,7 +35,7 @@ pub fn load_or_gen_comp_evm_proof(
     prover: &mut Prover,
     prev_snark: Snark,
 ) -> Proof {
-    set_var("VERIFY_CONFIG", "./configs/{id}.config");
+    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
     let file_path = format!("{output_dir}/{id}_full_proof.json");
 
     Proof::from_json_file(&file_path)
@@ -59,7 +59,7 @@ pub fn load_or_gen_comp_snark(
     prover: &mut Prover,
     prev_snark: Snark,
 ) -> Snark {
-    set_var("VERIFY_CONFIG", "./configs/{id}.config");
+    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
     let file_path = format!("{output_dir}/{id}_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
