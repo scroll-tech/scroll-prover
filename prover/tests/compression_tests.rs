@@ -22,7 +22,7 @@ fn test_comp_prove_verify() {
     log::info!("Loaded chunk-trace");
 
     let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    let mut prover = Prover::from_params(params.clone());
+    let mut prover = Prover::from_params(*AGG_DEGREE, params.clone());
     let verifier = Verifier::from_params(params);
     log::info!("Constructed prover and verifier");
 

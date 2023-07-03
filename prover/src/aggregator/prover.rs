@@ -12,15 +12,19 @@ mod compression;
 
 #[derive(Debug)]
 pub struct Prover {
-    params: ParamsKZG<Bn256>,
-    pks: HashMap<String, ProvingKey<G1Affine>>,
+    max_degree: u32,
+    // Cached degree -> params
+    params_map: HashMap<u32, ParamsKZG<Bn256>>,
+    // Cached id -> pk
+    pk_map: HashMap<String, ProvingKey<G1Affine>>,
 }
 
 impl Prover {
-    pub fn from_params(params: ParamsKZG<Bn256>) -> Self {
+    pub fn from_params(max_degree: u32, init_params: ParamsKZG<Bn256>) -> Self {
         Self {
-            params,
-            pks: HashMap::new(),
+            max_degree,
+            params_map: HashMap::from([(max_degree, init_params)]),
+            pk_map: HashMap::new(),
         }
     }
 }
