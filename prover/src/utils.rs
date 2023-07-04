@@ -4,7 +4,7 @@ use chrono::Utc;
 use git_version::git_version;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr},
-    poly::{commitment::Params, kzg::commitment::ParamsKZG},
+    poly::kzg::commitment::ParamsKZG,
     SerdeFormat,
 };
 use log::LevelFilter;
@@ -21,7 +21,6 @@ use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
     str::FromStr,
     sync::Once,
 };
@@ -32,56 +31,22 @@ pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
 pub static LOGGER: Once = Once::new();
 
-/// Downsize the halo2 Params to specified degree.
-pub fn downsize_params(params: &mut ParamsKZG<Bn256>, degree: u32) {
-    params.downsize(degree);
-}
-
-/// Get setup params by reading from a file or downloading a new one.
-pub fn load_or_download_params(params_dir: &str, degree: u32) -> Result<ParamsKZG<Bn256>> {
-    match metadata(params_dir) {
-        Ok(md) => {
-            if md.is_file() {
-                panic!("{params_dir} should be folder");
-            }
-        }
-        Err(_) => {
-            // Not exist
-            fs::create_dir_all(params_dir)?;
-        }
-    };
-
-    let params_path = param_path_for_degree(params_dir, degree);
-    log::info!("load_or_download_params {}", params_path);
-
-    if Path::new(&params_path).exists() {
-        match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
-            Ok(r) => return Ok(r),
-            Err(e) => {
-                log::error!(
-                    "An error occurred when loading setup params: {}. Re-downloading ...",
-                    e
-                )
-            }
-        }
-    }
-
-    download_params(params_dir, degree)
-}
-
 /// Load setup params from a file.
 pub fn load_params(
     params_dir: &str,
     degree: u32,
-    serde_format: SerdeFormat,
+    serde_fmt: Option<SerdeFormat>,
 ) -> Result<ParamsKZG<Bn256>> {
-    log::info!("start loading params with degree {}", degree);
+    log::info!("Start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
         param_path_for_degree(params_dir, degree)
     } else {
         params_dir.to_string()
     };
+    if !Path::new(&params_path).exists() {
+        bail!("Need to download params by `make download-setup -e degree={degree}`");
+    }
     let f = File::open(params_path)?;
 
     // check params file length:
@@ -93,7 +58,9 @@ pub fn load_params(
     let file_size = f.metadata()?.len();
     let g1_num = 2 * (1 << degree);
     let g2_num = 2;
-    let g1_bytes_len = match serde_format {
+
+    let serde_fmt = serde_fmt.unwrap_or(DEFAULT_SERDE_FORMAT);
+    let g1_bytes_len = match serde_fmt {
         SerdeFormat::Processed => 32,
         SerdeFormat::RawBytes | SerdeFormat::RawBytesUnchecked => 64,
     };
@@ -103,7 +70,7 @@ pub fn load_params(
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_format)?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_fmt)?;
     log::info!("load params successfully!");
     Ok(p)
 }
@@ -214,35 +181,6 @@ fn create_output_dir(id: &str) -> String {
     fs::create_dir_all(output_dir).unwrap();
 
     output
-}
-
-// Download setup params and write it into a file.
-fn download_params(params_dir: &str, degree: u32) -> Result<ParamsKZG<Bn256>> {
-    log::warn!("Would be better to run `make download-setup` before any bins or tests");
-
-    log::info!("Start to download setup params");
-
-    let download_script_path = project_root::get_project_root()?.join("download_setup.sh");
-
-    Command::new("sh")
-        .stdout(Stdio::null())
-        .args([
-            download_script_path.to_string_lossy().as_ref(),
-            &degree.to_string(),
-            params_dir,
-        ])
-        .status()
-        .unwrap_or_else(|e| {
-            panic!("Failed to download setup params with {degree} and {params_dir}: {e}")
-        });
-
-    log::info!("Finish downloading setup params");
-
-    load_params(
-        &param_path_for_degree(params_dir, degree),
-        degree,
-        DEFAULT_SERDE_FORMAT,
-    )
 }
 
 fn param_path_for_degree(params_dir: &str, degree: u32) -> String {

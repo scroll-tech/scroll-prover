@@ -1,15 +1,10 @@
 use super::Prover;
-use crate::{
-    config::INNER_DEGREE,
-    utils::{downsize_params, tick},
-    zkevm::circuit::TargetCircuit,
-    Proof,
-};
+use crate::{config::INNER_DEGREE, utils::tick, zkevm::circuit::TargetCircuit, Proof};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr, G1Affine},
     plonk::{keygen_pk2, Circuit, ProvingKey},
-    poly::kzg::commitment::ParamsKZG,
+    poly::{commitment::Params, kzg::commitment::ParamsKZG},
 };
 use rand::Rng;
 use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, gen_snark_shplonk, CircuitExt, Snark};
@@ -63,25 +58,19 @@ impl Prover {
     }
 
     pub(crate) fn params(&mut self, degree: u32) -> &ParamsKZG<Bn256> {
-        assert!(degree <= self.max_degree);
-
-        // Reuse params.
         if self.params_map.contains_key(&degree) {
             return &self.params_map[&degree];
         }
 
+        log::error!("Optimization: download params{degree} to params dir");
+
         tick(&format!("Before generate params of {degree}"));
-        let mut new_params = self.max_params().clone();
-        downsize_params(&mut new_params, degree);
+        let mut new_params = self.params_map.range(degree..).next().expect("").1.clone();
+        new_params.downsize(degree);
         tick(&format!("After generate params of {degree}"));
 
         self.params_map.insert(degree, new_params);
-
         &self.params_map[&degree]
-    }
-
-    fn max_params(&self) -> &ParamsKZG<Bn256> {
-        &self.params_map[&self.max_degree]
     }
 
     fn outer_params_and_pk<C: Circuit<Fr>>(

@@ -1,8 +1,7 @@
 use prover::{
-    config::{AGG_DEGREE, CHUNK_DEGREE},
     io::{load_snark, write_file, write_snark},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{downsize_params, init_env_and_log, load_or_download_params},
+    utils::init_env_and_log,
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
         Prover,
@@ -42,9 +41,7 @@ fn test_chunk_prove_verify() {
     // 1. instantiation the parameters and the prover
     //
 
-    let mut params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    downsize_params(&mut params, *CHUNK_DEGREE);
-    let mut prover = Prover::from_params(params);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR);
     log::info!("build prover");
 
     //
@@ -70,7 +67,7 @@ fn test_chunk_prove_verify() {
 
     // 3. build an aggregation circuit proof
     let agg_circuit = AggregationCircuit::new(
-        &prover.agg_params,
+        &prover.chunk_params,
         vec![inner_snark.clone()],
         XorShiftRng::from_seed([0u8; 16]),
     );
@@ -83,7 +80,7 @@ fn test_chunk_prove_verify() {
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
+    let agg_vk = prover.chunk_pk.as_ref().unwrap().get_vk();
 
     // Create bytecode and dump yul-code.
     let yul_file_path = format!("{}/verifier.yul", output_dir);

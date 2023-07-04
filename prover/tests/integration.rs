@@ -1,12 +1,9 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
-    config::{AGG_DEGREE, INNER_DEGREE},
+    config::INNER_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{
-        downsize_params, get_block_trace_from_file, init_env_and_log, load_or_download_params,
-        load_params,
-    },
+    utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
         CircuitCapacityChecker, Prover, Verifier,
@@ -23,19 +20,19 @@ fn test_load_params() {
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
-        SerdeFormat::RawBytesUnchecked,
+        Some(SerdeFormat::RawBytesUnchecked),
     )
     .unwrap();
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
-        SerdeFormat::RawBytes,
+        Some(SerdeFormat::RawBytes),
     )
     .unwrap();
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params.old",
         26,
-        SerdeFormat::Processed,
+        Some(SerdeFormat::Processed),
     )
     .unwrap();
 }
@@ -144,8 +141,7 @@ fn test_vk_same() {
     init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
-    let mut params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    downsize_params(&mut params, *INNER_DEGREE);
+    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
 
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;

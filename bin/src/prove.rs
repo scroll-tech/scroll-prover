@@ -1,10 +1,7 @@
 use clap::Parser;
 use log::info;
 use prover::{
-    config::{AGG_DEGREE, CHUNK_DEGREE},
-    utils::{
-        downsize_params, get_block_trace_from_file, init_env_and_log, load_or_download_params,
-    },
+    utils::{get_block_trace_from_file, init_env_and_log},
     zkevm::Prover,
 };
 use std::{fs, path::PathBuf, time::Instant};
@@ -29,11 +26,7 @@ fn main() {
     std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let mut params = load_or_download_params(&args.params_path, *AGG_DEGREE)
-        .expect("Failed to load or download params");
-    downsize_params(&mut params, *CHUNK_DEGREE);
-
-    let mut prover = Prover::from_params(params);
+    let mut prover = Prover::from_params_dir(&args.params_path);
 
     let mut traces = Vec::new();
     let trace_path = PathBuf::from(&args.trace_path);

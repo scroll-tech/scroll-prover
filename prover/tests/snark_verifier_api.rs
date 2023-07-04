@@ -1,6 +1,9 @@
 use halo2_proofs::poly::commitment::Params;
 use mock_plonk::StandardPlonk;
-use prover::{test_util, utils::init_env_and_log};
+use prover::{
+    test_util,
+    utils::{init_env_and_log, load_params},
+};
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use snark_verifier_sdk::{
@@ -13,8 +16,6 @@ use test_util::mock_plonk;
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_snark_verifier_sdk_api() {
-    use prover::utils::load_or_download_params;
-
     use crate::test_util::PARAMS_DIR;
 
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
@@ -26,7 +27,7 @@ fn test_snark_verifier_sdk_api() {
     let mut rng = XorShiftRng::from_seed([0u8; 16]);
 
     let circuit = StandardPlonk::rand(&mut rng);
-    let params_outer = load_or_download_params(PARAMS_DIR, k_agg).unwrap();
+    let params_outer = load_params(PARAMS_DIR, k_agg, None).unwrap();
     let params_inner = {
         let mut params = params_outer.clone();
         params.downsize(k);

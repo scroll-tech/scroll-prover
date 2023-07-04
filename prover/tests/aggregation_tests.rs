@@ -1,7 +1,7 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
-    config::AGG_DEGREE,
+    config::{AGG_DEGREE, ALL_DEGREES},
     test_util::{
         aggregator::{
             load_or_gen_agg_snark, load_or_gen_chunk_snark, load_or_gen_comp_evm_proof,
@@ -9,7 +9,7 @@ use prover::{
         },
         load_block_traces_for_test, PARAMS_DIR,
     },
-    utils::{chunk_trace_to_witness_block, init_env_and_log, load_or_download_params},
+    utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
 use std::{env::set_var, path::Path};
 
@@ -28,9 +28,8 @@ fn test_agg_prove_verify() {
     chunk_traces.push(load_block_traces_for_test().1);
     log::info!("Loaded chunk-traces");
 
-    let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    let mut prover = Prover::from_params(*AGG_DEGREE, params.clone());
-    let verifier = Verifier::from_params(params);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_DEGREES);
+    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_DEGREE, None);
     log::info!("Constructed prover and verifier");
 
     // Convert chunk traces to witness blocks.
