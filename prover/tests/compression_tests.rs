@@ -1,7 +1,7 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
-    config::{AGG_DEGREE, ALL_DEGREES},
+    config::{AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE},
     test_util::{
         aggregator::{load_or_gen_chunk_snark, load_or_gen_comp_evm_proof, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
@@ -21,8 +21,8 @@ fn test_comp_prove_verify() {
     let chunk_trace = load_block_traces_for_test().1;
     log::info!("Loaded chunk-trace");
 
-    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_DEGREES);
-    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_DEGREE, None);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &[*AGG_LAYER1_DEGREE, *AGG_LAYER2_DEGREE]);
+    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_LAYER2_DEGREE, None);
     log::info!("Constructed prover and verifier");
 
     // Convert chunk trace to witness block.
@@ -33,16 +33,22 @@ fn test_comp_prove_verify() {
     log::info!("Got chunk snark");
 
     // Load or generate compression wide snark (layer-1).
-    let layer1_snark =
-        load_or_gen_comp_snark(&output_dir, "comp_wide", true, 22, &mut prover, chunk_snark);
+    let layer1_snark = load_or_gen_comp_snark(
+        &output_dir,
+        "agg_layer1",
+        true,
+        *AGG_LAYER1_DEGREE,
+        &mut prover,
+        chunk_snark,
+    );
     log::info!("Got compression wide snark (layer-1)");
 
     // Load or generate compression EVM proof (layer-2).
     let proof = load_or_gen_comp_evm_proof(
         &output_dir,
-        "comp_thin",
+        "agg_layer2",
         false,
-        *AGG_DEGREE,
+        *AGG_LAYER2_DEGREE,
         &mut prover,
         layer1_snark,
     );

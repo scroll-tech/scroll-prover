@@ -1,7 +1,9 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
-    config::{AGG_DEGREE, ALL_DEGREES},
+    config::{
+        AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, AGG_LAYER3_DEGREE, AGG_LAYER4_DEGREE, ALL_AGG_DEGREES,
+    },
     test_util::{
         aggregator::{
             load_or_gen_agg_snark, load_or_gen_chunk_snark, load_or_gen_comp_evm_proof,
@@ -28,8 +30,8 @@ fn test_agg_prove_verify() {
     chunk_traces.push(load_block_traces_for_test().1);
     log::info!("Loaded chunk-traces");
 
-    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_DEGREES);
-    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_DEGREE, None);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_AGG_DEGREES);
+    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_LAYER4_DEGREE, None);
     log::info!("Constructed prover and verifier");
 
     // Convert chunk traces to witness blocks.
@@ -51,7 +53,16 @@ fn test_agg_prove_verify() {
     // Load or generate compression wide snarks (layer-1).
     let layer1_snarks: Vec<_> = chunk_snarks
         .into_iter()
-        .map(|snark| load_or_gen_comp_snark(&output_dir, "comp_wide", true, 22, &mut prover, snark))
+        .map(|snark| {
+            load_or_gen_comp_snark(
+                &output_dir,
+                "agg_layer1",
+                true,
+                *AGG_LAYER1_DEGREE,
+                &mut prover,
+                snark,
+            )
+        })
         .collect();
     log::info!("Got compression wide snarks (layer-1)");
 
@@ -61,9 +72,9 @@ fn test_agg_prove_verify() {
         .map(|snark| {
             load_or_gen_comp_snark(
                 &output_dir,
-                "comp_thin",
+                "agg_layer2",
                 false,
-                *AGG_DEGREE,
+                *AGG_LAYER2_DEGREE,
                 &mut prover,
                 snark,
             )
@@ -74,8 +85,8 @@ fn test_agg_prove_verify() {
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = load_or_gen_agg_snark(
         &output_dir,
-        "agg",
-        *AGG_DEGREE,
+        "agg_layer3",
+        *AGG_LAYER3_DEGREE,
         &mut prover,
         &chunk_hashes,
         &layer2_snarks,
@@ -85,9 +96,9 @@ fn test_agg_prove_verify() {
     // Load or generate compression EVM proof (layer-4).
     let proof = load_or_gen_comp_evm_proof(
         &output_dir,
-        "comp_thin",
+        "agg_layer4",
         false,
-        *AGG_DEGREE,
+        *AGG_LAYER4_DEGREE,
         &mut prover,
         layer3_snark,
     );

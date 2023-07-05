@@ -1,6 +1,6 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
 use libc::c_char;
-use prover::{aggregator, config::ALL_DEGREES, utils::init_env_and_log, zkevm};
+use prover::{aggregator, config::ALL_AGG_DEGREES, utils::init_env_and_log, zkevm};
 use std::cell::OnceCell;
 use types::eth::BlockTrace;
 
@@ -25,7 +25,7 @@ pub unsafe extern "C" fn init_agg_prover(params_dir: *const c_char) {
 
     let params_dir = c_char_to_str(params_dir);
 
-    let prover = aggregator::Prover::from_params_dir(params_dir, &ALL_DEGREES);
+    let prover = aggregator::Prover::from_params_dir(params_dir, &ALL_AGG_DEGREES);
     AGG_PROVER.set(prover).unwrap();
 }
 

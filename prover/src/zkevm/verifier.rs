@@ -54,7 +54,7 @@ impl Verifier {
         let chunk_params = load_params(params_dir, *CHUNK_DEGREE, None).unwrap();
         let inner_params = load_params(params_dir, *INNER_DEGREE, None).unwrap_or_else(|_| {
             assert!(*CHUNK_DEGREE >= *INNER_DEGREE);
-            log::error!(
+            log::warn!(
                 "Optimization: download params{} to params dir",
                 *INNER_DEGREE
             );

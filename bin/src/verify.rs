@@ -19,8 +19,8 @@ fn main() {
     std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
 
     let args = Args::parse();
-    let agg_vk = read_from_file(&args.vk_path);
-    let v = Verifier::from_params_dir(&args.params_path, Some(agg_vk));
+    let chunk_vk = read_from_file(&args.vk_path);
+    let v = Verifier::from_params_dir(&args.params_path, Some(chunk_vk));
 
     let proof_path = PathBuf::from("proof_data").join("chunk_full_proof.json");
     let proof_vec = read_from_file(&proof_path.to_string_lossy());

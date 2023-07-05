@@ -36,7 +36,7 @@ mock-testnet:
 	@cargo run --bin mock_testnet --release
 
 test-inner-prove:
-	cargo test --features prove_verify --release test_inner_prove_verify
+	@cargo test --features prove_verify --release test_inner_prove_verify
 
 test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify

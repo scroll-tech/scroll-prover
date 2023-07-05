@@ -55,7 +55,7 @@ impl Prover {
         assert!(inner_params.k() == *INNER_DEGREE);
         assert!(chunk_params.k() == *CHUNK_DEGREE);
 
-        // notice that k < k_agg which is not necessary the case in practice
+        // notice that `inner_k < chunk`_k which is not necessary the case in practice
         log::info!(
             "loaded parameters for degrees {} and {}",
             *INNER_DEGREE,
@@ -87,7 +87,7 @@ impl Prover {
         let chunk_params = load_params(params_dir, *CHUNK_DEGREE, None).unwrap();
         let inner_params = load_params(params_dir, *INNER_DEGREE, None).unwrap_or_else(|_| {
             assert!(*CHUNK_DEGREE >= *INNER_DEGREE);
-            log::error!(
+            log::warn!(
                 "Optimization: download params{} to params dir",
                 *INNER_DEGREE
             );

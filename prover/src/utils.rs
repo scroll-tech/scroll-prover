@@ -183,7 +183,7 @@ fn create_output_dir(id: &str) -> String {
     output
 }
 
-fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
+pub fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
     format!("{params_dir}/params{degree}")
 }
 

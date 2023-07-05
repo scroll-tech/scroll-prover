@@ -41,7 +41,7 @@ impl Prover {
         let (params, pk) = self.inner_params_and_pk::<C>(&C::dummy_inner_circuit())?;
 
         // Generate the SNARK proof for inner circuit.
-        let snark_proof = gen_snark_shplonk(params, pk, circuit, &mut gen_rng(), None::<String>);
+        let snark_proof = gen_snark_shplonk(params, pk, circuit, &mut gen_rng(), None::<&str>);
 
         Ok(snark_proof)
     }
