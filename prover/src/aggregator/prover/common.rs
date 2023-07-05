@@ -10,7 +10,7 @@ use rand::Rng;
 use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_pk, gen_snark_shplonk, CircuitExt, Snark};
 
 impl Prover {
-    pub(crate) fn gen_snark<C: CircuitExt<Fr>>(
+    pub fn gen_snark<C: CircuitExt<Fr>>(
         &mut self,
         id: &str,
         degree: u32,
@@ -22,7 +22,7 @@ impl Prover {
         gen_snark_shplonk(params, pk, circuit, rng, None::<&str>)
     }
 
-    pub(crate) fn gen_evm_proof<C: CircuitExt<Fr>>(
+    pub fn gen_evm_proof<C: CircuitExt<Fr>>(
         &mut self,
         id: &str,
         degree: u32,
@@ -38,7 +38,7 @@ impl Prover {
         Proof::new(proof, pk.get_vk(), &instances, Some(num_instance))
     }
 
-    pub(crate) fn inner_params_and_pk<C: TargetCircuit>(
+    pub fn inner_params_and_pk<C: TargetCircuit>(
         &mut self,
         circuit: &<C as TargetCircuit>::Inner,
     ) -> Result<(&ParamsKZG<Bn256>, &ProvingKey<G1Affine>)> {
@@ -57,7 +57,7 @@ impl Prover {
         Ok((&self.params_map[&*INNER_DEGREE], &self.pk_map[&id]))
     }
 
-    pub(crate) fn params(&mut self, degree: u32) -> &ParamsKZG<Bn256> {
+    pub fn params(&mut self, degree: u32) -> &ParamsKZG<Bn256> {
         if self.params_map.contains_key(&degree) {
             return &self.params_map[&degree];
         }
@@ -73,7 +73,11 @@ impl Prover {
         &self.params_map[&degree]
     }
 
-    fn outer_params_and_pk<C: Circuit<Fr>>(
+    pub fn pk(&self, id: &str) -> Option<&ProvingKey<G1Affine>> {
+        self.pk_map.get(id)
+    }
+
+    pub fn outer_params_and_pk<C: Circuit<Fr>>(
         &mut self,
         id: &str,
         circuit: &C,

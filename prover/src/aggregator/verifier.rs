@@ -18,6 +18,10 @@ pub struct Verifier {
 }
 
 impl Verifier {
+    pub fn new(params: ParamsKZG<Bn256>, vk: Option<VerifyingKey<G1Affine>>) -> Self {
+        Self { params, vk }
+    }
+
     pub fn from_params(params: ParamsKZG<Bn256>, raw_vk: Option<Vec<u8>>) -> Self {
         let vk = raw_vk.as_ref().map(|k| {
             VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
@@ -51,12 +55,16 @@ impl Verifier {
 
     // Should panic if failed to verify.
     pub fn evm_verify<C: CircuitExt<Fr>>(&self, proof: &Proof, yul_file_path: Option<&Path>) {
-        let vk = proof.vk::<C>().expect("Failed to get vk");
+        let vk = match &self.vk {
+            Some(vk) => vk,
+            None => panic!("Aggregation verification key is missing"),
+        };
+
         let num_instance = proof.num_instance().expect("Not a EVM proof").clone();
 
         let deployment_code = gen_evm_verifier::<C, Kzg<Bn256, Bdfg21>>(
             &self.params,
-            &vk,
+            vk,
             num_instance,
             yul_file_path,
         );

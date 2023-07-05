@@ -16,6 +16,7 @@ use snark_verifier::{
 use snark_verifier_sdk::Snark;
 use std::{
     fs::File,
+    io::Cursor,
     path::{Path, PathBuf},
 };
 use types::base64;
@@ -35,11 +36,13 @@ pub struct Proof {
 impl Proof {
     pub fn new(
         proof: Vec<u8>,
-        vk: &VerifyingKey<G1Affine>,
+        original_vk: &VerifyingKey<G1Affine>,
         instances: &[Vec<Fr>],
         num_instance: Option<Vec<usize>>,
     ) -> Result<Self> {
-        let vk = vk.to_bytes(SerdeFormat::Processed);
+        let mut vk = Vec::<u8>::new();
+        original_vk.write(&mut vk, SerdeFormat::Processed)?;
+
         let instances = serde_json::to_vec(&serialize_fr_matrix(instances))?;
 
         Ok(Self {
@@ -78,7 +81,8 @@ impl Proof {
     }
 
     pub fn from_snark(pk: &ProvingKey<G1Affine>, snark: &Snark) -> Result<Self> {
-        let vk = pk.get_vk().to_bytes(SerdeFormat::Processed);
+        let mut vk = Vec::<u8>::new();
+        pk.get_vk().write(&mut vk, SerdeFormat::Processed)?;
 
         let instances = serialize_fr_matrix(snark.instances.as_slice());
         let instances = serde_json::to_vec(&instances)?;
@@ -104,8 +108,8 @@ impl Proof {
     }
 
     pub fn vk<C: Circuit<Fr>>(&self) -> Result<VerifyingKey<G1Affine>> {
-        Ok(VerifyingKey::<G1Affine>::from_bytes::<C>(
-            &self.vk,
+        Ok(VerifyingKey::<G1Affine>::read::<_, C>(
+            &mut Cursor::new(&self.vk),
             SerdeFormat::Processed,
         )?)
     }
