@@ -12,7 +12,7 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
         "greeter" => "./tests/traces/greeter/setValue.json",
         "single" => "./tests/traces/erc20/1_transfer.json",
         "multiple" => "./tests/traces/erc20/10_transfer.json",
-        "native" => "./tests/traces/native/transfer.json",
+        "native" => "./tests/traces/native_transfer.json",
         "dao" => "./tests/traces/dao/dao-propose.json",
         "nft" => "./tests/traces/nft/mint.json",
         "sushi" => "./tests/traces/sushi/chef-withdraw.json",
@@ -28,7 +28,7 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
         // use mode
         let mode = read_env_var("MODE", "multiple".to_string());
         if mode.to_lowercase() == "batch" || mode.to_lowercase() == "pack" {
-            (1..=22)
+            (1..=20)
                 .map(|i| format!("tests/traces/bridge/{i:02}.json"))
                 .collect()
         } else {

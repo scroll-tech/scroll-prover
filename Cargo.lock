@@ -205,7 +205,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
 name = "bin"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -398,7 +398,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -1098,7 +1098,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1364,7 +1364,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1417,7 +1417,7 @@ dependencies = [
 
 [[package]]
 name = "ffi"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "libc",
  "log",
@@ -1593,7 +1593,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1633,7 +1633,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -1787,7 +1787,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=develop#9bf3562083dd9bed8a19f651b52bc810f5e2235f"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=develop#aab39d5c107fdeec62ce7d2aeec6b72de681ba23"
 dependencies = [
  "ark-std",
  "blake2b_simd",
@@ -2223,7 +2223,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2423,7 +2423,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2438,7 +2438,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4669,7 +4669,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#56c4babcdc48d79665d3f5f83d912ef306f536cb"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=fix/debugging-storage-0705#99f1f54f886e4b524dfbcafef5bbdbce661db46d"
 dependencies = [
  "array-init",
  "bus-mapping",
