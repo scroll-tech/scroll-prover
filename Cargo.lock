@@ -1850,7 +1850,7 @@ dependencies = [
 [[package]]
 name = "halo2wrong"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
+source = "git+https://github.com/scroll-tech/halo2wrong.git?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
 dependencies = [
  "group",
  "halo2_proofs",
@@ -2387,7 +2387,7 @@ dependencies = [
 [[package]]
 name = "maingate"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2wrong?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
+source = "git+https://github.com/scroll-tech/halo2wrong.git?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
 dependencies = [
  "group",
  "halo2wrong",

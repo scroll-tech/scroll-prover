@@ -2,6 +2,7 @@ use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
     config::INNER_DEGREE,
+    io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
@@ -147,8 +148,8 @@ fn test_vk_same() {
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
     let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
     let vk_real = keygen_vk(&params, &real_circuit).unwrap();
-    let vk_empty_bytes = vk_empty.to_bytes(SerdeFormat::Processed);
-    let vk_real_bytes: Vec<_> = vk_real.to_bytes(SerdeFormat::Processed);
+    let vk_empty_bytes = serialize_vk(&vk_empty);
+    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
 
     let prover1 =
         MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();

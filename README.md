@@ -12,7 +12,7 @@ git submodule init
 git submodule update --checkout
 ```
 
-Download all setup params, degree `20` and `25` are used for chunk prove and aggregation prove (reference [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs)).
+Download all setup params, degree `20` and `25` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
 Could only download params of degree `25`, but it may affect performance (when dowsizing to `20`).
 ```shell
 make download-setup -e degree=20
@@ -26,7 +26,7 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 ### Testing
 
-`make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
+`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers could understand how the system works by reading the codes of this test.
 
 Besides it, `make test-inner-prove` could be used to test the first-level circuit, and `make-comp-prove` could be used to test two-layers compression circuits.
 

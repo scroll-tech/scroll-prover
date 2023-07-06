@@ -35,9 +35,10 @@ impl Prover {
         let num_instance = circuit.num_instance();
         let proof = gen_evm_proof_shplonk(params, pk, circuit, instances.clone(), rng);
 
-        Proof::new(proof, pk.get_vk(), &instances, Some(num_instance))
+        Proof::new(pk, proof, &instances, Some(num_instance))
     }
 
+    // TODO: test if it could use `outer_params_and_pk`.
     pub fn inner_params_and_pk<C: TargetCircuit>(
         &mut self,
         circuit: &<C as TargetCircuit>::Inner,
@@ -62,10 +63,16 @@ impl Prover {
             return &self.params_map[&degree];
         }
 
-        log::error!("Optimization: download params{degree} to params dir");
+        log::warn!("Optimization: download params{degree} to params dir");
 
         tick(&format!("Before generate params of {degree}"));
-        let mut new_params = self.params_map.range(degree..).next().expect("").1.clone();
+        let mut new_params = self
+            .params_map
+            .range(degree..)
+            .next()
+            .unwrap_or_else(|| panic!("Must have params of degree-{degree}"))
+            .1
+            .clone();
         new_params.downsize(degree);
         tick(&format!("After generate params of {degree}"));
 

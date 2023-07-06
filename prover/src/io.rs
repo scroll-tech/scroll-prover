@@ -1,5 +1,9 @@
 use anyhow;
-use halo2_proofs::halo2curves::bn256::{Fq, Fr, G1Affine};
+use halo2_proofs::{
+    halo2curves::bn256::{Fq, Fr, G1Affine},
+    plonk::VerifyingKey,
+    SerdeFormat,
+};
 use num_bigint::BigUint;
 use snark_verifier::util::arithmetic::PrimeField;
 use snark_verifier_sdk::Snark;
@@ -76,6 +80,12 @@ pub fn write_file(folder: &mut PathBuf, filename: &str, buf: &[u8]) {
     folder.pop();
 
     fd.write_all(buf).unwrap();
+}
+
+pub fn serialize_vk(vk: &VerifyingKey<G1Affine>) -> Vec<u8> {
+    let mut result = Vec::<u8>::new();
+    vk.write(&mut result, SerdeFormat::Processed).unwrap();
+    result
 }
 
 pub fn write_verify_circuit_vk(folder: &mut PathBuf, verify_circuit_vk: &[u8]) {

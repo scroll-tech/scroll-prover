@@ -218,8 +218,8 @@ impl Prover {
         );
 
         Proof::new(
+            chunk_pk,
             agg_proof,
-            chunk_pk.get_vk(),
             &agg_circuit.instances(),
             Some(agg_circuit.num_instance()),
         )
