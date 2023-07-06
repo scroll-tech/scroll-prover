@@ -81,18 +81,4 @@ pub unsafe extern "C" fn clear_agg_chunk_traces() {
     }
 }
 
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn create_agg_proof() -> *const c_char {
-    // Consume the chunk traces (take and clear).
-    let chunk_traces = AGG_CHUNK_TRACES.take().unwrap();
-
-    let proof = AGG_PROVER
-        .get_mut()
-        .unwrap()
-        .gen_agg_proof(chunk_traces)
-        .unwrap();
-
-    let proof_bytes = serde_json::to_vec(&proof).unwrap();
-    vec_to_c_char(proof_bytes)
-}
+// TODO: add a function `create_agg_proof`.

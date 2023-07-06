@@ -5,31 +5,10 @@ use crate::{
     zkevm::circuit::SuperCircuit,
     Proof,
 };
-use aggregator::ChunkHash;
 use halo2_proofs::halo2curves::bn256::Fr;
 use snark_verifier_sdk::Snark;
 use std::{env::set_var, path::PathBuf};
 use zkevm_circuits::evm_circuit::witness::Block;
-
-pub fn load_or_gen_agg_snark(
-    output_dir: &str,
-    id: &str,
-    degree: u32,
-    prover: &mut Prover,
-    chunk_hashes: &[ChunkHash],
-    prev_snarks: &[Snark],
-) -> Snark {
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
-    let file_path = format!("{output_dir}/{id}_snark.json");
-
-    load_snark(&file_path).unwrap().unwrap_or_else(|| {
-        let rng = gen_rng();
-        let snark = prover.gen_agg_snark(id, degree, rng, chunk_hashes, prev_snarks);
-        write_snark(&file_path, &snark);
-
-        snark
-    })
-}
 
 pub fn load_or_gen_chunk_snark(
     output_dir: &str,
@@ -49,7 +28,7 @@ pub fn load_or_gen_chunk_snark(
     })
 }
 
-pub fn load_or_gen_comp_evm_proof(
+pub fn gen_comp_evm_proof(
     output_dir: &str,
     id: &str,
     is_fresh: bool,
@@ -58,20 +37,14 @@ pub fn load_or_gen_comp_evm_proof(
     prev_snark: Snark,
 ) -> Proof {
     set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
-    let file_path = format!("{output_dir}/{id}_full_proof.json");
-    let file_path = "gupeng";
 
-    Proof::from_json_file(&file_path)
-        .unwrap()
-        .unwrap_or_else(|| {
-            let rng = gen_rng();
-            let proof = prover
-                .gen_comp_evm_proof(id, is_fresh, degree, rng, prev_snark)
-                .unwrap();
-            proof.dump(&mut PathBuf::from(output_dir), id).unwrap();
+    let rng = gen_rng();
+    let proof = prover
+        .gen_comp_evm_proof(id, is_fresh, degree, rng, prev_snark)
+        .unwrap();
+    proof.dump(&mut PathBuf::from(output_dir), id).unwrap();
 
-            proof
-        })
+    proof
 }
 
 pub fn load_or_gen_comp_snark(
@@ -87,7 +60,9 @@ pub fn load_or_gen_comp_snark(
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
         let rng = gen_rng();
-        let snark = prover.gen_comp_snark(id, is_fresh, degree, rng, prev_snark);
+        let snark = prover
+            .gen_comp_snark(id, is_fresh, degree, rng, prev_snark)
+            .unwrap();
         write_snark(&file_path, &snark);
 
         snark

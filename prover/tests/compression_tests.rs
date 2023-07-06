@@ -3,7 +3,7 @@ use prover::{
     aggregator::{Prover, Verifier},
     config::{AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, INNER_DEGREE},
     test_util::{
-        aggregator::{load_or_gen_chunk_snark, load_or_gen_comp_evm_proof, load_or_gen_comp_snark},
+        aggregator::{gen_comp_evm_proof, load_or_gen_chunk_snark, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
     },
     utils::{chunk_trace_to_witness_block, init_env_and_log},
@@ -46,7 +46,7 @@ fn test_comp_prove_verify() {
     log::info!("Got compression wide snark (layer-1)");
 
     // Load or generate compression EVM proof (layer-2).
-    let proof = load_or_gen_comp_evm_proof(
+    let proof = gen_comp_evm_proof(
         &output_dir,
         "agg_layer2",
         false,
