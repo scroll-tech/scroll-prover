@@ -3,6 +3,7 @@ use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
     plonk::ProvingKey,
+    SerdeFormat,
 };
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier::{
@@ -19,60 +20,37 @@ use std::{
 };
 use types::base64;
 
-#[derive(Deserialize, Serialize, Debug, Default)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Proof {
     #[serde(with = "base64")]
-    pub proof: Vec<u8>,
+    proof: Vec<u8>,
     #[serde(with = "base64")]
-    pub instance: Vec<u8>,
+    vk: Vec<u8>,
     #[serde(with = "base64")]
-    pub vk: Vec<u8>,
+    instances: Vec<u8>,
+    // Only for EVM proof.
+    num_instance: Option<Vec<usize>>,
 }
 
 impl Proof {
-    pub fn from_snark(pk: &ProvingKey<G1Affine>, snark: &Snark) -> anyhow::Result<Self> {
-        // Serialize instances
-        let instances = serialize_fr_matrix(snark.instances.as_slice());
-        let instance_bytes = serde_json::to_vec(&instances)?;
+    pub fn new(
+        pk: &ProvingKey<G1Affine>,
+        proof: Vec<u8>,
+        instances: &[Vec<Fr>],
+        num_instance: Option<Vec<usize>>,
+    ) -> Result<Self> {
+        let vk = serialize_vk(pk.get_vk());
+        let instances = serde_json::to_vec(&serialize_fr_matrix(instances))?;
 
-        // Serialize vk
-        let vk_bytes = serialize_vk(pk.get_vk());
-
-        Ok(Proof {
-            proof: snark.proof.clone(),
-            instance: instance_bytes,
-            vk: vk_bytes,
+        Ok(Self {
+            proof,
+            vk,
+            instances,
+            num_instance,
         })
     }
 
-    pub fn to_snark(&self) -> Snark {
-        let instances = self.deserialize_instance();
-        Snark {
-            protocol: dummy_protocol(),
-            instances,
-            proof: self.proof.clone(),
-        }
-    }
-
-    pub fn deserialize_instance(&self) -> Vec<Vec<Fr>> {
-        let l3_buf: Vec<Vec<Vec<u8>>> = serde_json::from_reader(self.instance.as_slice()).unwrap();
-        deserialize_fr_matrix(l3_buf)
-    }
-
-    pub fn dump(&self, dir: &mut PathBuf, name: &str) -> Result<()> {
-        write_file(dir, &format!("{name}_instance.data"), &self.instance);
-        write_file(dir, &format!("{name}_proof.data"), &self.proof);
-        write_file(dir, &format!("{name}.vkey"), &self.proof);
-
-        dir.push("{}_full_proof.json");
-        let mut fd = std::fs::File::create(dir.as_path())?;
-        dir.pop();
-        serde_json::to_writer_pretty(&mut fd, &self)?;
-
-        Ok(())
-    }
-
-    pub fn load_from_json(file_path: &str) -> Result<Option<Self>> {
+    pub fn from_json_file(file_path: &str) -> Result<Option<Self>> {
         if !Path::new(file_path).exists() {
             return Ok(None);
         }
@@ -82,7 +60,58 @@ impl Proof {
         deserializer.disable_recursion_limit();
         let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
         let proof = serde::Deserialize::deserialize(deserializer)?;
+
         Ok(Some(proof))
+    }
+
+    pub fn dump(&self, dir: &mut PathBuf, name: &str) -> Result<()> {
+        write_file(dir, &format!("{name}_proof.data"), &self.proof);
+        write_file(dir, &format!("{name}.vkey"), &self.vk);
+        write_file(dir, &format!("{name}_instances.data"), &self.instances);
+
+        dir.push(format!("{name}_full_proof.json"));
+        let mut fd = std::fs::File::create(dir.as_path())?;
+        dir.pop();
+        serde_json::to_writer_pretty(&mut fd, &self)?;
+
+        Ok(())
+    }
+
+    pub fn from_snark(pk: &ProvingKey<G1Affine>, snark: &Snark) -> Result<Self> {
+        let mut vk = Vec::<u8>::new();
+        pk.get_vk().write(&mut vk, SerdeFormat::Processed)?;
+
+        let instances = serialize_fr_matrix(snark.instances.as_slice());
+        let instances = serde_json::to_vec(&instances)?;
+
+        Ok(Proof {
+            proof: snark.proof.clone(),
+            vk,
+            instances,
+            num_instance: None,
+        })
+    }
+
+    pub fn to_snark(&self) -> Snark {
+        Snark {
+            protocol: dummy_protocol(),
+            proof: self.proof.clone(),
+            instances: self.instances(),
+        }
+    }
+
+    pub fn proof(&self) -> &[u8] {
+        &self.proof
+    }
+
+    pub fn instances(&self) -> Vec<Vec<Fr>> {
+        let buf: Vec<Vec<Vec<_>>> = serde_json::from_reader(self.instances.as_slice()).unwrap();
+
+        deserialize_fr_matrix(buf)
+    }
+
+    pub fn num_instance(&self) -> Option<&Vec<usize>> {
+        self.num_instance.as_ref()
     }
 }
 

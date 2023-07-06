@@ -1,19 +1,17 @@
 use anyhow;
+use halo2_proofs::{
+    halo2curves::bn256::{Fq, Fr, G1Affine},
+    plonk::VerifyingKey,
+    SerdeFormat,
+};
 use num_bigint::BigUint;
+use snark_verifier::util::arithmetic::PrimeField;
+use snark_verifier_sdk::Snark;
 use std::{
     fs::File,
     io::{Cursor, Read, Write},
     path::{Path, PathBuf},
 };
-
-use halo2_proofs::{
-    halo2curves::bn256::{Bn256, Fq, Fr, G1Affine},
-    plonk::VerifyingKey,
-    poly::{commitment::Params, kzg::commitment::ParamsKZG},
-    SerdeFormat,
-};
-use snark_verifier::util::arithmetic::PrimeField;
-use snark_verifier_sdk::Snark;
 
 pub fn serialize_fr(f: &Fr) -> Vec<u8> {
     f.to_bytes().to_vec()
@@ -84,46 +82,6 @@ pub fn write_file(folder: &mut PathBuf, filename: &str, buf: &[u8]) {
     fd.write_all(buf).unwrap();
 }
 
-pub fn load_target_circuit_params(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "sample_circuit.params")
-}
-
-pub fn load_target_circuit_vk(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "sample_circuit.vkey")
-}
-
-pub fn load_target_circuit_instance(folder: &mut PathBuf, index: usize) -> Vec<u8> {
-    read_file(folder, &format!("sample_circuit_instance{index}.data"))
-}
-
-pub fn load_target_circuit_proof(folder: &mut PathBuf, index: usize) -> Vec<u8> {
-    read_file(folder, &format!("sample_circuit_proof{index}.data"))
-}
-
-pub fn load_verify_circuit_params(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "verify_circuit.params")
-}
-
-pub fn load_verify_circuit_vk(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "verify_circuit.vkey")
-}
-
-pub fn load_verify_circuit_instance(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "verify_circuit_instance.data")
-}
-
-pub fn load_verify_circuit_proof(folder: &mut PathBuf) -> Vec<u8> {
-    read_file(folder, "verify_circuit_proof.data")
-}
-
-pub fn write_verify_circuit_params(folder: &mut PathBuf, verify_circuit_params: &ParamsKZG<Bn256>) {
-    folder.push("verify_circuit.params");
-    let mut fd = std::fs::File::create(folder.as_path()).unwrap();
-    folder.pop();
-
-    verify_circuit_params.write(&mut fd).unwrap();
-}
-
 pub fn serialize_vk(vk: &VerifyingKey<G1Affine>) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
     vk.write(&mut result, SerdeFormat::Processed).unwrap();
@@ -175,29 +133,6 @@ pub fn serialize_verify_circuit_final_pair(pair: &(G1Affine, G1Affine, Vec<Fr>))
         fd.write_all(&scalar.to_bytes()).unwrap();
     });
     result
-}
-
-pub fn write_verify_circuit_final_pair(folder: &mut PathBuf, buf: &[u8]) {
-    folder.push("verify_circuit_final_pair.data");
-    let mut fd = std::fs::File::create(folder.as_path()).unwrap();
-    folder.pop();
-    fd.write_all(buf).unwrap()
-}
-
-pub fn write_verify_circuit_instance(folder: &mut PathBuf, buf: &[u8]) {
-    write_file(folder, "verify_circuit_instance.data", buf)
-}
-
-pub fn write_verify_circuit_proof(folder: &mut PathBuf, buf: &[u8]) {
-    write_file(folder, "verify_circuit_proof.data", buf)
-}
-
-pub fn write_verify_circuit_proof_be(folder: &mut PathBuf, buf: &[u8]) {
-    write_file(folder, "verify_circuit_proof_be.data", buf)
-}
-
-pub fn write_verify_circuit_solidity(folder: &mut PathBuf, buf: &[u8]) {
-    write_file(folder, "verifier.sol", buf)
 }
 
 pub fn write_snark(file_path: &str, snark: &Snark) {

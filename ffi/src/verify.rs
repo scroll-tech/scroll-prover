@@ -16,7 +16,7 @@ pub unsafe extern "C" fn init_verifier(params_path: *const c_char, agg_vk_path: 
     let mut agg_vk = vec![];
     f.read_to_end(&mut agg_vk).unwrap();
 
-    let v = Box::new(zkevm::Verifier::from_fpath(params_path, Some(agg_vk)));
+    let v = Box::new(zkevm::Verifier::from_params_dir(params_path, Some(agg_vk)));
     VERIFIER = Some(Box::leak(v))
 }
 

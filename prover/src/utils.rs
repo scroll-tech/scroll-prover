@@ -1,4 +1,5 @@
-use anyhow::Result;
+use crate::zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity};
+use anyhow::{bail, Result};
 use chrono::Utc;
 use git_version::git_version;
 use halo2_proofs::{
@@ -14,66 +15,38 @@ use log4rs::{
     },
     config::{Appender, Config, Root},
 };
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
     str::FromStr,
     sync::Once,
 };
 use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
-use zkevm_circuits::witness;
+use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
 pub static LOGGER: Once = Once::new();
 
-/// Get setup params by reading from a file or downloading a new one.
-pub fn load_or_download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
-    match metadata(params_dir) {
-        Ok(md) => {
-            if md.is_file() {
-                panic!("{params_dir} should be folder");
-            }
-        }
-        Err(_) => {
-            // Not exist
-            fs::create_dir_all(params_dir)?;
-        }
-    };
-
-    let params_path = param_path_for_degree(params_dir, degree);
-    log::info!("load_or_download_params {}", params_path);
-
-    if Path::new(&params_path).exists() {
-        match load_params(&params_path, degree, DEFAULT_SERDE_FORMAT) {
-            Ok(r) => return Ok(r),
-            Err(e) => {
-                log::error!(
-                    "An error occurred when loading setup params: {}. Re-downloading ...",
-                    e
-                )
-            }
-        }
-    }
-
-    download_params(params_dir, degree)
-}
-
 /// Load setup params from a file.
 pub fn load_params(
     params_dir: &str,
-    degree: usize,
-    serde_format: SerdeFormat,
+    degree: u32,
+    serde_fmt: Option<SerdeFormat>,
 ) -> Result<ParamsKZG<Bn256>> {
-    log::info!("start loading params with degree {}", degree);
+    log::info!("Start loading params with degree {}", degree);
     let params_path = if metadata(params_dir)?.is_dir() {
         // auto load
         param_path_for_degree(params_dir, degree)
     } else {
         params_dir.to_string()
     };
+    if !Path::new(&params_path).exists() {
+        bail!("Need to download params by `make download-setup -e degree={degree}`");
+    }
     let f = File::open(params_path)?;
 
     // check params file length:
@@ -85,7 +58,9 @@ pub fn load_params(
     let file_size = f.metadata()?.len();
     let g1_num = 2 * (1 << degree);
     let g2_num = 2;
-    let g1_bytes_len = match serde_format {
+
+    let serde_fmt = serde_fmt.unwrap_or(DEFAULT_SERDE_FORMAT);
+    let g1_bytes_len = match serde_fmt {
         SerdeFormat::Processed => 32,
         SerdeFormat::RawBytes | SerdeFormat::RawBytesUnchecked => 64,
     };
@@ -95,7 +70,7 @@ pub fn load_params(
         return Err(anyhow::format_err!("invalid params file len {} for degree {}. check DEGREE or remove the invalid params file", file_size, degree));
     }
 
-    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_format)?;
+    let p = ParamsKZG::<Bn256>::read_custom::<_>(&mut BufReader::new(f), serde_fmt)?;
     log::info!("load params successfully!");
     Ok(p)
 }
@@ -134,12 +109,23 @@ pub struct BatchMetric {
     pub num_step: usize,
 }
 
-pub fn metric_of_witness_block(block: &witness::Block<Fr>) -> BatchMetric {
+pub fn metric_of_witness_block(block: &Block<Fr>) -> BatchMetric {
     BatchMetric {
         num_block: block.context.ctxs.len(),
         num_tx: block.txs.len(),
         num_step: block.txs.iter().map(|tx| tx.steps.len()).sum::<usize>(),
     }
+}
+
+pub fn chunk_trace_to_witness_block(mut chunk_trace: Vec<BlockTrace>) -> Result<Block<Fr>> {
+    if chunk_trace.is_empty() {
+        bail!("Empty chunk trace");
+    }
+
+    // Check if the trace exceeds the circuit capacity.
+    check_batch_capacity(&mut chunk_trace)?;
+
+    block_traces_to_witness_block(&chunk_trace)
 }
 
 // Return the output dir.
@@ -197,35 +183,26 @@ fn create_output_dir(id: &str) -> String {
     output
 }
 
-// Download setup params and write it into a file.
-fn download_params(params_dir: &str, degree: usize) -> Result<ParamsKZG<Bn256>> {
-    log::warn!("Would be better to run `make download-setup` before any bins or tests");
-
-    log::info!("Start to download setup params");
-
-    let download_script_path = project_root::get_project_root()?.join("download_setup.sh");
-
-    Command::new("sh")
-        .stdout(Stdio::null())
-        .args([
-            download_script_path.to_string_lossy().as_ref(),
-            &degree.to_string(),
-            params_dir,
-        ])
-        .status()
-        .unwrap_or_else(|e| {
-            panic!("Failed to download setup params with {degree} and {params_dir}: {e}")
-        });
-
-    log::info!("Finish downloading setup params");
-
-    load_params(
-        &param_path_for_degree(params_dir, degree),
-        degree,
-        DEFAULT_SERDE_FORMAT,
-    )
+pub fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
+    format!("{params_dir}/params{degree}")
 }
 
-fn param_path_for_degree(params_dir: &str, degree: usize) -> String {
-    format!("{params_dir}/params{degree}")
+pub fn gen_rng() -> impl Rng + Send {
+    let seed = [0u8; 16];
+    XorShiftRng::from_seed(seed)
+}
+
+pub fn tick(desc: &str) {
+    #[cfg(target_os = "linux")]
+    let memory = match procfs::Meminfo::new() {
+        Ok(m) => m.mem_total - m.mem_free,
+        Err(_) => 0,
+    };
+    #[cfg(not(target_os = "linux"))]
+    let memory = 0;
+    log::debug!(
+        "memory usage when {}: {:?}GB",
+        desc,
+        memory / 1024 / 1024 / 1024
+    );
 }

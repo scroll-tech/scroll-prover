@@ -12,7 +12,7 @@ pub unsafe extern "C" fn init_prover(params_path: *const c_char, _seed_path: *co
     init_env_and_log("ffi_prove");
 
     let params_path = c_char_to_str(params_path);
-    let p = zkevm::Prover::from_param_dir(params_path);
+    let p = zkevm::Prover::from_params_dir(params_path);
     PROVER.set(p).unwrap();
 }
 
