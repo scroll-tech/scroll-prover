@@ -12,7 +12,7 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
         "greeter" => "./tests/traces/greeter/setValue.json",
         "single" => "./tests/traces/erc20/1_transfer.json",
         "multiple" => "./tests/traces/erc20/10_transfer.json",
-        "native" => "./tests/traces/native_transfer.json",
+        "native" => "./tests/traces/native/transfer.json",
         "dao" => "./tests/traces/dao/dao-propose.json",
         "nft" => "./tests/traces/nft/mint.json",
         "sushi" => "./tests/traces/sushi/chef-withdraw.json",

@@ -149,7 +149,8 @@ pub fn update_state(
                     .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
             })
     });
-    let additional_proofs = block_traces.iter().rev().flat_map(|block| {log::trace!("storage proof for block {:?}:", block.header.number);
+    let additional_proofs = block_traces.iter().rev().flat_map(|block| {
+        log::trace!("storage proof for block {:?}:", block.header.number);
         log::trace!("additional proof for block {:?}:", block.header.number);
         block
             .storage_trace
@@ -172,7 +173,10 @@ pub fn update_state(
 pub fn block_traces_to_witness_block(
     block_traces: &[BlockTrace],
 ) -> Result<Block<Fr>, anyhow::Error> {
-    log::debug!("block_traces_to_witness_block, input len {:?}", block_traces.len());
+    log::debug!(
+        "block_traces_to_witness_block, input len {:?}",
+        block_traces.len()
+    );
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
