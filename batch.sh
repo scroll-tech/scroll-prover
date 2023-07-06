@@ -1,13 +1,13 @@
 set -x
 set -u
-#set -e
+set -e
 set -o pipefail
 
 #export RUST_LOG=debug
 export RUST_LOG=trace
 
 function simple_tests() {
-	for mode in pack #native #multiple sushi nft dao empty
+	for mode in sushi multiple nft dao native empty # pack
 	do
 		MODE=$mode make mock 2>&1 | tee /tmp/mock_${mode}.log
 	done
