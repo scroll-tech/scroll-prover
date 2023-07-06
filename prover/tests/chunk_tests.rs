@@ -1,9 +1,9 @@
 use prover::{
     io::{load_snark, write_file, write_snark},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{init_env_and_log, load_or_download_params},
+    utils::init_env_and_log,
     zkevm::{
-        circuit::{SuperCircuit, TargetCircuit, AGG_DEGREE},
+        circuit::{SuperCircuit, TargetCircuit},
         Prover,
     },
     EvmVerifier,
@@ -16,21 +16,17 @@ use std::{
     str::FromStr,
 };
 
-// An end to end integration test.
-// The inner snark proofs are generated from a mock circuit
-// instead of the trace files.
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_aggregation_api() {
+fn test_chunk_prove_verify() {
     std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
 
-    let output_dir = init_env_and_log("agg_tests");
-
+    let output_dir = init_env_and_log("chunk_tests");
     let mut output_path = PathBuf::from_str(&output_dir).unwrap();
-    log::info!("created output dir {}", output_dir);
+    log::info!("Inited ENV and created output-dir {output_dir}");
 
     let block_traces = load_block_traces_for_test().1;
-    log::info!("loaded block trace");
+    log::info!("Loaded block-traces");
 
     // ====================================================
     // A whole aggregation procedure takes the following steps
@@ -45,24 +41,23 @@ fn test_aggregation_api() {
     // 1. instantiation the parameters and the prover
     //
 
-    let params = load_or_download_params(PARAMS_DIR, *AGG_DEGREE).unwrap();
-    let mut prover = Prover::from_params(params);
+    let mut prover = Prover::from_params_dir(PARAMS_DIR);
     log::info!("build prover");
 
     //
     // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
     //    convert block traces into
     //
-    let inner_proof_file_path = format!("{}/{}_snark.json", output_dir, SuperCircuit::name());
-    let inner_proof = load_snark(&inner_proof_file_path)
+    let inner_snark_file_path = format!("{}/{}_snark.json", output_dir, SuperCircuit::name());
+    let inner_snark = load_snark(&inner_snark_file_path)
         .unwrap()
         .unwrap_or_else(|| {
             let snark = prover
-                .gen_inner_proof::<SuperCircuit>(block_traces.as_slice())
+                .gen_inner_snark::<SuperCircuit>(block_traces.as_slice())
                 .unwrap();
 
             // Dump inner circuit proof.
-            write_snark(&inner_proof_file_path, &snark);
+            write_snark(&inner_snark_file_path, &snark);
 
             snark
         });
@@ -72,12 +67,12 @@ fn test_aggregation_api() {
 
     // 3. build an aggregation circuit proof
     let agg_circuit = AggregationCircuit::new(
-        &prover.agg_params,
-        vec![inner_proof.clone()],
+        &prover.chunk_params,
+        vec![inner_snark.clone()],
         XorShiftRng::from_seed([0u8; 16]),
     );
 
-    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_proof]).unwrap();
+    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_snark]).unwrap();
 
     // Dump aggregation proof, vk and instance.
     chunk_proof.dump(&mut output_path, &"chunk").unwrap();
@@ -85,7 +80,7 @@ fn test_aggregation_api() {
     log::info!("finished aggregation generation");
 
     // 4. generate bytecode for evm to verify aggregation circuit proof
-    let agg_vk = prover.agg_pk.as_ref().unwrap().get_vk();
+    let agg_vk = prover.chunk_pk.as_ref().unwrap().get_vk();
 
     // Create bytecode and dump yul-code.
     let yul_file_path = format!("{}/verifier.yul", output_dir);
@@ -98,6 +93,6 @@ fn test_aggregation_api() {
     log::info!("finished byte code generation");
 
     // 5. validate the proof with evm bytecode
-    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), chunk_proof.proof);
+    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), chunk_proof.proof().to_vec());
     log::info!("end to end test completed");
 }

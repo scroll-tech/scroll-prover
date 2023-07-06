@@ -1,11 +1,12 @@
 use chrono::Utc;
 use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
+    config::INNER_DEGREE,
     io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{get_block_trace_from_file, init_env_and_log, load_or_download_params, load_params},
+    utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
-        circuit::{SuperCircuit, TargetCircuit, DEGREE},
+        circuit::{SuperCircuit, TargetCircuit},
         CircuitCapacityChecker, Prover, Verifier,
     },
 };
@@ -20,19 +21,19 @@ fn test_load_params() {
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
-        SerdeFormat::RawBytesUnchecked,
+        Some(SerdeFormat::RawBytesUnchecked),
     )
     .unwrap();
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params",
         26,
-        SerdeFormat::RawBytes,
+        Some(SerdeFormat::RawBytes),
     )
     .unwrap();
     load_params(
         "/home/ubuntu/scroll-zkevm/prover/test_params.old",
         26,
-        SerdeFormat::Processed,
+        Some(SerdeFormat::Processed),
     )
     .unwrap();
 }
@@ -97,7 +98,7 @@ fn test_mock_prove() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_prove_verify() {
+fn test_inner_prove_verify() {
     test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
@@ -110,10 +111,10 @@ fn test_deterministic() {
     let block_trace = load_block_traces_for_test().1;
 
     let circuit1 = C::from_block_traces(&block_trace).unwrap().0;
-    let prover1 = MockProver::<_>::run(*DEGREE as u32, &circuit1, circuit1.instance()).unwrap();
+    let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
 
     let circuit2 = C::from_block_traces(&block_trace).unwrap().0;
-    let prover2 = MockProver::<_>::run(*DEGREE as u32, &circuit2, circuit2.instance()).unwrap();
+    let prover2 = MockProver::<_>::run(*INNER_DEGREE, &circuit2, circuit2.instance()).unwrap();
 
     let advice1 = prover1.advices();
     let advice2 = prover2.advices();
@@ -141,7 +142,7 @@ fn test_vk_same() {
     init_env_and_log("integration");
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
-    let params = load_or_download_params(PARAMS_DIR, *DEGREE).unwrap();
+    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
 
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
@@ -151,9 +152,9 @@ fn test_vk_same() {
     let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
 
     let prover1 =
-        MockProver::<_>::run(*DEGREE as u32, &dummy_circuit, dummy_circuit.instance()).unwrap();
+        MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();
     let prover2 =
-        MockProver::<_>::run(*DEGREE as u32, &real_circuit, real_circuit.instance()).unwrap();
+        MockProver::<_>::run(*INNER_DEGREE, &real_circuit, real_circuit.instance()).unwrap();
 
     let fixed1 = prover1.fixed();
     let fixed2 = prover2.fixed();
@@ -210,13 +211,14 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
 
     let (_, block_traces) = load_block_traces_for_test();
 
-    log::info!("start generating {} proof", C::name());
+    log::info!("start generating {} snark", C::name());
     let now = Instant::now();
-    let mut prover = Prover::from_param_dir(PARAMS_DIR);
-    let proof = prover
-        .gen_inner_proof::<C>(block_traces.as_slice())
+    let mut prover = Prover::from_params_dir(PARAMS_DIR);
+    log::info!("build prover");
+    let snark = prover
+        .gen_inner_snark::<C>(block_traces.as_slice())
         .unwrap();
-    log::info!("finish generating proof, elapsed: {:?}", now.elapsed());
+    log::info!("finish generating snark, elapsed: {:?}", now.elapsed());
 
     let output_file = format!(
         "/tmp/{}_{}.json",
@@ -224,12 +226,12 @@ fn test_target_circuit_prove_verify<C: TargetCircuit>() {
         Utc::now().format("%Y%m%d_%H%M%S")
     );
     let mut fd = std::fs::File::create(&output_file).unwrap();
-    serde_json::to_writer_pretty(&mut fd, &proof).unwrap();
-    log::info!("write proof to {}", output_file);
+    serde_json::to_writer_pretty(&mut fd, &snark).unwrap();
+    log::info!("write snark to {}", output_file);
 
-    log::info!("start verifying proof");
+    log::info!("start verifying snark");
     let now = Instant::now();
-    let mut verifier = Verifier::from_fpath(PARAMS_DIR, None);
-    assert!(verifier.verify_inner_proof::<C>(&proof).is_ok());
-    log::info!("finish verifying proof, elapsed: {:?}", now.elapsed());
+    let mut verifier = Verifier::from_params_dir(PARAMS_DIR, None);
+    assert!(verifier.verify_inner_proof::<C>(&snark).is_ok());
+    log::info!("finish verifying snark, elapsed: {:?}", now.elapsed());
 }

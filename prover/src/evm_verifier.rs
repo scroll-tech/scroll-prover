@@ -18,7 +18,7 @@ impl EvmVerifier {
 
     /// Verifies the proof with EVM byte code. Panics if verification fails.
     pub fn verify_proof(&self, proof: Proof) {
-        let instances = proof.deserialize_instance();
-        evm_verify(self.bytecode.clone(), instances, proof.proof)
+        let instances = proof.instances();
+        evm_verify(self.bytecode.clone(), instances, proof.proof().to_vec())
     }
 }

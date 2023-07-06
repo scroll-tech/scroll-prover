@@ -1,12 +1,12 @@
+use super::circuit::{
+    block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
+    update_state, SUB_CIRCUIT_NAMES,
+};
+use crate::config::INNER_DEGREE;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
-
-use super::circuit::{
-    block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
-    update_state, DEGREE, SUB_CIRCUIT_NAMES,
-};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RowUsage {
@@ -34,7 +34,7 @@ impl RowUsage {
         Self {
             row_usage_details,
             row_number,
-            is_ok: row_number < (1 << *DEGREE) - 256,
+            is_ok: row_number < (1 << *INNER_DEGREE) - 256,
         }
     }
     pub fn add(&mut self, other: &RowUsage) {
@@ -53,7 +53,7 @@ impl RowUsage {
             .map(|(_name, n)| n)
             .max()
             .unwrap();
-        self.is_ok = self.row_number < (1 << *DEGREE) - 256;
+        self.is_ok = self.row_number < (1 << *INNER_DEGREE) - 256;
     }
 }
 

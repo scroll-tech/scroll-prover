@@ -2,6 +2,7 @@ use crate::utils::{get_block_trace_from_file, read_env_var};
 use glob::glob;
 use types::eth::BlockTrace;
 
+pub mod aggregator;
 pub mod mock_plonk;
 
 pub const PARAMS_DIR: &str = "./test_params";

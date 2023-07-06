@@ -12,7 +12,7 @@ impl Prover {
         path: Option<&Path>,
     ) -> Vec<u8> {
         gen_evm_verifier_shplonk::<AggregationCircuit>(
-            &self.agg_params,
+            &self.chunk_params,
             agg_vk,
             agg_circuit.num_instance(),
             path,
