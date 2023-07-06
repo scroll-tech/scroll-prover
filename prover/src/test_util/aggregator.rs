@@ -18,7 +18,7 @@ pub fn gen_comp_evm_proof(
     prover: &mut Prover,
     prev_snark: Snark,
 ) -> Proof {
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
+    set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
 
     let rng = gen_rng();
     let proof = prover
@@ -55,7 +55,7 @@ pub fn load_or_gen_comp_snark(
     prover: &mut Prover,
     prev_snark: Snark,
 ) -> Snark {
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
+    set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
     let file_path = format!("{output_dir}/{id}_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
