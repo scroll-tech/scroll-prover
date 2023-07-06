@@ -31,7 +31,7 @@ fn test_comp_prove_verify() {
     log::info!("Constructed prover");
 
     // Load or generate chunk snark.
-    let chunk_snark = load_or_gen_chunk_snark(&output_dir, &mut prover, witness_block);
+    let chunk_snark = load_or_gen_chunk_snark(&output_dir, "comp", &mut prover, witness_block);
     log::info!("Got chunk-snark");
 
     // Load or generate compression wide snark (layer-1).

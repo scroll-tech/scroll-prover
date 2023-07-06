@@ -33,10 +33,11 @@ pub fn load_or_gen_agg_snark(
 
 pub fn load_or_gen_chunk_snark(
     output_dir: &str,
+    id: &str,
     prover: &mut Prover,
     witness_block: Block<Fr>,
 ) -> Snark {
-    let file_path = format!("{output_dir}/chunk_snark.json");
+    let file_path = format!("{output_dir}/{id}_chunk_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
         let snark = prover
@@ -58,6 +59,7 @@ pub fn load_or_gen_comp_evm_proof(
 ) -> Proof {
     set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
     let file_path = format!("{output_dir}/{id}_full_proof.json");
+    let file_path = "gupeng";
 
     Proof::from_json_file(&file_path)
         .unwrap()

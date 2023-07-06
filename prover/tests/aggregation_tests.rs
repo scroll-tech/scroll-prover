@@ -18,7 +18,7 @@ use std::{env::set_var, path::Path};
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_agg_prove_verify() {
-    // Init, load chunk traces, construct prover and verifier.
+    // Init, load block traces and construct prover.
 
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
@@ -30,23 +30,25 @@ fn test_agg_prove_verify() {
     chunk_traces.push(load_block_traces_for_test().1);
     log::info!("Loaded chunk-traces");
 
-    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_AGG_DEGREES);
-    let verifier = Verifier::from_params_dir(PARAMS_DIR, *AGG_LAYER4_DEGREE, None);
-    log::info!("Constructed prover and verifier");
-
     // Convert chunk traces to witness blocks.
     let witness_blocks: Vec<_> = chunk_traces
         .into_iter()
         .map(|trace| chunk_trace_to_witness_block(trace).unwrap())
         .collect();
+    log::info!("Got witness-blocks");
 
     // Convert witness blocks to chunk hashes.
     let chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
+    log::info!("Got chunk-hashes");
+
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_AGG_DEGREES);
+    log::info!("Constructed prover");
 
     // Load or generate chunk snarks.
     let chunk_snarks: Vec<_> = witness_blocks
         .into_iter()
-        .map(|block| load_or_gen_chunk_snark(&output_dir, &mut prover, block))
+        .enumerate()
+        .map(|(i, block)| load_or_gen_chunk_snark(&output_dir, &i.to_string(), &mut prover, block))
         .collect();
     log::info!("Got chunk-snarks");
 
@@ -104,7 +106,11 @@ fn test_agg_prove_verify() {
     );
     log::info!("Got compression EVM proof (layer-4)");
 
-    // Verify the proof.
+    // Construct verifier and EVM verify.
+    let params = prover.params(*AGG_LAYER4_DEGREE).clone();
+    let vk = prover.pk("agg_layer4").unwrap().get_vk().clone();
+    let verifier = Verifier::new(params, Some(vk));
     let yul_file_path = format!("{output_dir}/agg_verifier.yul");
     verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));
+    log::info!("Finish EVM verify");
 }
