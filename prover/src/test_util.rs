@@ -9,7 +9,7 @@ pub const PARAMS_DIR: &str = "./test_params";
 
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {
-        "empty" => "./tests/traces/empty.json",
+        "empty" => "./tests/traces/bridge/01.json",
         "greeter" => "./tests/traces/greeter/setValue.json",
         "single" => "./tests/traces/erc20/1_transfer.json",
         "multiple" => "./tests/traces/erc20/10_transfer.json",
@@ -29,7 +29,7 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
         // use mode
         let mode = read_env_var("MODE", "multiple".to_string());
         if mode.to_lowercase() == "batch" || mode.to_lowercase() == "pack" {
-            (1..=22)
+            (1..=20)
                 .map(|i| format!("tests/traces/bridge/{i:02}.json"))
                 .collect()
         } else {

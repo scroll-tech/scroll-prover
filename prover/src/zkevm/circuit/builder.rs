@@ -129,6 +129,7 @@ pub fn update_state(
 ) -> Result<()> {
     log::debug!("building partial statedb");
     let account_proofs = block_traces.iter().rev().flat_map(|block| {
+        log::trace!("account proof for block {:?}:", block.header.number);
         block.storage_trace.proofs.iter().flat_map(|kv_map| {
             kv_map
                 .iter()
@@ -136,6 +137,7 @@ pub fn update_state(
         })
     });
     let storage_proofs = block_traces.iter().rev().flat_map(|block| {
+        log::trace!("storage proof for block {:?}:", block.header.number);
         block
             .storage_trace
             .storage_proofs
@@ -147,6 +149,8 @@ pub fn update_state(
             })
     });
     let additional_proofs = block_traces.iter().rev().flat_map(|block| {
+        log::trace!("storage proof for block {:?}:", block.header.number);
+        log::trace!("additional proof for block {:?}:", block.header.number);
         block
             .storage_trace
             .deletion_proofs
@@ -166,6 +170,10 @@ pub fn update_state(
 }
 
 pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
+    log::debug!(
+        "block_traces_to_witness_block, input len {:?}",
+        block_traces.len()
+    );
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -268,7 +276,9 @@ pub fn block_traces_to_witness_block_with_updated_state(
     );
 
     if !light_mode && !block_traces.is_empty() {
+        log::debug!("block_apply_mpt_state");
         block_apply_mpt_state(&mut witness_block, zktrie_state);
+        log::debug!("block_apply_mpt_state done");
     }
     zktrie_state.set_state(builder.sdb.clone());
     log::debug!("finish replay trie updates");
@@ -412,8 +422,9 @@ fn trace_code(cdb: &mut CodeDB, step: &ExecStep, sdb: &StateDB, code: Bytes, sta
         return;
     };
 
-    log::debug!("trace code {:?}", addr);
-    let _hash = cdb.0.insert(data.code_hash, code.to_vec());
+    let code = code.to_vec();
+    log::debug!("trace code {:?}, size {}", addr, code.len());
+    let _hash = cdb.0.insert(data.code_hash, code);
     log::debug!("trace code done {:?}", addr);
     // sanity check
     //assert_eq!(
