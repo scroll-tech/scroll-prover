@@ -1,5 +1,4 @@
 mod prover;
 mod verifier;
 
-pub use prover::Prover;
-pub use verifier::Verifier;
+pub use self::{prover::Prover, verifier::Verifier};

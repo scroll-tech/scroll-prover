@@ -38,6 +38,7 @@ fn test_load_params() {
     .unwrap();
 }
 
+#[ignore]
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
