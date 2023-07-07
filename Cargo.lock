@@ -25,7 +25,7 @@ name = "aggregator"
 version = "0.1.0"
 source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#ba4f7fe610e920c173e2acf3c276e8d048b97854"
 dependencies = [
- "ark-std",
+ "ark-std 0.4.0",
  "env_logger 0.10.0",
  "eth-types",
  "ethers-core 0.17.0",
@@ -97,6 +97,16 @@ name = "ark-std"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1df2c09229cbc5a028b1d70e00fdb2acee28b1055dfb5ca73eea49c5a25c4e7c"
+dependencies = [
+ "num-traits",
+ "rand",
+]
+
+[[package]]
+name = "ark-std"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94893f1e0c6eeab764ade8dc4c0db24caf4fe7cbbaafc0eba0a9030f447b5185"
 dependencies = [
  "num-traits",
  "rand",
@@ -1437,7 +1447,7 @@ dependencies = [
 
 [[package]]
 name = "ffi"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "libc",
  "log",
@@ -1809,7 +1819,7 @@ name = "halo2_proofs"
 version = "0.2.0"
 source = "git+https://github.com/scroll-tech/halo2.git?branch=develop#9bf3562083dd9bed8a19f651b52bc810f5e2235f"
 dependencies = [
- "ark-std",
+ "ark-std 0.3.0",
  "blake2b_simd",
  "cfg-if 0.1.10",
  "crossbeam",
