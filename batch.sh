@@ -7,7 +7,7 @@ set -o pipefail
 export RUST_LOG=trace
 
 function simple_tests() {
-	for mode in sushi multiple #nft dao native empty # pack
+	for mode in pack #sushi multiple #nft dao native empty # pack
 	#for mode in native empty # pack
 	do
 		MODE=$mode make mock 2>&1 | tee /tmp/mock_${mode}.log

@@ -206,12 +206,15 @@ pub struct ExtraData {
 
 impl ExtraData {
     pub fn get_code_at(&self, i: usize) -> Option<Bytes> {
-        let code_list = self.code_list.as_ref().unwrap();
-        code_list.get(i).cloned()
+        self.code_list.as_ref().and_then(|c| c.get(i)).cloned()
+    }
+
+    pub fn get_code_hash_at(&self, i: usize) -> Option<H256> {
+        self.get_proof_at(i).and_then(|a| a.poseidon_code_hash)
     }
 
     pub fn get_proof_at(&self, i: usize) -> Option<AccountProofWrapper> {
-        self.proof_list.as_ref().unwrap().get(i).cloned()
+        self.proof_list.as_ref().and_then(|p| p.get(i)).cloned()
     }
 }
 
