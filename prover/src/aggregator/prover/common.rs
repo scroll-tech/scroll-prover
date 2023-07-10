@@ -96,7 +96,8 @@ impl Prover {
         }
 
         tick(&format!("Before generate outer pk of {}", &id));
-        let pk = gen_pk(self.params(degree), circuit, None);
+        // let pk = gen_pk(self.params(degree), circuit, None);
+        let pk = keygen_pk2(self.params(degree), circuit).unwrap();
         tick(&format!("After generate outer pk of {}", &id));
 
         self.pk_map.insert(id.to_string(), pk);

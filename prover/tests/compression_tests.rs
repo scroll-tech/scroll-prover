@@ -1,14 +1,18 @@
 use aggregator::CompressionCircuit;
+use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::VerifyingKey, SerdeFormat};
 use prover::{
     aggregator::{Prover, Verifier},
     config::{AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, INNER_DEGREE},
+    io::serialize_vk,
     test_util::{
         aggregator::{gen_comp_evm_proof, load_or_gen_chunk_snark, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
     },
     utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
-use std::path::Path;
+use snark_verifier::pcs::kzg::{Bdfg21, Kzg};
+use snark_verifier_sdk::{evm_verify, gen_evm_verifier, verify_snark_shplonk, CircuitExt};
+use std::{io::Cursor, path::Path};
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -56,10 +60,23 @@ fn test_comp_prove_verify() {
     );
     log::info!("Got compression EVM proof (layer-2)");
 
+    // Test vk deserialization.
+    let vk1 = prover.pk("agg_layer2").unwrap().get_vk().clone();
+    let raw_vk1 = serialize_vk(&vk1);
+    let mut vk2 = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
+        &mut Cursor::new(&raw_vk1),
+        SerdeFormat::Processed,
+    )
+    .unwrap();
+    let raw_vk2 = serialize_vk(&vk2);
+    assert_eq!(raw_vk1, raw_vk2);
+    log::error!("test - vk1 = {:#?}", vk1);
+    log::error!("test - vk2 = {:#?}", vk2);
+
     // Construct verifier and EVM verify.
     let params = prover.params(*AGG_LAYER2_DEGREE).clone();
-    let vk = prover.pk("agg_layer2").unwrap().get_vk().clone();
-    let verifier = Verifier::new(params, Some(vk));
+    // let vk = prover.pk("agg_layer2").unwrap().get_vk().clone();
+    let verifier = Verifier::new(params, Some(vk2));
     let yul_file_path = format!("{output_dir}/comp_verifier.yul");
     verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));
     log::info!("Finish EVM verify");
