@@ -18,7 +18,7 @@ halo2curves = { git = "https://github.com/scroll-tech/halo2curves.git", branch =
 
 [profile.test]
 opt-level = 3
-#debug-assertions = true
+debug-assertions = true
 
 [profile.release]
 opt-level = 3
