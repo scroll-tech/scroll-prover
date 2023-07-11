@@ -1,7 +1,7 @@
 use super::Prover;
 use crate::Proof;
 use aggregator::CompressionCircuit;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use rand::Rng;
 use snark_verifier_sdk::Snark;
 
@@ -14,9 +14,8 @@ impl Prover {
         mut rng: impl Rng + Send,
         prev_snark: Snark,
     ) -> Result<Snark> {
-        // gupeng
-        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng);
-        // .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
+        .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
         Ok(self.gen_snark(id, degree, &mut rng, circuit))
     }
@@ -29,9 +28,8 @@ impl Prover {
         mut rng: impl Rng + Send,
         prev_snark: Snark,
     ) -> Result<Proof> {
-        // gupeng
-        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng);
-        // .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
+        .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
         self.gen_evm_proof(id, degree, &mut rng, circuit)
     }

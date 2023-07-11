@@ -12,9 +12,13 @@ impl Prover {
         chunk_hashes: &[ChunkHash],
         prev_snarks: &[Snark],
     ) -> Snark {
+        todo!()
+
+/*
         let circuit =
             AggregationCircuit::new(self.params(degree), prev_snarks, &mut rng, chunk_hashes);
 
         self.gen_snark(id, degree, &mut rng, circuit)
+*/
     }
 }
