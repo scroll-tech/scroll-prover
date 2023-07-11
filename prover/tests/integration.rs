@@ -3,7 +3,7 @@ use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
 use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
-    test_util::{load_block_traces_for_test, PARAMS_DIR},
+    test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
@@ -42,10 +42,8 @@ fn test_load_params() {
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
-
-    let batch = vec![get_block_trace_from_file(
-        "./tests/extra_traces/tx_storage_proof.json",
-    )];
+    let trace_path = parse_trace_path_from_mode("multiple");
+    let batch = vec![get_block_trace_from_file(trace_path)];
     log::info!("estimating circuit rows tx by tx");
 
     let mut checker = CircuitCapacityChecker::new();
