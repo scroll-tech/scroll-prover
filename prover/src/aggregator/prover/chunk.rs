@@ -1,5 +1,6 @@
 use super::Prover;
 use crate::{
+    config::INNER_DEGREE,
     utils::{gen_rng, metric_of_witness_block},
     zkevm::circuit::TargetCircuit,
 };
@@ -19,11 +20,8 @@ impl Prover {
         );
 
         let (circuit, _instance) = C::from_witness_block(witness_block)?;
-        log::info!("Create {} proof", C::name());
-
-        let (params, pk) = self.inner_params_and_pk::<C>(&C::dummy_inner_circuit())?;
-
-        // Generate the SNARK proof for inner circuit.
+        let (params, pk) =
+            self.params_and_pk(&C::name(), &C::dummy_inner_circuit(), *INNER_DEGREE)?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut gen_rng(), None::<String>);
 
         Ok(snark)

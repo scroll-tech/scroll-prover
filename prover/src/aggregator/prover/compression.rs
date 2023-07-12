@@ -15,9 +15,9 @@ impl Prover {
         prev_snark: Snark,
     ) -> Result<Snark> {
         let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
-        .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+            .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
-        Ok(self.gen_snark(id, degree, &mut rng, circuit))
+        self.gen_snark(id, degree, &mut rng, circuit)
     }
 
     pub fn gen_comp_evm_proof(
@@ -29,7 +29,7 @@ impl Prover {
         prev_snark: Snark,
     ) -> Result<Proof> {
         let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
-        .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+            .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
         self.gen_evm_proof(id, degree, &mut rng, circuit)
     }

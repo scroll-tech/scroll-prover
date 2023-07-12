@@ -20,6 +20,7 @@ mod aggregation;
 mod chunk;
 mod common;
 mod compression;
+mod padding;
 
 #[derive(Debug)]
 pub struct Prover {
@@ -83,7 +84,7 @@ impl Prover {
             .collect::<Result<Vec<_>>>()?;
 
         // Convert witness blocks to chunk hashes.
-        let chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
+        let real_chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
 
         // Generate chunk snarks.
         let chunk_snarks = witness_blocks
@@ -118,9 +119,9 @@ impl Prover {
             "agg_layer3",
             *AGG_LAYER3_DEGREE,
             rng,
-            &chunk_hashes,
+            &real_chunk_hashes,
             &layer2_snarks,
-        );
+        )?;
 
         // Generate final compression snarks (layer-4).
         set_var("VERIFY_CONFIG", "./configs/agg_layer4.config");

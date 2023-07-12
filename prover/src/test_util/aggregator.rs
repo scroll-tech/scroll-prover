@@ -16,15 +16,17 @@ pub fn load_or_gen_agg_snark(
     id: &str,
     degree: u32,
     prover: &mut Prover,
-    chunk_hashes: &[ChunkHash],
-    prev_snarks: &[Snark],
+    real_chunk_hashes: &[ChunkHash],
+    real_and_padding_snarks: &[Snark],
 ) -> Snark {
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
+    set_var("AGGREGATION_CONFIG", format!("./configs/{id}.config"));
     let file_path = format!("{output_dir}/{id}_snark.json");
 
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
         let rng = gen_rng();
-        let snark = prover.gen_agg_snark(id, degree, rng, chunk_hashes, prev_snarks);
+        let snark = prover
+            .gen_agg_snark(id, degree, rng, real_chunk_hashes, real_and_padding_snarks)
+            .unwrap();
         write_snark(&file_path, &snark);
 
         snark
@@ -39,8 +41,6 @@ pub fn gen_comp_evm_proof(
     prover: &mut Prover,
     prev_snark: Snark,
 ) -> Proof {
-    // gupeng
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
     set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
 
     let rng = gen_rng();
@@ -52,7 +52,46 @@ pub fn gen_comp_evm_proof(
     proof
 }
 
-pub fn load_or_gen_chunk_snark(
+pub fn load_or_gen_comp_snark(
+    output_dir: &str,
+    id: &str,
+    is_fresh: bool,
+    degree: u32,
+    prover: &mut Prover,
+    prev_snark: Snark,
+) -> Snark {
+    set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
+    let file_path = format!("{output_dir}/{id}_snark.json");
+
+    load_snark(&file_path).unwrap().unwrap_or_else(|| {
+        let rng = gen_rng();
+        let snark = prover
+            .gen_comp_snark(id, is_fresh, degree, rng, prev_snark)
+            .unwrap();
+        write_snark(&file_path, &snark);
+
+        snark
+    })
+}
+
+pub fn load_or_gen_padding_chunk_snark(
+    output_dir: &str,
+    id: &str,
+    prover: &mut Prover,
+    last_real_chunk_hash: &ChunkHash,
+) -> Snark {
+    let file_path = format!("{output_dir}/{id}_chunk_snark.json");
+
+    load_snark(&file_path).unwrap().unwrap_or_else(|| {
+        let snark = prover
+            .gen_padding_chunk_snark(last_real_chunk_hash)
+            .unwrap();
+        write_snark(&file_path, &snark);
+
+        snark
+    })
+}
+pub fn load_or_gen_real_chunk_snark(
     output_dir: &str,
     id: &str,
     prover: &mut Prover,
@@ -63,30 +102,6 @@ pub fn load_or_gen_chunk_snark(
     load_snark(&file_path).unwrap().unwrap_or_else(|| {
         let snark = prover
             .gen_chunk_snark::<SuperCircuit>(&witness_block)
-            .unwrap();
-        write_snark(&file_path, &snark);
-
-        snark
-    })
-}
-
-pub fn load_or_gen_comp_snark(
-    output_dir: &str,
-    id: &str,
-    is_fresh: bool,
-    degree: u32,
-    prover: &mut Prover,
-    prev_snark: Snark,
-) -> Snark {
-    // gupeng
-    set_var("VERIFY_CONFIG", format!("./configs/{id}.config"));
-    set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
-    let file_path = format!("{output_dir}/{id}_snark.json");
-
-    load_snark(&file_path).unwrap().unwrap_or_else(|| {
-        let rng = gen_rng();
-        let snark = prover
-            .gen_comp_snark(id, is_fresh, degree, rng, prev_snark)
             .unwrap();
         write_snark(&file_path, &snark);
 
