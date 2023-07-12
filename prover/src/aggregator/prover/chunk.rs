@@ -41,7 +41,7 @@ impl Prover {
             None => {
                 let res = self.gen_chunk_snark::<SuperCircuit>(&witness_block);
                 if let (Some(_), Ok(snark)) = (output_dir, &res) {
-                    write_snark(&file_path, &snark);
+                    write_snark(&file_path, snark);
                 }
 
                 res

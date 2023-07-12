@@ -79,7 +79,7 @@ impl Prover {
     pub fn gen_agg_proof(
         &mut self,
         chunk_traces: Vec<Vec<BlockTrace>>,
-        output_dir: Option<&str>,
+        _output_dir: Option<&str>,
     ) -> Result<Proof> {
         // Convert chunk traces to witness blocks.
         let witness_blocks = chunk_traces
@@ -97,7 +97,7 @@ impl Prover {
             .collect::<Result<Vec<_>>>()?;
 
         // Generate compression wide snarks (layer-1).
-        set_var("VERIFY_CONFIG", "./configs/agg_layer1.config");
+        set_var("COMPRESSION_CONFIG", "./configs/agg_layer1.config");
         let layer1_snarks = chunk_snarks
             .into_iter()
             .map(|snark| {
@@ -107,7 +107,7 @@ impl Prover {
             .collect::<Result<Vec<_>>>()?;
 
         // Generate compression thin snarks (layer-2).
-        set_var("VERIFY_CONFIG", "./configs/agg_layer2.config");
+        set_var("COMPRESSION_CONFIG", "./configs/agg_layer2.config");
         let layer2_snarks: Vec<_> = layer1_snarks
             .into_iter()
             .map(|snark| {
@@ -117,7 +117,7 @@ impl Prover {
             .collect::<Result<Vec<_>>>()?;
 
         // Generate aggregation snark (layer-3).
-        set_var("VERIFY_CONFIG", "./configs/agg_layer3.config");
+        set_var("AGGREGATION_CONFIG", "./configs/agg_layer3.config");
         let rng = gen_rng();
         let layer3_snark = self.gen_agg_snark(
             "agg_layer3",
@@ -128,7 +128,7 @@ impl Prover {
         )?;
 
         // Generate final compression snarks (layer-4).
-        set_var("VERIFY_CONFIG", "./configs/agg_layer4.config");
+        set_var("COMPRESSION_CONFIG", "./configs/agg_layer4.config");
         let rng = gen_rng();
         let layer4_snark =
             self.gen_comp_snark("agg_layer4", false, *AGG_LAYER4_DEGREE, rng, layer3_snark)?;

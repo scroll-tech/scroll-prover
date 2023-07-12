@@ -23,7 +23,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "ark-std",
  "env_logger 0.10.0",
@@ -418,7 +418,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -1118,7 +1118,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1384,7 +1384,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1613,7 +1613,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1653,7 +1653,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -1807,7 +1807,7 @@ dependencies = [
 [[package]]
 name = "halo2_proofs"
 version = "0.2.0"
-source = "git+https://github.com/scroll-tech/halo2.git?branch=feat/disable_selector_compression#031495f62172c144f392848043da2064261c13dc"
+source = "git+https://github.com/scroll-tech/halo2.git?branch=develop#a00de9e0b5311647f0046ead97b96dede4e01945"
 dependencies = [
  "ark-std",
  "blake2b_simd",
@@ -2243,7 +2243,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2443,7 +2443,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2458,7 +2458,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4683,7 +4683,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d2579a143458d3f3e7c5f0c8aaa1a03537ef6e74"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=integrate-dynamic-proof-agg#d864ddf2c1914dec70475e565571deb58499e57d"
 dependencies = [
  "array-init",
  "bus-mapping",

@@ -5,7 +5,7 @@ use prover::{
     config::{AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, INNER_DEGREE},
     io::serialize_vk,
     test_util::{
-        aggregator::{gen_comp_evm_proof, load_or_gen_comp_snark, load_or_gen_real_chunk_snark},
+        aggregator::{gen_comp_evm_proof, load_or_gen_chunk_snark, load_or_gen_comp_snark},
         load_block_traces_for_test, PARAMS_DIR,
     },
     utils::{chunk_trace_to_witness_block, init_env_and_log},
@@ -35,13 +35,14 @@ fn test_comp_prove_verify() {
     log::info!("Constructed prover");
 
     // Load or generate chunk snark.
-    let chunk_snark = load_or_gen_real_chunk_snark(&output_dir, "comp", &mut prover, witness_block);
+    let chunk_snark = load_or_gen_chunk_snark(&output_dir, "0", &mut prover, witness_block);
     log::info!("Got chunk-snark");
 
     // Load or generate compression wide snark (layer-1).
     let layer1_snark = load_or_gen_comp_snark(
         &output_dir,
         "agg_layer1",
+        "layer1_0",
         true,
         *AGG_LAYER1_DEGREE,
         &mut prover,
@@ -53,6 +54,7 @@ fn test_comp_prove_verify() {
     let proof = gen_comp_evm_proof(
         &output_dir,
         "agg_layer2",
+        "layer2_0",
         false,
         *AGG_LAYER2_DEGREE,
         &mut prover,
