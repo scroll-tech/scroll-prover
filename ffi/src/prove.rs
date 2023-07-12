@@ -90,7 +90,7 @@ pub unsafe extern "C" fn create_agg_proof() -> *const c_char {
     let proof = AGG_PROVER
         .get_mut()
         .unwrap()
-        .gen_agg_proof(chunk_traces)
+        .gen_agg_proof(chunk_traces, None)
         .unwrap();
 
     let proof_bytes = serde_json::to_vec(&proof).unwrap();

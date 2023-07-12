@@ -76,7 +76,11 @@ impl Prover {
         }
     }
 
-    pub fn gen_agg_proof(&mut self, chunk_traces: Vec<Vec<BlockTrace>>) -> Result<Proof> {
+    pub fn gen_agg_proof(
+        &mut self,
+        chunk_traces: Vec<Vec<BlockTrace>>,
+        output_dir: Option<&str>,
+    ) -> Result<Proof> {
         // Convert chunk traces to witness blocks.
         let witness_blocks = chunk_traces
             .into_iter()
