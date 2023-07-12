@@ -97,7 +97,7 @@ fn test_agg_prove_verify() {
     log::info!("Got compression thin snarks (layer-2)");
 
     // Extend to MAX_AGG_SNARKS by copying the last padding snark.
-    let padding_layer2_snarks = repeat(layer2_snarks.last().unwrap())
+    let padding_layer2_snarks: Vec<_> = repeat(layer2_snarks.last().unwrap().clone())
         .take(MAX_AGG_SNARKS - layer2_snarks.len())
         .collect();
     layer2_snarks.extend(padding_layer2_snarks);
