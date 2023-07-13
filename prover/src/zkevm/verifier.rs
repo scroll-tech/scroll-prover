@@ -1,9 +1,5 @@
 use super::circuit::TargetCircuit;
-use crate::{
-    config::{CHUNK_DEGREE, INNER_DEGREE},
-    utils::load_params,
-    Proof,
-};
+use crate::{config::INNER_DEGREE, utils::load_params, Proof};
 use anyhow::{bail, Result};
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -20,6 +16,8 @@ use itertools::Itertools;
 use snark_verifier::system::halo2::transcript::evm::EvmTranscript;
 use snark_verifier_sdk::{verify_snark_shplonk, AggregationCircuit, Snark};
 use std::{collections::HashMap, io::Cursor};
+
+const CHUNK_DEGREE: u32 = 25;
 
 pub struct Verifier {
     inner_params: ParamsKZG<Bn256>,
@@ -51,9 +49,9 @@ impl Verifier {
     }
 
     pub fn from_params_dir(params_dir: &str, chunk_vk: Option<Vec<u8>>) -> Self {
-        let chunk_params = load_params(params_dir, *CHUNK_DEGREE, None).unwrap();
+        let chunk_params = load_params(params_dir, CHUNK_DEGREE, None).unwrap();
         let inner_params = load_params(params_dir, *INNER_DEGREE, None).unwrap_or_else(|_| {
-            assert!(*CHUNK_DEGREE >= *INNER_DEGREE);
+            assert!(CHUNK_DEGREE >= *INNER_DEGREE);
             log::warn!(
                 "Optimization: download params{} to params dir",
                 *INNER_DEGREE

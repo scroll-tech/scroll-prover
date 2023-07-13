@@ -1,9 +1,9 @@
 use crate::{
-    config::{AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, AGG_LAYER3_DEGREE, AGG_LAYER4_DEGREE},
-    utils::{chunk_trace_to_witness_block, gen_rng, load_params, param_path_for_degree},
-    zkevm::circuit::SuperCircuit,
+    config::{LAYER1_DEGREE, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
+    utils::{chunk_trace_to_witness_block, load_params, param_path_for_degree},
     Proof,
 };
+use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -12,14 +12,15 @@ use halo2_proofs::{
 };
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
-    env::set_var,
+    iter::repeat,
 };
 use types::eth::BlockTrace;
 
 mod aggregation;
-mod chunk;
 mod common;
 mod compression;
+mod evm;
+mod inner;
 mod padding;
 
 #[derive(Debug)]
@@ -78,61 +79,112 @@ impl Prover {
 
     pub fn gen_agg_proof(
         &mut self,
-        chunk_traces: Vec<Vec<BlockTrace>>,
-        _output_dir: Option<&str>,
+        chunks: Vec<(ChunkHash, Proof)>,
+        output_dir: Option<&str>,
     ) -> Result<Proof> {
-        // Convert chunk traces to witness blocks.
-        let witness_blocks = chunk_traces
-            .into_iter()
-            .map(chunk_trace_to_witness_block)
-            .collect::<Result<Vec<_>>>()?;
+        let real_chunk_count = chunks.len();
+        assert!((1..=MAX_AGG_SNARKS).contains(&real_chunk_count));
 
-        // Convert witness blocks to chunk hashes.
-        let real_chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
+        let last_real_chunk_hash = chunks.last().unwrap().0;
+        let name = last_real_chunk_hash
+            .public_input_hash()
+            .to_low_u64_le()
+            .to_string();
 
-        // Generate chunk snarks.
-        let chunk_snarks = witness_blocks
-            .into_iter()
-            .map(|block| self.gen_chunk_snark::<SuperCircuit>(&block))
-            .collect::<Result<Vec<_>>>()?;
+        // Load or generate padding snark (layer-1).
+        let layer1_padding_snark =
+            self.load_or_gen_padding_snark(&name, &last_real_chunk_hash, output_dir)?;
+        log::info!("Got padding snark (layer-1): {name}");
 
-        // Generate compression wide snarks (layer-1).
-        set_var("COMPRESSION_CONFIG", "./configs/agg_layer1.config");
-        let layer1_snarks = chunk_snarks
-            .into_iter()
-            .map(|snark| {
-                let rng = gen_rng();
-                self.gen_comp_snark("agg_layer1", true, *AGG_LAYER1_DEGREE, rng, snark)
-            })
-            .collect::<Result<Vec<_>>>()?;
-
-        // Generate compression thin snarks (layer-2).
-        set_var("COMPRESSION_CONFIG", "./configs/agg_layer2.config");
-        let layer2_snarks: Vec<_> = layer1_snarks
-            .into_iter()
-            .map(|snark| {
-                let rng = gen_rng();
-                self.gen_comp_snark("agg_layer2", false, *AGG_LAYER2_DEGREE, rng, snark)
-            })
-            .collect::<Result<Vec<_>>>()?;
-
-        // Generate aggregation snark (layer-3).
-        set_var("AGGREGATION_CONFIG", "./configs/agg_layer3.config");
-        let rng = gen_rng();
-        let layer3_snark = self.gen_agg_snark(
-            "agg_layer3",
-            *AGG_LAYER3_DEGREE,
-            rng,
-            &real_chunk_hashes,
-            &layer2_snarks,
+        // Load or generate compression thin snark for padding (layer-2).
+        let layer2_padding_snark = self.load_or_gen_comp_snark(
+            &name,
+            "layer2",
+            false,
+            *LAYER2_DEGREE,
+            layer1_padding_snark,
+            output_dir,
         )?;
+        log::info!("Got compression thin snark for padding (layer-2): {name}");
 
-        // Generate final compression snarks (layer-4).
-        set_var("COMPRESSION_CONFIG", "./configs/agg_layer4.config");
-        let rng = gen_rng();
-        let layer4_snark =
-            self.gen_comp_snark("agg_layer4", false, *AGG_LAYER4_DEGREE, rng, layer3_snark)?;
+        let (chunk_hashes, mut layer2_snarks): (Vec<_>, Vec<_>) = chunks
+            .into_iter()
+            .map(|chunk| (chunk.0, chunk.1.to_snark()))
+            .unzip();
 
-        Proof::from_snark(&self.pk_map["agg_layer4"], &layer4_snark)
+        // Extend to MAX_AGG_SNARKS by copying the padding snark.
+        layer2_snarks.extend(repeat(layer2_padding_snark).take(MAX_AGG_SNARKS - real_chunk_count));
+
+        // Load or generate aggregation snark (layer-3).
+        let layer3_snark = self.load_or_gen_agg_snark(
+            &name,
+            "layer3",
+            *LAYER3_DEGREE,
+            &chunk_hashes,
+            &layer2_snarks,
+            output_dir,
+        )?;
+        log::info!("Got aggregation snark (layer-3): {name}");
+
+        // Load or generate final compression thin snark (layer-4).
+        let layer4_snark = self.load_or_gen_comp_snark(
+            &name,
+            "layer4",
+            false,
+            *LAYER4_DEGREE,
+            layer3_snark,
+            output_dir,
+        )?;
+        log::info!("Got final compression thin snark (layer-4): {name}");
+
+        let pk = self.pk("layer4").unwrap();
+        Proof::from_snark(pk, &layer4_snark)
+    }
+
+    pub fn gen_chunk_proof(
+        &mut self,
+        chunk_trace: Vec<BlockTrace>,
+        output_dir: Option<&str>,
+    ) -> Result<Proof> {
+        assert!(!chunk_trace.is_empty());
+
+        let witness_block = chunk_trace_to_witness_block(chunk_trace)?;
+        log::info!("Got witness block");
+
+        let name = witness_block
+            .context
+            .first_or_default()
+            .number
+            .low_u64()
+            .to_string();
+
+        // Load or generate inner snark.
+        let inner_snark = self.load_or_gen_inner_snark(&name, witness_block, output_dir)?;
+        log::info!("Got inner snark: {name}");
+
+        // Load or generate compression wide snark (layer-1).
+        let layer1_snark = self.load_or_gen_comp_snark(
+            &name,
+            "layer1",
+            true,
+            *LAYER1_DEGREE,
+            inner_snark,
+            output_dir,
+        )?;
+        log::info!("Got compression wide snark (layer-1): {name}");
+
+        // Load or generate compression thin snark (layer-2).
+        let layer2_snark = self.load_or_gen_comp_snark(
+            &name,
+            "layer2",
+            false,
+            *LAYER2_DEGREE,
+            layer1_snark,
+            output_dir,
+        )?;
+        log::info!("Got compression thin snark (layer-2): {name}");
+
+        let pk = self.pk("layer2").unwrap();
+        Proof::from_snark(pk, &layer2_snark)
     }
 }

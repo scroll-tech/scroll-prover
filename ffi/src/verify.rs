@@ -1,6 +1,6 @@
 use crate::utils::{c_char_to_str, c_char_to_vec};
 use libc::c_char;
-use prover::{aggregator, config::AGG_LAYER4_DEGREE, utils::init_env_and_log, zkevm, Proof};
+use prover::{aggregator, config::LAYER4_DEGREE, utils::init_env_and_log, zkevm, Proof};
 use std::{fs::File, io::Read};
 
 static mut CHUNK_VERIFIER: Option<&zkevm::Verifier> = None;
@@ -35,7 +35,7 @@ pub unsafe extern "C" fn init_agg_verifier(params_dir: *const c_char, vk_path: *
     let params_dir = c_char_to_str(params_dir);
     let verifier = Box::new(aggregator::Verifier::from_params_dir(
         params_dir,
-        *AGG_LAYER4_DEGREE,
+        *LAYER4_DEGREE,
         Some(vk),
     ));
 

@@ -2,7 +2,7 @@ use super::circuit::{
     block_traces_to_witness_block, check_batch_capacity, SuperCircuit, TargetCircuit,
 };
 use crate::{
-    config::{CHUNK_DEGREE, INNER_DEGREE},
+    config::INNER_DEGREE,
     utils::{load_params, metric_of_witness_block, read_env_var, tick},
     Proof,
 };
@@ -38,6 +38,8 @@ extern crate procfs;
 pub static OPT_MEM: Lazy<bool> = Lazy::new(|| read_env_var("OPT_MEM", false));
 pub static MOCK_PROVE: Lazy<bool> = Lazy::new(|| read_env_var("MOCK_PROVE", false));
 
+const CHUNK_DEGREE: u32 = 25;
+
 #[derive(Debug)]
 // This is the aggregation prover that takes in a list of traces, produces
 // a proof that can be verified on chain.
@@ -53,13 +55,13 @@ pub struct Prover {
 impl Prover {
     pub fn from_params(inner_params: ParamsKZG<Bn256>, chunk_params: ParamsKZG<Bn256>) -> Self {
         assert!(inner_params.k() == *INNER_DEGREE);
-        assert!(chunk_params.k() == *CHUNK_DEGREE);
+        assert!(chunk_params.k() == CHUNK_DEGREE);
 
         // notice that `inner_k < chunk`_k which is not necessary the case in practice
         log::info!(
             "loaded parameters for degrees {} and {}",
             *INNER_DEGREE,
-            *CHUNK_DEGREE
+            CHUNK_DEGREE
         );
 
         // this check can be skipped since the `params` is downsized?
@@ -84,9 +86,9 @@ impl Prover {
     }
 
     pub fn from_params_dir(params_dir: &str) -> Self {
-        let chunk_params = load_params(params_dir, *CHUNK_DEGREE, None).unwrap();
+        let chunk_params = load_params(params_dir, CHUNK_DEGREE, None).unwrap();
         let inner_params = load_params(params_dir, *INNER_DEGREE, None).unwrap_or_else(|_| {
-            assert!(*CHUNK_DEGREE >= *INNER_DEGREE);
+            assert!(CHUNK_DEGREE >= *INNER_DEGREE);
             log::warn!(
                 "Optimization: download params{} to params dir",
                 *INNER_DEGREE

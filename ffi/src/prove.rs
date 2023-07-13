@@ -1,21 +1,29 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
 use libc::c_char;
-use prover::{aggregator, config::ALL_AGG_DEGREES, utils::init_env_and_log, zkevm};
-use std::cell::OnceCell;
+use once_cell::sync::Lazy;
+use prover::{
+    aggregator::{self, ChunkHash},
+    config::AGG_DEGREES,
+    utils::init_env_and_log,
+    zkevm, Proof,
+};
+use std::{cell::OnceCell, env};
 use types::eth::BlockTrace;
 
-static mut CHUNK_PROVER: OnceCell<zkevm::Prover> = OnceCell::new();
+static mut ZKEVM_PROVER: OnceCell<zkevm::Prover> = OnceCell::new();
 static mut AGG_PROVER: OnceCell<aggregator::Prover> = OnceCell::new();
-static mut AGG_CHUNK_TRACES: OnceCell<Vec<Vec<BlockTrace>>> = OnceCell::new();
+
+// Only used for debugging.
+static OUTPUT_DIR: Lazy<Option<String>> = Lazy::new(|| env::var("PROVER_OUTPUT_DIR").ok());
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn init_chunk_prover(params_dir: *const c_char) {
-    init_env_and_log("ffi_chunk_prove");
+pub unsafe extern "C" fn init_zkevm_prover(params_dir: *const c_char) {
+    init_env_and_log("ffi_zkevm_prove");
 
     let params_dir = c_char_to_str(params_dir);
     let prover = zkevm::Prover::from_params_dir(params_dir);
-    CHUNK_PROVER.set(prover).unwrap();
+    ZKEVM_PROVER.set(prover).unwrap();
 }
 
 /// # Safety
@@ -25,72 +33,64 @@ pub unsafe extern "C" fn init_agg_prover(params_dir: *const c_char) {
 
     let params_dir = c_char_to_str(params_dir);
 
-    let prover = aggregator::Prover::from_params_dir(params_dir, &ALL_AGG_DEGREES);
+    let prover = aggregator::Prover::from_params_dir(params_dir, &AGG_DEGREES);
     AGG_PROVER.set(prover).unwrap();
 }
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn create_block_proof(trace_char: *const c_char) -> *const c_char {
-    let trace_vec = c_char_to_vec(trace_char);
-    let trace = serde_json::from_slice::<BlockTrace>(&trace_vec).unwrap();
-    let proof = CHUNK_PROVER
+pub unsafe extern "C" fn create_block_proof(block_trace: *const c_char) -> *const c_char {
+    let block_trace = c_char_to_vec(block_trace);
+    let block_trace = serde_json::from_slice::<BlockTrace>(&block_trace).unwrap();
+
+    let proof = ZKEVM_PROVER
         .get_mut()
         .unwrap()
-        .gen_chunk_proof(&[trace])
+        .gen_chunk_proof(&[block_trace])
         .unwrap();
+
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
 }
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn create_chunk_proof(trace_char: *const c_char) -> *const c_char {
-    let trace_vec = c_char_to_vec(trace_char);
-    let traces = serde_json::from_slice::<Vec<BlockTrace>>(&trace_vec).unwrap();
-    let proof = CHUNK_PROVER
+pub unsafe extern "C" fn create_chunk_proof(block_traces: *const c_char) -> *const c_char {
+    let block_traces = c_char_to_vec(block_traces);
+    let block_traces = serde_json::from_slice::<Vec<BlockTrace>>(&block_traces).unwrap();
+
+    let proof = ZKEVM_PROVER
         .get_mut()
         .unwrap()
-        .gen_chunk_proof(traces.as_slice())
+        .gen_chunk_proof(block_traces.as_slice())
         .unwrap();
+
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
 }
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn add_agg_chunk_trace(trace_char: *const c_char) {
-    let trace_vec = c_char_to_vec(trace_char);
-    let trace = serde_json::from_slice::<Vec<_>>(&trace_vec).unwrap();
+pub unsafe extern "C" fn create_agg_proof(
+    chunk_hashes: *const c_char,
+    chunk_proofs: *const c_char,
+) -> *const c_char {
+    let chunk_hashes = c_char_to_vec(chunk_hashes);
+    let chunk_proofs = c_char_to_vec(chunk_proofs);
 
-    AGG_CHUNK_TRACES
-        .get_mut()
-        .or_else(|| {
-            AGG_CHUNK_TRACES.set(vec![]).unwrap();
-            AGG_CHUNK_TRACES.get_mut()
-        })
-        .unwrap()
-        .push(trace);
-}
+    let chunk_hashes = serde_json::from_slice::<Vec<ChunkHash>>(&chunk_hashes).unwrap();
+    let chunk_proofs = serde_json::from_slice::<Vec<Proof>>(&chunk_proofs).unwrap();
+    assert_eq!(chunk_hashes.len(), chunk_proofs.len());
 
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn clear_agg_chunk_traces() {
-    if let Some(chunk_traces) = AGG_CHUNK_TRACES.get_mut() {
-        chunk_traces.clear();
-    }
-}
-
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn create_agg_proof() -> *const c_char {
-    // Consume the chunk traces (take and clear).
-    let chunk_traces = AGG_CHUNK_TRACES.take().unwrap();
+    let chunks = chunk_hashes
+        .into_iter()
+        .zip(chunk_proofs.into_iter())
+        .collect();
 
     let proof = AGG_PROVER
         .get_mut()
         .unwrap()
-        .gen_agg_proof(chunk_traces, None)
+        .gen_agg_proof(chunks, OUTPUT_DIR.as_deref())
         .unwrap();
 
     let proof_bytes = serde_json::to_vec(&proof).unwrap();

@@ -2,15 +2,9 @@ use aggregator::{CompressionCircuit, MAX_AGG_SNARKS};
 use prover::{
     aggregator::{Prover, Verifier},
     config::{
-        AGG_LAYER1_DEGREE, AGG_LAYER2_DEGREE, AGG_LAYER3_DEGREE, AGG_LAYER4_DEGREE, ALL_AGG_DEGREES,
+        AGG_DEGREES, LAYER1_DEGREE, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE, ZKEVM_DEGREES,
     },
-    test_util::{
-        aggregator::{
-            gen_comp_evm_proof, load_or_gen_agg_snark, load_or_gen_chunk_snark,
-            load_or_gen_comp_snark, load_or_gen_padding_snark,
-        },
-        load_block_traces_for_test, PARAMS_DIR,
-    },
+    test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
 use std::{env::set_var, iter::repeat, path::Path};
@@ -41,42 +35,49 @@ fn test_agg_prove_verify() {
     let real_chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
     log::info!("Got real-chunk-hashes");
 
-    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ALL_AGG_DEGREES);
-    log::info!("Constructed prover");
+    let mut zkevm_prover = Prover::from_params_dir(PARAMS_DIR, &*ZKEVM_DEGREES);
+    let mut agg_prover = Prover::from_params_dir(PARAMS_DIR, &*AGG_DEGREES);
+    log::info!("Constructed zkevm and aggregation provers");
 
-    // Load or generate real chunk snarks.
-    let chunk_snarks: Vec<_> = witness_blocks
+    // Load or generate real inner snarks.
+    let inner_snarks: Vec<_> = witness_blocks
         .into_iter()
         .enumerate()
-        .map(|(i, block)| load_or_gen_chunk_snark(&output_dir, &i.to_string(), &mut prover, block))
+        .map(|(i, witness_block)| {
+            zkevm_prover
+                .load_or_gen_inner_snark(&format!("layer0_{i}"), witness_block, Some(&output_dir))
+                .unwrap()
+        })
         .collect();
-    log::info!("Got real-chunk-snarks");
+    log::info!("Got real-inner-snarks");
 
     // Load or generate compression wide snarks (layer-1).
-    let mut layer1_snarks: Vec<_> = chunk_snarks
+    let mut layer1_snarks: Vec<_> = inner_snarks
         .into_iter()
         .enumerate()
         .map(|(i, snark)| {
-            load_or_gen_comp_snark(
-                &output_dir,
-                "agg_layer1",
-                &format!("layer1_{i}"),
-                true,
-                *AGG_LAYER1_DEGREE,
-                &mut prover,
-                snark,
-            )
+            zkevm_prover
+                .load_or_gen_comp_snark(
+                    &format!("layer1_{i}"),
+                    "layer1",
+                    true,
+                    *LAYER1_DEGREE,
+                    snark,
+                    Some(&output_dir),
+                )
+                .unwrap()
         })
         .collect();
-    log::info!("Got compression wide snarks (layer-1)");
+    log::info!("Got compression-wide-snarks (layer-1)");
 
     // Load or generate layer-1 padding snark.
-    let layer1_padding_snark = load_or_gen_padding_snark(
-        &output_dir,
-        "layer1",
-        &mut prover,
-        real_chunk_hashes.last().unwrap(),
-    );
+    let layer1_padding_snark = agg_prover
+        .load_or_gen_padding_snark(
+            "layer1",
+            real_chunk_hashes.last().unwrap(),
+            Some(&output_dir),
+        )
+        .unwrap();
     layer1_snarks.push(layer1_padding_snark);
     log::info!("Got layer1-padding-snark");
 
@@ -85,52 +86,54 @@ fn test_agg_prove_verify() {
         .into_iter()
         .enumerate()
         .map(|(i, snark)| {
-            load_or_gen_comp_snark(
-                &output_dir,
-                "agg_layer2",
-                &format!("layer2_{i}"),
-                false,
-                *AGG_LAYER2_DEGREE,
-                &mut prover,
-                snark,
-            )
+            zkevm_prover
+                .load_or_gen_comp_snark(
+                    &format!("layer2_{i}"),
+                    "layer2",
+                    false,
+                    *LAYER2_DEGREE,
+                    snark,
+                    Some(&output_dir),
+                )
+                .unwrap()
         })
         .collect();
-    log::info!("Got compression thin snarks (layer-2)");
+    log::info!("Got compression-thin-snarks (layer-2)");
 
     // Extend to MAX_AGG_SNARKS by copying the last padding snark.
-    let layer2_padding_snarks: Vec<_> = repeat(layer2_snarks.last().unwrap().clone())
-        .take(MAX_AGG_SNARKS - layer2_snarks.len())
-        .collect();
-    layer2_snarks.extend(layer2_padding_snarks);
+    layer2_snarks.extend(
+        repeat(layer2_snarks.last().unwrap().clone()).take(MAX_AGG_SNARKS - layer2_snarks.len()),
+    );
 
     // Load or generate aggregation snark (layer-3).
-    let layer3_snark = load_or_gen_agg_snark(
-        &output_dir,
-        "agg_layer3",
-        "layer3_0",
-        *AGG_LAYER3_DEGREE,
-        &mut prover,
-        &real_chunk_hashes,
-        &layer2_snarks,
-    );
-    log::info!("Got aggregation snark (layer-3)");
+    let layer3_snark = agg_prover
+        .load_or_gen_agg_snark(
+            "layer3_0",
+            "layer3",
+            *LAYER3_DEGREE,
+            &real_chunk_hashes,
+            &layer2_snarks,
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Got aggregation-snark (layer-3)");
 
     // Load or generate compression EVM proof (layer-4).
-    let proof = gen_comp_evm_proof(
-        &output_dir,
-        "agg_layer4",
-        "layer4_0",
-        false,
-        *AGG_LAYER4_DEGREE,
-        &mut prover,
-        layer3_snark,
-    );
-    log::info!("Got compression EVM proof (layer-4)");
+    let proof = agg_prover
+        .gen_comp_evm_proof(
+            "layer4_0",
+            "layer4",
+            false,
+            *LAYER4_DEGREE,
+            layer3_snark,
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Got compression-EVM-proof (layer-4)");
 
     // Construct verifier and EVM verify.
-    let params = prover.params(*AGG_LAYER4_DEGREE).clone();
-    let vk = prover.pk("layer4_0").unwrap().get_vk().clone();
+    let params = agg_prover.params(*LAYER4_DEGREE).clone();
+    let vk = agg_prover.pk("layer4").unwrap().get_vk().clone();
     let verifier = Verifier::new(params, Some(vk));
     let yul_file_path = format!("{output_dir}/agg_verifier.yul");
     verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));
