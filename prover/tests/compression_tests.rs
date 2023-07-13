@@ -74,7 +74,6 @@ fn test_comp_prove_verify() {
     // Construct verifier and EVM verify.
     let params = zkevm_prover.params(*LAYER2_DEGREE).clone();
     let verifier = Verifier::new(params, Some(vk2));
-    let yul_file_path = format!("{output_dir}/comp_verifier.yul");
-    verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));
+    verifier.evm_verify::<CompressionCircuit>(&proof, &output_dir);
     log::info!("Finish EVM verify");
 }

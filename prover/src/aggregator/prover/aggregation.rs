@@ -4,7 +4,7 @@ use crate::{
     utils::gen_rng,
 };
 use aggregator::{AggregationCircuit, BatchHash, ChunkHash};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use rand::Rng;
 use snark_verifier_sdk::Snark;
 use std::env::set_var;
@@ -25,7 +25,8 @@ impl Prover {
             real_and_padding_snarks,
             &mut rng,
             batch_hash,
-        );
+        )
+        .map_err(|err| anyhow!("Failed to construct aggregation circuit: {err:?}"))?;
 
         self.gen_snark(id, degree, &mut rng, circuit)
     }
