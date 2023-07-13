@@ -130,7 +130,7 @@ fn test_agg_prove_verify() {
 
     // Construct verifier and EVM verify.
     let params = prover.params(*AGG_LAYER4_DEGREE).clone();
-    let vk = prover.pk("agg_layer4").unwrap().get_vk().clone();
+    let vk = prover.pk("layer4_0").unwrap().get_vk().clone();
     let verifier = Verifier::new(params, Some(vk));
     let yul_file_path = format!("{output_dir}/agg_verifier.yul");
     verifier.evm_verify::<CompressionCircuit>(&proof, Some(Path::new(&yul_file_path)));

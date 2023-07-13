@@ -63,7 +63,7 @@ fn test_comp_prove_verify() {
     log::info!("Got compression EVM proof (layer-2)");
 
     // Test vk deserialization.
-    let vk1 = prover.pk("agg_layer2").unwrap().get_vk().clone();
+    let vk1 = prover.pk("layer2_0").unwrap().get_vk().clone();
     let raw_vk1 = serialize_vk(&vk1);
     let mut vk2 = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
         &mut Cursor::new(&raw_vk1),
