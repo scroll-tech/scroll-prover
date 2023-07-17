@@ -1,13 +1,13 @@
 use aggregator::CompressionCircuit;
 use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::VerifyingKey, SerdeFormat};
 use prover::{
-    aggregator::{Prover, Verifier},
+    common::{Prover, Verifier},
     config::{LAYER1_DEGREE, LAYER2_DEGREE, ZKEVM_DEGREES},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
-use std::{io::Cursor, path::Path};
+use std::io::Cursor;
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -23,17 +23,17 @@ fn test_comp_prove_verify() {
     let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
     log::info!("Got witness-block");
 
-    let mut zkevm_prover = Prover::from_params_dir(PARAMS_DIR, &*ZKEVM_DEGREES);
-    log::info!("Constructed zkevm-prover");
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*ZKEVM_DEGREES);
+    log::info!("Constructed prover");
 
     // Load or generate inner snark.
-    let inner_snark = zkevm_prover
+    let inner_snark = prover
         .load_or_gen_inner_snark("layer0", witness_block, Some(&output_dir))
         .unwrap();
     log::info!("Got inner-snark");
 
     // Load or generate compression wide snark (layer-1).
-    let layer1_snark = zkevm_prover
+    let layer1_snark = prover
         .load_or_gen_comp_snark(
             "layer1_0",
             "layer1",
@@ -46,7 +46,7 @@ fn test_comp_prove_verify() {
     log::info!("Got compression-wide-snark (layer-1)");
 
     // Load or generate compression EVM proof (layer-2).
-    let proof = zkevm_prover
+    let proof = prover
         .gen_comp_evm_proof(
             "layer2_0",
             "layer2",
@@ -59,9 +59,9 @@ fn test_comp_prove_verify() {
     log::info!("Got compression-EVM-proof (layer-2)");
 
     // Test vk deserialization.
-    let vk1 = zkevm_prover.pk("layer2").unwrap().get_vk().clone();
+    let vk1 = prover.pk("layer2").unwrap().get_vk().clone();
     let raw_vk1 = serialize_vk(&vk1);
-    let mut vk2 = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
+    let vk2 = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
         &mut Cursor::new(&raw_vk1),
         SerdeFormat::Processed,
     )
@@ -72,7 +72,7 @@ fn test_comp_prove_verify() {
     log::error!("test - vk2 = {:#?}", vk2);
 
     // Construct verifier and EVM verify.
-    let params = zkevm_prover.params(*LAYER2_DEGREE).clone();
+    let params = prover.params(*LAYER2_DEGREE).clone();
     let verifier = Verifier::new(params, Some(vk2));
     verifier.evm_verify::<CompressionCircuit>(&proof, &output_dir);
     log::info!("Finish EVM verify");

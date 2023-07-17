@@ -1,13 +1,11 @@
 use aggregator::{CompressionCircuit, MAX_AGG_SNARKS};
 use prover::{
-    aggregator::{Prover, Verifier},
-    config::{
-        AGG_DEGREES, LAYER1_DEGREE, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE, ZKEVM_DEGREES,
-    },
+    common::{Prover, Verifier},
+    config::{AGG_DEGREES, LAYER1_DEGREE, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
-use std::{env::set_var, iter::repeat, path::Path};
+use std::{env::set_var, iter::repeat};
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -35,16 +33,15 @@ fn test_agg_prove_verify() {
     let real_chunk_hashes: Vec<_> = witness_blocks.iter().map(Into::into).collect();
     log::info!("Got real-chunk-hashes");
 
-    let mut zkevm_prover = Prover::from_params_dir(PARAMS_DIR, &*ZKEVM_DEGREES);
-    let mut agg_prover = Prover::from_params_dir(PARAMS_DIR, &*AGG_DEGREES);
-    log::info!("Constructed zkevm and aggregation provers");
+    let mut prover = Prover::from_params_dir(PARAMS_DIR, &*AGG_DEGREES);
+    log::info!("Constructed prover");
 
     // Load or generate real inner snarks.
     let inner_snarks: Vec<_> = witness_blocks
         .into_iter()
         .enumerate()
         .map(|(i, witness_block)| {
-            zkevm_prover
+            prover
                 .load_or_gen_inner_snark(&format!("layer0_{i}"), witness_block, Some(&output_dir))
                 .unwrap()
         })
@@ -56,7 +53,7 @@ fn test_agg_prove_verify() {
         .into_iter()
         .enumerate()
         .map(|(i, snark)| {
-            zkevm_prover
+            prover
                 .load_or_gen_comp_snark(
                     &format!("layer1_{i}"),
                     "layer1",
@@ -71,7 +68,7 @@ fn test_agg_prove_verify() {
     log::info!("Got compression-wide-snarks (layer-1)");
 
     // Load or generate layer-1 padding snark.
-    let layer1_padding_snark = agg_prover
+    let layer1_padding_snark = prover
         .load_or_gen_padding_snark(
             "layer1",
             real_chunk_hashes.last().unwrap(),
@@ -86,7 +83,7 @@ fn test_agg_prove_verify() {
         .into_iter()
         .enumerate()
         .map(|(i, snark)| {
-            zkevm_prover
+            prover
                 .load_or_gen_comp_snark(
                     &format!("layer2_{i}"),
                     "layer2",
@@ -106,7 +103,7 @@ fn test_agg_prove_verify() {
     );
 
     // Load or generate aggregation snark (layer-3).
-    let layer3_snark = agg_prover
+    let layer3_snark = prover
         .load_or_gen_agg_snark(
             "layer3_0",
             "layer3",
@@ -119,7 +116,7 @@ fn test_agg_prove_verify() {
     log::info!("Got aggregation-snark (layer-3)");
 
     // Load or generate compression EVM proof (layer-4).
-    let proof = agg_prover
+    let proof = prover
         .gen_comp_evm_proof(
             "layer4_0",
             "layer4",
@@ -132,8 +129,8 @@ fn test_agg_prove_verify() {
     log::info!("Got compression-EVM-proof (layer-4)");
 
     // Construct verifier and EVM verify.
-    let params = agg_prover.params(*LAYER4_DEGREE).clone();
-    let vk = agg_prover.pk("layer4").unwrap().get_vk().clone();
+    let params = prover.params(*LAYER4_DEGREE).clone();
+    let vk = prover.pk("layer4").unwrap().get_vk().clone();
     let verifier = Verifier::new(params, Some(vk));
     verifier.evm_verify::<CompressionCircuit>(&proof, &output_dir);
     log::info!("Finish EVM verify");
