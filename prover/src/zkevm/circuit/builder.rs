@@ -81,6 +81,7 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
 
     let t = Instant::now();
     let mut acc = Vec::new();
+    let mut n_txs = 0;
     let mut truncate_idx = block_traces.len();
     for (idx, block) in block_traces.iter().enumerate() {
         let usage = calculate_row_usage_of_trace(block)?;
@@ -103,7 +104,8 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
             rows,
             rows_and_names
         );
-        if *rows >= (1 << *INNER_DEGREE) - 256 {
+        n_txs += block.transactions.len();
+        if *rows >= (1 << *INNER_DEGREE) - 256 || n_txs >= MAX_TXS {
             log::warn!("truncate blocks [{}..{})", idx, block_traces_len);
             truncate_idx = idx;
             break;
@@ -169,7 +171,10 @@ pub fn update_state(
     Ok(())
 }
 
-pub fn block_traces_to_witness_block(block_traces: &[BlockTrace], light_mode: bool) -> Result<Block<Fr>> {
+pub fn block_traces_to_witness_block(
+    block_traces: &[BlockTrace],
+    light_mode: bool,
+) -> Result<Block<Fr>> {
     log::debug!(
         "block_traces_to_witness_block, input len {:?}",
         block_traces.len()
