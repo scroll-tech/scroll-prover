@@ -25,7 +25,7 @@ impl Prover {
         let original_block_len = block_traces.len();
         let mut block_traces = block_traces.to_vec();
         check_batch_capacity(&mut block_traces)?;
-        let witness_block = block_traces_to_witness_block(&block_traces)?;
+        let witness_block = block_traces_to_witness_block(&block_traces, false)?;
         log::info!(
             "mock proving batch of len {}, batch metric {:?}",
             original_block_len,

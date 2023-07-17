@@ -27,7 +27,7 @@ pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
 
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>> {
-    let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
+    let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace), true)?;
     calculate_row_usage_of_witness_block(&witness_block)
 }
 
@@ -169,7 +169,7 @@ pub fn update_state(
     Ok(())
 }
 
-pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
+pub fn block_traces_to_witness_block(block_traces: &[BlockTrace], light_mode: bool) -> Result<Block<Fr>> {
     log::debug!(
         "block_traces_to_witness_block, input len {:?}",
         block_traces.len()
@@ -180,8 +180,8 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
         block_traces[0].storage_trace.root_before
     };
     let mut state = ZktrieState::construct(old_root);
-    update_state(&mut state, block_traces, false)?;
-    block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)
+    update_state(&mut state, block_traces, light_mode)?;
+    block_traces_to_witness_block_with_updated_state(block_traces, &mut state, light_mode)
 }
 
 pub fn block_traces_to_witness_block_with_updated_state(

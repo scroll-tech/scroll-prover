@@ -131,7 +131,7 @@ impl Prover {
             // will return early if the check finds out the trace exceeds the circuit capacity
             check_batch_capacity(&mut block_traces)?;
 
-            let witness_block = block_traces_to_witness_block(&block_traces)?;
+            let witness_block = block_traces_to_witness_block(&block_traces, false)?;
             log::info!(
                 "proving the chunk: {:?}",
                 metric_of_witness_block(&witness_block)
