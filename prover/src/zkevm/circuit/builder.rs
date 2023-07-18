@@ -128,7 +128,7 @@ pub fn update_state(
     light_mode: bool,
 ) -> Result<()> {
     log::debug!("building partial statedb");
-    let account_proofs = block_traces.iter().rev().flat_map(|block| {
+    let account_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("account proof for block {:?}:", block.header.number);
         block.storage_trace.proofs.iter().flat_map(|kv_map| {
             kv_map
@@ -136,7 +136,7 @@ pub fn update_state(
                 .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
         })
     });
-    let storage_proofs = block_traces.iter().rev().flat_map(|block| {
+    let storage_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("storage proof for block {:?}:", block.header.number);
         block
             .storage_trace
@@ -148,7 +148,7 @@ pub fn update_state(
                     .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
             })
     });
-    let additional_proofs = block_traces.iter().rev().flat_map(|block| {
+    let additional_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("storage proof for block {:?}:", block.header.number);
         log::trace!("additional proof for block {:?}:", block.header.number);
         block
