@@ -102,10 +102,7 @@ impl CircuitCapacityChecker {
         }
         let traces = txs;
         let state = self.state.as_mut().unwrap();
-        //if self.row_usages.is_empty() {
-        // FIXME
         update_state(state, traces, self.light_mode)?;
-        //}
         let witness_block =
             block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
