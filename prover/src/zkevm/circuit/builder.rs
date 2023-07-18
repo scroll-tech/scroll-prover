@@ -126,10 +126,9 @@ pub fn update_state(
     zktrie_state: &mut ZktrieState,
     block_traces: &[BlockTrace],
     light_mode: bool,
-    overwrite: bool,
 ) -> Result<()> {
     log::debug!("building partial statedb");
-    let account_proofs = block_traces.iter().rev().flat_map(|block| {
+    let account_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("account proof for block {:?}:", block.header.number);
         block.storage_trace.proofs.iter().flat_map(|kv_map| {
             kv_map
@@ -137,7 +136,7 @@ pub fn update_state(
                 .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
         })
     });
-    let storage_proofs = block_traces.iter().rev().flat_map(|block| {
+    let storage_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("storage proof for block {:?}:", block.header.number);
         block
             .storage_trace
@@ -149,7 +148,7 @@ pub fn update_state(
                     .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
             })
     });
-    let additional_proofs = block_traces.iter().rev().flat_map(|block| {
+    let additional_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("storage proof for block {:?}:", block.header.number);
         log::trace!("additional proof for block {:?}:", block.header.number);
         block
@@ -162,7 +161,6 @@ pub fn update_state(
         account_proofs.clone(),
         storage_proofs.clone(),
         additional_proofs.clone(),
-        overwrite,
     )?;
     if !light_mode {
         zktrie_state.update_nodes_from_proofs(account_proofs, storage_proofs, additional_proofs)?;
@@ -182,7 +180,7 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
         block_traces[0].storage_trace.root_before
     };
     let mut state = ZktrieState::construct(old_root);
-    update_state(&mut state, block_traces, false, true)?;
+    update_state(&mut state, block_traces, false)?;
     block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)
 }
 

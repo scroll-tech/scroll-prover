@@ -38,11 +38,10 @@ fn test_load_params() {
     .unwrap();
 }
 
-#[ignore]
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
-    let trace_path = parse_trace_path_from_mode("multiple");
+    let trace_path = parse_trace_path_from_mode("multiswap");
     let batch = vec![get_block_trace_from_file(trace_path)];
     log::info!("estimating circuit rows tx by tx");
 

@@ -19,9 +19,9 @@ function simple_tests() {
 
 function replace_zkevm_circuits_branch() {
 	#FROM=feat/deploy_at_existed_acc
-	FROM=develop
-	TO=feat/state/ccc
-	gsed -i 's#zkevm-circuits.git", branch = "'$FROM'#zkevm-circuits.git", branch = "'$TO'#' */Cargo.toml
+	FROM=feat/state/ccc
+	TO=develop
+	sed -i 's#zkevm-circuits.git", branch = "'$FROM'#zkevm-circuits.git", branch = "'$TO'#' */Cargo.toml
 	cargo update -p zkevm-circuits
 	cargo update -p eth-types
 	git diff */Cargo.toml Cargo.lock
