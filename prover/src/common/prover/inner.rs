@@ -7,12 +7,14 @@ use crate::{
 };
 use anyhow::Result;
 use halo2_proofs::halo2curves::bn256::Fr;
+use rand::Rng;
 use snark_verifier_sdk::{gen_snark_shplonk, Snark};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 impl Prover {
     pub fn gen_inner_snark<C: TargetCircuit>(
         &mut self,
+        mut rng: impl Rng + Send,
         witness_block: &Block<Fr>,
     ) -> Result<Snark> {
         log::info!(
@@ -23,7 +25,7 @@ impl Prover {
         let (circuit, _instance) = C::from_witness_block(witness_block)?;
         let (params, pk) =
             self.params_and_pk(&C::name(), &C::dummy_inner_circuit(), *INNER_DEGREE)?;
-        let snark = gen_snark_shplonk(params, pk, circuit, &mut gen_rng(), None::<String>);
+        let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
 
         Ok(snark)
     }
@@ -43,7 +45,8 @@ impl Prover {
         match output_dir.and_then(|_| load_snark(&file_path).ok().flatten()) {
             Some(snark) => Ok(snark),
             None => {
-                let result = self.gen_inner_snark::<SuperCircuit>(&witness_block);
+                let rng = gen_rng();
+                let result = self.gen_inner_snark::<SuperCircuit>(rng, &witness_block);
                 if let (Some(_), Ok(snark)) = (output_dir, &result) {
                     write_snark(&file_path, snark);
                 }

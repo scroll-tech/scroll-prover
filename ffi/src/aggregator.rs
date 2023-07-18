@@ -1,9 +1,9 @@
 use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char, OUTPUT_DIR};
 use libc::c_char;
 use prover::{
-    aggregator::{ChunkHash, Prover, Verifier},
+    aggregator::{Prover, Verifier},
     utils::init_env_and_log,
-    Proof,
+    ChunkHash, Proof,
 };
 use std::{cell::OnceCell, fs::File, io::Read};
 
@@ -32,7 +32,7 @@ pub unsafe extern "C" fn init_agg_verifier(params_dir: *const c_char, vk_path: *
     f.read_to_end(&mut vk).unwrap();
 
     let params_dir = c_char_to_str(params_dir);
-    let verifier = Box::new(Verifier::from_params_dir(params_dir, Some(vk)));
+    let verifier = Box::new(Verifier::from_params_dir(params_dir, &vk));
 
     AGG_VERIFIER = Some(Box::leak(verifier));
 }
@@ -71,6 +71,6 @@ pub unsafe extern "C" fn verify_agg_proof(proof: *const c_char) -> c_char {
     let proof = c_char_to_vec(proof);
     let proof = serde_json::from_slice::<Proof>(proof.as_slice()).unwrap();
 
-    let verified = AGG_VERIFIER.unwrap().verify_agg_proof(proof).is_ok();
+    let verified = AGG_VERIFIER.unwrap().verify_agg_proof(proof);
     verified as c_char
 }

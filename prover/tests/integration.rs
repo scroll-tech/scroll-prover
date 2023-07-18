@@ -6,7 +6,7 @@ use prover::{
     utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
-        CircuitCapacityChecker, Prover, Verifier,
+        CircuitCapacityChecker, Prover,
     },
 };
 
@@ -202,7 +202,7 @@ fn test_vk_same() {
 }
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
-    /* TODO
+    /* TODO: verify inner proof.
         use std::time::Instant;
 
         init_env_and_log("integration");

@@ -18,7 +18,7 @@ pub static ZKEVM_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
 
 pub static AGG_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
     Vec::from_iter(HashSet::from([
-        *LAYER2_DEGREE,
+        *LAYER2_DEGREE, // For padding
         *LAYER3_DEGREE,
         *LAYER4_DEGREE,
     ]))

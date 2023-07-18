@@ -1,17 +1,14 @@
 use aggregator::CompressionCircuit;
-use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::VerifyingKey, SerdeFormat};
 use prover::{
     common::{Prover, Verifier},
     config::{LAYER1_DEGREE, LAYER2_DEGREE, ZKEVM_DEGREES},
-    io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
 };
-use std::io::Cursor;
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_comp_prove_verify() {
+fn test_chunk_prove_verify() {
     // Init, load block traces and construct prover.
 
     let output_dir = init_env_and_log("comp_tests");
@@ -58,22 +55,10 @@ fn test_comp_prove_verify() {
         .unwrap();
     log::info!("Got compression-EVM-proof (layer-2)");
 
-    // Test vk deserialization.
-    let vk1 = prover.pk("layer2").unwrap().get_vk().clone();
-    let raw_vk1 = serialize_vk(&vk1);
-    let vk2 = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
-        &mut Cursor::new(&raw_vk1),
-        SerdeFormat::Processed,
-    )
-    .unwrap();
-    let raw_vk2 = serialize_vk(&vk2);
-    assert_eq!(raw_vk1, raw_vk2);
-    log::error!("test - vk1 = {:#?}", vk1);
-    log::error!("test - vk2 = {:#?}", vk2);
-
     // Construct verifier and EVM verify.
     let params = prover.params(*LAYER2_DEGREE).clone();
-    let verifier = Verifier::new(params, Some(vk2));
+    let vk = proof.vk::<CompressionCircuit>();
+    let verifier = Verifier::new(params, vk);
     verifier.evm_verify::<CompressionCircuit>(&proof, &output_dir);
     log::info!("Finish EVM verify");
 }

@@ -32,7 +32,7 @@ pub unsafe extern "C" fn init_zkevm_verifier(params_dir: *const c_char, vk_path:
     f.read_to_end(&mut vk).unwrap();
 
     let params_dir = c_char_to_str(params_dir);
-    let verifier = Box::new(Verifier::from_params_dir(params_dir, Some(vk)));
+    let verifier = Box::new(Verifier::from_params_dir(params_dir, &vk));
 
     ZKEVM_VERIFIER = Some(Box::leak(verifier));
 }
@@ -75,6 +75,6 @@ pub unsafe extern "C" fn verify_chunk_proof(proof: *const c_char) -> c_char {
     let proof = c_char_to_vec(proof);
     let proof = serde_json::from_slice::<Proof>(proof.as_slice()).unwrap();
 
-    let verified = ZKEVM_VERIFIER.unwrap().verify_chunk_proof(proof).is_ok();
+    let verified = ZKEVM_VERIFIER.unwrap().verify_chunk_proof(proof);
     verified as c_char
 }

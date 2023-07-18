@@ -1,5 +1,4 @@
 use super::Prover;
-use crate::Proof;
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr, G1Affine},
@@ -7,7 +6,7 @@ use halo2_proofs::{
     poly::{commitment::Params, kzg::commitment::ParamsKZG},
 };
 use rand::Rng;
-use snark_verifier_sdk::{gen_evm_proof_shplonk, gen_snark_shplonk, CircuitExt, Snark};
+use snark_verifier_sdk::{gen_snark_shplonk, CircuitExt, Snark};
 
 impl Prover {
     pub fn gen_snark<C: CircuitExt<Fr>>(
@@ -20,22 +19,6 @@ impl Prover {
         let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
 
         Ok(gen_snark_shplonk(params, pk, circuit, rng, None::<String>))
-    }
-
-    pub fn gen_evm_proof<C: CircuitExt<Fr>>(
-        &mut self,
-        id: &str,
-        degree: u32,
-        rng: &mut (impl Rng + Send),
-        circuit: C,
-    ) -> Result<Proof> {
-        let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
-
-        let instances = circuit.instances();
-        let num_instance = circuit.num_instance();
-        let proof = gen_evm_proof_shplonk(params, pk, circuit, instances.clone(), rng);
-
-        Proof::new(pk, proof, &instances, Some(num_instance))
     }
 
     pub fn params(&mut self, degree: u32) -> &ParamsKZG<Bn256> {

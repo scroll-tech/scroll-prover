@@ -10,7 +10,7 @@ impl Verifier {
         &self.params
     }
 
-    pub fn vk(&self) -> Option<&VerifyingKey<G1Affine>> {
-        self.vk.as_ref()
+    pub fn vk(&self) -> &VerifyingKey<G1Affine> {
+        &self.vk
     }
 }

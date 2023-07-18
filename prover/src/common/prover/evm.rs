@@ -2,7 +2,9 @@ use super::Prover;
 use crate::{utils::gen_rng, Proof};
 use aggregator::CompressionCircuit;
 use anyhow::{anyhow, Result};
-use snark_verifier_sdk::Snark;
+use halo2_proofs::halo2curves::bn256::Fr;
+use rand::Rng;
+use snark_verifier_sdk::{gen_evm_proof_shplonk, CircuitExt, Snark};
 use std::{env::set_var, path::PathBuf};
 
 impl Prover {
@@ -28,5 +30,21 @@ impl Prover {
         }
 
         result
+    }
+
+    fn gen_evm_proof<C: CircuitExt<Fr>>(
+        &mut self,
+        id: &str,
+        degree: u32,
+        rng: &mut (impl Rng + Send),
+        circuit: C,
+    ) -> Result<Proof> {
+        let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
+
+        let instances = circuit.instances();
+        let num_instance = circuit.num_instance();
+        let proof = gen_evm_proof_shplonk(params, pk, circuit, instances.clone(), rng);
+
+        Proof::new(pk, proof, &instances, Some(num_instance))
     }
 }

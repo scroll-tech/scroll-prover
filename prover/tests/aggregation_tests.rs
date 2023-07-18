@@ -130,8 +130,8 @@ fn test_agg_prove_verify() {
 
     // Construct verifier and EVM verify.
     let params = prover.params(*LAYER4_DEGREE).clone();
-    let vk = prover.pk("layer4").unwrap().get_vk().clone();
-    let verifier = Verifier::new(params, Some(vk));
+    let vk = proof.vk::<CompressionCircuit>();
+    let verifier = Verifier::new(params, vk);
     verifier.evm_verify::<CompressionCircuit>(&proof, &output_dir);
     log::info!("Finish EVM verify");
 }

@@ -28,8 +28,6 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 `make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
 
-Besides it, `make test-inner-prove` could be used to test the first-level circuit, and `make-comp-prove` could be used to test two-layers compression circuits.
-
 ### Binaries
 
 This repository is designed to be used as a Rust crate, rather than a standalone running process. However, you can still use the following command to run binaries locally.

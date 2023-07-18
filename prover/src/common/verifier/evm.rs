@@ -12,11 +12,6 @@ use std::{path::PathBuf, str::FromStr};
 impl Verifier {
     // Should panic if failed to verify.
     pub fn evm_verify<C: CircuitExt<Fr>>(&self, proof: &Proof, output_dir: &str) {
-        let vk = match &self.vk {
-            Some(vk) => vk,
-            None => panic!("Verification key is missing"),
-        };
-
         let num_instance = proof.num_instance().expect("Not a EVM proof").clone();
 
         let mut yul_file_path = PathBuf::from_str(output_dir).unwrap();
@@ -25,7 +20,7 @@ impl Verifier {
         // Generate deployment code and dump YUL file.
         let deployment_code = gen_evm_verifier::<C, Kzg<Bn256, Bdfg21>>(
             &self.params,
-            vk,
+            &self.vk,
             num_instance,
             Some(yul_file_path.as_path()),
         );
