@@ -1,6 +1,6 @@
 use crate::{
     common,
-    config::{LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
+    config::{AGG_DEGREES, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
     Proof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
@@ -24,8 +24,8 @@ impl Prover {
         common::Prover::from_params(params_map).into()
     }
 
-    pub fn from_params_dir(params_dir: &str, degrees: &[u32]) -> Self {
-        common::Prover::from_params_dir(params_dir, degrees).into()
+    pub fn from_params_dir(params_dir: &str) -> Self {
+        common::Prover::from_params_dir(params_dir, &AGG_DEGREES).into()
     }
 
     pub fn gen_agg_proof(

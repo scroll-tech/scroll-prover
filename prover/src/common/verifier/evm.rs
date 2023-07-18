@@ -14,12 +14,12 @@ impl Verifier {
     pub fn evm_verify<C: CircuitExt<Fr>>(&self, proof: &Proof, output_dir: &str) {
         let vk = match &self.vk {
             Some(vk) => vk,
-            None => panic!("Aggregation verification key is missing"),
+            None => panic!("Verification key is missing"),
         };
 
         let num_instance = proof.num_instance().expect("Not a EVM proof").clone();
 
-        let mut yul_file_path = PathBuf::from_str(&output_dir).unwrap();
+        let mut yul_file_path = PathBuf::from_str(output_dir).unwrap();
         yul_file_path.push("evm_verifier.yul");
 
         // Generate deployment code and dump YUL file.
@@ -31,7 +31,7 @@ impl Verifier {
         );
 
         // Dump bytecode.
-        let mut output_dir = PathBuf::from_str(&output_dir).unwrap();
+        let mut output_dir = PathBuf::from_str(output_dir).unwrap();
         write_file(&mut output_dir, "evm_verifier.bin", &deployment_code);
 
         // Dump public input data.

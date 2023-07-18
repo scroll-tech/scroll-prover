@@ -1,4 +1,4 @@
-use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char};
+use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char, OUTPUT_DIR};
 use libc::c_char;
 use prover::{
     utils::init_env_and_log,
@@ -46,7 +46,7 @@ pub unsafe extern "C" fn create_block_proof(block_trace: *const c_char) -> *cons
     let proof = ZKEVM_PROVER
         .get_mut()
         .unwrap()
-        .gen_chunk_proof(&[block_trace])
+        .gen_chunk_proof(vec![block_trace], OUTPUT_DIR.as_deref())
         .unwrap();
 
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
@@ -62,7 +62,7 @@ pub unsafe extern "C" fn create_chunk_proof(block_traces: *const c_char) -> *con
     let proof = ZKEVM_PROVER
         .get_mut()
         .unwrap()
-        .gen_chunk_proof(block_traces.as_slice())
+        .gen_chunk_proof(block_traces, OUTPUT_DIR.as_deref())
         .unwrap();
 
     let proof_bytes = serde_json::to_vec(&proof).unwrap();

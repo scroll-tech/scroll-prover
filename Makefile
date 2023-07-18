@@ -39,9 +39,6 @@ test-inner-prove:
 	@cargo test --features prove_verify --release test_inner_prove_verify
 
 test-chunk-prove:
-	@cargo test --features prove_verify --release test_chunk_prove_verify
-
-test-comp-prove:
 	@cargo test --features prove_verify --release test_comp_prove_verify
 
 test-agg-prove:

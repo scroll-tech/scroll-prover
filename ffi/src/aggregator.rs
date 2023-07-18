@@ -2,7 +2,6 @@ use crate::utils::{c_char_to_str, c_char_to_vec, vec_to_c_char, OUTPUT_DIR};
 use libc::c_char;
 use prover::{
     aggregator::{ChunkHash, Prover, Verifier},
-    config::{AGG_DEGREES, LAYER4_DEGREE},
     utils::init_env_and_log,
     Proof,
 };
@@ -18,7 +17,7 @@ pub unsafe extern "C" fn init_agg_prover(params_dir: *const c_char) {
 
     let params_dir = c_char_to_str(params_dir);
 
-    let prover = Prover::from_params_dir(params_dir, &AGG_DEGREES);
+    let prover = Prover::from_params_dir(params_dir);
     AGG_PROVER.set(prover).unwrap();
 }
 
@@ -33,11 +32,7 @@ pub unsafe extern "C" fn init_agg_verifier(params_dir: *const c_char, vk_path: *
     f.read_to_end(&mut vk).unwrap();
 
     let params_dir = c_char_to_str(params_dir);
-    let verifier = Box::new(Verifier::from_params_dir(
-        params_dir,
-        *LAYER4_DEGREE,
-        Some(vk),
-    ));
+    let verifier = Box::new(Verifier::from_params_dir(params_dir, Some(vk)));
 
     AGG_VERIFIER = Some(Box::leak(verifier));
 }

@@ -1,16 +1,10 @@
-use crate::{
-    config::{LAYER1_DEGREE, LAYER2_DEGREE},
-    utils::{chunk_trace_to_witness_block, load_params, param_path_for_degree},
-    Proof,
-};
-use anyhow::Result;
+use crate::utils::{load_params, param_path_for_degree};
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
     plonk::ProvingKey,
     poly::{commitment::Params, kzg::commitment::ParamsKZG},
 };
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use types::eth::BlockTrace;
 
 mod aggregation;
 mod compression;
@@ -71,52 +65,5 @@ impl Prover {
             params_map,
             pk_map: HashMap::new(),
         }
-    }
-
-    pub fn gen_chunk_proof(
-        &mut self,
-        chunk_trace: Vec<BlockTrace>,
-        output_dir: Option<&str>,
-    ) -> Result<Proof> {
-        assert!(!chunk_trace.is_empty());
-
-        let witness_block = chunk_trace_to_witness_block(chunk_trace)?;
-        log::info!("Got witness block");
-
-        let name = witness_block
-            .context
-            .first_or_default()
-            .number
-            .low_u64()
-            .to_string();
-
-        // Load or generate inner snark.
-        let inner_snark = self.load_or_gen_inner_snark(&name, witness_block, output_dir)?;
-        log::info!("Got inner snark: {name}");
-
-        // Load or generate compression wide snark (layer-1).
-        let layer1_snark = self.load_or_gen_comp_snark(
-            &name,
-            "layer1",
-            true,
-            *LAYER1_DEGREE,
-            inner_snark,
-            output_dir,
-        )?;
-        log::info!("Got compression wide snark (layer-1): {name}");
-
-        // Load or generate compression thin snark (layer-2).
-        let layer2_snark = self.load_or_gen_comp_snark(
-            &name,
-            "layer2",
-            false,
-            *LAYER2_DEGREE,
-            layer1_snark,
-            output_dir,
-        )?;
-        log::info!("Got compression thin snark (layer-2): {name}");
-
-        let pk = self.pk("layer2").unwrap();
-        Proof::from_snark(pk, &layer2_snark)
     }
 }
