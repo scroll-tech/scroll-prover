@@ -1,4 +1,4 @@
-pub mod aggregator;
+pub mod common;
 pub mod config;
 mod evm_verifier;
 pub mod io;
@@ -7,6 +7,7 @@ pub mod test_util;
 pub mod utils;
 pub mod zkevm;
 
+pub use common::ChunkHash;
 pub use evm_verifier::EvmVerifier;
 pub use proof::Proof;
 
