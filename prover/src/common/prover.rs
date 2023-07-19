@@ -10,6 +10,7 @@ mod aggregation;
 mod compression;
 mod evm;
 mod inner;
+mod mock;
 mod padding;
 mod utils;
 

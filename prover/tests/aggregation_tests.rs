@@ -71,6 +71,7 @@ fn test_agg_prove_verify() {
     let layer1_padding_snark = prover
         .load_or_gen_padding_snark(
             "layer1",
+            *LAYER1_DEGREE,
             real_chunk_hashes.last().unwrap(),
             Some(&output_dir),
         )

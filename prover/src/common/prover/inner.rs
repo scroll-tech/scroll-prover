@@ -22,9 +22,14 @@ impl Prover {
             metric_of_witness_block(witness_block)
         );
 
+        let id = C::name();
+        let degree = *INNER_DEGREE;
+
         let (circuit, _instance) = C::from_witness_block(witness_block)?;
-        let (params, pk) =
-            self.params_and_pk(&C::name(), &C::dummy_inner_circuit(), *INNER_DEGREE)?;
+
+        Self::assert_if_mock_prover(&id, degree, &circuit);
+
+        let (params, pk) = self.params_and_pk(&id, &C::dummy_inner_circuit(), degree)?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
 
         Ok(snark)

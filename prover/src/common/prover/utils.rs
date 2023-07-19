@@ -16,6 +16,8 @@ impl Prover {
         rng: &mut (impl Rng + Send),
         circuit: C,
     ) -> Result<Snark> {
+        Self::assert_if_mock_prover(id, degree, &circuit);
+
         let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
 
         Ok(gen_snark_shplonk(params, pk, circuit, rng, None::<String>))

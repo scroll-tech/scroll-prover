@@ -1,6 +1,6 @@
 use crate::{
     common,
-    config::{AGG_DEGREES, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
+    config::{AGG_DEGREES, LAYER1_DEGREE, LAYER2_DEGREE, LAYER3_DEGREE, LAYER4_DEGREE},
     Proof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
@@ -43,9 +43,12 @@ impl Prover {
             .to_string();
 
         // Load or generate padding snark (layer-1).
-        let layer1_padding_snark =
-            self.inner
-                .load_or_gen_padding_snark(&name, &last_real_chunk_hash, output_dir)?;
+        let layer1_padding_snark = self.inner.load_or_gen_padding_snark(
+            &name,
+            *LAYER1_DEGREE,
+            &last_real_chunk_hash,
+            output_dir,
+        )?;
         log::info!("Got padding snark (layer-1): {name}");
 
         // Load or generate compression thin snark for padding (layer-2).

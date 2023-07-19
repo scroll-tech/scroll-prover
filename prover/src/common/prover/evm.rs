@@ -39,6 +39,8 @@ impl Prover {
         rng: &mut (impl Rng + Send),
         circuit: C,
     ) -> Result<Proof> {
+        Self::assert_if_mock_prover(id, degree, &circuit);
+
         let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
 
         let instances = circuit.instances();
