@@ -4,5 +4,5 @@ mod prover;
 mod verifier;
 
 pub use self::prover::Prover;
-pub use capacity_checker::CircuitCapacityChecker;
+pub use capacity_checker::{CircuitCapacityChecker, RowUsage, SubCircuitRowUsage};
 pub use verifier::Verifier;
