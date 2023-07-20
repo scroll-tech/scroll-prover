@@ -9,8 +9,6 @@ use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use std::collections::BTreeMap;
 use types::eth::BlockTrace;
 
-mod mock;
-
 #[derive(Debug)]
 pub struct Prover {
     inner: common::Prover,

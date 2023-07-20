@@ -1,6 +1,7 @@
 pub mod common;
 pub mod config;
 mod evm_verifier;
+pub mod inner;
 pub mod io;
 pub mod proof;
 pub mod test_util;
