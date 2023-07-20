@@ -22,6 +22,8 @@ impl Prover {
         degree: u32,
         prev_snark: Snark,
     ) -> Result<(&ParamsKZG<Bn256>, &ProvingKey<G1Affine>)> {
+        set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
+
         let rng = gen_rng();
         let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, rng)
             .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
