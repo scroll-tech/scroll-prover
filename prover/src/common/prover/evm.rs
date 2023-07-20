@@ -55,7 +55,7 @@ impl Prover {
     ) -> Result<Proof> {
         Self::assert_if_mock_prover(id, degree, &circuit);
 
-        let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
+        let (params, pk) = self.params_and_pk(id, degree, &circuit)?;
 
         let instances = circuit.instances();
         let num_instance = circuit.num_instance();

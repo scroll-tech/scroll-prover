@@ -5,11 +5,30 @@ use crate::{
 };
 use aggregator::CompressionCircuit;
 use anyhow::{anyhow, Result};
+use halo2_proofs::{
+    halo2curves::bn256::{Bn256, G1Affine},
+    plonk::ProvingKey,
+    poly::kzg::commitment::ParamsKZG,
+};
 use rand::Rng;
 use snark_verifier_sdk::Snark;
 use std::env::set_var;
 
 impl Prover {
+    pub fn comp_params_and_pk(
+        &mut self,
+        id: &str,
+        is_fresh: bool,
+        degree: u32,
+        prev_snark: Snark,
+    ) -> Result<(&ParamsKZG<Bn256>, &ProvingKey<G1Affine>)> {
+        let rng = gen_rng();
+        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, rng)
+            .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+
+        self.params_and_pk(id, degree, &circuit)
+    }
+
     pub fn gen_comp_snark(
         &mut self,
         id: &str,

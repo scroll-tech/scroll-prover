@@ -18,7 +18,7 @@ impl Prover {
     ) -> Result<Snark> {
         Self::assert_if_mock_prover(id, degree, &circuit);
 
-        let (params, pk) = self.params_and_pk(id, &circuit, degree)?;
+        let (params, pk) = self.params_and_pk(id, degree, &circuit)?;
 
         Ok(gen_snark_shplonk(params, pk, circuit, rng, None::<String>))
     }
@@ -52,8 +52,8 @@ impl Prover {
     pub fn params_and_pk<C: Circuit<Fr>>(
         &mut self,
         id: &str,
-        circuit: &C,
         degree: u32,
+        circuit: &C,
     ) -> Result<(&ParamsKZG<Bn256>, &ProvingKey<G1Affine>)> {
         // Reuse pk.
         if self.pk_map.contains_key(id) {

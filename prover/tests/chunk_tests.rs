@@ -28,6 +28,14 @@ fn test_chunk_prove_verify() {
         .load_or_gen_last_snark(test_name, witness_block, Some(&output_dir))
         .unwrap();
 
+    // Generate params and pk for verification. Since layer-2 snark may be
+    // loaded from file.
+    prover
+        .inner
+        .comp_params_and_pk("layer2", false, *LAYER2_DEGREE, layer1_snark.clone())
+        .unwrap();
+    log::info!("Got params and pk of layer-2");
+
     // Load or generate compression thin snark (layer-2).
     let layer2_snark = prover
         .inner
