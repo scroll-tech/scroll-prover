@@ -8,7 +8,7 @@ use snark_verifier_sdk::{gen_evm_proof_shplonk, CircuitExt, Snark};
 use std::{env::set_var, path::PathBuf};
 
 impl Prover {
-    pub fn gen_comp_evm_proof(
+    pub fn load_or_gen_comp_evm_proof(
         &mut self,
         name: &str,
         id: &str,
@@ -17,19 +17,33 @@ impl Prover {
         prev_snark: Snark,
         output_dir: Option<&str>,
     ) -> Result<Proof> {
-        set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
+        let file_path = format!(
+            "{}/{}_full_proof.json",
+            output_dir.unwrap_or_default(),
+            name
+        );
 
-        let mut rng = gen_rng();
-        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
-            .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+        match output_dir.and_then(|_| Proof::from_json_file(&file_path).ok().flatten()) {
+            Some(proof) => Ok(proof),
+            None => {
+                set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
 
-        let result = self.gen_evm_proof(id, degree, &mut rng, circuit);
+                let mut rng = gen_rng();
+                let circuit =
+                    CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
+                        .map_err(|err| {
+                            anyhow!("Failed to construct compression circuit: {err:?}")
+                        })?;
 
-        if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
-            proof.dump(&mut PathBuf::from(output_dir), name)?;
+                let result = self.gen_evm_proof(id, degree, &mut rng, circuit);
+
+                if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+                    proof.dump(&mut PathBuf::from(output_dir), name)?;
+                }
+
+                result
+            }
         }
-
-        result
     }
 
     fn gen_evm_proof<C: CircuitExt<Fr>>(
