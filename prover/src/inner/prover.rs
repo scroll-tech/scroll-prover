@@ -1,19 +1,21 @@
 use crate::{
     common,
     config::INNER_DEGREE,
+    io::serialize_vk,
     utils::{chunk_trace_to_witness_block, gen_rng},
     zkevm::circuit::TargetCircuit,
+    Proof,
 };
 use anyhow::Result;
-use snark_verifier_sdk::Snark;
-use std::marker::PhantomData;
+use std::{marker::PhantomData, path::PathBuf};
 use types::eth::BlockTrace;
 
 mod mock;
 
 #[derive(Debug)]
 pub struct Prover<C: TargetCircuit> {
-    inner: common::Prover,
+    // Make it public for testing with inner functions (unnecessary for FFI).
+    pub inner: common::Prover,
     phantom: PhantomData<C>,
 }
 
@@ -31,12 +33,40 @@ impl<C: TargetCircuit> Prover<C> {
         common::Prover::from_params_dir(params_dir, &[*INNER_DEGREE]).into()
     }
 
-    pub fn gen_inner_snark(&mut self, block_traces: Vec<BlockTrace>) -> Result<Snark> {
-        assert!(!block_traces.is_empty());
+    pub fn load_or_gen_inner_proof(
+        &mut self,
+        name: &str,
+        id: &str,
+        block_traces: Vec<BlockTrace>,
+        output_dir: Option<&str>,
+    ) -> Result<Proof> {
+        let file_path = format!(
+            "{}/{}_full_proof.json",
+            output_dir.unwrap_or_default(),
+            name
+        );
 
-        let rng = gen_rng();
-        let witness_block = chunk_trace_to_witness_block(block_traces)?;
+        match output_dir.and_then(|_| Proof::from_json_file(&file_path).ok().flatten()) {
+            Some(proof) => Ok(proof),
+            None => {
+                assert!(!block_traces.is_empty());
 
-        self.inner.gen_inner_snark::<C>(rng, &witness_block)
+                let rng = gen_rng();
+                let witness_block = chunk_trace_to_witness_block(block_traces)?;
+                let result = self
+                    .inner
+                    .gen_inner_snark::<C>(id, rng, &witness_block)
+                    .and_then(|snark| {
+                        let raw_vk = serialize_vk(self.inner.pk(id).unwrap().get_vk());
+                        Proof::from_snark(&snark, raw_vk)
+                    });
+
+                if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+                    proof.dump(&mut PathBuf::from(output_dir), name)?;
+                }
+
+                result
+            }
+        }
     }
 }

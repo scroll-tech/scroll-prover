@@ -5,15 +5,15 @@ use halo2_proofs::{
     plonk::VerifyingKey,
     poly::kzg::commitment::ParamsKZG,
 };
+use std::env::set_var;
 
-#[derive(Debug)]
 pub struct Verifier {
     // Make it public for testing with inner functions (unnecessary for FFI).
-    pub inner: common::Verifier,
+    pub inner: common::Verifier<CompressionCircuit>,
 }
 
-impl From<common::Verifier> for Verifier {
-    fn from(inner: common::Verifier) -> Self {
+impl From<common::Verifier<CompressionCircuit>> for Verifier {
+    fn from(inner: common::Verifier<CompressionCircuit>) -> Self {
         Self { inner }
     }
 }
@@ -23,15 +23,13 @@ impl Verifier {
         common::Verifier::new(params, vk).into()
     }
 
-    pub fn from_params(params: ParamsKZG<Bn256>, raw_vk: &[u8]) -> Self {
-        common::Verifier::from_params(params, raw_vk).into()
-    }
-
     pub fn from_params_dir(params_dir: &str, vk: &[u8]) -> Self {
+        set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
+
         common::Verifier::from_params_dir(params_dir, *LAYER2_DEGREE, vk).into()
     }
 
     pub fn verify_chunk_proof(&self, proof: Proof) -> bool {
-        self.inner.verify_proof::<CompressionCircuit>(proof)
+        self.inner.verify_proof(proof)
     }
 }

@@ -9,9 +9,9 @@ use snark_verifier::{
 use snark_verifier_sdk::{evm_verify, gen_evm_verifier, CircuitExt};
 use std::{path::PathBuf, str::FromStr};
 
-impl Verifier {
+impl<C: CircuitExt<Fr>> Verifier<C> {
     // Should panic if failed to verify.
-    pub fn evm_verify<C: CircuitExt<Fr>>(&self, proof: &Proof, output_dir: &str) {
+    pub fn evm_verify(&self, proof: &Proof, output_dir: &str) {
         let num_instance = proof.num_instance().expect("Not a EVM proof").clone();
 
         let mut yul_file_path = PathBuf::from_str(output_dir).unwrap();

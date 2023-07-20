@@ -78,10 +78,7 @@ impl Proof {
         Ok(())
     }
 
-    pub fn from_snark(pk: &ProvingKey<G1Affine>, snark: &Snark) -> Result<Self> {
-        let mut vk = Vec::<u8>::new();
-        pk.get_vk().write(&mut vk, SerdeFormat::Processed)?;
-
+    pub fn from_snark(snark: &Snark, vk: Vec<u8>) -> Result<Self> {
         let instances = serialize_fr_matrix(snark.instances.as_slice());
         let instances = serde_json::to_vec(&instances)?;
 
@@ -103,6 +100,10 @@ impl Proof {
 
     pub fn proof(&self) -> &[u8] {
         &self.proof
+    }
+
+    pub fn raw_vk(&self) -> &[u8] {
+        &self.vk
     }
 
     pub fn vk<C: Circuit<Fr>>(&self) -> VerifyingKey<G1Affine> {

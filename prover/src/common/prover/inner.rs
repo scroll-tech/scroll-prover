@@ -14,6 +14,7 @@ use zkevm_circuits::evm_circuit::witness::Block;
 impl Prover {
     pub fn gen_inner_snark<C: TargetCircuit>(
         &mut self,
+        id: &str,
         mut rng: impl Rng + Send,
         witness_block: &Block<Fr>,
     ) -> Result<Snark> {
@@ -22,14 +23,13 @@ impl Prover {
             metric_of_witness_block(witness_block)
         );
 
-        let id = C::name();
         let degree = *INNER_DEGREE;
 
         let (circuit, _instance) = C::from_witness_block(witness_block)?;
 
-        Self::assert_if_mock_prover(&id, degree, &circuit);
+        Self::assert_if_mock_prover(id, degree, &circuit);
 
-        let (params, pk) = self.params_and_pk(&id, degree, &C::dummy_inner_circuit())?;
+        let (params, pk) = self.params_and_pk(id, degree, &C::dummy_inner_circuit())?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
 
         Ok(snark)
@@ -38,6 +38,7 @@ impl Prover {
     pub fn load_or_gen_inner_snark(
         &mut self,
         name: &str,
+        id: &str,
         witness_block: Block<Fr>,
         output_dir: Option<&str>,
     ) -> Result<Snark> {
@@ -51,7 +52,7 @@ impl Prover {
             Some(snark) => Ok(snark),
             None => {
                 let rng = gen_rng();
-                let result = self.gen_inner_snark::<SuperCircuit>(rng, &witness_block);
+                let result = self.gen_inner_snark::<SuperCircuit>(id, rng, &witness_block);
                 if let (Some(_), Ok(snark)) = (output_dir, &result) {
                     write_snark(&file_path, snark);
                 }

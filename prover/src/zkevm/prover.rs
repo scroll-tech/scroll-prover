@@ -1,6 +1,7 @@
 use crate::{
     common,
     config::{LAYER1_DEGREE, LAYER2_DEGREE, ZKEVM_DEGREES},
+    io::serialize_vk,
     utils::chunk_trace_to_witness_block,
     Proof,
 };
@@ -65,8 +66,11 @@ impl Prover {
         )?;
         log::info!("Got compression thin snark (layer-2): {name}");
 
-        let pk = self.inner.pk("layer2").unwrap();
-        Proof::from_snark(pk, &layer2_snark)
+        let raw_vk = self
+            .inner
+            .pk("layer2")
+            .map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
+        Proof::from_snark(&layer2_snark, raw_vk)
     }
 
     // Generate the previous snark before final proof.
@@ -78,9 +82,9 @@ impl Prover {
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         // Load or generate inner snark.
-        let inner_snark = self
-            .inner
-            .load_or_gen_inner_snark(name, witness_block, output_dir)?;
+        let inner_snark =
+            self.inner
+                .load_or_gen_inner_snark(name, "inner", witness_block, output_dir)?;
         log::info!("Got inner snark: {name}");
 
         // Load or generate compression wide snark (layer-1).
