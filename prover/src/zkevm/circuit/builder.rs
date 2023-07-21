@@ -301,7 +301,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode && !block_traces.is_empty() {
+    if !light_mode && zktrie_state.root() != &[0u8; 32] {
         log::debug!("block_apply_mpt_state");
         block_apply_mpt_state(&mut witness_block, zktrie_state);
         log::debug!("block_apply_mpt_state done");
