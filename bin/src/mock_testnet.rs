@@ -50,7 +50,7 @@ async fn main() {
                         .iter()
                         .map(|b| b.header.gas_used.as_u64())
                         .sum();
-                    let witness_block = block_traces_to_witness_block(&block_traces)?;
+                    let witness_block = block_traces_to_witness_block(&block_traces, false)?;
                     let rows = calculate_row_usage_of_witness_block(&witness_block)?;
                     log::info!(
                         "rows of batch {}(block range {:?} to {:?}):",
