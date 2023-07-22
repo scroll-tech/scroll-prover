@@ -91,7 +91,7 @@ fn estimate_circuit_rows() {
 
 #[ignore = "prove_verify"]
 #[test]
-fn test_mock_prove() {
+fn test_mock_prove_padding() {
     init_env_and_log("integration");
     let block_traces = load_block_traces_for_test().1;
     let witness_block = block_traces_to_padding_witness_block(&block_traces).unwrap();
