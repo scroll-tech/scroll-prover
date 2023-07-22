@@ -1,98 +1,102 @@
+use aggregator::CompressionCircuit;
 use prover::{
-    io::{load_snark, write_file, write_snark},
+    config::LAYER2_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::init_env_and_log,
-    zkevm::{
-        circuit::{SuperCircuit, TargetCircuit},
-        Prover,
-    },
-    EvmVerifier,
+    utils::{chunk_trace_to_witness_block, init_env_and_log},
+    zkevm::{Prover, Verifier},
+    Proof,
 };
-use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
-use snark_verifier_sdk::{AggregationCircuit, CircuitExt};
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use snark_verifier_sdk::Snark;
+use std::env;
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_chunk_prove_verify() {
-    std::env::set_var("VERIFY_CONFIG", "./configs/verify_circuit.config");
-
     let output_dir = init_env_and_log("chunk_tests");
-    let mut output_path = PathBuf::from_str(&output_dir).unwrap();
-    log::info!("Inited ENV and created output-dir {output_dir}");
+    log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let block_traces = load_block_traces_for_test().1;
-    log::info!("Loaded block-traces");
+    let chunk_trace = load_block_traces_for_test().1;
+    log::info!("Loaded chunk trace");
 
-    // ====================================================
-    // A whole aggregation procedure takes the following steps
-    // 1. instantiation the parameters and the prover
-    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
-    //    convert block traces into
-    // 3. build an aggregation circuit proof
-    // 4. generate bytecode for evm to verify aggregation circuit proof
-    // 5. validate the proof with evm bytecode
-    // ====================================================
-    //
-    // 1. instantiation the parameters and the prover
-    //
+    let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
+    log::info!("Got witness block");
 
     let mut prover = Prover::from_params_dir(PARAMS_DIR);
-    log::info!("build prover");
+    log::info!("Constructed prover");
 
-    //
-    // 2. read inner circuit proofs (a.k.a. SNARKs) from previous dumped file or
-    //    convert block traces into
-    //
-    let inner_snark_file_path = format!("{}/{}_snark.json", output_dir, SuperCircuit::name());
-    let inner_snark = load_snark(&inner_snark_file_path)
-        .unwrap()
-        .unwrap_or_else(|| {
-            let snark = prover
-                .gen_inner_snark::<SuperCircuit>(block_traces.as_slice())
-                .unwrap();
+    // Load or generate compression wide snark (layer-1).
+    let layer1_snark = prover
+        .load_or_gen_last_snark("layer1", witness_block, Some(&output_dir))
+        .unwrap();
 
-            // Dump inner circuit proof.
-            write_snark(&inner_snark_file_path, &snark);
+    let (evm_proof, verifier) =
+        gen_and_verify_evm_proof(&output_dir, &mut prover, layer1_snark.clone());
 
-            snark
-        });
-    log::info!("got super circuit proof");
-
-    // sanity check: the inner proof is correct
-
-    // 3. build an aggregation circuit proof
-    let agg_circuit = AggregationCircuit::new(
-        &prover.chunk_params,
-        vec![inner_snark.clone()],
-        XorShiftRng::from_seed([0u8; 16]),
+    gen_and_verify_normal_proof(
+        &output_dir,
+        &mut prover,
+        &verifier,
+        evm_proof.raw_vk().to_vec(),
+        layer1_snark,
     );
+}
 
-    let chunk_proof = prover.gen_agg_evm_proof(vec![inner_snark]).unwrap();
+fn gen_and_verify_evm_proof(
+    output_dir: &str,
+    prover: &mut Prover,
+    layer1_snark: Snark,
+) -> (Proof, Verifier) {
+    // Load or generate compression EVM proof (layer-2).
+    let proof = prover
+        .inner
+        .load_or_gen_comp_evm_proof(
+            "evm",
+            "layer2",
+            false,
+            *LAYER2_DEGREE,
+            layer1_snark,
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Got compression-EVM-proof (layer-2)");
 
-    // Dump aggregation proof, vk and instance.
-    chunk_proof.dump(&mut output_path, &"chunk").unwrap();
+    env::set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
+    let vk = proof.vk::<CompressionCircuit>();
 
-    log::info!("finished aggregation generation");
+    let params = prover.inner.params(*LAYER2_DEGREE).clone();
+    let verifier = Verifier::new(params, vk);
+    log::info!("Constructed verifier");
 
-    // 4. generate bytecode for evm to verify aggregation circuit proof
-    let agg_vk = prover.chunk_pk.as_ref().unwrap().get_vk();
+    verifier.inner.evm_verify(&proof, &output_dir);
+    log::info!("Finish EVM verification");
 
-    // Create bytecode and dump yul-code.
-    let yul_file_path = format!("{}/verifier.yul", output_dir);
-    let deployment_code =
-        prover.create_evm_verifier_bytecode(&agg_circuit, agg_vk, Some(Path::new(&yul_file_path)));
+    (proof, verifier)
+}
 
-    // Dump bytecode.
-    write_file(&mut output_path, "verifier.bin", &deployment_code);
+fn gen_and_verify_normal_proof(
+    output_dir: &str,
+    prover: &mut Prover,
+    verifier: &Verifier,
+    raw_vk: Vec<u8>,
+    layer1_snark: Snark,
+) {
+    // Load or generate compression thin snark (layer-2).
+    let layer2_snark = prover
+        .inner
+        .load_or_gen_comp_snark(
+            "layer2",
+            "layer2",
+            false,
+            *LAYER2_DEGREE,
+            layer1_snark,
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Got compression thin snark (layer-2)");
 
-    log::info!("finished byte code generation");
+    let proof = Proof::from_snark(&layer2_snark, raw_vk).unwrap();
+    log::info!("Got normal proof");
 
-    // 5. validate the proof with evm bytecode
-    EvmVerifier::new(deployment_code).verify(agg_circuit.instances(), chunk_proof.proof().to_vec());
-    log::info!("end to end test completed");
+    assert!(verifier.verify_chunk_proof(proof));
+    log::info!("Finish normal verification");
 }

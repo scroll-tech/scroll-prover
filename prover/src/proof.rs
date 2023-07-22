@@ -1,9 +1,10 @@
-use crate::io::{deserialize_fr_matrix, serialize_fr_matrix, serialize_vk, write_file};
+use crate::io::{
+    deserialize_fr_matrix, deserialize_vk, serialize_fr_matrix, serialize_vk, write_file,
+};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
-    plonk::ProvingKey,
-    SerdeFormat,
+    plonk::{Circuit, ProvingKey, VerifyingKey},
 };
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier::{
@@ -77,10 +78,7 @@ impl Proof {
         Ok(())
     }
 
-    pub fn from_snark(pk: &ProvingKey<G1Affine>, snark: &Snark) -> Result<Self> {
-        let mut vk = Vec::<u8>::new();
-        pk.get_vk().write(&mut vk, SerdeFormat::Processed)?;
-
+    pub fn from_snark(snark: &Snark, vk: Vec<u8>) -> Result<Self> {
         let instances = serialize_fr_matrix(snark.instances.as_slice());
         let instances = serde_json::to_vec(&instances)?;
 
@@ -102,6 +100,14 @@ impl Proof {
 
     pub fn proof(&self) -> &[u8] {
         &self.proof
+    }
+
+    pub fn raw_vk(&self) -> &[u8] {
+        &self.vk
+    }
+
+    pub fn vk<C: Circuit<Fr>>(&self) -> VerifyingKey<G1Affine> {
+        deserialize_vk::<C>(&self.vk)
     }
 
     pub fn instances(&self) -> Vec<Vec<Fr>> {
