@@ -15,7 +15,7 @@ use prover::{
             block_traces_to_padding_witness_block,
             block_traces_to_witness_block_with_updated_state, SuperCircuit, TargetCircuit,
         },
-        CircuitCapacityChecker, Prover, Verifier,
+        CircuitCapacityChecker,
     },
 };
 use zkevm_circuits::util::SubCircuit;
