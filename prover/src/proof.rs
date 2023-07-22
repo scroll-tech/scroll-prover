@@ -1,9 +1,10 @@
-use crate::io::{deserialize_fr_matrix, serialize_fr_matrix, serialize_vk, write_file};
+use crate::io::{
+    deserialize_fr_matrix, deserialize_vk, serialize_fr_matrix, serialize_vk, write_file,
+};
 use anyhow::Result;
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
     plonk::{Circuit, ProvingKey, VerifyingKey},
-    SerdeFormat,
 };
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier::{
@@ -16,7 +17,6 @@ use snark_verifier::{
 use snark_verifier_sdk::Snark;
 use std::{
     fs::File,
-    io::Cursor,
     path::{Path, PathBuf},
 };
 use types::base64;
@@ -107,8 +107,7 @@ impl Proof {
     }
 
     pub fn vk<C: Circuit<Fr>>(&self) -> VerifyingKey<G1Affine> {
-        VerifyingKey::<G1Affine>::read::<_, C>(&mut Cursor::new(&self.vk), SerdeFormat::Processed)
-            .unwrap()
+        deserialize_vk::<C>(&self.vk)
     }
 
     pub fn instances(&self) -> Vec<Vec<Fr>> {

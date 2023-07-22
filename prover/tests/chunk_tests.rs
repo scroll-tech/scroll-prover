@@ -1,9 +1,5 @@
 use aggregator::CompressionCircuit;
-use halo2_proofs::{
-    halo2curves::bn256::G1Affine,
-    plonk::{keygen_vk, VerifyingKey},
-    SerdeFormat,
-};
+use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::VerifyingKey, SerdeFormat};
 use prover::{
     config::LAYER2_DEGREE,
     io::serialize_vk,
@@ -13,14 +9,12 @@ use prover::{
     Proof,
 };
 use snark_verifier_sdk::{verify_snark_shplonk, Snark};
-use std::io::Cursor;
-
-const TEST_NAME: &str = "chunk_tests";
+use std::{env, io::Cursor};
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_chunk_prove_verify() {
-    let output_dir = init_env_and_log(TEST_NAME);
+    let output_dir = init_env_and_log("chunk_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
     let chunk_trace = load_block_traces_for_test().1;
@@ -34,7 +28,7 @@ fn test_chunk_prove_verify() {
 
     // Load or generate compression wide snark (layer-1).
     let layer1_snark = prover
-        .load_or_gen_last_snark(TEST_NAME, witness_block, Some(&output_dir))
+        .load_or_gen_last_snark("layer1", witness_block, Some(&output_dir))
         .unwrap();
 
     let (evm_proof, verifier) =
@@ -58,7 +52,7 @@ fn gen_and_verify_evm_proof(
     let proof = prover
         .inner
         .load_or_gen_comp_evm_proof(
-            TEST_NAME,
+            "evm",
             "layer2",
             false,
             *LAYER2_DEGREE,
@@ -68,8 +62,10 @@ fn gen_and_verify_evm_proof(
         .unwrap();
     log::info!("Got compression-EVM-proof (layer-2)");
 
-    let params = prover.inner.params(*LAYER2_DEGREE).clone();
+    env::set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
     let vk = proof.vk::<CompressionCircuit>();
+
+    let params = prover.inner.params(*LAYER2_DEGREE).clone();
     let verifier = Verifier::new(params, vk);
     log::info!("Constructed verifier");
 
@@ -90,7 +86,7 @@ fn gen_and_verify_normal_proof(
     let layer2_snark = prover
         .inner
         .load_or_gen_comp_snark(
-            TEST_NAME,
+            "layer2",
             "layer2",
             false,
             *LAYER2_DEGREE,
@@ -100,35 +96,9 @@ fn gen_and_verify_normal_proof(
         .unwrap();
     log::info!("Got compression thin snark (layer-2)");
 
-    log::error!("gupeng - chunk_tests - 1 - pk.get_vk()");
-    let params = prover.inner.params(*LAYER2_DEGREE).clone();
-    let vk = prover.inner.pk("layer2").unwrap().get_vk();
-    log::error!("gupeng - original_vk = {:#?}", vk);
-    assert!(verify_snark_shplonk::<CompressionCircuit>(
-        &params,
-        layer2_snark.clone(),
-        &vk
-    ));
+    let proof = Proof::from_snark(&layer2_snark, raw_vk).unwrap();
+    log::info!("Got normal proof");
 
-    log::error!("gupeng - chunk_tests - 2 - serialize then read");
-    let raw_vk = serialize_vk(&vk);
-    let new_vk = VerifyingKey::<G1Affine>::read::<_, CompressionCircuit>(
-        &mut Cursor::new(raw_vk),
-        SerdeFormat::Processed,
-    )
-    .unwrap();
-    log::error!("gupeng - deserialized_vk = {:#?}", new_vk);
-    assert!(verify_snark_shplonk::<CompressionCircuit>(
-        &params,
-        layer2_snark,
-        &new_vk
-    ));
-
-    /*
-        let proof = Proof::from_snark(&layer2_snark, raw_vk).unwrap();
-        log::info!("Got normal proof");
-
-        assert!(verifier.verify_chunk_proof(proof));
-    */
+    assert!(verifier.verify_chunk_proof(proof));
     log::info!("Finish normal verification");
 }
