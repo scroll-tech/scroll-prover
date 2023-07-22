@@ -1,15 +1,13 @@
 use aggregator::CompressionCircuit;
-use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::VerifyingKey, SerdeFormat};
 use prover::{
     config::LAYER2_DEGREE,
-    io::serialize_vk,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm::{Prover, Verifier},
     Proof,
 };
-use snark_verifier_sdk::{verify_snark_shplonk, Snark};
-use std::{env, io::Cursor};
+use snark_verifier_sdk::Snark;
+use std::env;
 
 #[cfg(feature = "prove_verify")]
 #[test]
