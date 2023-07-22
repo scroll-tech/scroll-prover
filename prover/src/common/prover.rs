@@ -6,9 +6,11 @@ use halo2_proofs::{
 };
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
-mod chunk;
-mod common;
 mod compression;
+mod evm;
+mod inner;
+mod mock;
+mod utils;
 
 #[derive(Debug)]
 pub struct Prover {

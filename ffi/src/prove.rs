@@ -21,7 +21,11 @@ pub unsafe extern "C" fn init_prover(params_path: *const c_char, _seed_path: *co
 pub unsafe extern "C" fn create_block_proof(trace_char: *const c_char) -> *const c_char {
     let trace_vec = c_char_to_vec(trace_char);
     let trace = serde_json::from_slice::<BlockTrace>(&trace_vec).unwrap();
-    let proof = PROVER.get_mut().unwrap().gen_chunk_proof(&[trace]).unwrap();
+    let proof = PROVER
+        .get_mut()
+        .unwrap()
+        .gen_chunk_proof(vec![trace], None)
+        .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)
 }
@@ -34,7 +38,7 @@ pub unsafe extern "C" fn create_chunk_proof(trace_char: *const c_char) -> *const
     let proof = PROVER
         .get_mut()
         .unwrap()
-        .gen_chunk_proof(traces.as_slice())
+        .gen_chunk_proof(traces, None)
         .unwrap();
     let proof_bytes = serde_json::to_vec(&proof).unwrap();
     vec_to_c_char(proof_bytes)

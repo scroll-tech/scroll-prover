@@ -35,6 +35,9 @@ const MAX_BYTECODE: usize = 400_000;
 const MAX_MPT_ROWS: usize = 400_000;
 const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_RWS: usize = 1_000_000;
+const MAX_PRECOMPILE_EC_ADD: usize = 10;
+const MAX_PRECOMPILE_EC_MUL: usize = 10;
+const MAX_PRECOMPILE_EC_PAIRING: usize = 4;
 
 static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
 static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));

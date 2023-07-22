@@ -28,7 +28,7 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 `make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers could understand how the system works by reading the codes of this test.
 
-Besides it, `make test-inner-prove` could be used to test the first-level circuit, and `make-comp-prove` could be used to test two-layers compression circuits.
+Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 
 ### Binaries
 
