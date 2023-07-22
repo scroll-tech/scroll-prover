@@ -2,13 +2,11 @@ use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use itertools::Itertools;
 use prover::{
+    inner::Prover,
     utils::init_env_and_log,
-    zkevm::{
-        circuit::{
-            block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-            SUB_CIRCUIT_NAMES,
-        },
-        Prover,
+    zkevm::circuit::{
+        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+        SUB_CIRCUIT_NAMES,
     },
 };
 use reqwest::Url;
@@ -71,7 +69,7 @@ async fn main() {
                     );
                     Ok(())
                 } else {
-                    Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces)
+                    Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces)
                 }
             })();
             match result {

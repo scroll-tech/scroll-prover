@@ -47,7 +47,7 @@ fn main() {
 
     let now = Instant::now();
     let chunk_proof = prover
-        .gen_chunk_proof(traces.as_slice())
+        .gen_chunk_proof(traces, None)
         .expect("cannot generate chunk proof");
     info!(
         "finish generating chunk proof, elapsed: {:?}",

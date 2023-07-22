@@ -20,12 +20,12 @@ fn main() {
 
     let args = Args::parse();
     let chunk_vk = read_from_file(&args.vk_path);
-    let v = Verifier::from_params_dir(&args.params_path, Some(chunk_vk));
+    let v = Verifier::from_params_dir(&args.params_path, &chunk_vk);
 
     let proof_path = PathBuf::from("proof_data").join("chunk_full_proof.json");
     let proof_vec = read_from_file(&proof_path.to_string_lossy());
     let proof = serde_json::from_slice::<Proof>(proof_vec.as_slice()).unwrap();
-    let verified = v.verify_chunk_proof(proof).is_ok();
+    let verified = v.verify_chunk_proof(proof);
     info!("verify agg proof: {}", verified)
 }
 
