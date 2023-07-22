@@ -105,8 +105,14 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
             rows_and_names
         );
         n_txs += block.transactions.len();
-        if *rows >= (1 << *INNER_DEGREE) - 256 || n_txs >= MAX_TXS {
-            log::warn!("truncate blocks [{}..{})", idx, block_traces_len);
+        if *rows > (1 << *INNER_DEGREE) - 256 || n_txs > MAX_TXS {
+            log::warn!(
+                "truncate blocks [{}..{}), n_txs {}, rows {}",
+                idx,
+                block_traces_len,
+                n_txs,
+                rows
+            );
             truncate_idx = idx;
             break;
         }
@@ -124,12 +130,15 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
     Ok(())
 }
 
-pub fn update_state(
+pub fn fill_zktrie_state_from_proofs(
     zktrie_state: &mut ZktrieState,
     block_traces: &[BlockTrace],
     light_mode: bool,
 ) -> Result<()> {
-    log::debug!("building partial statedb");
+    log::debug!(
+        "building partial statedb, old root {}",
+        hex::encode(zktrie_state.root())
+    );
     let account_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("account proof for block {:?}:", block.header.number);
         block.storage_trace.proofs.iter().flat_map(|kv_map| {
@@ -167,7 +176,10 @@ pub fn update_state(
     if !light_mode {
         zktrie_state.update_nodes_from_proofs(account_proofs, storage_proofs, additional_proofs)?;
     }
-    log::debug!("building partial statedb done");
+    log::debug!(
+        "building partial statedb done, root {}",
+        hex::encode(zktrie_state.root())
+    );
     Ok(())
 }
 
@@ -185,8 +197,28 @@ pub fn block_traces_to_witness_block(
         block_traces[0].storage_trace.root_before
     };
     let mut state = ZktrieState::construct(old_root);
-    update_state(&mut state, block_traces, light_mode)?;
+    fill_zktrie_state_from_proofs(&mut state, block_traces, light_mode)?;
     block_traces_to_witness_block_with_updated_state(block_traces, &mut state, light_mode)
+}
+
+pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
+    log::debug!(
+        "block_traces_to_padding_witness_block, input len {:?}",
+        block_traces.len()
+    );
+    let old_root = if block_traces.is_empty() {
+        eth_types::Hash::zero()
+    } else {
+        block_traces[0].storage_trace.root_before
+    };
+    let mut state = ZktrieState::construct(old_root);
+    fill_zktrie_state_from_proofs(&mut state, block_traces, false)?;
+
+    // the only purpose here it to get the updated zktrie state
+    let _witness_block =
+        block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?;
+
+    block_traces_to_witness_block_with_updated_state(&[], &mut state, false)
 }
 
 pub fn block_traces_to_witness_block_with_updated_state(
@@ -280,13 +312,16 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode && !block_traces.is_empty() {
+    if !light_mode && zktrie_state.root() != &[0u8; 32] {
         log::debug!("block_apply_mpt_state");
         block_apply_mpt_state(&mut witness_block, zktrie_state);
         log::debug!("block_apply_mpt_state done");
     }
     zktrie_state.set_state(builder.sdb.clone());
-    log::debug!("finish replay trie updates");
+    log::debug!(
+        "finish replay trie updates, root {}",
+        hex::encode(zktrie_state.root())
+    );
     Ok(witness_block)
 }
 

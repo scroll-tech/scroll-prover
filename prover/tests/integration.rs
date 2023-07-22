@@ -1,12 +1,19 @@
 use chrono::Utc;
-use halo2_proofs::{plonk::keygen_vk, SerdeFormat};
+use halo2_proofs::{
+    dev::MockProver,
+    plonk::{keygen_pk2, keygen_vk},
+    SerdeFormat,
+};
 use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_params},
     zkevm::{
-        circuit::{SuperCircuit, TargetCircuit},
+        circuit::{
+            block_traces_to_padding_witness_block,
+            block_traces_to_witness_block_with_updated_state, SuperCircuit, TargetCircuit,
+        },
         CircuitCapacityChecker, Prover, Verifier,
     },
 };
@@ -84,6 +91,23 @@ fn estimate_circuit_rows() {
     log::info!("estimating used rows for batch");
     let rows = SuperCircuit::estimate_rows(&block_trace);
     log::info!("super circuit: {:?}", rows);
+}
+
+#[ignore = "prove_verify"]
+#[test]
+fn test_mock_prove_padding() {
+    init_env_and_log("integration");
+    let block_traces = load_block_traces_for_test().1;
+    let witness_block = block_traces_to_padding_witness_block(&block_traces).unwrap();
+    let (circuit, instance) = SuperCircuit::from_witness_block(&witness_block).unwrap();
+    let prover = MockProver::<_>::run(*INNER_DEGREE, &circuit, instance).unwrap();
+    if let Err(errs) = prover.verify_par() {
+        log::error!("err num: {}", errs.len());
+        for err in &errs {
+            log::error!("{}", err);
+        }
+        panic!("mock prove failed");
+    }
 }
 
 #[cfg(feature = "prove_verify")]

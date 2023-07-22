@@ -11,9 +11,10 @@ pub use super_circuit::SuperCircuit;
 use crate::utils::read_env_var;
 
 pub use self::builder::{
-    block_traces_to_witness_block, block_traces_to_witness_block_with_updated_state,
-    calculate_row_usage_of_trace, calculate_row_usage_of_witness_block, check_batch_capacity,
-    update_state, SUB_CIRCUIT_NAMES,
+    block_traces_to_padding_witness_block, block_traces_to_witness_block,
+    block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
+    calculate_row_usage_of_witness_block, check_batch_capacity, fill_zktrie_state_from_proofs,
+    SUB_CIRCUIT_NAMES,
 };
 
 ////// params for degree = 19 ////////////
@@ -35,6 +36,9 @@ const MAX_BYTECODE: usize = 400_000;
 const MAX_MPT_ROWS: usize = 400_000;
 const MAX_KECCAK_ROWS: usize = 524_000;
 const MAX_RWS: usize = 1_000_000;
+const MAX_PRECOMPILE_EC_ADD: usize = 50;
+const MAX_PRECOMPILE_EC_MUL: usize = 50;
+const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
 
 static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
 static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
