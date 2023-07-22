@@ -9,10 +9,16 @@ use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SubCircuitRowUsage {
+    pub name: String,
+    pub row_number: usize,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RowUsage {
     pub is_ok: bool,
     pub row_number: usize,
-    pub row_usage_details: Vec<(String, usize)>,
+    pub row_usage_details: Vec<SubCircuitRowUsage>,
 }
 
 impl Default for RowUsage {
@@ -29,8 +35,12 @@ impl RowUsage {
             row_usage_details: Vec::new(),
         }
     }
-    pub fn from_row_usage_details(row_usage_details: Vec<(String, usize)>) -> Self {
-        let row_number = *row_usage_details.iter().map(|(_name, n)| n).max().unwrap();
+    pub fn from_row_usage_details(row_usage_details: Vec<SubCircuitRowUsage>) -> Self {
+        let row_number = row_usage_details
+            .iter()
+            .map(|x| x.row_number)
+            .max()
+            .unwrap();
         Self {
             row_usage_details,
             row_number,
@@ -43,14 +53,14 @@ impl RowUsage {
         } else {
             assert_eq!(self.row_usage_details.len(), other.row_usage_details.len());
             for i in 0..self.row_usage_details.len() {
-                self.row_usage_details[i].1 += other.row_usage_details[i].1;
+                self.row_usage_details[i].row_number += other.row_usage_details[i].row_number;
             }
         }
 
-        self.row_number = *self
+        self.row_number = self
             .row_usage_details
             .iter()
-            .map(|(_name, n)| n)
+            .map(|x| x.row_number)
             .max()
             .unwrap();
         self.is_ok = self.row_number < (1 << *INNER_DEGREE) - 256;
@@ -106,10 +116,11 @@ impl CircuitCapacityChecker {
         let witness_block =
             block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-        let row_usage_details: Vec<(String, usize)> = SUB_CIRCUIT_NAMES
+        let row_usage_details: Vec<SubCircuitRowUsage> = SUB_CIRCUIT_NAMES
             .into_iter()
             .map(|s| s.to_string())
             .zip_eq(rows.into_iter())
+            .map(|(name, row_number)| SubCircuitRowUsage { name, row_number })
             .collect_vec();
         let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());
