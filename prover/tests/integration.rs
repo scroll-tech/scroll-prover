@@ -1,7 +1,12 @@
 use chrono::Utc;
-use halo2_proofs::{dev::MockProver, plonk::keygen_vk, SerdeFormat};
+use halo2_proofs::{
+    dev::MockProver,
+    plonk::{keygen_pk2, keygen_vk},
+    SerdeFormat,
+};
 use prover::{
     config::INNER_DEGREE,
+    inner::{Prover, Verifier},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_params},
@@ -13,7 +18,6 @@ use prover::{
         CircuitCapacityChecker, Prover, Verifier,
     },
 };
-
 use zkevm_circuits::util::SubCircuit;
 
 #[ignore]
@@ -39,6 +43,24 @@ fn test_load_params() {
         Some(SerdeFormat::Processed),
     )
     .unwrap();
+}
+
+#[ignore]
+#[test]
+fn test_cs_same_for_vk_consistent() {
+    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
+    let dummy_circuit = SuperCircuit::dummy_inner_circuit();
+
+    let pk = keygen_pk2(&params, &dummy_circuit).unwrap();
+    let vk = keygen_vk(&params, &dummy_circuit).unwrap();
+    assert!(pk.get_vk().cs() == vk.cs(), "Dummy super cicuit");
+
+    let block_trace = load_block_traces_for_test().1;
+    let real_circuit = SuperCircuit::from_block_traces(&block_trace).unwrap().0;
+
+    let pk = keygen_pk2(&params, &real_circuit).unwrap();
+    let vk = keygen_vk(&params, &real_circuit).unwrap();
+    assert!(pk.get_vk().cs() == vk.cs(), "Real super circuit");
 }
 
 #[test]
@@ -111,7 +133,7 @@ fn test_mock_prove_padding() {
 fn test_mock_prove() {
     init_env_and_log("integration");
     let block_traces = load_block_traces_for_test().1;
-    Prover::mock_prove_target_circuit_batch::<SuperCircuit>(&block_traces).unwrap();
+    Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces).unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -223,33 +245,22 @@ fn test_vk_same() {
 }
 
 fn test_target_circuit_prove_verify<C: TargetCircuit>() {
-    use std::time::Instant;
+    let test_name = "inner_tests";
+    let output_dir = init_env_and_log(test_name);
+    log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    init_env_and_log("integration");
+    let chunk_trace = load_block_traces_for_test().1;
+    log::info!("Loaded chunk trace");
 
-    let (_, block_traces) = load_block_traces_for_test();
+    let mut prover = Prover::<C>::from_params_dir(PARAMS_DIR);
+    log::info!("Constructed prover");
 
-    log::info!("start generating {} snark", C::name());
-    let now = Instant::now();
-    let mut prover = Prover::from_params_dir(PARAMS_DIR);
-    log::info!("build prover");
-    let snark = prover
-        .gen_inner_snark::<C>(block_traces.as_slice())
+    let proof = prover
+        .load_or_gen_inner_proof(test_name, "inner", chunk_trace, Some(&output_dir))
         .unwrap();
-    log::info!("finish generating snark, elapsed: {:?}", now.elapsed());
+    log::info!("Got inner snark");
 
-    let output_file = format!(
-        "/tmp/{}_{}.json",
-        C::name(),
-        Utc::now().format("%Y%m%d_%H%M%S")
-    );
-    let mut fd = std::fs::File::create(&output_file).unwrap();
-    serde_json::to_writer_pretty(&mut fd, &snark).unwrap();
-    log::info!("write snark to {}", output_file);
-
-    log::info!("start verifying snark");
-    let now = Instant::now();
-    let mut verifier = Verifier::from_params_dir(PARAMS_DIR, None);
-    assert!(verifier.verify_inner_proof::<C>(&snark).is_ok());
-    log::info!("finish verifying snark, elapsed: {:?}", now.elapsed());
+    let verifier = Verifier::<C>::from_params_dir(PARAMS_DIR, None);
+    assert!(verifier.verify_inner_snark(proof.to_snark()));
+    log::info!("Finish inner snark verification");
 }

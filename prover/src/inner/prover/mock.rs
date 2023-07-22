@@ -1,22 +1,19 @@
-use super::{
-    super::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit},
-    Prover,
+use super::Prover;
+use crate::{
+    config::INNER_DEGREE,
+    utils::metric_of_witness_block,
+    zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity, TargetCircuit},
 };
-use crate::{config::INNER_DEGREE, utils::metric_of_witness_block};
 use anyhow::bail;
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
 use types::eth::BlockTrace;
 
-impl Prover {
-    pub fn mock_prove_target_circuit<C: TargetCircuit>(
-        block_trace: &BlockTrace,
-    ) -> anyhow::Result<()> {
-        Self::mock_prove_target_circuit_batch::<C>(&[block_trace.clone()])
+impl<C: TargetCircuit> Prover<C> {
+    pub fn mock_prove_target_circuit(block_trace: &BlockTrace) -> anyhow::Result<()> {
+        Self::mock_prove_target_circuit_batch(&[block_trace.clone()])
     }
 
-    pub fn mock_prove_target_circuit_batch<C: TargetCircuit>(
-        block_traces: &[BlockTrace],
-    ) -> anyhow::Result<()> {
+    pub fn mock_prove_target_circuit_batch(block_traces: &[BlockTrace]) -> anyhow::Result<()> {
         log::info!(
             "start mock prove {}, rows needed {:?}",
             C::name(),

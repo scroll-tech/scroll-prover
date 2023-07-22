@@ -1,7 +1,7 @@
 use anyhow;
 use halo2_proofs::{
     halo2curves::bn256::{Fq, Fr, G1Affine},
-    plonk::VerifyingKey,
+    plonk::{Circuit, VerifyingKey},
     SerdeFormat,
 };
 use num_bigint::BigUint;
@@ -86,6 +86,11 @@ pub fn serialize_vk(vk: &VerifyingKey<G1Affine>) -> Vec<u8> {
     let mut result = Vec::<u8>::new();
     vk.write(&mut result, SerdeFormat::Processed).unwrap();
     result
+}
+
+pub fn deserialize_vk<C: Circuit<Fr>>(raw_vk: &[u8]) -> VerifyingKey<G1Affine> {
+    VerifyingKey::<G1Affine>::read::<_, C>(&mut Cursor::new(raw_vk), SerdeFormat::Processed)
+        .unwrap()
 }
 
 pub fn write_verify_circuit_vk(folder: &mut PathBuf, verify_circuit_vk: &[u8]) {
