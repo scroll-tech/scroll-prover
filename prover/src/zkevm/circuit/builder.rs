@@ -5,7 +5,7 @@ use super::{
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
-    circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams},
+    circuit_input_builder::{self, BlockHead, CircuitInputBuilder, CircuitsParams, PrecompileEcParams},
     state_db::{Account, CodeDB, StateDB},
 };
 use eth_types::{evm_types::opcode_ids::OpcodeId, ToAddress, H256};
@@ -246,6 +246,11 @@ pub fn block_traces_to_witness_block_with_updated_state(
         max_exp_steps: MAX_EXP_STEPS,
         max_mpt_rows: MAX_MPT_ROWS,
         max_rlp_rows: MAX_CALLDATA,
+        max_ec_ops: PrecompileEcParams {
+            ec_add: 50,
+            ec_mul: 50,
+            ec_pairing: 2,
+        }
     };
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.chain_id = chain_id;
