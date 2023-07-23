@@ -7,6 +7,7 @@ use halo2_proofs::{
 };
 use std::env::set_var;
 
+#[derive(Debug)]
 pub struct Verifier {
     // Make it public for testing with inner functions (unnecessary for FFI).
     pub inner: common::Verifier<CompressionCircuit>,
