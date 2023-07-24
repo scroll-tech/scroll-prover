@@ -3,7 +3,7 @@ use prover::{
     utils::{get_block_trace_from_file, init_env_and_log},
     zkevm::Prover,
 };
-use std::{fs, path::PathBuf, time::Instant};
+use std::{env, fs, path::PathBuf, time::Instant};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -43,6 +43,8 @@ fn main() {
     }
 
     let now = Instant::now();
+    // For layer config files.
+    env::set_current_dir("./prover").unwrap();
     prover
         .gen_chunk_proof(traces, Some(&output_dir))
         .expect("cannot generate chunk proof");

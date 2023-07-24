@@ -1,6 +1,6 @@
 use clap::Parser;
 use prover::{io::read_all, utils::init_env_and_log, zkevm::Verifier, Proof};
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -25,6 +25,8 @@ fn main() {
     let proof = read_all(&proof_path.join("chunk_full_proof.json").to_string_lossy());
     let proof = serde_json::from_slice::<Proof>(&proof).unwrap();
 
+    // For layer config files.
+    env::set_current_dir("./prover").unwrap();
     let verified = verifier.verify_chunk_proof(proof);
     log::info!("verify chunk proof: {}", verified)
 }
