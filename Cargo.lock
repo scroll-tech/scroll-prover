@@ -225,7 +225,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
 name = "bin"
-version = "0.5.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1437,7 +1437,7 @@ dependencies = [
 
 [[package]]
 name = "ffi"
-version = "0.5.0"
+version = "0.4.0"
 dependencies = [
  "libc",
  "log",
