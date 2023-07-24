@@ -24,12 +24,12 @@ types = { path = "../types" }
 prover = { path = "../prover" }
 
 [[bin]]
-name = "prove"
-path = "src/prove.rs"
+name = "zkevm_prove"
+path = "src/zkevm_prove.rs"
 
 [[bin]]
-name = "verify"
-path = "src/verify.rs"
+name = "zkevm_verify"
+path = "src/zkevm_verify.rs"
 
 [[bin]]
 name = "mock_testnet"

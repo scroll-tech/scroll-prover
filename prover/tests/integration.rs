@@ -26,19 +26,19 @@ fn test_load_params() {
     init_env_and_log("integration");
     log::info!("start");
     load_params(
-        "/home/ubuntu/scroll-zkevm/prover/test_params",
+        "/home/ubuntu/scroll-prover/prover/test_params",
         26,
         Some(SerdeFormat::RawBytesUnchecked),
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/prover/test_params",
+        "/home/ubuntu/scroll-prover/prover/test_params",
         26,
         Some(SerdeFormat::RawBytes),
     )
     .unwrap();
     load_params(
-        "/home/ubuntu/scroll-zkevm/prover/test_params.old",
+        "/home/ubuntu/scroll-prover/prover/test_params.old",
         26,
         Some(SerdeFormat::Processed),
     )

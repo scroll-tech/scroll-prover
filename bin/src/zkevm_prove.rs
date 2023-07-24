@@ -1,29 +1,26 @@
 use clap::Parser;
-use log::info;
 use prover::{
     utils::{get_block_trace_from_file, init_env_and_log},
     zkevm::Prover,
 };
-use std::{fs, path::PathBuf, time::Instant};
+use std::{env, fs, path::PathBuf, time::Instant};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Get params and write into file.
-    #[clap(short, long = "params", default_value = "prover/test_params")]
+    #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
     /// Get BlockTrace from file or dir.
-    #[clap(
-        short,
-        long = "trace",
-        default_value = "prover/tests/traces/empty.json"
-    )]
+    #[clap(short, long = "trace", default_value = "tests/traces/empty.json")]
     trace_path: String,
 }
 
 fn main() {
-    init_env_and_log("prove");
-    std::env::set_var("VERIFY_CONFIG", "./prover/configs/verify_circuit.config");
+    // Layer config files are located in `./prover/configs`.
+    env::set_current_dir("./prover").unwrap();
+    let output_dir = init_env_and_log("bin_zkevm_prove");
+    log::info!("Initialized ENV and created output-dir {output_dir}");
 
     let args = Args::parse();
     let mut prover = Prover::from_params_dir(&args.params_path);
@@ -43,17 +40,12 @@ fn main() {
         traces.push(block_trace);
     }
 
-    let mut proof_dir = PathBuf::from("proof_data");
-
     let now = Instant::now();
-    let chunk_proof = prover
-        .gen_chunk_proof(traces, None)
+    prover
+        .gen_chunk_proof(traces, Some(&output_dir))
         .expect("cannot generate chunk proof");
-    info!(
+    log::info!(
         "finish generating chunk proof, elapsed: {:?}",
         now.elapsed()
     );
-
-    fs::create_dir_all(&proof_dir).unwrap();
-    chunk_proof.dump(&mut proof_dir, "chunk").unwrap();
 }

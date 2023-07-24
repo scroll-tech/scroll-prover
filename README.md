@@ -1,6 +1,6 @@
-# 📜 scroll-zkevm 📜
-[![Unit Test](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/scroll-zkevm/actions/workflows/unit_test.yml)
-![issues](https://img.shields.io/github/issues/scroll-tech/scroll-zkevm)
+# 📜 scroll-prover 📜
+[![Unit Test](https://github.com/scroll-tech/scroll-prover/actions/workflows/unit_test.yml/badge.svg)](https://github.com/scroll-tech/scroll-prover/actions/workflows/unit_test.yml)
+![issues](https://img.shields.io/github/issues/scroll-tech/scroll-prover)
 
 ## Usage
 
@@ -26,7 +26,7 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 ### Testing
 
-`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-zkevm. Developers could understand how the system works by reading the codes of this test.
+`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of this test.
 
 Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 
@@ -40,26 +40,30 @@ cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
 To move the zktrielib into a path where your linker could locate it.
 
-Run prover
+Run zkevm prover to generate chunk proof (the word-dir is `./prover`)
 ```shell
-cargo build --release --bin prove
+cargo build --release --bin zkevm_prove
 
-./target/release/prove --help
+./target/release/zkevm_prove --help
 ```
 Could specify arguments as
 ```shell
-cargo run --release --bin prove -- --params=./prover/test_params --trace=./prover/tests/traces/erc20/10_transfer.json
+# Proof data will be saved to `./prover/proof_data`.
+export OUTPUT_DIR="proof_data"
+
+# Params file should be located in `./prover/test_params`.
+cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/traces/erc20/10_transfer.json
 ```
 
-Run verifier
+Run zkevm verifier to verify chunk proof (the word-dir is `./prover`)
 ```shell
-cargo build --release --bin verify
+cargo build --release --bin zkevm_verify
 
-./target/release/verify --help
+./target/release/zkevm_verify --help
 ```
 Could specify arguments as
 ```shell
-cargo run --release --bin verify -- --params=./prover/test_params --vk=./proof_data/chunk.vkey
+cargo run --release --bin zkevm_verify -- --params=test_params --proof=proof_data
 ```
 
 ## License

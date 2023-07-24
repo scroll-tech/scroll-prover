@@ -43,8 +43,9 @@ impl Prover {
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         let file_path = format!(
-            "{}/inner_snark_{}.json",
+            "{}/inner_snark_{}_{}.json",
             output_dir.unwrap_or_default(),
+            id,
             name
         );
 

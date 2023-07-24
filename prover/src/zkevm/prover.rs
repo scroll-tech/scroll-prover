@@ -11,7 +11,7 @@ use halo2_proofs::{
     poly::kzg::commitment::ParamsKZG,
 };
 use snark_verifier_sdk::Snark;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 use types::eth::BlockTrace;
 use zkevm_circuits::evm_circuit::witness::Block;
 
@@ -70,7 +70,13 @@ impl Prover {
             .inner
             .pk("layer2")
             .map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
-        Proof::from_snark(&layer2_snark, raw_vk)
+
+        let result = Proof::from_snark(&layer2_snark, raw_vk);
+        if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+            proof.dump(&mut PathBuf::from(output_dir), "chunk")?;
+        }
+
+        result
     }
 
     // Generate the previous snark before final proof.
