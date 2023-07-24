@@ -12,11 +12,7 @@ struct Args {
     #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
     /// Get BlockTrace from file or dir.
-    #[clap(
-        short,
-        long = "trace",
-        default_value = "tests/traces/empty.json"
-    )]
+    #[clap(short, long = "trace", default_value = "tests/traces/empty.json")]
     trace_path: String,
 }
 
