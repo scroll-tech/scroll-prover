@@ -12,7 +12,11 @@ struct Args {
     #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
     /// Get BlockTrace from file or dir.
-    #[clap(short, long = "trace", default_value = "tests/traces/empty.json")]
+    #[clap(
+        short,
+        long = "trace",
+        default_value = "tests/traces/erc20/10_transfer.json"
+    )]
     trace_path: String,
 }
 
@@ -42,10 +46,10 @@ fn main() {
 
     let now = Instant::now();
     prover
-        .gen_chunk_proof(traces, Some(&output_dir))
-        .expect("cannot generate chunk proof");
+        .gen_chunk_snark(traces, Some("zkevm"), Some(&output_dir))
+        .expect("cannot generate chunk snark");
     log::info!(
-        "finish generating chunk proof, elapsed: {:?}",
+        "finish generating chunk snark, elapsed: {:?}",
         now.elapsed()
     );
 }

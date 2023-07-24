@@ -12,7 +12,7 @@ impl Prover {
         &mut self,
         name: &str,
         id: &str,
-        is_fresh: bool,
+        has_accumulator: bool,
         degree: u32,
         prev_snark: Snark,
         output_dir: Option<&str>,
@@ -30,11 +30,13 @@ impl Prover {
                 set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
 
                 let mut rng = gen_rng();
-                let circuit =
-                    CompressionCircuit::new(self.params(degree), prev_snark, is_fresh, &mut rng)
-                        .map_err(|err| {
-                            anyhow!("Failed to construct compression circuit: {err:?}")
-                        })?;
+                let circuit = CompressionCircuit::new(
+                    self.params(degree),
+                    prev_snark,
+                    has_accumulator,
+                    &mut rng,
+                )
+                .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
                 let result = self.gen_evm_proof(id, degree, &mut rng, circuit);
 

@@ -12,21 +12,21 @@ git submodule init
 git submodule update --checkout
 ```
 
-Download all setup params, degree `20` and `25` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
-Could only download params of degree `25`, but it may affect performance (when dowsizing to `20`).
+Download all setup params, degree `20` and `24` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
+Could only download params of degree `24`, but it may affect performance (when dowsizing to `20`).
 ```shell
 make download-setup -e degree=20
-make download-setup -e degree=25
+make download-setup -e degree=24
 ```
 Or specify other degree and target directory to download.
 ```shell
-# As default `degree=25` and `params_dir=./prover/test_params`.
+# As default `degree=24` and `params_dir=./prover/test_params`.
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
 
 ### Testing
 
-`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of this test.
+`make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
 
 Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 
