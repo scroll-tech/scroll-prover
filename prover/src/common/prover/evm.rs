@@ -18,8 +18,9 @@ impl Prover {
         output_dir: Option<&str>,
     ) -> Result<Proof> {
         let file_path = format!(
-            "{}/{}_full_proof.json",
+            "{}/evm_proof_{}_{}.json",
             output_dir.unwrap_or_default(),
+            id,
             name
         );
 
