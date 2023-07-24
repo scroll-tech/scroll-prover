@@ -8,7 +8,7 @@ struct Args {
     /// Get params from the file.
     #[clap(short, long = "params", default_value = "prover/test_params")]
     params_path: String,
-    /// Get vk from the file.
+    /// Get vk and proof from the folder.
     #[clap(long = "proof", default_value = "proof_data")]
     proof_path: String,
 }
