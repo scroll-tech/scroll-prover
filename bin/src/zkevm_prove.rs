@@ -9,18 +9,19 @@ use std::{env, fs, path::PathBuf, time::Instant};
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Get params and write into file.
-    #[clap(short, long = "params", default_value = "prover/test_params")]
+    #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
     /// Get BlockTrace from file or dir.
     #[clap(
         short,
         long = "trace",
-        default_value = "prover/tests/traces/empty.json"
+        default_value = "tests/traces/empty.json"
     )]
     trace_path: String,
 }
 
 fn main() {
+    env::set_current_dir("./prover").unwrap();
     let output_dir = init_env_and_log("bin_zkevm_prove");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
@@ -43,8 +44,6 @@ fn main() {
     }
 
     let now = Instant::now();
-    // For layer config files.
-    env::set_current_dir("./prover").unwrap();
     prover
         .gen_chunk_proof(traces, Some(&output_dir))
         .expect("cannot generate chunk proof");

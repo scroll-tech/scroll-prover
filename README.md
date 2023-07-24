@@ -40,7 +40,7 @@ cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
 To move the zktrielib into a path where your linker could locate it.
 
-Run zkevm prover to generate chunk proof
+Run zkevm prover to generate chunk proof (the word-dir is `./prover`)
 ```shell
 cargo build --release --bin zkevm_prove
 
@@ -48,12 +48,14 @@ cargo build --release --bin zkevm_prove
 ```
 Could specify arguments as
 ```shell
+# Proof data will be saved to `./prover/proof_data`.
 export OUTPUT_DIR="proof_data"
 
-cargo run --release --bin zkevm_prove -- --params=./prover/test_params --trace=./prover/tests/traces/erc20/10_transfer.json
+# Params file should be located in `./prover/test_params`.
+cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/traces/erc20/10_transfer.json
 ```
 
-Run zkevm verifier to verify chunk proof
+Run zkevm verifier to verify chunk proof (the word-dir is `./prover`)
 ```shell
 cargo build --release --bin zkevm_verify
 
@@ -61,7 +63,7 @@ cargo build --release --bin zkevm_verify
 ```
 Could specify arguments as
 ```shell
-cargo run --release --bin zkevm_verify -- --params=./prover/test_params --proof=./proof_data
+cargo run --release --bin zkevm_verify -- --params=test_params --proof=proof_data
 ```
 
 ## License

@@ -6,7 +6,7 @@ use std::{env, path::PathBuf};
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Get params from the file.
-    #[clap(short, long = "params", default_value = "prover/test_params")]
+    #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
     /// Get vk and proof from the folder.
     #[clap(long = "proof", default_value = "proof_data")]
@@ -14,6 +14,7 @@ struct Args {
 }
 
 fn main() {
+    env::set_current_dir("./prover").unwrap();
     init_env_and_log("bin_zkevm_verify");
 
     let args = Args::parse();
@@ -25,8 +26,6 @@ fn main() {
     let proof = read_all(&proof_path.join("chunk_full_proof.json").to_string_lossy());
     let proof = serde_json::from_slice::<Proof>(&proof).unwrap();
 
-    // For layer config files.
-    env::set_current_dir("./prover").unwrap();
     let verified = verifier.verify_chunk_proof(proof);
     log::info!("verify chunk proof: {}", verified)
 }
