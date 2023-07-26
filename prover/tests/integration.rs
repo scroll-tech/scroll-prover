@@ -75,7 +75,8 @@ fn test_capacity_checker() {
     log::info!("after whole block: {:?}", results);
 
     let mut checker = CircuitCapacityChecker::new();
-
+    let start_time = std::time::Instant::now();
+    let mut tx_num = 0;
     for (block_idx, block) in batch.iter().enumerate() {
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
@@ -95,9 +96,13 @@ fn test_capacity_checker() {
             let results = checker.estimate_circuit_capacity(&[tx_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
+        tx_num += block.transactions.len();
     }
-
     log::info!("capacity_checker test done");
+    log::info!(
+        "avg time each tx: {}ms",
+        start_time.elapsed().as_millis() as usize / tx_num
+    );
 }
 
 #[test]

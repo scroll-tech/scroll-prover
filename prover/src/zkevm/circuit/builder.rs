@@ -139,8 +139,9 @@ pub fn fill_zktrie_state_from_proofs(
     light_mode: bool,
 ) -> Result<()> {
     log::debug!(
-        "building partial statedb, old root {}",
-        hex::encode(zktrie_state.root())
+        "building partial statedb, old root {}, light_mode {}",
+        hex::encode(zktrie_state.root()),
+        light_mode
     );
     let account_proofs = block_traces.iter().flat_map(|block| {
         log::trace!("account proof for block {:?}:", block.header.number);
@@ -383,20 +384,27 @@ fn trace_code(
             }
             code_hash
         }
-        None => CodeDB::hash(&code),
+        None => {
+            let hash = CodeDB::hash(&code);
+            log::debug!(
+                "hash_code done: addr {addr:?}, size {}, hash {hash:?}",
+                &code.len()
+            );
+            hash
+        }
     };
 
-    let code = code.to_vec();
-
-    log::debug!(
-        "trace code addr {:?}, size {} hash {:?}",
-        addr,
-        code.len(),
-        code_hash
-    );
-    cdb.0.insert(code_hash, code);
-    log::debug!("trace code addr {:?} done", addr);
+    cdb.0.entry(code_hash).or_insert_with(|| {
+        log::trace!(
+            "trace code addr {:?}, size {} hash {:?}",
+            addr,
+            &code.len(),
+            code_hash
+        );
+        code.to_vec()
+    });
 }
+
 pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
     let mut cdb = CodeDB::new();
     log::debug!("building codedb");
