@@ -116,7 +116,7 @@ fn estimate_circuit_rows() {
     log::info!("super circuit: {:?}", rows);
 }
 
-#[ignore = "prove_verify"]
+#[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_padding() {
     init_env_and_log("integration");

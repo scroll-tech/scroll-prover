@@ -40,8 +40,8 @@ const MAX_PRECOMPILE_EC_ADD: usize = 50;
 const MAX_PRECOMPILE_EC_MUL: usize = 50;
 const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
 
-static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 0x82751));
-static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", true));
+static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 53077));
+static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", false));
 
 /// A target circuit trait is a wrapper of inner circuit, with convenient APIs for building
 /// circuits from traces.

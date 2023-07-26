@@ -11,17 +11,21 @@ use bus_mapping::{
     },
     state_db::{Account, CodeDB, StateDB},
 };
-use eth_types::{evm_types::opcode_ids::OpcodeId, ToAddress, H256};
+use eth_types::{evm_types::opcode_ids::OpcodeId, ToAddress, ToBigEndian, H256};
 use ethers_core::types::{Bytes, U256};
 use halo2_proofs::halo2curves::bn256::Fr;
 use is_even::IsEven;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
-use std::{collections::hash_map::Entry, time::Instant};
-use types::eth::{BlockTrace, EthBlock, ExecStep};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    time::Instant,
+};
+use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
 use zkevm_circuits::{
     evm_circuit::witness::{block_apply_mpt_state, block_convert, Block},
     util::SubCircuit,
+    witness::WithdrawProof,
 };
 
 pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
@@ -207,6 +211,17 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
         "block_traces_to_padding_witness_block, input len {:?}",
         block_traces.len()
     );
+    let chain_id = block_traces
+        .iter()
+        .map(|block_trace| block_trace.chain_id)
+        .next()
+        .unwrap_or(*CHAIN_ID);
+    if *CHAIN_ID != chain_id {
+        bail!(
+            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
+            *CHAIN_ID
+        );
+    }
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -216,9 +231,24 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     fill_zktrie_state_from_proofs(&mut state, block_traces, false)?;
 
     // the only purpose here it to get the updated zktrie state
-    let _witness_block =
+    let prev_witness_block =
         block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?;
 
+    // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
+    // storage proofs of prev block
+    let storage_trace = normalize_withdraw_proof(&prev_witness_block.mpt_updates.withdraw_proof);
+    log::debug!(
+        "withdraw proof {}",
+        serde_json::to_string_pretty(&storage_trace)?
+    );
+
+    let mut state = ZktrieState::construct(storage_trace.root_before);
+    let dummy_chunk_traces = vec![BlockTrace {
+        chain_id: *CHAIN_ID,
+        storage_trace,
+        ..Default::default()
+    }];
+    fill_zktrie_state_from_proofs(&mut state, &dummy_chunk_traces, false)?;
     block_traces_to_witness_block_with_updated_state(&[], &mut state, false)
 }
 
@@ -227,16 +257,17 @@ pub fn block_traces_to_witness_block_with_updated_state(
     zktrie_state: &mut ZktrieState,
     light_mode: bool, // light_mode used in row estimation
 ) -> Result<Block<Fr>> {
-    let chain_ids = block_traces
+    let chain_id = block_traces
         .iter()
         .map(|block_trace| block_trace.chain_id)
-        .collect::<Vec<_>>();
-
-    let chain_id = if !chain_ids.is_empty() {
-        chain_ids[0]
-    } else {
-        *CHAIN_ID
-    };
+        .next()
+        .unwrap_or(*CHAIN_ID);
+    if *CHAIN_ID != chain_id {
+        bail!(
+            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
+            *CHAIN_ID
+        );
+    }
 
     let mut state_db: StateDB = zktrie_state.state().clone();
 
@@ -473,4 +504,35 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
 
     log::debug!("building codedb done");
     Ok(cdb)
+}
+
+pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {
+    let address = *bus_mapping::l2_predeployed::message_queue::ADDRESS;
+    let key = *bus_mapping::l2_predeployed::message_queue::WITHDRAW_TRIE_ROOT_SLOT;
+    StorageTrace {
+        // Not typo! We are preparing `StorageTrace` for the dummy padding chunk
+        // So `post_state_root` of prev chunk will be `root_before` for new chunk
+        root_before: H256::from(proof.state_root.to_be_bytes()),
+        root_after: H256::from(proof.state_root.to_be_bytes()),
+        proofs: Some(HashMap::from([(
+            address,
+            proof
+                .account_proof
+                .iter()
+                .map(|b| b.clone().into())
+                .collect(),
+        )])),
+        storage_proofs: HashMap::from([(
+            address,
+            HashMap::from([(
+                key,
+                proof
+                    .storage_proof
+                    .iter()
+                    .map(|b| b.clone().into())
+                    .collect(),
+            )]),
+        )]),
+        deletion_proofs: Default::default(),
+    }
 }
