@@ -1,11 +1,8 @@
 use crate::{
-    common,
-    config::ZKEVM_DEGREES,
-    io::{serialize_vk, write_file},
-    utils::chunk_trace_to_witness_block,
+    common, config::ZKEVM_DEGREES, utils::chunk_trace_to_witness_block,
+    zkevm::circuit::normalize_withdraw_proof, ChunkProof,
 };
 use anyhow::Result;
-use snark_verifier_sdk::Snark;
 use types::eth::BlockTrace;
 
 #[derive(Debug)]
@@ -25,12 +22,12 @@ impl Prover {
         common::Prover::from_params_dir(params_dir, &ZKEVM_DEGREES).into()
     }
 
-    pub fn gen_chunk_snark(
+    pub fn gen_chunk_proof(
         &mut self,
         chunk_trace: Vec<BlockTrace>,
         name: Option<&str>,
         output_dir: Option<&str>,
-    ) -> Result<Snark> {
+    ) -> Result<ChunkProof> {
         assert!(!chunk_trace.is_empty());
 
         let witness_block = chunk_trace_to_witness_block(chunk_trace)?;
@@ -50,21 +47,22 @@ impl Prover {
 
         let snark = self
             .inner
-            .load_or_gen_final_chunk_snark(&name, witness_block, output_dir)?;
+            .load_or_gen_final_chunk_snark(&name, &witness_block, output_dir)?;
 
-        if let Some(output_dir) = output_dir {
-            let raw_vk = self
-                .inner
-                .pk("layer2")
-                .map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
+        match output_dir.and_then(|dir| ChunkProof::from_file(&name, dir).ok()) {
+            Some(proof) => Ok(proof),
+            None => {
+                let storage_trace =
+                    normalize_withdraw_proof(&witness_block.mpt_updates.withdraw_proof);
 
-            write_file(
-                &mut output_dir.into(),
-                &format!("chunk_{name}.vkey"),
-                &raw_vk,
-            );
+                let result = ChunkProof::new(snark, storage_trace, self.inner.pk("layer2"));
+
+                if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+                    proof.dump(&name, output_dir)?;
+                }
+
+                result
+            }
         }
-
-        Ok(snark)
     }
 }

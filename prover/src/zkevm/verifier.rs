@@ -1,11 +1,10 @@
-use crate::{common, config::LAYER2_DEGREE};
+use crate::{common, config::LAYER2_DEGREE, ChunkProof};
 use aggregator::CompressionCircuit;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
     plonk::VerifyingKey,
     poly::kzg::commitment::ParamsKZG,
 };
-use snark_verifier_sdk::Snark;
 use std::env;
 
 #[derive(Debug)]
@@ -31,7 +30,8 @@ impl Verifier {
         common::Verifier::from_params_dir(params_dir, *LAYER2_DEGREE, vk).into()
     }
 
-    pub fn verify_chunk_snark(&self, snark: Snark) -> bool {
+    pub fn verify_chunk_proof(&self, proof: ChunkProof) -> bool {
+        let snark = proof.to_snark_and_storage_trace().0;
         self.inner.verify_snark(snark)
     }
 }

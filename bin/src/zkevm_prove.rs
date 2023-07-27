@@ -46,7 +46,7 @@ fn main() {
 
     let now = Instant::now();
     prover
-        .gen_chunk_snark(traces, Some("zkevm"), Some(&output_dir))
+        .gen_chunk_proof(traces, Some("zkevm"), Some(&output_dir))
         .expect("cannot generate chunk snark");
     log::info!(
         "finish generating chunk snark, elapsed: {:?}",

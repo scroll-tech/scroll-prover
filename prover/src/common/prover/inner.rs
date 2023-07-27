@@ -39,7 +39,7 @@ impl Prover {
         &mut self,
         name: &str,
         id: &str,
-        witness_block: Block<Fr>,
+        witness_block: &Block<Fr>,
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         let file_path = format!(
@@ -53,7 +53,7 @@ impl Prover {
             Some(snark) => Ok(snark),
             None => {
                 let rng = gen_rng();
-                let result = self.gen_inner_snark::<SuperCircuit>(id, rng, &witness_block);
+                let result = self.gen_inner_snark::<SuperCircuit>(id, rng, witness_block);
                 if let (Some(_), Ok(snark)) = (output_dir, &result) {
                     write_snark(&file_path, snark);
                 }

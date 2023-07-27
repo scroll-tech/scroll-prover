@@ -26,7 +26,7 @@ fn test_chunk_prove_verify() {
     // Load or generate compression wide snark (layer-1).
     let layer1_snark = prover
         .inner
-        .load_or_gen_last_chunk_snark("layer1", witness_block, Some(&output_dir))
+        .load_or_gen_last_chunk_snark("layer1", &witness_block, Some(&output_dir))
         .unwrap();
 
     let verifier = gen_and_verify_evm_proof(&output_dir, &mut prover, layer1_snark.clone());
@@ -85,6 +85,6 @@ fn gen_and_verify_normal_proof(
         .unwrap();
     log::info!("Got compression thin snark (layer-2)");
 
-    assert!(verifier.verify_chunk_snark(layer2_snark));
+    assert!(verifier.inner.verify_snark(layer2_snark));
     log::info!("Finish normal verification");
 }

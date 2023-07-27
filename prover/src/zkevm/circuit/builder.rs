@@ -237,6 +237,10 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
     // storage proofs of prev block
     let storage_trace = normalize_withdraw_proof(&prev_witness_block.mpt_updates.withdraw_proof);
+    storage_trace_to_padding_witness_block(storage_trace)
+}
+
+pub fn storage_trace_to_padding_witness_block(storage_trace: StorageTrace) -> Result<Block<Fr>> {
     log::debug!(
         "withdraw proof {}",
         serde_json::to_string_pretty(&storage_trace)?

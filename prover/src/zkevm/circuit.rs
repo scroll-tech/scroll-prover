@@ -14,7 +14,7 @@ pub use self::builder::{
     block_traces_to_padding_witness_block, block_traces_to_witness_block,
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
     calculate_row_usage_of_witness_block, check_batch_capacity, fill_zktrie_state_from_proofs,
-    SUB_CIRCUIT_NAMES,
+    normalize_withdraw_proof, storage_trace_to_padding_witness_block, SUB_CIRCUIT_NAMES,
 };
 
 ////// params for degree = 19 ////////////

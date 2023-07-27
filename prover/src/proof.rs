@@ -21,6 +21,10 @@ use std::{
 };
 use types::base64;
 
+mod chunk;
+
+pub use chunk::ChunkProof;
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Proof {
     #[serde(with = "base64")]

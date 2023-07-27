@@ -4,11 +4,10 @@ use prover::{
     config::LAYER4_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
-    zkevm, ChunkHash, Proof,
+    zkevm, ChunkHash, ChunkProof, Proof,
 };
 use snark_verifier_sdk::Snark;
 use std::env;
-use types::eth::BlockTrace;
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -16,29 +15,19 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let mut zkevm_prover = zkevm::Prover::from_params_dir(PARAMS_DIR);
     let mut agg_prover = Prover::from_params_dir(PARAMS_DIR);
-    log::info!("Constructed zkevm and aggregation provers");
+    log::info!("Constructed aggregation prover");
 
     let trace_paths: Vec<_> = (2..=3)
         .map(|i| format!("./tests/traces/bridge/{i:02}.json"))
         .collect();
 
-    let (chunk_hashes_snarks, last_chunk_trace) = gen_chunk_hashes_snarks_and_last_trace(
-        &output_dir,
-        &mut zkevm_prover,
-        trace_paths.as_slice(),
-    );
+    let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, trace_paths.as_slice());
     log::info!("Generated chunk hashes and proofs");
 
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = agg_prover
-        .load_or_gen_last_agg_snark(
-            "agg",
-            chunk_hashes_snarks,
-            &last_chunk_trace,
-            Some(&output_dir),
-        )
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
         .unwrap();
 
     let (evm_proof, agg_verifier) =
@@ -113,11 +102,13 @@ fn gen_and_verify_normal_proof(
     log::info!("Finish normal verification");
 }
 
-fn gen_chunk_hashes_snarks_and_last_trace(
+fn gen_chunk_hashes_and_proofs(
     output_dir: &str,
-    zkevm_prover: &mut zkevm::Prover,
     trace_paths: &[String],
-) -> (Vec<(ChunkHash, Snark)>, Vec<BlockTrace>) {
+) -> Vec<(ChunkHash, ChunkProof)> {
+    let mut zkevm_prover = zkevm::Prover::from_params_dir(PARAMS_DIR);
+    log::info!("Constructed zkevm prover");
+
     let chunk_traces: Vec<_> = trace_paths
         .iter()
         .map(|trace_path| {
@@ -126,21 +117,17 @@ fn gen_chunk_hashes_snarks_and_last_trace(
         })
         .collect();
 
-    let last_chunk_trace = chunk_traces.last().unwrap().clone();
-
-    let chunk_hashes_snarks = chunk_traces
+    chunk_traces
         .into_iter()
         .map(|chunk_trace| {
             let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
             let chunk_hash = ChunkHash::from_witness_block(&witness_block, false);
 
-            let snark = zkevm_prover
-                .gen_chunk_snark(chunk_trace, None, Some(output_dir))
+            let proof = zkevm_prover
+                .gen_chunk_proof(chunk_trace, None, Some(output_dir))
                 .unwrap();
 
-            (chunk_hash, snark)
+            (chunk_hash, proof)
         })
-        .collect();
-
-    (chunk_hashes_snarks, last_chunk_trace)
+        .collect()
 }

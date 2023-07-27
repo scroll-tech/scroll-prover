@@ -2,14 +2,13 @@ use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
     io::serialize_vk,
-    zkevm::circuit::block_traces_to_padding_witness_block,
-    Proof,
+    zkevm::circuit::storage_trace_to_padding_witness_block,
+    ChunkProof, Proof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::Result;
 use snark_verifier_sdk::Snark;
 use std::{iter::repeat, path::PathBuf};
-use types::eth::BlockTrace;
 
 #[derive(Debug)]
 pub struct Prover {
@@ -30,14 +29,13 @@ impl Prover {
 
     pub fn gen_agg_proof(
         &mut self,
-        chunk_hashes_snarks: Vec<(ChunkHash, Snark)>,
-        last_chunk_trace: &[BlockTrace],
+        chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
         name: Option<&str>,
         output_dir: Option<&str>,
     ) -> Result<Proof> {
         let name = name.map_or_else(
             || {
-                chunk_hashes_snarks
+                chunk_hashes_proofs
                     .last()
                     .unwrap()
                     .0
@@ -48,12 +46,8 @@ impl Prover {
             |name| name.to_string(),
         );
 
-        let layer3_snark = self.load_or_gen_last_agg_snark(
-            &name,
-            chunk_hashes_snarks,
-            last_chunk_trace,
-            output_dir,
-        )?;
+        let layer3_snark =
+            self.load_or_gen_last_agg_snark(&name, chunk_hashes_proofs, output_dir)?;
 
         // Load or generate final compression thin snark (layer-4).
         let layer4_snark = self.inner.load_or_gen_comp_snark(
@@ -84,24 +78,29 @@ impl Prover {
     pub fn load_or_gen_last_agg_snark(
         &mut self,
         name: &str,
-        chunk_hashes_snarks: Vec<(ChunkHash, Snark)>,
-        last_chunk_trace: &[BlockTrace],
+        chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
         output_dir: Option<&str>,
     ) -> Result<Snark> {
-        let real_chunk_count = chunk_hashes_snarks.len();
+        let real_chunk_count = chunk_hashes_proofs.len();
         assert!((1..=MAX_AGG_SNARKS).contains(&real_chunk_count));
 
-        let (mut chunk_hashes, mut layer2_snarks): (Vec<_>, Vec<_>) =
-            chunk_hashes_snarks.into_iter().unzip();
+        let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
+            chunk_hashes_proofs.into_iter().unzip();
+
+        let (mut layer2_snarks, mut storage_traces): (Vec<_>, Vec<_>) = chunk_proofs
+            .into_iter()
+            .map(|proof| proof.to_snark_and_storage_trace())
+            .unzip();
 
         if real_chunk_count < MAX_AGG_SNARKS {
-            let padding_witness_block = block_traces_to_padding_witness_block(last_chunk_trace)?;
+            let padding_witness_block =
+                storage_trace_to_padding_witness_block(storage_traces.pop().unwrap())?;
             let padding_chunk_hash = ChunkHash::from_witness_block(&padding_witness_block, true);
             log::info!("Got padding witness block and chunk hash");
 
             let layer2_padding_snark = self.inner.load_or_gen_final_chunk_snark(
                 &format!("padding_{name}"),
-                padding_witness_block,
+                &padding_witness_block,
                 output_dir,
             )?;
             log::info!("Got padding snark (layer-2): {name}");

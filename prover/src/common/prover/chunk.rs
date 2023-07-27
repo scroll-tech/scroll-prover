@@ -9,7 +9,7 @@ impl Prover {
     pub fn load_or_gen_final_chunk_snark(
         &mut self,
         name: &str,
-        witness_block: Block<Fr>,
+        witness_block: &Block<Fr>,
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         let layer1_snark = self.load_or_gen_last_chunk_snark(name, witness_block, output_dir)?;
@@ -33,7 +33,7 @@ impl Prover {
     pub fn load_or_gen_last_chunk_snark(
         &mut self,
         name: &str,
-        witness_block: Block<Fr>,
+        witness_block: &Block<Fr>,
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         // Load or generate inner snark.
