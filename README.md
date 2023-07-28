@@ -12,15 +12,15 @@ git submodule init
 git submodule update --checkout
 ```
 
-Download all setup params, degree `20` and `24` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
-Could only download params of degree `24`, but it may affect performance (when dowsizing to `20`).
+Download all setup params, degree `20` and `25` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
+Could only download params of degree `25`, but it may affect performance (when dowsizing to `20`).
 ```shell
 make download-setup -e degree=20
-make download-setup -e degree=24
+make download-setup -e degree=25
 ```
 Or specify other degree and target directory to download.
 ```shell
-# As default `degree=24` and `params_dir=./prover/test_params`.
+# As default `degree=25` and `params_dir=./prover/test_params`.
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
 
