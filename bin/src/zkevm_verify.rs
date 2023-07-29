@@ -21,10 +21,11 @@ fn main() {
     let args = Args::parse();
     let proof_path = PathBuf::from(&args.proof_path);
 
-    let vk = read_all(&proof_path.join("chunk_vk_zkevm.vkey").to_string_lossy());
+    let vk = read_all(&proof_path.join("vk_chunk_zkevm.vkey").to_string_lossy());
     let verifier = Verifier::from_params_dir(&args.params_path, &vk);
 
-    let proof = ChunkProof::from_file("zkevm", &args.proof_path).expect("Proof file doesn't exist");
+    let proof =
+        ChunkProof::from_json_file(&args.proof_path, "zkevm").expect("Proof file doesn't exist");
 
     let verified = verifier.verify_chunk_proof(proof);
     log::info!("verify chunk snark: {}", verified)

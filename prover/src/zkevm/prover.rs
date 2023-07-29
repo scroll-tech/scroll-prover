@@ -49,7 +49,7 @@ impl Prover {
             .inner
             .load_or_gen_final_chunk_snark(&name, &witness_block, output_dir)?;
 
-        match output_dir.and_then(|dir| ChunkProof::from_file(&name, dir).ok()) {
+        match output_dir.and_then(|output_dir| ChunkProof::from_json_file(output_dir, &name).ok()) {
             Some(proof) => Ok(proof),
             None => {
                 let storage_trace =
@@ -58,7 +58,7 @@ impl Prover {
                 let result = ChunkProof::new(snark, storage_trace, self.inner.pk("layer2"));
 
                 if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
-                    proof.dump(&name, output_dir)?;
+                    proof.dump(output_dir, &name)?;
                 }
 
                 result

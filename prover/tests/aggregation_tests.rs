@@ -4,7 +4,7 @@ use prover::{
     config::LAYER4_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
-    zkevm, ChunkHash, ChunkProof, Proof,
+    zkevm, ChunkHash, ChunkProof, EvmProof, Proof,
 };
 use snark_verifier_sdk::Snark;
 use std::env;
@@ -37,7 +37,7 @@ fn test_agg_prove_verify() {
         &output_dir,
         &mut agg_prover,
         &agg_verifier,
-        evm_proof.raw_vk().to_vec(),
+        evm_proof.proof.raw_vk().to_vec(),
         layer3_snark,
     );
 }
@@ -46,9 +46,9 @@ fn gen_and_verify_evm_proof(
     output_dir: &str,
     prover: &mut Prover,
     layer3_snark: Snark,
-) -> (Proof, Verifier) {
+) -> (EvmProof, Verifier) {
     // Load or generate compression EVM proof (layer-4).
-    let proof = prover
+    let evm_proof = prover
         .inner
         .load_or_gen_comp_evm_proof(
             "evm",
@@ -62,16 +62,16 @@ fn gen_and_verify_evm_proof(
     log::info!("Got compression-EVM-proof (layer-4)");
 
     env::set_var("COMPRESSION_CONFIG", "./configs/layer4.config");
-    let vk = proof.vk::<CompressionCircuit>();
+    let vk = evm_proof.proof.vk::<CompressionCircuit>();
 
     let params = prover.inner.params(*LAYER4_DEGREE).clone();
     let verifier = Verifier::new(params, vk);
     log::info!("Constructed verifier");
 
-    verifier.inner.evm_verify(&proof, &output_dir);
+    verifier.inner.evm_verify(&evm_proof, &output_dir);
     log::info!("Finish EVM verification");
 
-    (proof, verifier)
+    (evm_proof, verifier)
 }
 
 fn gen_and_verify_normal_proof(
@@ -95,7 +95,7 @@ fn gen_and_verify_normal_proof(
         .unwrap();
     log::info!("Got compression thin snark (layer-4)");
 
-    let proof = Proof::from_snark(&layer4_snark, raw_vk).unwrap();
+    let proof = Proof::from_snark(layer4_snark, raw_vk).unwrap();
     log::info!("Got normal proof");
 
     assert!(verifier.verify_agg_proof(proof));

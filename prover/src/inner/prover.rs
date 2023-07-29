@@ -7,7 +7,7 @@ use crate::{
     Proof,
 };
 use anyhow::Result;
-use std::{marker::PhantomData, path::PathBuf};
+use std::marker::PhantomData;
 use types::eth::BlockTrace;
 
 mod mock;
@@ -40,13 +40,8 @@ impl<C: TargetCircuit> Prover<C> {
         block_traces: Vec<BlockTrace>,
         output_dir: Option<&str>,
     ) -> Result<Proof> {
-        let file_path = format!(
-            "{}/{}_full_proof.json",
-            output_dir.unwrap_or_default(),
-            name
-        );
-
-        match output_dir.and_then(|_| Proof::from_json_file(&file_path).ok().flatten()) {
+        let filename = format!("{id}_{name}");
+        match output_dir.and_then(|output_dir| Proof::from_json_file(output_dir, &filename).ok()) {
             Some(proof) => Ok(proof),
             None => {
                 assert!(!block_traces.is_empty());
@@ -58,11 +53,11 @@ impl<C: TargetCircuit> Prover<C> {
                     .gen_inner_snark::<C>(id, rng, &witness_block)
                     .and_then(|snark| {
                         let raw_vk = serialize_vk(self.inner.pk(id).unwrap().get_vk());
-                        Proof::from_snark(&snark, raw_vk)
+                        Proof::from_snark(snark, raw_vk)
                     });
 
                 if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
-                    proof.dump(&mut PathBuf::from(output_dir), name)?;
+                    proof.dump(output_dir, &filename)?;
                 }
 
                 result

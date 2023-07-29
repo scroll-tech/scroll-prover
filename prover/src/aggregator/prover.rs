@@ -8,7 +8,7 @@ use crate::{
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::Result;
 use snark_verifier_sdk::Snark;
-use std::{iter::repeat, path::PathBuf};
+use std::iter::repeat;
 
 #[derive(Debug)]
 pub struct Prover {
@@ -65,9 +65,9 @@ impl Prover {
             .pk("layer4")
             .map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
 
-        let result = Proof::from_snark(&layer4_snark, raw_vk);
+        let result = Proof::from_snark(layer4_snark, raw_vk);
         if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
-            proof.dump(&mut PathBuf::from(output_dir), "agg")?;
+            proof.dump(output_dir, "agg")?;
         }
 
         result

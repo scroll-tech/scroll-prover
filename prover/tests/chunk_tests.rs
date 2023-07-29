@@ -39,7 +39,7 @@ fn gen_and_verify_evm_proof(
     layer1_snark: Snark,
 ) -> Verifier {
     // Load or generate compression EVM proof (layer-2).
-    let proof = prover
+    let evm_proof = prover
         .inner
         .load_or_gen_comp_evm_proof(
             "evm",
@@ -53,13 +53,13 @@ fn gen_and_verify_evm_proof(
     log::info!("Got compression-EVM-proof (layer-2)");
 
     env::set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
-    let vk = proof.vk::<CompressionCircuit>();
+    let vk = evm_proof.proof.vk::<CompressionCircuit>();
 
     let params = prover.inner.params(*LAYER2_DEGREE).clone();
     let verifier = Verifier::new(params, vk);
     log::info!("Constructed verifier");
 
-    verifier.inner.evm_verify(&proof, &output_dir);
+    verifier.inner.evm_verify(&evm_proof, &output_dir);
     log::info!("Finish EVM verification");
 
     verifier
