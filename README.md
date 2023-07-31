@@ -26,7 +26,7 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 ### Testing
 
-`make test-chunk-prove` is the main testing entry point for the multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of this test.
+`make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
 
 Besides it, `make test-inner-prove` could be used to test the first-level circuit.
 

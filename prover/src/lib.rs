@@ -1,3 +1,4 @@
+pub mod aggregator;
 pub mod common;
 pub mod config;
 mod evm_verifier;
@@ -10,7 +11,8 @@ pub mod zkevm;
 
 pub use common::ChunkHash;
 pub use evm_verifier::EvmVerifier;
-pub use proof::Proof;
+pub use proof::{ChunkProof, EvmProof, Proof};
+pub use snark_verifier_sdk::Snark;
 
 // Terminology used throughout this library.
 //

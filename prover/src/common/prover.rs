@@ -6,6 +6,8 @@ use halo2_proofs::{
 };
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
+mod aggregation;
+mod chunk;
 mod compression;
 mod evm;
 mod inner;

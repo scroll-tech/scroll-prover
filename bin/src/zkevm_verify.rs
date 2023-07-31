@@ -1,5 +1,5 @@
 use clap::Parser;
-use prover::{io::read_all, utils::init_env_and_log, zkevm::Verifier, Proof};
+use prover::{utils::init_env_and_log, zkevm::Verifier, ChunkProof};
 use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
@@ -8,7 +8,7 @@ struct Args {
     /// Get params from the file.
     #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
-    /// Get vk and proof from the folder.
+    /// Get snark and vk from the folder.
     #[clap(long = "proof", default_value = "proof_data")]
     proof_path: String,
 }
@@ -19,14 +19,14 @@ fn main() {
     init_env_and_log("bin_zkevm_verify");
 
     let args = Args::parse();
-    let proof_path = PathBuf::from(args.proof_path);
+    let proof_path = PathBuf::from(&args.proof_path);
 
-    let vk = read_all(&proof_path.join("chunk.vkey").to_string_lossy());
-    let verifier = Verifier::from_params_dir(&args.params_path, &vk);
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_zkevm.vkey");
+    let verifier = Verifier::from_dirs(&args.params_path, &proof_path.to_string_lossy());
 
-    let proof = read_all(&proof_path.join("chunk_full_proof.json").to_string_lossy());
-    let proof = serde_json::from_slice::<Proof>(&proof).unwrap();
+    let proof =
+        ChunkProof::from_json_file(&args.proof_path, "zkevm").expect("Proof file doesn't exist");
 
     let verified = verifier.verify_chunk_proof(proof);
-    log::info!("verify chunk proof: {}", verified)
+    log::info!("verify chunk snark: {}", verified)
 }
