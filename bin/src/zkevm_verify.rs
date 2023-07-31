@@ -1,5 +1,5 @@
 use clap::Parser;
-use prover::{io::read_all, utils::init_env_and_log, zkevm::Verifier, ChunkProof};
+use prover::{utils::init_env_and_log, zkevm::Verifier, ChunkProof};
 use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
@@ -21,8 +21,8 @@ fn main() {
     let args = Args::parse();
     let proof_path = PathBuf::from(&args.proof_path);
 
-    let vk = read_all(&proof_path.join("vk_chunk_zkevm.vkey").to_string_lossy());
-    let verifier = Verifier::from_params_dir(&args.params_path, &vk);
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_zkevm.vkey");
+    let verifier = Verifier::from_dirs(&args.params_path, &proof_path.to_string_lossy());
 
     let proof =
         ChunkProof::from_json_file(&args.proof_path, "zkevm").expect("Proof file doesn't exist");

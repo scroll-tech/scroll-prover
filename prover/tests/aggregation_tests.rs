@@ -69,7 +69,7 @@ fn gen_and_verify_evm_proof(
     common::Verifier::<CompressionCircuit>::new(params, vk).evm_verify(&evm_proof, &output_dir);
     log::info!("Generated deployment bytecode");
 
-    env::set_var("AGG_VK_FILENAME", "vk_evm_evm.vkey");
+    env::set_var("AGG_VK_FILENAME", "vk_evm_layer4_evm.vkey");
     let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 

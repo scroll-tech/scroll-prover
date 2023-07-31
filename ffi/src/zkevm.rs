@@ -5,7 +5,7 @@ use prover::{
     zkevm::{Prover, Verifier},
     ChunkProof,
 };
-use std::{cell::OnceCell, fs::File, io::Read};
+use std::cell::OnceCell;
 use types::eth::BlockTrace;
 
 static mut PROVER: OnceCell<Prover> = OnceCell::new();
@@ -24,16 +24,13 @@ pub unsafe extern "C" fn init_zkevm_prover(params_dir: *const c_char) {
 
 /// # Safety
 #[no_mangle]
-pub unsafe extern "C" fn init_zkevm_verifier(params_dir: *const c_char, vk_path: *const c_char) {
+pub unsafe extern "C" fn init_zkevm_verifier(params_dir: *const c_char, assets_dir: *const c_char) {
     init_env_and_log("ffi_zkevm_verify");
 
-    let vk_path = c_char_to_str(vk_path);
-    let mut f = File::open(vk_path).unwrap();
-    let mut raw_vk = vec![];
-    f.read_to_end(&mut raw_vk).unwrap();
-
     let params_dir = c_char_to_str(params_dir);
-    let verifier = Verifier::from_params_dir(params_dir, &raw_vk);
+    let assets_dir = c_char_to_str(assets_dir);
+
+    let verifier = Verifier::from_dirs(params_dir, assets_dir);
 
     VERIFIER.set(verifier).unwrap();
 }
