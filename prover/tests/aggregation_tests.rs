@@ -1,6 +1,7 @@
 use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
+    common,
     config::LAYER4_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
@@ -65,11 +66,16 @@ fn gen_and_verify_evm_proof(
     let vk = evm_proof.proof.vk::<CompressionCircuit>();
 
     let params = prover.inner.params(*LAYER4_DEGREE).clone();
-    let verifier = Verifier::new(params, vk);
-    log::info!("Constructed verifier");
+    common::Verifier::<CompressionCircuit>::new(params, vk).evm_verify(&evm_proof, &output_dir);
+    log::info!("Generated deployment bytecode");
 
-    verifier.inner.evm_verify(&evm_proof, &output_dir);
-    log::info!("Finish EVM verification");
+    env::set_var("AGG_VK_FILENAME", "vk_evm_evm.vkey");
+    let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
+    log::info!("Constructed aggregator verifier");
+
+    let success = verifier.verify_agg_evm_proof(&evm_proof.proof);
+    assert!(success);
+    log::info!("Finished EVM verification");
 
     (evm_proof, verifier)
 }
@@ -98,8 +104,8 @@ fn gen_and_verify_normal_proof(
     let proof = Proof::from_snark(layer4_snark, raw_vk).unwrap();
     log::info!("Got normal proof");
 
-    assert!(verifier.verify_agg_proof(proof));
-    log::info!("Finish normal verification");
+    assert!(verifier.inner.verify_proof(proof));
+    log::info!("Finished normal verification");
 }
 
 fn gen_chunk_hashes_and_proofs(

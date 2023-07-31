@@ -1,12 +1,12 @@
 use super::Verifier;
-use crate::{io::write_file, EvmProof};
+use crate::{io::write_file, EvmProof, Proof};
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use itertools::Itertools;
 use snark_verifier::{
     pcs::kzg::{Bdfg21, Kzg},
     util::arithmetic::PrimeField,
 };
-use snark_verifier_sdk::{evm_verify, gen_evm_verifier, CircuitExt};
+use snark_verifier_sdk::{gen_evm_verifier, verify_evm_proof, CircuitExt};
 use std::{path::PathBuf, str::FromStr};
 
 impl<C: CircuitExt<Fr>> Verifier<C> {
@@ -41,6 +41,12 @@ impl<C: CircuitExt<Fr>> Verifier<C> {
         let proof_data = evm_proof.proof.proof().to_vec();
         write_file(&mut output_dir, "evm_proof.data", &proof_data);
 
-        evm_verify(deployment_code, evm_proof.proof.instances(), proof_data);
+        let success = self.verify_evm_proof(deployment_code, &evm_proof.proof);
+        assert!(success);
+    }
+
+    pub fn verify_evm_proof(&self, deployment_code: Vec<u8>, proof: &Proof) -> bool {
+        let proof_data = proof.proof().to_vec();
+        verify_evm_proof(deployment_code, proof.instances(), proof_data)
     }
 }

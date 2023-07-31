@@ -1,7 +1,6 @@
 use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
-    io::serialize_vk,
     zkevm::circuit::storage_trace_to_padding_witness_block,
     ChunkProof, Proof,
 };
@@ -27,6 +26,7 @@ impl Prover {
         common::Prover::from_params_dir(params_dir, &AGG_DEGREES).into()
     }
 
+    // Return the EVM proof for verification.
     pub fn gen_agg_proof(
         &mut self,
         chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
@@ -49,8 +49,8 @@ impl Prover {
         let layer3_snark =
             self.load_or_gen_last_agg_snark(&name, chunk_hashes_proofs, output_dir)?;
 
-        // Load or generate final compression thin snark (layer-4).
-        let layer4_snark = self.inner.load_or_gen_comp_snark(
+        // Load or generate final compression thin EVM proof (layer-4).
+        let evm_proof = self.inner.load_or_gen_comp_evm_proof(
             &name,
             "layer4",
             true,
@@ -58,19 +58,13 @@ impl Prover {
             layer3_snark,
             output_dir,
         )?;
-        log::info!("Got final compression thin snark (layer-4): {name}");
+        log::info!("Got final compression thin EVM proof (layer-4): {name}");
 
-        let raw_vk = self
-            .inner
-            .pk("layer4")
-            .map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
-
-        let result = Proof::from_snark(layer4_snark, raw_vk);
-        if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
-            proof.dump(output_dir, "agg")?;
+        if let Some(output_dir) = output_dir {
+            evm_proof.dump(output_dir, "agg")?;
         }
 
-        result
+        Ok(evm_proof.proof)
     }
 
     // Generate previous snark before the final one.
