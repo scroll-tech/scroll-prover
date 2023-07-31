@@ -27,7 +27,7 @@ impl Prover {
     }
 
     // Return the EVM proof for verification.
-    pub fn gen_agg_proof(
+    pub fn gen_agg_evm_proof(
         &mut self,
         chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
         name: Option<&str>,
