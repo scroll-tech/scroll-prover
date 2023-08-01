@@ -17,19 +17,11 @@ pub use self::builder::{
     normalize_withdraw_proof, storage_trace_to_padding_witness_block, SUB_CIRCUIT_NAMES,
 };
 
-////// params for degree = 19 ////////////
-/*
-pub static DEGREE: Lazy<usize> = Lazy::new(|| read_env_var("DEGREE", 19));
-const MAX_INNER_BLOCKS: usize = 100;
-const MAX_CALLDATA: usize = 400_000;
-const MAX_RWS: usize = 500_000;
-const MAX_KECCAK_ROWS: usize = 524_000;
-const MAX_EXP_STEPS: usize = 10_000;
-*/
-
+// TODO: more smart row capacity checking rather than max_of(row_usage_details) > 1<<20 - 256
+// Need to compare with real row nums like MAX_MPT_ROWS/MAX_KECCAK_ROWS etc.
 ////// params for degree = 20 ////////////
-const MAX_TXS: usize = 32;
-const MAX_INNER_BLOCKS: usize = 100;
+const MAX_TXS: usize = 136;
+const MAX_INNER_BLOCKS: usize = 136;
 const MAX_EXP_STEPS: usize = 10_000;
 const MAX_CALLDATA: usize = 400_000;
 const MAX_BYTECODE: usize = 400_000;

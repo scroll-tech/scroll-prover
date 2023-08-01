@@ -18,7 +18,7 @@ function simple_tests() {
 }
 
 function replace_zkevm_circuits_branch() {
-	TO=feat/withdraw_proof
+	TO=feat/testing0801
 	FROM=develop
 	sed -i 's#zkevm-circuits.git", branch = "'$FROM'#zkevm-circuits.git", branch = "'$TO'#' */Cargo.toml
 	cargo update -p zkevm-circuits
