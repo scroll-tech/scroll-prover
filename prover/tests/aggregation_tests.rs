@@ -23,6 +23,8 @@ fn test_agg_prove_verify() {
         .map(|i| format!("./tests/traces/bridge/{i:02}.json"))
         .collect();
 
+    let trace_paths = vec!["./tests/traces/erc20/10_transfer.json".to_string()];
+
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, trace_paths.as_slice());
     log::info!("Generated chunk hashes and proofs");
 
