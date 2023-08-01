@@ -12,6 +12,7 @@ pub struct ChunkProof {
     pub storage_trace: Vec<u8>,
     #[serde(with = "base64")]
     pub protocol: Vec<u8>,
+    #[serde(flatten)]
     pub proof: Proof,
 }
 
