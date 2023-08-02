@@ -1,6 +1,6 @@
 use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
-    fill_zktrie_state_from_proofs, SUB_CIRCUIT_NAMES,
+    fill_zktrie_state_from_proofs,
 };
 use crate::config::INNER_DEGREE;
 use itertools::Itertools;
@@ -116,11 +116,12 @@ impl CircuitCapacityChecker {
         let witness_block =
             block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-        let row_usage_details: Vec<SubCircuitRowUsage> = SUB_CIRCUIT_NAMES
+        let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
-            .map(|s| s.to_string())
-            .zip_eq(rows.into_iter())
-            .map(|(name, row_number)| SubCircuitRowUsage { name, row_number })
+            .map(|x| SubCircuitRowUsage {
+                name: x.name,
+                row_number: x.row_num_real,
+            })
             .collect_vec();
         let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());

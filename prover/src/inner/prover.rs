@@ -51,7 +51,7 @@ impl<C: TargetCircuit> Prover<C> {
                 let result = self
                     .inner
                     .gen_inner_snark::<C>(id, rng, &witness_block)
-                    .and_then(|snark| {
+                    .map(|snark| {
                         let raw_vk = serialize_vk(self.inner.pk(id).unwrap().get_vk());
                         Proof::from_snark(snark, raw_vk)
                     });

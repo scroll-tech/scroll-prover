@@ -1,12 +1,11 @@
+#![allow(dead_code)]
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
-use itertools::Itertools;
 use prover::{
     inner::Prover,
     utils::init_env_and_log,
     zkevm::circuit::{
         block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-        SUB_CIRCUIT_NAMES,
     },
 };
 use reqwest::Url;
@@ -32,118 +31,117 @@ async fn main() {
     for i in setting.begin_batch..=setting.end_batch {
         log::info!("mock-testnet: requesting block traces of batch {i}");
 
-        let block_traces = match setting.prove_type {
-            ProveType::Batch => get_traces_by_batch_api(&provider, &setting, i).await,
-            ProveType::Block => get_traces_by_block_api(&provider, &setting, i).await,
-        };
+        let chunks = get_traces_by_block_api(&setting, i).await;
 
-        let block_traces = block_traces
-            .unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
+        let chunks =
+            chunks.unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
 
-        if let Some(block_traces) = block_traces {
-            let rows_only = true;
-            let result = (|| {
-                if rows_only {
-                    let gas_total: u64 = block_traces
-                        .iter()
-                        .map(|b| b.header.gas_used.as_u64())
-                        .sum();
-                    let witness_block = block_traces_to_witness_block(&block_traces)?;
-                    let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-                    log::info!(
-                        "rows of batch {}(block range {:?} to {:?}):",
-                        i,
-                        block_traces.first().and_then(|b| b.header.number),
-                        block_traces.last().and_then(|b| b.header.number),
-                    );
-                    for (c, r) in SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter()) {
-                        log::info!("rows of {}: {}", c, r);
-                    }
-                    let row_num = rows.iter().max().unwrap();
-                    log::info!(
-                        "final rows of batch {}: row {}, gas {}, gas/row {:.2}",
-                        i,
-                        row_num,
-                        gas_total,
-                        gas_total as f64 / *row_num as f64
-                    );
-                    Ok(())
-                } else {
-                    Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces)
-                }
-            })();
-            match result {
-                Ok(_) => log::info!("mock-testnet: succeeded to prove batch-{i}"),
-                Err(err) => log::error!("mock-testnet: failed to prove batch-{i}:\n{err:?}"),
+        match chunks {
+            None => {
+                log::info!("mock-testnet: finished to prove at batch-{i}");
+                break;
             }
-        } else {
-            log::info!("mock-testnet: finished to prove at batch-{i}");
-            break;
+            Some(chunks) => {
+                for chunk in chunks {
+                    let ii = chunk.index;
+                    log::info!("chunk {:?}", chunk);
+
+                    // fetch traces
+                    let mut block_traces: Vec<BlockTrace> = vec![];
+                    for i in chunk.start_block_number..=chunk.end_block_number {
+                        log::info!("mock-testnet: requesting trace of block {i}");
+
+                        let trace = provider
+                            .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
+                            .await
+                            .unwrap();
+                        block_traces.push(trace);
+                    }
+
+                    // mock prove or estimate rows
+                    let rows_only = true;
+                    let result = (|| {
+                        if rows_only {
+                            let gas_total: u64 = block_traces
+                                .iter()
+                                .map(|b| b.header.gas_used.as_u64())
+                                .sum();
+                            let witness_block = block_traces_to_witness_block(&block_traces)?;
+                            let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+                            log::info!(
+                                "rows of batch {}(block range {:?} to {:?}):",
+                                i,
+                                block_traces.first().and_then(|b| b.header.number),
+                                block_traces.last().and_then(|b| b.header.number),
+                            );
+                            for r in &rows {
+                                log::info!("rows of {}: {}", r.name, r.row_num_real);
+                            }
+                            let row_num = rows.iter().map(|x| x.row_num_real).max().unwrap();
+                            log::info!(
+                                "final rows of chunk {}: row {}, gas {}, gas/row {:.2}",
+                                ii,
+                                row_num,
+                                gas_total,
+                                gas_total as f64 / row_num as f64
+                            );
+                            Ok(())
+                        } else {
+                            Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces)
+                        }
+                    })();
+                    match result {
+                        Ok(_) => {
+                            log::info!(
+                                "mock-testnet: succeeded to prove {ii}th chunk inside batch {i}"
+                            )
+                        }
+                        Err(err) => log::error!(
+                            "mock-testnet: failed to prove {ii}th chunk inside batch {i}:\n{err:?}"
+                        ),
+                    }
+                }
+            }
         }
     }
 
     log::info!("mock-testnet: end");
 }
 
-/// Request block traces by API `l2_getTracesByBatchIndex`. Return None for no more batches.
-async fn get_traces_by_batch_api(
-    provider: &Provider<Http>,
-    _setting: &Setting,
-    batch_index: i64,
-) -> Result<Option<Vec<BlockTrace>>> {
-    // TODO: need to test this API.
-    Ok(Some(
-        provider
-            .request("l2_getTracesByBatchIndex", [format!("{batch_index:#x}")])
-            .await?,
-    ))
-}
-
-/// Request block traces by API `scroll_getBlockTraceByNumberOrHash`. Return None for no more
-/// batches.
+/// Request block traces by first using rollup API to get chunk info, then fetching blocks from
+/// l2geth. Return None if no more batches.
 async fn get_traces_by_block_api(
-    provider: &Provider<Http>,
     setting: &Setting,
     batch_index: i64,
-) -> Result<Option<Vec<BlockTrace>>> {
+) -> Result<Option<Vec<ChunkInfo>>> {
     let url = Url::parse_with_params(
         &setting.rollupscan_api_url,
-        &[("index", batch_index.to_string())],
+        &[("batch_index", batch_index.to_string())],
     )?;
 
     let resp: RollupscanResponse = reqwest::get(url).await?.json().await?;
-
-    Ok(if let Some(batch) = resp.batch {
-        let mut traces = vec![];
-        for i in batch.start_block_number..=batch.end_block_number {
-            log::info!("mock-testnet: requesting trace of block {i}");
-
-            let trace = provider
-                .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
-                .await?;
-            traces.push(trace);
-        }
-
-        Some(traces)
-    } else {
-        None
-    })
+    log::info!("handling batch {}", resp.batch_index);
+    Ok(resp.chunks)
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct RollupscanResponse {
-    batch: Option<RollupscanBatch>,
+    batch_index: usize,
+    chunks: Option<Vec<ChunkInfo>>,
 }
 
-#[derive(Deserialize)]
-struct RollupscanBatch {
+#[derive(Deserialize, Debug)]
+struct ChunkInfo {
+    index: i64,
+    created_at: String,
+    total_tx_num: i64,
+    hash: String,
     start_block_number: i64,
     end_block_number: i64,
 }
 
 #[derive(Debug)]
 struct Setting {
-    prove_type: ProveType,
     begin_batch: i64,
     end_batch: i64,
     l2geth_api_url: String,
@@ -154,13 +152,9 @@ impl Setting {
     pub fn new() -> Self {
         let l2geth_api_url =
             env::var("L2GETH_API_URL").expect("mock-testnet: Must set env L2GETH_API_URL");
-        let prove_type = env::var("PROVE_TYPE").ok().unwrap_or_default().into();
         let rollupscan_api_url = env::var("ROLLUPSCAN_API_URL");
-        let rollupscan_api_url = match prove_type {
-            ProveType::Batch => rollupscan_api_url.unwrap_or_default(),
-            ProveType::Block => rollupscan_api_url
-                .expect("mock-testnet: Must set env ROLLUPSCAN_API_URL for block type"),
-        };
+        let rollupscan_api_url =
+            rollupscan_api_url.unwrap_or_else(|_| "http://10.0.3.119:8560/api/chunks".to_string());
         let begin_batch = env::var("PROVE_BEGIN_BATCH")
             .ok()
             .and_then(|n| n.parse().ok())
@@ -171,26 +165,10 @@ impl Setting {
             .unwrap_or(DEFAULT_END_BATCH);
 
         Self {
-            prove_type,
             begin_batch,
             end_batch,
             l2geth_api_url,
             rollupscan_api_url,
-        }
-    }
-}
-
-#[derive(Debug)]
-enum ProveType {
-    Batch,
-    Block,
-}
-
-impl From<String> for ProveType {
-    fn from(s: String) -> Self {
-        match s.as_str() {
-            "batch" => Self::Batch,
-            _ => Self::Block,
         }
     }
 }

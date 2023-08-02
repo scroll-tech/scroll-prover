@@ -5,7 +5,7 @@ use prover::{
     config::LAYER4_DEGREE,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
-    zkevm, ChunkHash, ChunkProof, EvmProof, Proof,
+    zkevm, BatchProof, ChunkHash, ChunkProof, EvmProof, Proof,
 };
 use snark_verifier_sdk::Snark;
 use std::env;
@@ -19,13 +19,12 @@ fn test_agg_prove_verify() {
     let mut agg_prover = Prover::from_params_dir(PARAMS_DIR);
     log::info!("Constructed aggregation prover");
 
-    let trace_paths: Vec<_> = (2..=3)
-        .map(|i| format!("./tests/traces/bridge/{i:02}.json"))
-        .collect();
+    let trace_paths = vec![
+        "./tests/traces/erc20/1_transfer.json".to_string(),
+        "./tests/traces/erc20/10_transfer.json".to_string(),
+    ];
 
-    let trace_paths = vec!["./tests/traces/erc20/10_transfer.json".to_string()];
-
-    let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, trace_paths.as_slice());
+    let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
     log::info!("Generated chunk hashes and proofs");
 
     // Load or generate aggregation snark (layer-3).
@@ -75,7 +74,10 @@ fn gen_and_verify_evm_proof(
     let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    let success = verifier.verify_agg_evm_proof(&evm_proof.proof);
+    let batch_proof = BatchProof::from(evm_proof.proof.clone());
+    batch_proof.dump(output_dir, "agg").unwrap();
+
+    let success = verifier.verify_agg_evm_proof(batch_proof);
     assert!(success);
     log::info!("Finished EVM verification");
 
@@ -103,7 +105,7 @@ fn gen_and_verify_normal_proof(
         .unwrap();
     log::info!("Got compression thin snark (layer-4)");
 
-    let proof = Proof::from_snark(layer4_snark, raw_vk).unwrap();
+    let proof = Proof::from_snark(layer4_snark, raw_vk);
     log::info!("Got normal proof");
 
     assert!(verifier.inner.verify_proof(proof));

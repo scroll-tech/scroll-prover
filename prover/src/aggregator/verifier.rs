@@ -1,4 +1,4 @@
-use crate::{common, config::LAYER4_DEGREE, io::read_all, utils::read_env_var, Proof};
+use crate::{common, config::LAYER4_DEGREE, io::read_all, utils::read_env_var, BatchProof};
 use aggregator::CompressionCircuit;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -53,8 +53,8 @@ impl Verifier {
         }
     }
 
-    pub fn verify_agg_evm_proof(&self, proof: &Proof) -> bool {
+    pub fn verify_agg_evm_proof(&self, batch_proof: BatchProof) -> bool {
         self.inner
-            .verify_evm_proof(self.deployment_code.clone(), proof)
+            .verify_evm_proof(self.deployment_code.clone(), &batch_proof.proof_to_verify())
     }
 }

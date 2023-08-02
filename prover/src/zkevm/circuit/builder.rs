@@ -34,19 +34,22 @@ pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
 ];
 
 // TODO: optimize it later
-pub fn calculate_row_usage_of_trace(block_trace: &BlockTrace) -> Result<Vec<usize>> {
+pub fn calculate_row_usage_of_trace(
+    block_trace: &BlockTrace,
+) -> Result<Vec<zkevm_circuits::super_circuit::SubcircuitRowUsage>> {
     let witness_block = block_traces_to_witness_block(std::slice::from_ref(block_trace))?;
     calculate_row_usage_of_witness_block(&witness_block)
 }
 
-pub fn calculate_row_usage_of_witness_block(witness_block: &Block<Fr>) -> Result<Vec<usize>> {
+pub fn calculate_row_usage_of_witness_block(
+    witness_block: &Block<Fr>,
+) -> Result<Vec<zkevm_circuits::super_circuit::SubcircuitRowUsage>> {
     let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
         witness_block,
-    )
-    .0;
+    );
 
     log::debug!(
-        "row usage of block {:?}, tx num {:?}, tx len sum {}, rows needed {:?}",
+        "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
         witness_block.context.first_or_default().number,
         witness_block.txs.len(),
         witness_block
@@ -54,7 +57,7 @@ pub fn calculate_row_usage_of_witness_block(witness_block: &Block<Fr>) -> Result
             .iter()
             .map(|t| t.call_data_length)
             .sum::<usize>(),
-        SUB_CIRCUIT_NAMES.iter().zip_eq(rows.iter())
+        rows,
     );
     Ok(rows)
 }
@@ -88,32 +91,34 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
     }
 
     let t = Instant::now();
-    let mut acc = Vec::new();
+    let mut acc: Vec<crate::zkevm::SubCircuitRowUsage> = Vec::new();
     let mut n_txs = 0;
     let mut truncate_idx = block_traces.len();
     for (idx, block) in block_traces.iter().enumerate() {
-        let usage = calculate_row_usage_of_trace(block)?;
+        let usage = calculate_row_usage_of_trace(block)?
+            .into_iter()
+            .map(|x| crate::zkevm::SubCircuitRowUsage {
+                name: x.name,
+                row_number: x.row_num_real,
+            })
+            .collect_vec();
         if acc.is_empty() {
-            acc = usage;
+            acc = usage.clone();
         } else {
             acc.iter_mut().zip(usage.iter()).for_each(|(acc, usage)| {
-                *acc += usage;
+                acc.row_number += usage.row_number;
             });
         }
-        let rows = itertools::max(&acc).unwrap();
-        let rows_and_names: Vec<(_, _)> = SUB_CIRCUIT_NAMES
-            .iter()
-            .zip_eq(acc.iter())
-            .collect::<Vec<(_, _)>>();
+        let rows: usize = itertools::max(acc.iter().map(|x| x.row_number)).unwrap();
         log::debug!(
             "row usage after block {}({:?}): {}, {:?}",
             idx,
             block.header.number,
             rows,
-            rows_and_names
+            usage
         );
         n_txs += block.transactions.len();
-        if *rows > (1 << *INNER_DEGREE) - 256 || n_txs > MAX_TXS {
+        if rows > (1 << *INNER_DEGREE) - 256 || n_txs > MAX_TXS {
             log::warn!(
                 "truncate blocks [{}..{}), n_txs {}, rows {}",
                 idx,
@@ -193,9 +198,23 @@ pub fn fill_zktrie_state_from_proofs(
 }
 
 pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
-    log::debug!(
-        "block_traces_to_witness_block, input len {:?}",
-        block_traces.len()
+    let block_num = block_traces.len();
+    let total_tx_num = block_traces
+        .iter()
+        .map(|b| b.transactions.len())
+        .sum::<usize>();
+    if total_tx_num > MAX_TXS {
+        bail!(
+            "tx num overflow {}, block range {} to {}",
+            total_tx_num,
+            block_traces[0].header.number.unwrap(),
+            block_traces[block_num - 1].header.number.unwrap()
+        );
+    }
+    log::info!(
+        "block_traces_to_witness_block, block num {}, tx num {}",
+        block_num,
+        total_tx_num,
     );
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
