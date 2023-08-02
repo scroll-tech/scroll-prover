@@ -2,7 +2,7 @@ use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
     zkevm::circuit::storage_trace_to_padding_witness_block,
-    ChunkProof, Proof,
+    BatchProof, ChunkProof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::Result;
@@ -32,7 +32,7 @@ impl Prover {
         chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
         name: Option<&str>,
         output_dir: Option<&str>,
-    ) -> Result<Proof> {
+    ) -> Result<BatchProof> {
         let name = name.map_or_else(
             || {
                 chunk_hashes_proofs
@@ -60,11 +60,12 @@ impl Prover {
         )?;
         log::info!("Got final compression thin EVM proof (layer-4): {name}");
 
+        let batch_proof = BatchProof::from(evm_proof.proof);
         if let Some(output_dir) = output_dir {
-            evm_proof.dump(output_dir, "agg")?;
+            batch_proof.dump(output_dir, "agg")?;
         }
 
-        Ok(evm_proof.proof)
+        Ok(batch_proof)
     }
 
     // Generate previous snark before the final one.
