@@ -7,6 +7,7 @@ const ACC_LEN: usize = 12;
 const PI_LEN: usize = 32;
 
 const ACC_BYTES: usize = ACC_LEN * 32;
+const PI_BYTES: usize = PI_LEN * 32;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BatchProof {
@@ -57,7 +58,7 @@ impl BatchProof {
 
     pub fn proof_to_verify(self) -> Proof {
         assert!(self.raw.proof.len() > ACC_BYTES);
-        assert_eq!(self.raw.instances.len(), PI_LEN);
+        assert_eq!(self.raw.instances.len(), PI_BYTES);
 
         let proof_len = self.raw.proof.len() - ACC_BYTES;
 
