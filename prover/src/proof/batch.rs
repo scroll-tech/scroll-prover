@@ -90,18 +90,6 @@ impl BatchProof {
         result_calldata.extend(self.raw.instances.clone());
         result_calldata.extend(proof);
 
-        log::error!("expected_calldata - BEGIN");
-        for c in expected_calldata.chunks(32) {
-            log::error!("{c:?}");
-        }
-        log::error!("expected_calldata - END");
-
-        log::error!("result_calldata - BEGIN");
-        for c in result_calldata.chunks(32) {
-            log::error!("{c:?}");
-        }
-        log::error!("result_calldata - END");
-
         assert_eq!(result_calldata, expected_calldata);
     }
 }
