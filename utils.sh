@@ -6,11 +6,20 @@ set -o pipefail
 export RUST_LOG=debug
 #export RUST_LOG=trace
 
+function bridge_tests() {
+	export CHAIN_ID=534351
+	for path in depositERC20.json withdrawERC20.json approveERC20.json depositETH.json withdrawETH.json; do
+		(TRACE_PATH=$(realpath prover/tests/traces/bridge/$path) make mock >/tmp/mock_${path}.log 2>&1) &
+	done
+	wait
+	echo test done
+	grep 'proved' /tmp/mock_*.log
+}
+
 function simple_tests() {
-	for mode in pack sushi multiple nft dao native empty 
-	do
+	for mode in pack sushi multiple nft dao native empty; do
 		#MODE=$mode make mock 2>&1 | tee /tmp/mock_${mode}.log
-		(MODE=$mode make mock > /tmp/mock_${mode}.log 2>&1) &
+		(MODE=$mode make mock >/tmp/mock_${mode}.log 2>&1) &
 	done
 	wait
 	echo test done
@@ -26,5 +35,6 @@ function replace_zkevm_circuits_branch() {
 	git diff */Cargo.toml Cargo.lock
 }
 
-replace_zkevm_circuits_branch
+#replace_zkevm_circuits_branch
 #simple_tests
+bridge_tests
