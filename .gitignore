@@ -9,6 +9,9 @@ target/
 .idea
 .vscode
 
+# macos
+.DS_store
+
 # for local config
 .cargo
 
