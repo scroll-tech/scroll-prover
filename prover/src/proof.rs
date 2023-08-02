@@ -27,7 +27,7 @@ pub use batch::BatchProof;
 pub use chunk::ChunkProof;
 pub use evm::EvmProof;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Proof {
     #[serde(with = "base64")]
     proof: Vec<u8>,
