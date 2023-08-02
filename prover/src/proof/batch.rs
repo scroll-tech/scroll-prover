@@ -2,6 +2,7 @@ use super::{dump_as_json, dump_data, dump_vk, from_json_file, serialize_instance
 use crate::io::serialize_fr_vec;
 use anyhow::Result;
 use serde_derive::{Deserialize, Serialize};
+use snark_verifier_sdk::encode_calldata;
 
 const ACC_LEN: usize = 12;
 const PI_LEN: usize = 32;
@@ -9,7 +10,7 @@ const PI_LEN: usize = 32;
 const ACC_BYTES: usize = ACC_LEN * 32;
 const PI_BYTES: usize = PI_LEN * 32;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BatchProof {
     #[serde(flatten)]
     raw: Proof,
@@ -77,6 +78,17 @@ impl BatchProof {
             instances,
             vk,
         }
+    }
+
+    // Only used for debugging.
+    pub fn assert_calldata(&self) {
+        let proof = self.clone().proof_to_verify();
+        let expected_calldata = encode_calldata(&proof.instances(), &proof.proof);
+
+        let mut result_calldata = self.raw.instances.clone();
+        result_calldata.extend(self.raw.proof.clone());
+
+        assert_eq!(result_calldata, expected_calldata);
     }
 }
 
