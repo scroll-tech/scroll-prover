@@ -1,4 +1,4 @@
-use super::{dump_as_json, dump_vk, from_json_file, serialize_instance, Proof};
+use super::{dump_as_json, dump_data, dump_vk, from_json_file, serialize_instance, Proof};
 use crate::io::serialize_fr_vec;
 use anyhow::Result;
 use serde_derive::{Deserialize, Serialize};
@@ -52,7 +52,11 @@ impl BatchProof {
     pub fn dump(&self, dir: &str, name: &str) -> Result<()> {
         let filename = dump_filename(name);
 
+        dump_data(dir, &format!("pi_{filename}.data"), &self.raw.instances);
+        dump_data(dir, &format!("proof_{filename}.data"), &self.raw.proof);
+
         dump_vk(dir, &filename, &self.raw.vk);
+
         dump_as_json(dir, &filename, &self)
     }
 
@@ -77,5 +81,5 @@ impl BatchProof {
 }
 
 fn dump_filename(name: &str) -> String {
-    format!("chunk_{name}")
+    format!("batch_{name}")
 }

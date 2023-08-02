@@ -110,13 +110,12 @@ pub fn dump_as_json<P: serde::Serialize>(dir: &str, filename: &str, proof: &P) -
     Ok(())
 }
 
+pub fn dump_data(dir: &str, filename: &str, data: &[u8]) {
+    write_file(&mut PathBuf::from(dir), filename, data);
+}
+
 pub fn dump_vk(dir: &str, filename: &str, raw_vk: &[u8]) {
-    // Write vk as bytes.
-    write_file(
-        &mut PathBuf::from(dir),
-        &format!("vk_{filename}.vkey"),
-        raw_vk,
-    );
+    dump_data(dir, &format!("vk_{filename}.vkey"), raw_vk);
 }
 
 pub fn from_json_file<'de, P: serde::Deserialize<'de>>(dir: &str, filename: &str) -> Result<P> {
@@ -134,7 +133,7 @@ pub fn from_json_file<'de, P: serde::Deserialize<'de>>(dir: &str, filename: &str
 }
 
 fn dump_proof_path(dir: &str, filename: &str) -> String {
-    format!("{dir}/proof_{filename}.json")
+    format!("{dir}/full_proof_{filename}.json")
 }
 
 fn dummy_protocol() -> Protocol<G1Affine> {

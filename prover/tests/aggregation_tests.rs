@@ -19,12 +19,6 @@ fn test_agg_prove_verify() {
     let mut agg_prover = Prover::from_params_dir(PARAMS_DIR);
     log::info!("Constructed aggregation prover");
 
-    /*
-        let trace_paths: Vec<_> = (2..=3)
-            .map(|i| format!("./tests/traces/bridge/{i:02}.json"))
-            .collect();
-    */
-
     let trace_paths = vec![
         "./tests/traces/erc20/1_transfer.json".to_string(),
         "./tests/traces/erc20/10_transfer.json".to_string(),
@@ -80,7 +74,10 @@ fn gen_and_verify_evm_proof(
     let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    let success = verifier.verify_agg_evm_proof(evm_proof.proof.clone().into());
+    let batch_proof = evm_proof.proof.clone().into();
+    batch_proof.dump(output_dir, "agg");
+
+    let success = verifier.verify_agg_evm_proof(batch_proof);
     assert!(success);
     log::info!("Finished EVM verification");
 

@@ -60,11 +60,12 @@ impl Prover {
         )?;
         log::info!("Got final compression thin EVM proof (layer-4): {name}");
 
+        let batch_proof = BatchProof::from(evm_proof.proof);
         if let Some(output_dir) = output_dir {
-            evm_proof.dump(output_dir, "agg")?;
+            batch_proof.dump(output_dir, "agg")?;
         }
 
-        Ok(evm_proof.proof.into())
+        Ok(batch_proof)
     }
 
     // Generate previous snark before the final one.
