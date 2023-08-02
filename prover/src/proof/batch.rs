@@ -1,5 +1,4 @@
 use super::{dump_as_json, dump_data, dump_vk, from_json_file, serialize_instance, Proof};
-use crate::io::serialize_fr_vec;
 use anyhow::Result;
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier_sdk::encode_calldata;
@@ -23,16 +22,14 @@ impl From<Proof> for BatchProof {
         assert_eq!(instances[0].len(), ACC_LEN + PI_LEN);
 
         let vk = proof.vk;
-        let proof = proof
-            .proof
+
+        // raw_proof = acc + proof
+        let proof = serialize_instance(&instances[0][..ACC_LEN])
             .into_iter()
-            .chain(
-                serialize_fr_vec(&instances[0][..ACC_LEN])
-                    .into_iter()
-                    .flatten(),
-            )
+            .chain(proof.proof)
             .collect();
 
+        // raw_instances = pi_data
         let instances = serialize_instance(&instances[0][ACC_LEN..]);
 
         Self {
@@ -65,10 +62,10 @@ impl BatchProof {
         assert!(self.raw.proof.len() > ACC_BYTES);
         assert_eq!(self.raw.instances.len(), PI_BYTES);
 
-        let proof_len = self.raw.proof.len() - ACC_BYTES;
-
-        let mut proof = self.raw.proof;
-        let mut instances = proof.split_off(proof_len);
+        // instances = raw_proof[..12] (acc) + raw_instances (pi_data)
+        // proof = raw_proof[12..]
+        let mut instances = self.raw.proof;
+        let proof = instances.split_off(ACC_BYTES);
         instances.extend(self.raw.instances);
 
         let vk = self.raw.vk;
@@ -85,8 +82,25 @@ impl BatchProof {
         let proof = self.clone().proof_to_verify();
         let expected_calldata = encode_calldata(&proof.instances(), &proof.proof);
 
-        let mut result_calldata = self.raw.instances.clone();
-        result_calldata.extend(self.raw.proof.clone());
+        // instances = raw_proof[..12] (acc) + raw_instances (pi_data)
+        // proof = raw_proof[12..]
+        // calldata = instances + proof
+        let mut result_calldata = self.raw.proof.clone();
+        let proof = result_calldata.split_off(ACC_BYTES);
+        result_calldata.extend(self.raw.instances.clone());
+        result_calldata.extend(proof);
+
+        log::error!("expected_calldata - BEGIN");
+        for c in expected_calldata.chunks(32) {
+            log::error!("{c:?}");
+        }
+        log::error!("expected_calldata - END");
+
+        log::error!("result_calldata - BEGIN");
+        for c in result_calldata.chunks(32) {
+            log::error!("{c:?}");
+        }
+        log::error!("result_calldata - END");
 
         assert_eq!(result_calldata, expected_calldata);
     }
