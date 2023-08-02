@@ -28,8 +28,9 @@ use zkevm_circuits::{
     witness::WithdrawProof,
 };
 
-pub const SUB_CIRCUIT_NAMES: [&str; 11] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "pi", "poseidon", "mpt",
+pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
+    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "modexp", "pi", "poseidon",
+    "sig", "ecc", "mpt",
 ];
 
 // TODO: optimize it later
