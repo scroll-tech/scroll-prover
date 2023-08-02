@@ -1,6 +1,4 @@
-use crate::io::{
-    deserialize_fr_matrix, deserialize_vk, serialize_fr_matrix, serialize_vk, write_file,
-};
+use crate::io::{deserialize_fr, deserialize_vk, serialize_fr_vec, serialize_vk, write_file};
 use anyhow::{bail, Result};
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
@@ -21,9 +19,11 @@ use std::{
 };
 use types::base64;
 
+mod batch;
 mod chunk;
 mod evm;
 
+pub use batch::BatchProof;
 pub use chunk::ChunkProof;
 pub use evm::EvmProof;
 
@@ -38,34 +38,29 @@ pub struct Proof {
 }
 
 impl Proof {
-    pub fn new(
-        proof: Vec<u8>,
-        instances: &[Vec<Fr>],
-        pk: Option<&ProvingKey<G1Affine>>,
-    ) -> Result<Self> {
-        let instances = serde_json::to_vec(&serialize_fr_matrix(instances))?;
+    pub fn new(proof: Vec<u8>, instances: &[Vec<Fr>], pk: Option<&ProvingKey<G1Affine>>) -> Self {
+        let instances = serialize_instances(instances);
         let vk = pk.map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
 
-        Ok(Self {
+        Self {
             proof,
             instances,
             vk,
-        })
+        }
     }
 
     pub fn from_json_file(dir: &str, filename: &str) -> Result<Self> {
         from_json_file(dir, filename)
     }
 
-    pub fn from_snark(snark: Snark, vk: Vec<u8>) -> Result<Self> {
-        let instances = serialize_fr_matrix(snark.instances.as_slice());
-        let instances = serde_json::to_vec(&instances)?;
+    pub fn from_snark(snark: Snark, vk: Vec<u8>) -> Self {
+        let instances = serialize_instances(&snark.instances);
 
-        Ok(Proof {
+        Proof {
             proof: snark.proof,
             vk,
             instances,
-        })
+        }
     }
 
     pub fn dump(&self, dir: &str, filename: &str) -> Result<()> {
@@ -75,9 +70,13 @@ impl Proof {
     }
 
     pub fn instances(&self) -> Vec<Vec<Fr>> {
-        let buf: Vec<Vec<Vec<_>>> = serde_json::from_reader(self.instances.as_slice()).unwrap();
+        let instance: Vec<Fr> = self
+            .instances
+            .chunks(32)
+            .map(|bytes| deserialize_fr(bytes.to_vec()))
+            .collect();
 
-        deserialize_fr_matrix(buf)
+        vec![instance]
     }
 
     pub fn proof(&self) -> &[u8] {
@@ -163,4 +162,16 @@ fn dummy_protocol() -> Protocol<G1Affine> {
         linearization: None,
         accumulator_indices: Default::default(),
     }
+}
+
+fn serialize_instance(instance: &[Fr]) -> Vec<u8> {
+    let bytes: Vec<_> = serialize_fr_vec(instance).into_iter().flatten().collect();
+    assert_eq!(bytes.len() % 32, 0);
+
+    bytes
+}
+
+fn serialize_instances(instances: &[Vec<Fr>]) -> Vec<u8> {
+    assert_eq!(instances.len(), 1);
+    serialize_instance(&instances[0])
 }

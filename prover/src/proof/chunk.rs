@@ -24,7 +24,7 @@ impl ChunkProof {
     ) -> Result<Self> {
         let storage_trace = serde_json::to_vec(&storage_trace)?;
         let protocol = serde_json::to_vec(&snark.protocol)?;
-        let proof = Proof::new(snark.proof, &snark.instances, pk)?;
+        let proof = Proof::new(snark.proof, &snark.instances, pk);
 
         Ok(Self {
             storage_trace,
