@@ -19,7 +19,7 @@ impl EvmProof {
         num_instance: Vec<usize>,
         pk: Option<&ProvingKey<G1Affine>>,
     ) -> Result<Self> {
-        let proof = Proof::new(proof, instances, pk)?;
+        let proof = Proof::new(proof, instances, pk);
 
         Ok(Self {
             proof,
