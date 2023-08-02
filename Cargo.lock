@@ -23,7 +23,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "ark-std",
  "env_logger 0.10.0",
@@ -418,7 +418,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -665,9 +665,12 @@ checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
 name = "convert_case"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb4a24b1aaf0fd0ce8b45161144d6f42cd91677fd5940fd431183eb023b3a2b8"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
 
 [[package]]
 name = "core-foundation-sys"
@@ -1118,7 +1121,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1236,13 +1239,12 @@ dependencies = [
 [[package]]
 name = "ethers-core"
 version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ebdd63c828f58aa067f40f9adcbea5e114fb1f90144b3a1e2858e0c9b1ff4e8"
+source = "git+https://github.com/scroll-tech/ethers-rs.git?branch=v0.17.0#739ec9a0df8daf536937739c87e85612bd73212f"
 dependencies = [
  "arrayvec",
  "bytes",
  "chrono",
- "convert_case 0.5.0",
+ "convert_case 0.6.0",
  "elliptic-curve",
  "ethabi 17.2.0",
  "fastrlp",
@@ -1384,7 +1386,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1597,7 +1599,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1637,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -2243,7 +2245,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2443,7 +2445,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2458,7 +2460,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "bus-mapping",
  "eth-types",
@@ -4288,6 +4290,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-segmentation"
+version = "1.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1dd624098567895118886609431a7c3b8f516e41d30e0643f03d94592a147e36"
+
+[[package]]
 name = "unicode-width"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4703,7 +4711,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#f12d26ce378aa04e6c137e7b2197ddd5abb74132"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#5fe2b3a5f105e3478b4e6f506f0373a2f8038a56"
 dependencies = [
  "array-init",
  "bus-mapping",
