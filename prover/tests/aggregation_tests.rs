@@ -75,9 +75,8 @@ fn gen_and_verify_evm_proof(
     log::info!("Constructed aggregator verifier");
 
     let batch_proof = BatchProof::from(evm_proof.proof.clone());
-    batch_proof.assert_calldata();
-
     batch_proof.dump(output_dir, "agg").unwrap();
+    batch_proof.clone().assert_calldata();
 
     let success = verifier.verify_agg_evm_proof(batch_proof);
     assert!(success);
