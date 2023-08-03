@@ -90,7 +90,7 @@ impl TransactionTrace {
             v: self.v,
             r: self.r,
             s: self.s,
-            transaction_type: None,
+            transaction_type: Some(U64::from(self.type_ as u64)),
             access_list: None,
             max_priority_fee_per_gas: None,
             max_fee_per_gas: None,
