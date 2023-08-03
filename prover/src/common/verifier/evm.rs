@@ -1,11 +1,7 @@
 use super::Verifier;
 use crate::{io::write_file, EvmProof, Proof};
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
-use itertools::Itertools;
-use snark_verifier::{
-    pcs::kzg::{Bdfg21, Kzg},
-    util::arithmetic::PrimeField,
-};
+use snark_verifier::pcs::kzg::{Bdfg21, Kzg};
 use snark_verifier_sdk::{gen_evm_verifier, verify_evm_proof, CircuitExt};
 use std::{path::PathBuf, str::FromStr};
 
@@ -26,20 +22,6 @@ impl<C: CircuitExt<Fr>> Verifier<C> {
         // Dump bytecode.
         let mut output_dir = PathBuf::from_str(output_dir).unwrap();
         write_file(&mut output_dir, "evm_verifier.bin", &deployment_code);
-
-        // Dump public input data.
-        let pi_data: Vec<_> = evm_proof
-            .proof
-            .instances()
-            .iter()
-            .flatten()
-            .flat_map(|value| value.to_repr().as_ref().iter().rev().cloned().collect_vec())
-            .collect();
-        write_file(&mut output_dir, "evm_pi_data.data", &pi_data);
-
-        // Dump proof.
-        let proof_data = evm_proof.proof.proof().to_vec();
-        write_file(&mut output_dir, "evm_proof.data", &proof_data);
 
         let success = self.verify_evm_proof(deployment_code, &evm_proof.proof);
         assert!(success);

@@ -1,4 +1,4 @@
-use crate::io::{deserialize_fr, deserialize_vk, serialize_fr_vec, serialize_vk, write_file};
+use crate::io::{deserialize_fr, deserialize_vk, serialize_fr, serialize_vk, write_file};
 use anyhow::{bail, Result};
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
@@ -73,7 +73,7 @@ impl Proof {
         let instance: Vec<Fr> = self
             .instances
             .chunks(32)
-            .map(|bytes| deserialize_fr(bytes.to_vec()))
+            .map(|bytes| deserialize_fr(bytes.iter().rev().cloned().collect()))
             .collect();
 
         vec![instance]
@@ -164,7 +164,10 @@ fn dummy_protocol() -> Protocol<G1Affine> {
 }
 
 fn serialize_instance(instance: &[Fr]) -> Vec<u8> {
-    let bytes: Vec<_> = serialize_fr_vec(instance).into_iter().flatten().collect();
+    let bytes: Vec<_> = instance
+        .iter()
+        .flat_map(|value| serialize_fr(value).into_iter().rev())
+        .collect();
     assert_eq!(bytes.len() % 32, 0);
 
     bytes
