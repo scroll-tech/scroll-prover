@@ -1,11 +1,11 @@
 use super::Prover;
-use crate::{utils::gen_rng, EvmProof};
+use crate::{config::layer_config_path, utils::gen_rng, EvmProof};
 use aggregator::CompressionCircuit;
 use anyhow::{anyhow, Result};
 use halo2_proofs::halo2curves::bn256::Fr;
 use rand::Rng;
 use snark_verifier_sdk::{gen_evm_proof_shplonk, CircuitExt, Snark};
-use std::env::set_var;
+use std::env;
 
 impl Prover {
     pub fn load_or_gen_comp_evm_proof(
@@ -21,7 +21,7 @@ impl Prover {
         match output_dir.and_then(|output_dir| EvmProof::from_json_file(output_dir, &name).ok()) {
             Some(proof) => Ok(proof),
             None => {
-                set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
+                env::set_var("COMPRESSION_CONFIG", layer_config_path(id));
 
                 let mut rng = gen_rng();
                 let circuit = CompressionCircuit::new(

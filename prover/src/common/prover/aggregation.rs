@@ -1,5 +1,6 @@
 use super::Prover;
 use crate::{
+    config::layer_config_path,
     io::{load_snark, write_snark},
     utils::gen_rng,
 };
@@ -18,7 +19,7 @@ impl Prover {
         chunk_hashes: &[ChunkHash],
         previous_snarks: &[Snark],
     ) -> Result<Snark> {
-        env::set_var("AGGREGATION_CONFIG", format!("./configs/{id}.config"));
+        env::set_var("AGGREGATION_CONFIG", layer_config_path(id));
 
         let batch_hash = BatchHash::construct(chunk_hashes);
 

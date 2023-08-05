@@ -1,4 +1,10 @@
-use crate::{common, config::LAYER4_DEGREE, io::read_all, utils::read_env_var, BatchProof};
+use crate::{
+    common,
+    config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
+    io::read_all,
+    utils::read_env_var,
+    BatchProof,
+};
 use aggregator::CompressionCircuit;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -45,7 +51,7 @@ impl Verifier {
         let raw_vk = read_all(&vk_path);
         let deployment_code = read_all(&deployment_code_path);
 
-        env::set_var("COMPRESSION_CONFIG", "./configs/layer4.config");
+        env::set_var("COMPRESSION_CONFIG", &*LAYER4_CONFIG_PATH);
         let inner = common::Verifier::from_params_dir(params_dir, *LAYER4_DEGREE, &raw_vk);
 
         Self {

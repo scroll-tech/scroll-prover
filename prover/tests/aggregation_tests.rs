@@ -2,7 +2,7 @@ use aggregator::CompressionCircuit;
 use prover::{
     aggregator::{Prover, Verifier},
     common,
-    config::LAYER4_DEGREE,
+    config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm, BatchProof, ChunkHash, ChunkProof, EvmProof, Proof,
@@ -63,7 +63,7 @@ fn gen_and_verify_evm_proof(
         .unwrap();
     log::info!("Got compression-EVM-proof (layer-4)");
 
-    env::set_var("COMPRESSION_CONFIG", "./configs/layer4.config");
+    env::set_var("COMPRESSION_CONFIG", &*LAYER4_CONFIG_PATH);
     let vk = evm_proof.proof.vk::<CompressionCircuit>();
 
     let params = prover.inner.params(*LAYER4_DEGREE).clone();

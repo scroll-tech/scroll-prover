@@ -1,5 +1,6 @@
 use super::Prover;
 use crate::{
+    config::layer_config_path,
     io::{load_snark, write_snark},
     utils::gen_rng,
 };
@@ -18,7 +19,7 @@ impl Prover {
         mut rng: impl Rng + Send,
         prev_snark: Snark,
     ) -> Result<Snark> {
-        env::set_var("COMPRESSION_CONFIG", format!("./configs/{id}.config"));
+        env::set_var("COMPRESSION_CONFIG", layer_config_path(id));
 
         let circuit =
             CompressionCircuit::new(self.params(degree), prev_snark, has_accumulator, &mut rng)
