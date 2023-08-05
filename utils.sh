@@ -18,9 +18,9 @@ function simple_tests() {
 }
 
 function replace_zkevm_circuits_branch() {
-	FROM=feat/testing0801
-	TO=develop
-	sed -i 's#zkevm-circuits.git", branch = "'$FROM'#zkevm-circuits.git", branch = "'$TO'#' */Cargo.toml
+	FROM='tag = "v0.5.2"'
+	TO='branch = "develop"'
+	sed -i "s#zkevm-circuits.git\", $FROM#zkevm-circuits.git\", $TO#" */Cargo.toml
 	cargo update -p zkevm-circuits
 	cargo update -p eth-types
 	git diff */Cargo.toml Cargo.lock

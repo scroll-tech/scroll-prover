@@ -20,7 +20,7 @@ pub use self::builder::{
 // TODO: more smart row capacity checking rather than max_of(row_usage_details) > 1<<20 - 256
 // Need to compare with real row nums like MAX_MPT_ROWS/MAX_KECCAK_ROWS etc.
 ////// params for degree = 20 ////////////
-const MAX_TXS: usize = 32;
+const MAX_TXS: usize = 100;
 const MAX_INNER_BLOCKS: usize = 100;
 const MAX_EXP_STEPS: usize = 10_000;
 const MAX_CALLDATA: usize = 400_000;
