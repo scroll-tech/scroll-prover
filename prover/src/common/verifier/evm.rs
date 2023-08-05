@@ -1,8 +1,8 @@
 use super::Verifier;
-use crate::{io::write_file, EvmProof, Proof};
+use crate::{io::write_file, EvmProof};
 use halo2_proofs::halo2curves::bn256::{Bn256, Fr};
 use snark_verifier::pcs::kzg::{Bdfg21, Kzg};
-use snark_verifier_sdk::{gen_evm_verifier, verify_evm_proof, CircuitExt};
+use snark_verifier_sdk::{gen_evm_verifier, CircuitExt};
 use std::{path::PathBuf, str::FromStr};
 
 impl<C: CircuitExt<Fr>> Verifier<C> {
@@ -23,12 +23,7 @@ impl<C: CircuitExt<Fr>> Verifier<C> {
         let mut output_dir = PathBuf::from_str(output_dir).unwrap();
         write_file(&mut output_dir, "evm_verifier.bin", &deployment_code);
 
-        let success = self.verify_evm_proof(deployment_code, &evm_proof.proof);
+        let success = evm_proof.proof.evm_verify(deployment_code);
         assert!(success);
-    }
-
-    pub fn verify_evm_proof(&self, deployment_code: Vec<u8>, proof: &Proof) -> bool {
-        let proof_data = proof.proof().to_vec();
-        verify_evm_proof(deployment_code, proof.instances(), proof_data)
     }
 }

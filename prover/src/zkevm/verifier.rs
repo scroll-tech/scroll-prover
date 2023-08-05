@@ -1,4 +1,10 @@
-use crate::{common, config::LAYER2_DEGREE, io::read_all, utils::read_env_var, ChunkProof};
+use crate::{
+    common,
+    config::{LAYER2_CONFIG_PATH, LAYER2_DEGREE},
+    io::read_all,
+    utils::read_env_var,
+    ChunkProof,
+};
 use aggregator::CompressionCircuit;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -36,12 +42,11 @@ impl Verifier {
 
         let raw_vk = read_all(&vk_path);
 
-        env::set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
+        env::set_var("COMPRESSION_CONFIG", &*LAYER2_CONFIG_PATH);
         common::Verifier::from_params_dir(params_dir, *LAYER2_DEGREE, &raw_vk).into()
     }
 
     pub fn verify_chunk_proof(&self, proof: ChunkProof) -> bool {
-        let snark = proof.to_snark_and_storage_trace().0;
-        self.inner.verify_snark(snark)
+        self.inner.verify_snark(proof.to_snark())
     }
 }

@@ -1,4 +1,10 @@
-use crate::{common, config::LAYER4_DEGREE, io::read_all, utils::read_env_var, BatchProof};
+use crate::{
+    common,
+    config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
+    io::read_all,
+    utils::read_env_var,
+    BatchProof,
+};
 use aggregator::CompressionCircuit;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, G1Affine},
@@ -6,6 +12,7 @@ use halo2_proofs::{
     poly::kzg::commitment::ParamsKZG,
 };
 use once_cell::sync::Lazy;
+use snark_verifier_sdk::verify_evm_calldata;
 use std::{env, path::Path};
 
 static AGG_VK_FILENAME: Lazy<String> =
@@ -44,7 +51,7 @@ impl Verifier {
         let raw_vk = read_all(&vk_path);
         let deployment_code = read_all(&deployment_code_path);
 
-        env::set_var("COMPRESSION_CONFIG", "./configs/layer4.config");
+        env::set_var("COMPRESSION_CONFIG", &*LAYER4_CONFIG_PATH);
         let inner = common::Verifier::from_params_dir(params_dir, *LAYER4_DEGREE, &raw_vk);
 
         Self {
@@ -54,7 +61,6 @@ impl Verifier {
     }
 
     pub fn verify_agg_evm_proof(&self, batch_proof: BatchProof) -> bool {
-        self.inner
-            .verify_evm_proof(self.deployment_code.clone(), &batch_proof.proof_to_verify())
+        verify_evm_calldata(self.deployment_code.clone(), batch_proof.calldata())
     }
 }

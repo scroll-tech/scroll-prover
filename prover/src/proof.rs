@@ -12,7 +12,7 @@ use snark_verifier::{
     },
     Protocol,
 };
-use snark_verifier_sdk::Snark;
+use snark_verifier_sdk::{verify_evm_proof, Snark};
 use std::{
     fs::File,
     path::{Path, PathBuf},
@@ -67,6 +67,10 @@ impl Proof {
         dump_vk(dir, filename, &self.vk);
 
         dump_as_json(dir, filename, &self)
+    }
+
+    pub fn evm_verify(&self, deployment_code: Vec<u8>) -> bool {
+        verify_evm_proof(deployment_code, self.instances(), self.proof().to_vec())
     }
 
     pub fn instances(&self) -> Vec<Vec<Fr>> {

@@ -47,6 +47,16 @@ impl BatchProof {
         from_json_file(dir, &dump_filename(name))
     }
 
+    pub fn calldata(self) -> Vec<u8> {
+        let proof = self.proof_to_verify();
+
+        // calldata = instances + proof
+        let mut calldata = proof.instances;
+        calldata.extend(proof.proof);
+
+        calldata
+    }
+
     pub fn dump(&self, dir: &str, name: &str) -> Result<()> {
         let filename = dump_filename(name);
 
@@ -77,20 +87,13 @@ impl BatchProof {
         }
     }
 
-    // Only used for debugging.
-    pub fn assert_calldata(&self) {
-        let proof = self.clone().proof_to_verify();
+    pub fn assert_calldata(self) {
+        let real_calldata = self.clone().calldata();
+
+        let proof = self.proof_to_verify();
         let expected_calldata = encode_calldata(&proof.instances(), &proof.proof);
 
-        // instances = raw_proof[..12] (acc) + raw_instances (pi_data)
-        // proof = raw_proof[12..]
-        // calldata = instances + proof
-        let mut result_calldata = self.raw.proof.clone();
-        let proof = result_calldata.split_off(ACC_BYTES);
-        result_calldata.extend(self.raw.instances.clone());
-        result_calldata.extend(proof);
-
-        assert_eq!(result_calldata, expected_calldata);
+        assert_eq!(real_calldata, expected_calldata);
     }
 }
 

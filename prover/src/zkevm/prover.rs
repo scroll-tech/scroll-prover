@@ -37,8 +37,9 @@ impl Prover {
             || {
                 witness_block
                     .context
-                    .first_or_default()
-                    .number
+                    .ctxs
+                    .first_key_value()
+                    .map_or(0.into(), |(_, ctx)| ctx.number)
                     .low_u64()
                     .to_string()
             },

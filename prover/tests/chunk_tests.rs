@@ -1,6 +1,6 @@
 use aggregator::CompressionCircuit;
 use prover::{
-    config::LAYER2_DEGREE,
+    config::{LAYER2_CONFIG_PATH, LAYER2_DEGREE},
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm::{Prover, Verifier},
@@ -52,7 +52,7 @@ fn gen_and_verify_evm_proof(
         .unwrap();
     log::info!("Got compression-EVM-proof (layer-2)");
 
-    env::set_var("COMPRESSION_CONFIG", "./configs/layer2.config");
+    env::set_var("COMPRESSION_CONFIG", &*LAYER2_CONFIG_PATH);
     let vk = evm_proof.proof.vk::<CompressionCircuit>();
 
     let params = prover.inner.params(*LAYER2_DEGREE).clone();
