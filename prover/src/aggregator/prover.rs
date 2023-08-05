@@ -1,7 +1,6 @@
 use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
-    zkevm::circuit::storage_trace_to_padding_witness_block,
     BatchProof, ChunkProof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
@@ -82,28 +81,16 @@ impl Prover {
         let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
             chunk_hashes_proofs.into_iter().unzip();
 
-        let (mut layer2_snarks, mut storage_traces): (Vec<_>, Vec<_>) = chunk_proofs
-            .into_iter()
-            .map(|proof| proof.to_snark_and_storage_trace())
-            .unzip();
+        let mut layer2_snarks: Vec<_> = chunk_proofs.into_iter().map(|p| p.to_snark()).collect();
 
         if real_chunk_count < MAX_AGG_SNARKS {
-            let padding_witness_block =
-                storage_trace_to_padding_witness_block(storage_traces.pop().unwrap())?;
-            let padding_chunk_hash = ChunkHash::from_witness_block(&padding_witness_block, true);
-            log::info!("Got padding witness block and chunk hash");
-
-            let layer2_padding_snark = self.inner.load_or_gen_final_chunk_snark(
-                &format!("padding_{name}"),
-                &padding_witness_block,
-                output_dir,
-            )?;
-            log::info!("Got padding snark (layer-2): {name}");
+            let padding_snark = layer2_snarks.last().unwrap().clone();
+            let mut padding_chunk_hash = *chunk_hashes.last().unwrap();
+            padding_chunk_hash.is_padding = true;
 
             // Extend to MAX_AGG_SNARKS for both chunk hashes and layer-2 snarks.
             chunk_hashes.extend(repeat(padding_chunk_hash).take(MAX_AGG_SNARKS - real_chunk_count));
-            layer2_snarks
-                .extend(repeat(layer2_padding_snark).take(MAX_AGG_SNARKS - real_chunk_count));
+            layer2_snarks.extend(repeat(padding_snark).take(MAX_AGG_SNARKS - real_chunk_count));
         }
 
         // Load or generate aggregation snark (layer-3).

@@ -41,7 +41,6 @@ impl Verifier {
     }
 
     pub fn verify_chunk_proof(&self, proof: ChunkProof) -> bool {
-        let snark = proof.to_snark_and_storage_trace().0;
-        self.inner.verify_snark(snark)
+        self.inner.verify_snark(proof.to_snark())
     }
 }

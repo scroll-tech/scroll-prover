@@ -16,13 +16,5 @@ pub static ZKEVM_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
     ]))
 });
 
-pub static AGG_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
-    Vec::from_iter(HashSet::from([
-        // TODO: optimize to decrease degree for padding.
-        *INNER_DEGREE,  // For super-circuit padding snark generation
-        *LAYER1_DEGREE, // For layer-1 padding snark generation
-        *LAYER2_DEGREE, // For layer-2 padding snark generation
-        *LAYER3_DEGREE,
-        *LAYER4_DEGREE,
-    ]))
-});
+pub static AGG_DEGREES: Lazy<Vec<u32>> =
+    Lazy::new(|| Vec::from_iter(HashSet::from([*LAYER3_DEGREE, *LAYER4_DEGREE])));

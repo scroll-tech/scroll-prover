@@ -44,19 +44,15 @@ impl ChunkProof {
         dump_as_json(dir, &filename, &self)
     }
 
-    pub fn to_snark_and_storage_trace(self) -> (Snark, StorageTrace) {
+    pub fn to_snark(self) -> Snark {
         let instances = self.proof.instances();
-        let storage_trace = serde_json::from_slice::<StorageTrace>(&self.storage_trace).unwrap();
         let protocol = serde_json::from_slice::<Protocol<G1Affine>>(&self.protocol).unwrap();
 
-        (
-            Snark {
-                protocol,
-                proof: self.proof.proof,
-                instances,
-            },
-            storage_trace,
-        )
+        Snark {
+            protocol,
+            proof: self.proof.proof,
+            instances,
+        }
     }
 }
 
