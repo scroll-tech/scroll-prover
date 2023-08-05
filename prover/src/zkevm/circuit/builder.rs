@@ -50,7 +50,11 @@ pub fn calculate_row_usage_of_witness_block(
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
-        witness_block.context.first_or_default().number,
+        witness_block
+            .context
+            .ctxs
+            .first_key_value()
+            .map_or(0.into(), |(_, ctx)| ctx.number),
         witness_block.txs.len(),
         witness_block
             .txs
