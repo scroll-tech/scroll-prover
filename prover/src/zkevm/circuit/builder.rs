@@ -432,16 +432,20 @@ fn trace_code(
     });
     let code_hash = match code_hash {
         Some(code_hash) => {
-            if log::log_enabled!(log::Level::Trace) {
-                assert_eq!(
-                    code_hash,
-                    CodeDB::hash(&code),
-                    "bytecode len {:?}, step {:?}",
-                    code.len(),
-                    step
-                );
+            if code_hash.is_zero() {
+                CodeDB::hash(&code)
+            } else {
+                if log::log_enabled!(log::Level::Trace) {
+                    assert_eq!(
+                        code_hash,
+                        CodeDB::hash(&code),
+                        "bytecode len {:?}, step {:?}",
+                        code.len(),
+                        step
+                    );
+                }
+                code_hash
             }
-            code_hash
         }
         None => {
             let hash = CodeDB::hash(&code);
@@ -471,6 +475,7 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
     cdb.insert(Vec::new());
 
     for block in blocks.iter().rev() {
+        log::debug!("build_codedb for block {:?}", block.header.number);
         for (er_idx, execution_result) in block.execution_results.iter().enumerate() {
             if let Some(bytecode) = &execution_result.byte_code {
                 let bytecode = decode_bytecode(bytecode)?.to_vec();
