@@ -33,10 +33,13 @@ fn test_agg_prove_verify() {
 
     let chunk_hashes_proofs = load_chunk_hashes_and_proofs("gupeng-tasks", "1");
 
-    let (chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) = chunk_hashes_proofs.clone().into_iter().unzip();
+    let (chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
+        chunk_hashes_proofs.clone().into_iter().unzip();
 
-    log::error!("gupeng - agg-tests - chunk_hashes = {chunk_hashes:#?}");
-    log::error!("gupeng - agg-tests - chunk_proofs = {chunk_proofs:?}");
+    /*
+        log::error!("gupeng - agg-tests - chunk_hashes = {chunk_hashes:#?}");
+        log::error!("gupeng - agg-tests - chunk_proofs = {chunk_proofs:?}");
+    */
 
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = agg_prover
