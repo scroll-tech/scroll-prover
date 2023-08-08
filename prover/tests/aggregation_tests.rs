@@ -3,10 +3,12 @@ use prover::{
     aggregator::{Prover, Verifier},
     common,
     config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
+    proof::from_json_file,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm, BatchProof, ChunkHash, ChunkProof, EvmProof, Proof,
 };
+use serde_derive::{Deserialize, Serialize};
 use snark_verifier_sdk::Snark;
 use std::env;
 
@@ -19,13 +21,22 @@ fn test_agg_prove_verify() {
     let mut agg_prover = Prover::from_params_dir(PARAMS_DIR);
     log::info!("Constructed aggregation prover");
 
-    let trace_paths = vec![
-        "./tests/traces/erc20/1_transfer.json".to_string(),
-        "./tests/traces/erc20/10_transfer.json".to_string(),
-    ];
+    /*
+        let trace_paths = vec![
+            "./tests/traces/erc20/1_transfer.json".to_string(),
+            "./tests/traces/erc20/10_transfer.json".to_string(),
+        ];
 
-    let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
-    log::info!("Generated chunk hashes and proofs");
+        let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
+        log::info!("Generated chunk hashes and proofs");
+    */
+
+    let chunk_hashes_proofs = load_chunk_hashes_and_proofs("gupeng-tasks", "1");
+
+    let (chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) = chunk_hashes_proofs.clone().into_iter().unzip();
+
+    log::error!("gupeng - agg-tests - chunk_hashes = {chunk_hashes:#?}");
+    log::error!("gupeng - agg-tests - chunk_proofs = {chunk_proofs:?}");
 
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = agg_prover
@@ -140,5 +151,23 @@ fn gen_chunk_hashes_and_proofs(
 
             (chunk_hash, proof)
         })
+        .collect()
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct BatchTaskDetail {
+    chunk_infos: Vec<ChunkHash>,
+    chunk_proofs: Vec<ChunkProof>,
+}
+
+fn load_chunk_hashes_and_proofs(dir: &str, filename: &str) -> Vec<(ChunkHash, ChunkProof)> {
+    let batch_task_detail: BatchTaskDetail = from_json_file(dir, filename).unwrap();
+    let chunk_hashes = batch_task_detail.chunk_infos;
+    let chunk_proofs = batch_task_detail.chunk_proofs;
+
+    chunk_hashes[..]
+        .to_vec()
+        .into_iter()
+        .zip(chunk_proofs[..].to_vec().into_iter())
         .collect()
 }
