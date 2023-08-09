@@ -5,7 +5,7 @@ use prover::{
     config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
     proof::from_json_file,
     test_util::{load_block_traces_for_test, PARAMS_DIR},
-    utils::{chunk_trace_to_witness_block, init_env_and_log},
+    utils::{chunk_trace_to_witness_block, init_env_and_log, load_params},
     zkevm, BatchProof, ChunkHash, ChunkProof, EvmProof, Proof,
 };
 use serde_derive::{Deserialize, Serialize};
