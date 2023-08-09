@@ -12,7 +12,7 @@ const PI_BYTES: usize = PI_LEN * 32;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BatchProof {
     #[serde(flatten)]
-    raw: Proof,
+    pub raw: Proof,
 }
 
 impl From<Proof> for BatchProof {
