@@ -11,6 +11,8 @@ impl<C: CircuitExt<Fr>> Verifier<C> {
         let mut yul_file_path = PathBuf::from_str(output_dir).unwrap();
         yul_file_path.push("evm_verifier.yul");
 
+        log::info!("gupeng - evm_verify - vk =\n{:?}", self.vk);
+
         // Generate deployment code and dump YUL file.
         let deployment_code = gen_evm_verifier::<C, Kzg<Bn256, Bdfg21>>(
             &self.params,
