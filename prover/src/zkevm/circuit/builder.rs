@@ -479,11 +479,17 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
         for (er_idx, execution_result) in block.execution_results.iter().enumerate() {
             if let Some(bytecode) = &execution_result.byte_code {
                 let bytecode = decode_bytecode(bytecode)?.to_vec();
+
                 let code_hash = execution_result
                     .to
                     .as_ref()
                     .and_then(|t| t.poseidon_code_hash)
                     .unwrap_or_else(|| CodeDB::hash(&bytecode));
+                let code_hash = if code_hash.is_zero() {
+                    CodeDB::hash(&bytecode)
+                } else {
+                    code_hash
+                };
                 if let Entry::Vacant(e) = cdb.0.entry(code_hash) {
                     e.insert(bytecode);
                     //log::debug!("inserted tx bytecode {:?} {:?}", code_hash, hash);
@@ -536,6 +542,10 @@ pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
     }
 
     log::debug!("building codedb done");
+    for (k, v) in &cdb.0 {
+        assert!(!k.is_zero());
+        log::trace!("codedb codehash {:?}, len {}", k, v.len());
+    }
     Ok(cdb)
 }
 
