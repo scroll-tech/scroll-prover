@@ -20,8 +20,8 @@ fn test_agg_prove_verify() {
     log::info!("Constructed aggregation prover");
 
     let trace_paths = vec![
-        "./tests/traces/erc20/1_transfer.json".to_string(),
-        "./tests/traces/erc20/10_transfer.json".to_string(),
+        "./gupeng-traces/chunk_924".to_string(),
+        "./gupeng-traces/chunk_925".to_string(),
     ];
 
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
