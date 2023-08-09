@@ -5,6 +5,10 @@ members = [
     "types",
 ]
 
+[patch."https://github.com/scroll-tech/snark-verifier"]
+snark-verifier = { git = "https://github.com/scroll-tech//snark-verifier", branch = "debug-evm-verify" }
+snark-verifier-sdk = { git = "https://github.com/scroll-tech//snark-verifier", branch = "debug-evm-verify" }
+
 [patch.crates-io]
 ethers-core = { git = "https://github.com/scroll-tech/ethers-rs.git", branch = "v0.17.0" }
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
