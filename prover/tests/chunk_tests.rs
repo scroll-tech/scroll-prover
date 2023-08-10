@@ -52,9 +52,10 @@ fn gen_and_verify_evm_proof(
         .unwrap();
     log::info!("Got compression thin snark (layer-2)");
 
+    let params = prover.inner.params(*LAYER2_DEGREE).clone();
     assert_eq!(
-        verify_snark_shplonk(
-            prover.inner.params(*LAYER2_DEGREE),
+        verify_snark_shplonk::<CompressionCircuit>(
+            &params,
             layer2_snark,
             prover.inner.pk("layer2").unwrap().get_vk(),
         ),
