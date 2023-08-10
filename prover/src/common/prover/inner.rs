@@ -5,7 +5,6 @@ use crate::{
     utils::{gen_rng, metric_of_witness_block},
     zkevm::circuit::{SuperCircuit, TargetCircuit},
 };
-use aggregator::CompressionCircuit;
 use anyhow::Result;
 use halo2_proofs::halo2curves::bn256::Fr;
 use rand::Rng;
@@ -33,7 +32,7 @@ impl Prover {
         let (params, pk) = self.params_and_pk(id, degree, &C::dummy_inner_circuit())?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
         assert_eq!(
-            verify_snark_shplonk::<CompressionCircuit>(params, snark.clone(), pk.get_vk()),
+            verify_snark_shplonk::<C::Inner>(params, snark.clone(), pk.get_vk()),
             true
         );
 
