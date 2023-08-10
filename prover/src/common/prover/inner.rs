@@ -8,7 +8,7 @@ use crate::{
 use anyhow::Result;
 use halo2_proofs::halo2curves::bn256::Fr;
 use rand::Rng;
-use snark_verifier_sdk::{gen_snark_shplonk, Snark};
+use snark_verifier_sdk::{gen_snark_shplonk, verify_snark_shplonk, Snark};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 impl Prover {
@@ -31,6 +31,10 @@ impl Prover {
 
         let (params, pk) = self.params_and_pk(id, degree, &C::dummy_inner_circuit())?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
+        assert_eq!(
+            verify_snark_shplonk::<C>(params, snark.clone(), pk.get_vk()),
+            true
+        );
 
         Ok(snark)
     }
