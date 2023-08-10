@@ -5,7 +5,7 @@ use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm::{Prover, Verifier},
 };
-use snark_verifier_sdk::Snark;
+use snark_verifier_sdk::{verify_snark_shplonk, Snark};
 use std::env;
 
 #[cfg(feature = "prove_verify")]
@@ -30,7 +30,7 @@ fn test_chunk_prove_verify() {
         .unwrap();
 
     let verifier = gen_and_verify_evm_proof(&output_dir, &mut prover, layer1_snark.clone());
-    gen_and_verify_normal_proof(&output_dir, &mut prover, &verifier, layer1_snark);
+    // gen_and_verify_normal_proof(&output_dir, &mut prover, &verifier, layer1_snark);
 }
 
 fn gen_and_verify_evm_proof(
@@ -38,6 +38,29 @@ fn gen_and_verify_evm_proof(
     prover: &mut Prover,
     layer1_snark: Snark,
 ) -> Verifier {
+    // Load or generate compression thin SNARK (layer-2).
+    let layer2_snark = prover
+        .inner
+        .load_or_gen_comp_snark(
+            "layer2",
+            "layer2",
+            true,
+            *LAYER2_DEGREE,
+            layer1_snark.clone(),
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Got compression thin snark (layer-2)");
+
+    assert_eq!(
+        verify_snark_shplonk(
+            prover.inner.params(*LAYER2_DEGREE),
+            layer2_snark,
+            prover.inner.pk("layer2").unwrap().get_vk(),
+        ),
+        true,
+    );
+
     // Load or generate compression EVM proof (layer-2).
     let evm_proof = prover
         .inner
