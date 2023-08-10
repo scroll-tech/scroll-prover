@@ -6,7 +6,7 @@ use halo2_proofs::{
     poly::{commitment::Params, kzg::commitment::ParamsKZG},
 };
 use rand::Rng;
-use snark_verifier_sdk::{gen_snark_shplonk, CircuitExt, Snark, verify_snark_shplonk};
+use snark_verifier_sdk::{gen_snark_shplonk, verify_snark_shplonk, CircuitExt, Snark};
 
 impl Prover {
     pub fn gen_snark<C: CircuitExt<Fr>>(
