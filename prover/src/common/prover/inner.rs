@@ -31,10 +31,12 @@ impl Prover {
 
         let (params, pk) = self.params_and_pk(id, degree, &C::dummy_inner_circuit())?;
         let snark = gen_snark_shplonk(params, pk, circuit, &mut rng, None::<String>);
-        assert_eq!(
-            verify_snark_shplonk::<C::Inner>(params, snark.clone(), pk.get_vk()),
-            true
-        );
+        if std::env::var("ENABLE_INNER_CHECK").is_ok() {
+            assert_eq!(
+                verify_snark_shplonk::<C::Inner>(params, snark.clone(), pk.get_vk()),
+                true
+            );
+        }
 
         Ok(snark)
     }

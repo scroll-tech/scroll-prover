@@ -7,7 +7,7 @@ use crate::{
 use aggregator::CompressionCircuit;
 use anyhow::{anyhow, Result};
 use rand::Rng;
-use snark_verifier_sdk::Snark;
+use snark_verifier_sdk::{Snark, verify_snark_shplonk};
 use std::env;
 
 impl Prover {
@@ -25,7 +25,15 @@ impl Prover {
             CompressionCircuit::new(self.params(degree), prev_snark, has_accumulator, &mut rng)
                 .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
 
-        self.gen_snark(id, degree, &mut rng, circuit)
+        let snark = self.gen_snark(id, degree, &mut rng, circuit);
+        if snark.is_ok() && env::var("ENABLE_COMPRESSION_CHECK").is_ok() {
+            let snark = snark.clone().unwrap();
+            assert_eq!(
+                verify_snark_shplonk(self.params(degree), snark, self.pk_map[&id].get_vk()),
+                true,
+            );
+        }
+        snark
     }
 
     pub fn load_or_gen_comp_snark(
