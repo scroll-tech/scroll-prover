@@ -23,7 +23,9 @@ use std::{
 };
 use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
 use zkevm_circuits::{
-    evm_circuit::witness::{block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block},
+    evm_circuit::witness::{
+        block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block,
+    },
     util::SubCircuit,
     witness::WithdrawProof,
 };
@@ -220,6 +222,9 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
         block_num,
         total_tx_num,
     );
+    for block_trace in block_traces {
+        log::debug!("start_l1_queue_index: {}", block_trace.start_l1_queue_index,);
+    }
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -336,7 +341,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
-        let mut header = BlockHead::new_with_l1_queue_index(chain_id, Vec::new(), &eth_block)?;
+        let mut header = BlockHead::new_with_l1_queue_index(chain_id, block_trace.start_l1_queue_index, Vec::new(), &eth_block)?;
         // override zeroed minder field with additional "coinbase" field in blocktrace
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
@@ -348,7 +353,11 @@ pub fn block_traces_to_witness_block_with_updated_state(
         let per_block_metric = false;
         if per_block_metric {
             let t = Instant::now();
-            let block = block_convert_with_l1_queue_index::<Fr>(&builder.block, &builder.code_db, block_trace.start_l1_queue_index)?;
+            let block = block_convert_with_l1_queue_index::<Fr>(
+                &builder.block,
+                &builder.code_db,
+                block_trace.start_l1_queue_index,
+            )?;
             log::debug!("block convert time {:?}", t.elapsed());
             let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
             log::debug!(
