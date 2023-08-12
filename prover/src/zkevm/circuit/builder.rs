@@ -336,7 +336,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
-        let mut header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        let mut header = BlockHead::new_with_l1_queue_index(chain_id, Vec::new(), &eth_block)?;
         // override zeroed minder field with additional "coinbase" field in blocktrace
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
