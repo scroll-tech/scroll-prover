@@ -24,7 +24,7 @@ use std::{
 use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
 use zkevm_circuits::{
     evm_circuit::witness::{
-        block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block,
+        block_apply_mpt_state, block_convert_with_l1_queue_index, Block,
     },
     util::SubCircuit,
     witness::WithdrawProof,
@@ -295,6 +295,9 @@ pub fn block_traces_to_witness_block_with_updated_state(
         .map(|block_trace| block_trace.chain_id)
         .next()
         .unwrap_or(*CHAIN_ID);
+    let start_l1_queue_index = block_traces.iter().map(|block_trace| block_trace.start_l1_queue_index)
+        .next()
+        .unwrap_or(0);
     if *CHAIN_ID != chain_id {
         bail!(
             "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
@@ -380,7 +383,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
     builder.set_end_block()?;
 
     log::debug!("converting builder.block to witness block");
-    let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
+    let mut witness_block = block_convert_with_l1_queue_index(&builder.block, &builder.code_db, start_l1_queue_index)?;
     log::debug!(
         "witness_block built with circuits_params {:?}",
         witness_block.circuits_params
