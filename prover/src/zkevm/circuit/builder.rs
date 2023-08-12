@@ -348,7 +348,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         let per_block_metric = false;
         if per_block_metric {
             let t = Instant::now();
-            let block = block_convert::<Fr>(&builder.block, &builder.code_db)?;
+            let block = block_convert_with_l1_queue_index::<Fr>(&builder.block, &builder.code_db, block_trace.start_l1_queue_index)?;
             log::debug!("block convert time {:?}", t.elapsed());
             let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
             log::debug!(
