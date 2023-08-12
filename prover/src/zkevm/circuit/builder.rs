@@ -23,7 +23,7 @@ use std::{
 };
 use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
 use zkevm_circuits::{
-    evm_circuit::witness::{block_apply_mpt_state, block_convert, Block},
+    evm_circuit::witness::{block_apply_mpt_state, block_convert_with_l1_queue_index, Block},
     util::SubCircuit,
     witness::WithdrawProof,
 };
@@ -220,6 +220,9 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
         block_num,
         total_tx_num,
     );
+    for block_trace in block_traces {
+        log::debug!("start_l1_queue_index: {}", block_trace.start_l1_queue_index,);
+    }
     let old_root = if block_traces.is_empty() {
         eth_types::Hash::zero()
     } else {
@@ -290,6 +293,11 @@ pub fn block_traces_to_witness_block_with_updated_state(
         .map(|block_trace| block_trace.chain_id)
         .next()
         .unwrap_or(*CHAIN_ID);
+    let start_l1_queue_index = block_traces
+        .iter()
+        .map(|block_trace| block_trace.start_l1_queue_index)
+        .next()
+        .unwrap_or(0);
     if *CHAIN_ID != chain_id {
         bail!(
             "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
@@ -336,19 +344,29 @@ pub fn block_traces_to_witness_block_with_updated_state(
             geth_trace.push(result.into());
         }
         // TODO: Get the history_hashes.
-        let mut header = BlockHead::new(chain_id, Vec::new(), &eth_block)?;
+        let mut header = BlockHead::new_with_l1_queue_index(
+            chain_id,
+            block_trace.start_l1_queue_index,
+            Vec::new(),
+            &eth_block,
+        )?;
         // override zeroed minder field with additional "coinbase" field in blocktrace
         if let Some(address) = block_trace.coinbase.address {
             header.coinbase = address;
         }
         let block_num = header.number.as_u64();
+        builder.block.start_l1_queue_index = block_trace.start_l1_queue_index;
         builder.block.headers.insert(block_num, header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
         log::debug!("handle_block_inner done for block {:?}", block_num);
         let per_block_metric = false;
         if per_block_metric {
             let t = Instant::now();
-            let block = block_convert::<Fr>(&builder.block, &builder.code_db)?;
+            let block = block_convert_with_l1_queue_index::<Fr>(
+                &builder.block,
+                &builder.code_db,
+                block_trace.start_l1_queue_index,
+            )?;
             log::debug!("block convert time {:?}", t.elapsed());
             let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
             log::debug!(
@@ -371,7 +389,8 @@ pub fn block_traces_to_witness_block_with_updated_state(
     builder.set_end_block()?;
 
     log::debug!("converting builder.block to witness block");
-    let mut witness_block = block_convert(&builder.block, &builder.code_db)?;
+    let mut witness_block =
+        block_convert_with_l1_queue_index(&builder.block, &builder.code_db, start_l1_queue_index)?;
     log::debug!(
         "witness_block built with circuits_params {:?}",
         witness_block.circuits_params

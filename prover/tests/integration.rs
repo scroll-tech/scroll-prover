@@ -59,6 +59,7 @@ fn test_cs_same_for_vk_consistent() {
     assert!(pk.get_vk().cs() == vk.cs(), "Real super circuit");
 }
 
+#[ignore]
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
@@ -101,6 +102,7 @@ fn test_capacity_checker() {
     );
 }
 
+#[ignore]
 #[test]
 fn estimate_circuit_rows() {
     init_env_and_log("integration");

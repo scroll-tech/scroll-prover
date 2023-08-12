@@ -1,6 +1,6 @@
 use crate::{
     common, config::ZKEVM_DEGREES, utils::chunk_trace_to_witness_block,
-    zkevm::circuit::normalize_withdraw_proof, ChunkProof,
+    zkevm::circuit::normalize_withdraw_proof, ChunkHash, ChunkProof,
 };
 use anyhow::Result;
 use types::eth::BlockTrace;
@@ -53,10 +53,17 @@ impl Prover {
         match output_dir.and_then(|output_dir| ChunkProof::from_json_file(output_dir, &name).ok()) {
             Some(proof) => Ok(proof),
             None => {
+                let chunk_hash = ChunkHash::from_witness_block(&witness_block, false);
+
                 let storage_trace =
                     normalize_withdraw_proof(&witness_block.mpt_updates.withdraw_proof);
 
-                let result = ChunkProof::new(snark, storage_trace, self.inner.pk("layer2"));
+                let result = ChunkProof::new(
+                    snark,
+                    storage_trace,
+                    self.inner.pk("layer2"),
+                    Some(chunk_hash),
+                );
 
                 if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
                     proof.dump(output_dir, &name)?;
