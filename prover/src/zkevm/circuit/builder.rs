@@ -350,6 +350,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             header.coinbase = address;
         }
         let block_num = header.number.as_u64();
+        builder.block.start_l1_queue_index = block_trace.start_l1_queue_index;
         builder.block.headers.insert(block_num, header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
         log::debug!("handle_block_inner done for block {:?}", block_num);
