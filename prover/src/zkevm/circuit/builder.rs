@@ -23,7 +23,7 @@ use std::{
 };
 use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
 use zkevm_circuits::{
-    evm_circuit::witness::{block_apply_mpt_state, block_convert, Block},
+    evm_circuit::witness::{block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block},
     util::SubCircuit,
     witness::WithdrawProof,
 };
