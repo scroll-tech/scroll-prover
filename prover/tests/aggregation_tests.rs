@@ -16,9 +16,6 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let mut agg_prover = Prover::from_params_dir(PARAMS_DIR);
-    log::info!("Constructed aggregation prover");
-
     let trace_paths = vec![
         "./tests/traces/erc20/1_transfer.json".to_string(),
         "./tests/traces/erc20/10_transfer.json".to_string(),
@@ -26,6 +23,10 @@ fn test_agg_prove_verify() {
 
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
     log::info!("Generated chunk hashes and proofs");
+
+    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_0.protocol");
+    let mut agg_prover = Prover::from_dirs(PARAMS_DIR, &output_dir);
+    log::info!("Constructed aggregation prover");
 
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = agg_prover
@@ -130,12 +131,13 @@ fn gen_chunk_hashes_and_proofs(
 
     chunk_traces
         .into_iter()
-        .map(|chunk_trace| {
+        .enumerate()
+        .map(|(i, chunk_trace)| {
             let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
             let chunk_hash = ChunkHash::from_witness_block(&witness_block, false);
 
             let proof = zkevm_prover
-                .gen_chunk_proof(chunk_trace, None, Some(output_dir))
+                .gen_chunk_proof(chunk_trace, Some(&i.to_string()), Some(output_dir))
                 .unwrap();
 
             (chunk_hash, proof)
