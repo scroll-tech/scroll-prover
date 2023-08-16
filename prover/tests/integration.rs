@@ -8,13 +8,23 @@ use prover::{
     inner::{Prover, Verifier},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
-    utils::{get_block_trace_from_file, init_env_and_log, load_params},
+    utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::{
         circuit::{block_traces_to_padding_witness_block, SuperCircuit, TargetCircuit},
         CircuitCapacityChecker,
     },
 };
 use zkevm_circuits::util::SubCircuit;
+
+#[test]
+fn test_short_git_version() {
+    init_env_and_log("integration");
+
+    let git_version = short_git_version();
+    log::info!("short_git_version = {git_version}");
+
+    assert_eq!(git_version.len(), 7);
+}
 
 #[ignore]
 #[test]

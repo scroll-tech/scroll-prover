@@ -28,7 +28,7 @@ use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
-pub const GIT_VERSION: &str = git_version!();
+pub const GIT_VERSION: &str = git_version!(args = ["--abbrev=7", "--always"]);
 pub static LOGGER: Once = Once::new();
 
 /// Load setup params from a file.
@@ -160,6 +160,7 @@ pub fn init_env_and_log(id: &str) -> String {
         log4rs::init_config(config).unwrap();
 
         log::info!("git version {}", GIT_VERSION);
+        log::info!("short git version {}", short_git_version());
     });
 
     output_dir
@@ -190,6 +191,17 @@ pub fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
 pub fn gen_rng() -> impl Rng + Send {
     let seed = [0u8; 16];
     XorShiftRng::from_seed(seed)
+}
+
+pub fn short_git_version() -> String {
+    let commit_version = GIT_VERSION.split('-').last().unwrap();
+
+    // Check if use commit object as fallback.
+    if commit_version.len() < 8 {
+        commit_version.to_string()
+    } else {
+        commit_version[1..8].to_string()
+    }
 }
 
 pub fn tick(desc: &str) {
