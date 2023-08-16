@@ -293,6 +293,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         .map(|block_trace| block_trace.chain_id)
         .next()
         .unwrap_or(*CHAIN_ID);
+    // total l1 msgs popped before this chunk
     let start_l1_queue_index = block_traces
         .iter()
         .map(|block_trace| block_trace.start_l1_queue_index)
@@ -355,7 +356,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             header.coinbase = address;
         }
         let block_num = header.number.as_u64();
-        builder.block.start_l1_queue_index = block_trace.start_l1_queue_index;
+        builder.block.start_l1_queue_index = start_l1_queue_index; // the chunk's start_l1_queue_index
         builder.block.headers.insert(block_num, header);
         builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
         log::debug!("handle_block_inner done for block {:?}", block_num);
@@ -365,7 +366,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
             let block = block_convert_with_l1_queue_index::<Fr>(
                 &builder.block,
                 &builder.code_db,
-                block_trace.start_l1_queue_index,
+                start_l1_queue_index,
             )?;
             log::debug!("block convert time {:?}", t.elapsed());
             let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
