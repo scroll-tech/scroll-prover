@@ -160,6 +160,7 @@ pub fn init_env_and_log(id: &str) -> String {
         log4rs::init_config(config).unwrap();
 
         log::info!("git version {}", GIT_VERSION);
+        log::info!("short git version {}", short_git_version());
     });
 
     output_dir
@@ -190,6 +191,10 @@ pub fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
 pub fn gen_rng() -> impl Rng + Send {
     let seed = [0u8; 16];
     XorShiftRng::from_seed(seed)
+}
+
+pub fn short_git_version() -> String {
+    GIT_VERSION.split('-').last().unwrap()[1..8].to_string()
 }
 
 pub fn tick(desc: &str) {
