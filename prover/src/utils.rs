@@ -21,6 +21,7 @@ use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
     path::{Path, PathBuf},
+    process::Command,
     str::FromStr,
     sync::Once,
 };
@@ -29,7 +30,6 @@ use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
-pub const GIT_VERSION_SHORT_LEN: usize = 7;
 pub static LOGGER: Once = Once::new();
 
 /// Load setup params from a file.
@@ -194,7 +194,12 @@ pub fn gen_rng() -> impl Rng + Send {
 }
 
 pub fn short_git_version() -> String {
-    GIT_VERSION[..GIT_VERSION_SHORT_LEN].to_string()
+    let output = Command::new("git")
+        .args(&["rev-parse", "--short", "HEAD"])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8_lossy(&output.stdout).trim().to_string()
 }
 
 pub fn tick(desc: &str) {
