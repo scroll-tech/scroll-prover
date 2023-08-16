@@ -8,9 +8,7 @@ use prover::{
     inner::{Prover, Verifier},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
-    utils::{
-        get_block_trace_from_file, init_env_and_log, load_params, short_git_version,
-    },
+    utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::{
         circuit::{block_traces_to_padding_witness_block, SuperCircuit, TargetCircuit},
         CircuitCapacityChecker,

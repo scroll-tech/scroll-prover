@@ -195,7 +195,7 @@ pub fn gen_rng() -> impl Rng + Send {
 
 pub fn short_git_version() -> String {
     let output = Command::new("git")
-        .args(&["rev-parse", "--short", "HEAD"])
+        .args(["rev-parse", "--short", "HEAD"])
         .output()
         .expect("Failed to execute git command");
 
