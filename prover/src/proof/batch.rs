@@ -40,7 +40,7 @@ impl From<Proof> for BatchProof {
                 proof,
                 instances,
                 vk,
-                git_version,
+                proof.git_version,
             },
         }
     }
