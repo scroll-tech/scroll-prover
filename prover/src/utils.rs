@@ -21,7 +21,6 @@ use std::{
     fs::{self, metadata, File},
     io::{BufReader, Read},
     path::{Path, PathBuf},
-    process::Command,
     str::FromStr,
     sync::Once,
 };
@@ -194,12 +193,7 @@ pub fn gen_rng() -> impl Rng + Send {
 }
 
 pub fn short_git_version() -> String {
-    let output = Command::new("git")
-        .args(["rev-parse", "--short", "HEAD"])
-        .output()
-        .expect("Failed to execute git command");
-
-    String::from_utf8_lossy(&output.stdout).trim().to_string()
+    GIT_VERSION.split("-").last().unwrap()[1..8].to_string()
 }
 
 pub fn tick(desc: &str) {
