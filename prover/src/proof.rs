@@ -1,6 +1,6 @@
 use crate::{
     io::{deserialize_fr, deserialize_vk, serialize_fr, serialize_vk, write_file},
-    utils::GIT_VERSION,
+    utils::short_git_version,
 };
 use anyhow::{bail, Result};
 use halo2_proofs::{
@@ -45,7 +45,7 @@ impl Proof {
     pub fn new(proof: Vec<u8>, instances: &[Vec<Fr>], pk: Option<&ProvingKey<G1Affine>>) -> Self {
         let instances = serialize_instances(instances);
         let vk = pk.map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
-        let git_version = Some(GIT_VERSION.to_string());
+        let git_version = Some(short_git_version());
 
         Self {
             proof,
@@ -62,7 +62,7 @@ impl Proof {
     pub fn from_snark(snark: Snark, vk: Vec<u8>) -> Self {
         let proof = snark.proof;
         let instances = serialize_instances(&snark.instances);
-        let git_version = Some(GIT_VERSION.to_string());
+        let git_version = Some(short_git_version());
 
         Proof {
             proof,

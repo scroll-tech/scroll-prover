@@ -1,5 +1,5 @@
 use super::{dump_as_json, dump_data, dump_vk, from_json_file, serialize_instance, Proof};
-use crate::utils::GIT_VERSION;
+use crate::utils::short_git_version;
 use anyhow::Result;
 use serde_derive::{Deserialize, Serialize};
 use snark_verifier_sdk::encode_calldata;
@@ -23,6 +23,7 @@ impl From<Proof> for BatchProof {
         assert_eq!(instances[0].len(), ACC_LEN + PI_LEN);
 
         let vk = proof.vk;
+        let git_version = proof.git_version;
 
         // raw_proof = acc + proof
         let proof = serialize_instance(&instances[0][..ACC_LEN])
@@ -33,14 +34,12 @@ impl From<Proof> for BatchProof {
         // raw_instances = pi_data
         let instances = serialize_instance(&instances[0][ACC_LEN..]);
 
-        let git_version = Some(GIT_VERSION.to_string());
-
         Self {
             raw: Proof {
                 proof,
                 instances,
                 vk,
-                proof.git_version,
+                git_version,
             },
         }
     }
@@ -83,7 +82,7 @@ impl BatchProof {
         instances.extend(self.raw.instances);
 
         let vk = self.raw.vk;
-        let git_version = Some(GIT_VERSION.to_string());
+        let git_version = Some(short_git_version());
 
         Proof {
             proof,

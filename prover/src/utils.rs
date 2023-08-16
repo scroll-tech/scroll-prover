@@ -29,6 +29,7 @@ use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
 pub const GIT_VERSION: &str = git_version!();
+pub const GIT_VERSION_SHORT_LEN: usize = 7;
 pub static LOGGER: Once = Once::new();
 
 /// Load setup params from a file.
@@ -190,6 +191,10 @@ pub fn param_path_for_degree(params_dir: &str, degree: u32) -> String {
 pub fn gen_rng() -> impl Rng + Send {
     let seed = [0u8; 16];
     XorShiftRng::from_seed(seed)
+}
+
+pub fn short_git_version() -> String {
+    GIT_VERSION[..GIT_VERSION_SHORT_LEN].to_string()
 }
 
 pub fn tick(desc: &str) {
