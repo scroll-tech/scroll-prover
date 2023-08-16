@@ -37,8 +37,8 @@ impl Prover {
         }
     }
 
-    // Return true if chunk protocol is same with the one in prover, false otherwise.
-    pub fn check_chunk_protocol(&self, chunk_proofs: &[ChunkProof]) -> bool {
+    // Return true if chunk proofs are valid (same protocol), false otherwise.
+    pub fn check_chunk_proofs(&self, chunk_proofs: &[ChunkProof]) -> bool {
         chunk_proofs
             .iter()
             .all(|proof| proof.protocol == self.chunk_protocol)
@@ -100,7 +100,7 @@ impl Prover {
         let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
             chunk_hashes_proofs.into_iter().unzip();
 
-        if !self.check_chunk_protocol(&chunk_proofs) {
+        if !self.check_chunk_proofs(&chunk_proofs) {
             bail!("non-match-chunk-protocol: {name}");
         }
 

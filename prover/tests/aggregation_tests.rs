@@ -24,7 +24,7 @@ fn test_agg_prove_verify() {
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
     log::info!("Generated chunk hashes and proofs");
 
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_0.protocol");
+    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
     let mut agg_prover = Prover::from_dirs(PARAMS_DIR, &output_dir);
     log::info!("Constructed aggregation prover");
 
