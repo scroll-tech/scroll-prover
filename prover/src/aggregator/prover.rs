@@ -1,28 +1,47 @@
 use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
+    io::read_all,
+    utils::read_env_var,
     BatchProof, ChunkProof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
-use anyhow::Result;
+use anyhow::{bail, Result};
+use once_cell::sync::Lazy;
 use snark_verifier_sdk::Snark;
-use std::iter::repeat;
+use std::{iter::repeat, path::Path};
+
+static CHUNK_PROTOCOL_FILENAME: Lazy<String> =
+    Lazy::new(|| read_env_var("CHUNK_PROTOCOL_FILENAME", "chunk.protocol".to_string()));
 
 #[derive(Debug)]
 pub struct Prover {
     // Make it public for testing with inner functions (unnecessary for FFI).
     pub inner: common::Prover,
-}
-
-impl From<common::Prover> for Prover {
-    fn from(inner: common::Prover) -> Self {
-        Self { inner }
-    }
+    pub chunk_protocol: Vec<u8>,
 }
 
 impl Prover {
-    pub fn from_params_dir(params_dir: &str) -> Self {
-        common::Prover::from_params_dir(params_dir, &AGG_DEGREES).into()
+    pub fn from_dirs(params_dir: &str, assets_dir: &str) -> Self {
+        let inner = common::Prover::from_params_dir(params_dir, &AGG_DEGREES);
+
+        let chunk_protocol_path = format!("{assets_dir}/{}", *CHUNK_PROTOCOL_FILENAME);
+        if !Path::new(&chunk_protocol_path).exists() {
+            panic!("File {chunk_protocol_path} must exist");
+        }
+        let chunk_protocol = read_all(&chunk_protocol_path);
+
+        Self {
+            inner,
+            chunk_protocol,
+        }
+    }
+
+    // Return true if chunk protocol is same with the one in prover, false otherwise.
+    pub fn check_chunk_protocol(&self, chunk_proofs: &[ChunkProof]) -> bool {
+        chunk_proofs
+            .iter()
+            .all(|proof| proof.protocol == self.chunk_protocol)
     }
 
     // Return the EVM proof for verification.
@@ -80,6 +99,10 @@ impl Prover {
 
         let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
             chunk_hashes_proofs.into_iter().unzip();
+
+        if !self.check_chunk_protocol(&chunk_proofs) {
+            bail!("non-match-chunk-protocol: {name}");
+        }
 
         let mut layer2_snarks: Vec<_> = chunk_proofs.into_iter().map(|p| p.to_snark()).collect();
 
