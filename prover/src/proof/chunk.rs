@@ -47,7 +47,7 @@ impl ChunkProof {
 
         // Dump vk and protocol.
         dump_vk(dir, &filename, &self.proof.vk);
-        dump_data(dir, &format!("proto_{filename}.protocol"), &self.protocol);
+        dump_data(dir, &format!("chunk_{filename}.protocol"), &self.protocol);
 
         dump_as_json(dir, &filename, &self)
     }
