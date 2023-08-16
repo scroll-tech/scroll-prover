@@ -28,7 +28,7 @@ use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;
-pub const GIT_VERSION: &str = git_version!();
+pub const GIT_VERSION: &str = git_version!(args = ["--abbrev=7", "--always"]);
 pub static LOGGER: Once = Once::new();
 
 /// Load setup params from a file.
@@ -194,7 +194,14 @@ pub fn gen_rng() -> impl Rng + Send {
 }
 
 pub fn short_git_version() -> String {
-    GIT_VERSION.split('-').last().unwrap()[1..8].to_string()
+    let commit_version = GIT_VERSION.split('-').last().unwrap();
+
+    // Check if use commit object as fallback.
+    if commit_version.len() < 8 {
+        commit_version.to_string()
+    } else {
+        commit_version[1..8].to_string()
+    }
 }
 
 pub fn tick(desc: &str) {
