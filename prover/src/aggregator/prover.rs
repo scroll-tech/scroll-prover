@@ -8,6 +8,7 @@ use crate::{
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::{bail, Result};
 use once_cell::sync::Lazy;
+use sha2::{Digest, Sha256};
 use snark_verifier_sdk::Snark;
 use std::{iter::repeat, path::Path};
 
@@ -39,9 +40,19 @@ impl Prover {
 
     // Return true if chunk proofs are valid (same protocol), false otherwise.
     pub fn check_chunk_proofs(&self, chunk_proofs: &[ChunkProof]) -> bool {
-        chunk_proofs
-            .iter()
-            .all(|proof| proof.protocol == self.chunk_protocol)
+        chunk_proofs.iter().enumerate().all(|(i, proof)| {
+            let result = proof.protocol == self.chunk_protocol;
+            if !result {
+                log::error!(
+                    "Non-match protocol of chunk-proof index-{}: expected = {:x}, actual = {:x}",
+                    i,
+                    Sha256::digest(&self.chunk_protocol),
+                    Sha256::digest(&proof.protocol),
+                );
+            }
+
+            result
+        })
     }
 
     // Return the EVM proof for verification.
