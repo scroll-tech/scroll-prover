@@ -1,4 +1,7 @@
-use crate::io::{deserialize_fr, deserialize_vk, serialize_fr, serialize_vk, write_file};
+use crate::{
+    io::{deserialize_fr, deserialize_vk, serialize_fr, serialize_vk, write_file},
+    utils::short_git_version,
+};
 use anyhow::{bail, Result};
 use halo2_proofs::{
     halo2curves::bn256::{Fr, G1Affine},
@@ -35,17 +38,20 @@ pub struct Proof {
     instances: Vec<u8>,
     #[serde(with = "base64")]
     vk: Vec<u8>,
+    pub git_version: Option<String>,
 }
 
 impl Proof {
     pub fn new(proof: Vec<u8>, instances: &[Vec<Fr>], pk: Option<&ProvingKey<G1Affine>>) -> Self {
         let instances = serialize_instances(instances);
         let vk = pk.map_or_else(Vec::new, |pk| serialize_vk(pk.get_vk()));
+        let git_version = Some(short_git_version());
 
         Self {
             proof,
             instances,
             vk,
+            git_version,
         }
     }
 
@@ -54,12 +60,15 @@ impl Proof {
     }
 
     pub fn from_snark(snark: Snark, vk: Vec<u8>) -> Self {
+        let proof = snark.proof;
         let instances = serialize_instances(&snark.instances);
+        let git_version = Some(short_git_version());
 
         Proof {
-            proof: snark.proof,
-            vk,
+            proof,
             instances,
+            vk,
+            git_version,
         }
     }
 
