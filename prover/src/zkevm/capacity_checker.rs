@@ -27,6 +27,8 @@ impl Default for RowUsage {
     }
 }
 
+const NORMALIZED_ROW_LIMIT: usize = 1_000_000;
+
 impl RowUsage {
     pub fn new() -> Self {
         Self {
@@ -68,7 +70,7 @@ impl RowUsage {
             7 * MAX_EXP_STEPS, // exp
             MAX_KECCAK_ROWS,
             MAX_RWS,
-            MAX_MPT_ROWS,  // poseidon
+            MAX_MPT_ROWS,    // poseidon
             (1 << 20) - 256, // sig
             (1 << 20) - 256, // FIXME: pairing may be limit to 1, fix later
             MAX_MPT_ROWS,
@@ -94,7 +96,7 @@ impl RowUsage {
         Self {
             row_usage_details,
             row_number,
-            is_ok: row_number < (1 << *INNER_DEGREE) - 256,
+            is_ok: row_number < NORMALIZED_ROW_LIMIT,
         }
     }
     pub fn add(&mut self, other: &RowUsage) {
@@ -113,7 +115,7 @@ impl RowUsage {
             .map(|x| x.row_number)
             .max()
             .unwrap();
-        self.is_ok = self.row_number < 1_000_000;
+        self.is_ok = self.row_number < NORMALIZED_ROW_LIMIT;
     }
 }
 
