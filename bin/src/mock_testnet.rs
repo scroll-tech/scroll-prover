@@ -28,77 +28,55 @@ async fn main() {
     let provider = Provider::<Http>::try_from(&setting.l2geth_api_url)
         .expect("mock-testnet: failed to initialize ethers Provider");
 
-    for i in setting.begin_batch..=setting.end_batch {
-        log::info!("mock-testnet: requesting block traces of batch {i}");
+    for batch_id in setting.begin_batch..=setting.end_batch {
+        log::info!("mock-testnet: requesting block traces of batch {batch_id}");
 
-        let chunks = get_traces_by_block_api(&setting, i).await;
+        let chunks = get_traces_by_block_api(&setting, batch_id).await;
 
-        let chunks =
-            chunks.unwrap_or_else(|_| panic!("mock-testnet: failed to request API with batch-{i}"));
+        let chunks = chunks.unwrap_or_else(|_| {
+            panic!("mock-testnet: failed to request API with batch-{batch_id}")
+        });
 
         match chunks {
             None => {
-                log::info!("mock-testnet: finished to prove at batch-{i}");
+                log::info!("mock-testnet: finished to prove at batch-{batch_id}");
                 break;
             }
             Some(chunks) => {
                 for chunk in chunks {
-                    let ii = chunk.index;
+                    let chunk_id = chunk.index;
                     log::info!("chunk {:?}", chunk);
 
                     // fetch traces
                     let mut block_traces: Vec<BlockTrace> = vec![];
-                    for i in chunk.start_block_number..=chunk.end_block_number {
-                        log::info!("mock-testnet: requesting trace of block {i}");
+                    for block_id in chunk.start_block_number..=chunk.end_block_number {
+                        log::info!("mock-testnet: requesting trace of block {block_id}");
 
                         let trace = provider
-                            .request("scroll_getBlockTraceByNumberOrHash", [format!("{i:#x}")])
+                            .request(
+                                "scroll_getBlockTraceByNumberOrHash",
+                                [format!("{block_id:#x}")],
+                            )
                             .await
                             .unwrap();
                         block_traces.push(trace);
                     }
 
-                    // mock prove or estimate rows
-                    let rows_only = true;
-                    let result = (|| {
-                        if rows_only {
-                            let gas_total: u64 = block_traces
-                                .iter()
-                                .map(|b| b.header.gas_used.as_u64())
-                                .sum();
-                            let witness_block = block_traces_to_witness_block(&block_traces)?;
-                            let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-                            log::info!(
-                                "rows of batch {}(block range {:?} to {:?}):",
-                                i,
-                                block_traces.first().and_then(|b| b.header.number),
-                                block_traces.last().and_then(|b| b.header.number),
-                            );
-                            for r in &rows {
-                                log::info!("rows of {}: {}", r.name, r.row_num_real);
-                            }
-                            let row_num = rows.iter().map(|x| x.row_num_real).max().unwrap();
-                            log::info!(
-                                "final rows of chunk {}: row {}, gas {}, gas/row {:.2}",
-                                ii,
-                                row_num,
-                                gas_total,
-                                gas_total as f64 / row_num as f64
-                            );
-                            Ok(())
-                        } else {
-                            Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces)
-                        }
-                    })();
+                    //let result = estimate_rows(&block_traces, i, chunk_id);
+                    let result =
+                        Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces);
+
                     match result {
                         Ok(_) => {
                             log::info!(
-                                "mock-testnet: succeeded to prove {ii}th chunk inside batch {i}"
+                                "mock-testnet: succeeded to prove chunk {chunk_id} inside batch {batch_id}"
                             )
                         }
-                        Err(err) => log::error!(
-                            "mock-testnet: failed to prove {ii}th chunk inside batch {i}:\n{err:?}"
-                        ),
+                        Err(err) => {
+                            log::error!(
+                                "mock-testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{err:?}"
+                            );
+                        }
                     }
                 }
             }
@@ -106,6 +84,31 @@ async fn main() {
     }
 
     log::info!("mock-testnet: end");
+}
+
+fn estimate_rows(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> anyhow::Result<()> {
+    let gas_total: u64 = block_traces
+        .iter()
+        .map(|b| b.header.gas_used.as_u64())
+        .sum();
+    let witness_block = block_traces_to_witness_block(&block_traces)?;
+    let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+    log::info!(
+        "rows of batch {batch_id}(block range {:?} to {:?}):",
+        block_traces.first().and_then(|b| b.header.number),
+        block_traces.last().and_then(|b| b.header.number),
+    );
+    for r in &rows {
+        log::info!("rows of {}: {}", r.name, r.row_num_real);
+    }
+    let row_num = rows.iter().map(|x| x.row_num_real).max().unwrap();
+    log::info!(
+        "final rows of chunk {chunk_id}: row {}, gas {}, gas/row {:.2}",
+        row_num,
+        gas_total,
+        gas_total as f64 / row_num as f64
+    );
+    Ok(())
 }
 
 /// Request block traces by first using rollup API to get chunk info, then fetching blocks from

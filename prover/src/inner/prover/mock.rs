@@ -14,11 +14,7 @@ impl<C: TargetCircuit> Prover<C> {
     }
 
     pub fn mock_prove_target_circuit_batch(block_traces: &[BlockTrace]) -> anyhow::Result<()> {
-        log::info!(
-            "start mock prove {}, rows needed {:?}",
-            C::name(),
-            C::estimate_rows(block_traces)
-        );
+        log::info!("start mock prove {}", C::name());
         let original_block_len = block_traces.len();
         let mut block_traces = block_traces.to_vec();
         check_batch_capacity(&mut block_traces)?;
