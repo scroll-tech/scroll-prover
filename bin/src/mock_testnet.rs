@@ -91,7 +91,7 @@ fn estimate_rows(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> a
         .iter()
         .map(|b| b.header.gas_used.as_u64())
         .sum();
-    let witness_block = block_traces_to_witness_block(&block_traces)?;
+    let witness_block = block_traces_to_witness_block(block_traces)?;
     let rows = calculate_row_usage_of_witness_block(&witness_block)?;
     log::info!(
         "rows of batch {batch_id}(block range {:?} to {:?}):",
