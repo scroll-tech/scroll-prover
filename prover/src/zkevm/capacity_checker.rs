@@ -114,7 +114,6 @@ impl RowUsage {
             .max()
             .unwrap();
         self.is_ok = self.row_number < 1_000_000;
-        // self.is_ok = self.row_number < (1 << *INNER_DEGREE) - 256;
     }
 }
 
