@@ -7,11 +7,9 @@ use super::circuit::{
 
 use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
-    fill_zktrie_state_from_proofs,
 };
 use eth_types::H256;
 use itertools::Itertools;
-use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
 
@@ -118,9 +116,6 @@ pub struct CircuitCapacityChecker {
     pub light_mode: bool,
     pub acc_row_usage: RowUsage,
     pub row_usages: Vec<RowUsage>,
-    pub state: Option<ZktrieState>,
-    // poseidon codehash to code len
-    pub codelen: HashMap<H256, usize>,
 }
 
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of
@@ -139,13 +134,11 @@ impl CircuitCapacityChecker {
         Self {
             acc_row_usage: RowUsage::new(),
             row_usages: Vec::new(),
-            state: None,
             light_mode: true,
             codelen: HashMap::new(),
         }
     }
     pub fn reset(&mut self) {
-        self.state = None;
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
         self.codelen = HashMap::new();
@@ -155,28 +148,10 @@ impl CircuitCapacityChecker {
         txs: &[TxTrace],
     ) -> Result<RowUsage, anyhow::Error> {
         assert!(!txs.is_empty());
-        if self.state.is_none() {
-            self.state = Some(ZktrieState::construct(txs[0].storage_trace.root_before));
-        }
         let traces = txs;
-        let state = self.state.as_mut().unwrap();
-        fill_zktrie_state_from_proofs(state, traces, self.light_mode)?;
-        let (witness_block, codedb) =
-            block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
-        let mut rows = calculate_row_usage_of_witness_block(&witness_block)?;
-
-        // Dedup bytecode row usage for bytecode circuit / poseidon circuit
-        for (hash, bytes) in &codedb.0 {
-            if self.codelen.contains_key(hash) {
-                assert_eq!(rows[2].name, "bytecode");
-                rows[2].row_num_real -= bytes.len() + 1;
-                assert_eq!(rows[10].name, "poseidon");
-                rows[10].row_num_real -= bytes.len() / (31 * 2) * 9;
-            } else {
-                self.codelen.insert(*hash, bytes.len());
-            }
-        }
-
+        let witness_block =
+            block_traces_to_witness_block_with_updated_state(traces, self.light_mode)?;
+        let rows = calculate_row_usage_of_witness_block(&witness_block)?;
         let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
             .map(|x| SubCircuitRowUsage {

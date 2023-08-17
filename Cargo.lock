@@ -23,7 +23,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "ark-std",
  "env_logger 0.10.0",
@@ -419,7 +419,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -433,6 +433,7 @@ dependencies = [
  "lazy_static",
  "log",
  "mock",
+ "mpt-zktrie",
  "once_cell",
  "poseidon-circuit",
  "rand",
@@ -1122,7 +1123,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1387,7 +1388,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1600,7 +1601,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1640,7 +1641,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -2246,7 +2247,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2446,7 +2447,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2461,9 +2462,8 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
- "bus-mapping",
  "eth-types",
  "halo2-mpt-circuits",
  "halo2_proofs",
@@ -4712,7 +4712,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.7.5#aa9a9aff698a5b253d1f3c29ea3d3006364777bf"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/supercircuit_test_by_l2trace#61cb695d1066cdfe63dd65d4368ba48d42386dd9"
 dependencies = [
  "array-init",
  "bus-mapping",
