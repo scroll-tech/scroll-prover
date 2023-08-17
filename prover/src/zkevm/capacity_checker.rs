@@ -68,7 +68,7 @@ impl RowUsage {
             7 * MAX_EXP_STEPS, // exp
             MAX_KECCAK_ROWS,
             MAX_RWS,
-            MAX_MPT_ROWS,  /* poseidon */
+            MAX_MPT_ROWS,  // poseidon
             (1 << 20) - 256, // sig
             (1 << 20) - 256, // FIXME: pairing may be limit to 1, fix later
             MAX_MPT_ROWS,
