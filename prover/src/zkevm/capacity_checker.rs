@@ -69,8 +69,8 @@ impl RowUsage {
             MAX_KECCAK_ROWS,
             MAX_RWS,
             MAX_MPT_ROWS,  /* poseidon */
-            1 << 20 - 256, // sig
-            1 << 20 - 256, // FIXME: pairing may be limit to 1, fix later
+            (1 << 20) - 256, // sig
+            (1 << 20) - 256, // FIXME: pairing may be limit to 1, fix later
             MAX_MPT_ROWS,
         ]
         .map(|x| (x as f32 * 0.95) as usize);
