@@ -24,7 +24,7 @@ use std::{
     str::FromStr,
     sync::Once,
 };
-use types::eth::{BlockTrace, BlockTraceJsonRpcResult};
+use types::{BlockTraceJsonRpcResult, eth::BlockTrace};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 pub const DEFAULT_SERDE_FORMAT: SerdeFormat = SerdeFormat::RawBytesUnchecked;

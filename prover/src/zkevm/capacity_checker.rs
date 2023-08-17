@@ -1,9 +1,7 @@
 use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
-    fill_zktrie_state_from_proofs,
 };
 use itertools::Itertools;
-use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
 
@@ -125,7 +123,6 @@ pub struct CircuitCapacityChecker {
     pub light_mode: bool,
     pub acc_row_usage: RowUsage,
     pub row_usages: Vec<RowUsage>,
-    pub state: Option<ZktrieState>,
 }
 
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of
@@ -144,12 +141,10 @@ impl CircuitCapacityChecker {
         Self {
             acc_row_usage: RowUsage::new(),
             row_usages: Vec::new(),
-            state: None,
             light_mode: true,
         }
     }
     pub fn reset(&mut self) {
-        self.state = None;
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
     }
@@ -158,14 +153,9 @@ impl CircuitCapacityChecker {
         txs: &[TxTrace],
     ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
         assert!(!txs.is_empty());
-        if self.state.is_none() {
-            self.state = Some(ZktrieState::construct(txs[0].storage_trace.root_before));
-        }
         let traces = txs;
-        let state = self.state.as_mut().unwrap();
-        fill_zktrie_state_from_proofs(state, traces, self.light_mode)?;
         let witness_block =
-            block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
+            block_traces_to_witness_block_with_updated_state(traces, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
         let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
