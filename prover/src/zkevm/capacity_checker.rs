@@ -2,7 +2,6 @@ use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
     fill_zktrie_state_from_proofs,
 };
-use crate::config::INNER_DEGREE;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
