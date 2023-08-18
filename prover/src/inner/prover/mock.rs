@@ -15,16 +15,16 @@ impl<C: TargetCircuit> Prover<C> {
     }
 
     pub fn mock_prove_target_circuit_batch(block_traces: &[BlockTrace]) -> anyhow::Result<()> {
-        let witness_block = block_traces_to_witness_block(&block_traces)?;
+        let witness_block = block_traces_to_witness_block(block_traces)?;
         Self::mock_prove_witness_block(&witness_block)
     }
 
     pub fn mock_prove_witness_block(witness_block: &Block<Fr>) -> anyhow::Result<()> {
         log::info!(
             "mock proving batch, batch metric {:?}",
-            metric_of_witness_block(&witness_block)
+            metric_of_witness_block(witness_block)
         );
-        let (circuit, instance) = C::from_witness_block(&witness_block)?;
+        let (circuit, instance) = C::from_witness_block(witness_block)?;
         let prover = MockProver::<Fr>::run(*INNER_DEGREE, &circuit, instance)?;
         if let Err(errs) = prover.verify_par() {
             log::error!("err num: {}", errs.len());
@@ -35,7 +35,7 @@ impl<C: TargetCircuit> Prover<C> {
         }
         log::info!(
             "mock prove done. batch metric: {:?}",
-            metric_of_witness_block(&witness_block),
+            metric_of_witness_block(witness_block),
         );
         Ok(())
     }
