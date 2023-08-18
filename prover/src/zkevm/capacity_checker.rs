@@ -84,6 +84,11 @@ impl RowUsage {
                 row_number: (1_000_000u64 * (x.row_number as u64) / (*limit as u64)) as usize,
             })
             .collect_vec();
+        log::debug!(
+            "normalize row usage, before {:#?}\nafter {:#?}",
+            self.row_usage_details,
+            details
+        );
         Self::from_row_usage_details(details)
     }
     pub fn from_row_usage_details(row_usage_details: Vec<SubCircuitRowUsage>) -> Self {

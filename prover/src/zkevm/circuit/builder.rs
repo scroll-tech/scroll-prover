@@ -44,9 +44,14 @@ pub fn calculate_row_usage_of_trace(
 pub fn calculate_row_usage_of_witness_block(
     witness_block: &Block<Fr>,
 ) -> Result<Vec<zkevm_circuits::super_circuit::SubcircuitRowUsage>> {
-    let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
+    let mut rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
         witness_block,
     );
+
+    assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
+    assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
+    // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
+    rows[10].row_num_real += rows[13].row_num_real * 12;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
