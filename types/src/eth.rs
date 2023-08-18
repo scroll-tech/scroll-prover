@@ -19,7 +19,7 @@ pub struct BlockTrace {
     pub storage_trace: StorageTrace,
     #[serde(rename = "txStorageTraces", default)]
     pub tx_storage_trace: Vec<StorageTrace>,
-    #[serde(rename = "startL1QueueIndex")]
+    #[serde(rename = "startL1QueueIndex", default)]
     pub start_l1_queue_index: u64,
     //    #[serde(rename = "mptwitness", default)]
     //    pub mpt_witness: Vec<SMTTrace>,
