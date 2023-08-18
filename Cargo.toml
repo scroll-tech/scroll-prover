@@ -23,8 +23,8 @@ snark-verifier-sdk = { git = "https://github.com/scroll-tech//snark-verifier", t
 
 [profile.test]
 opt-level = 3
-#debug-assertions = true
+debug-assertions = true
 
 [profile.release]
 opt-level = 3
-#debug-assertions = true
+debug-assertions = true
