@@ -354,14 +354,14 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode && builder.mpt_state.root() != &[0u8; 32] {
+    if !light_mode && builder.mpt_init_state.root() != &[0u8; 32] {
         log::debug!("block_apply_mpt_state");
-        block_apply_mpt_state(&mut witness_block, &builder.mpt_state);
+        block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         log::debug!("block_apply_mpt_state done");
     }
     log::debug!(
         "finish replay trie updates, root {}",
-        hex::encode(builder.mpt_state.root())
+        hex::encode(builder.mpt_init_state.root())
     );
     Ok((witness_block, code_db))
 }
