@@ -23,6 +23,8 @@ use zkevm_circuits::{
     witness::WithdrawProof,
 };
 
+pub type WitnessBlock = Block<Fr>;
+
 pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "modexp", "pi", "poseidon",
     "sig", "ecc", "mpt",
