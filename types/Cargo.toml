@@ -1,10 +1,10 @@
 [package]
 name = "types"
-version = "0.4.0"
+version = "0.6.4"
 edition = "2021"
 
 [dependencies]
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
 base64 = "0.13.0"
 blake2 = "0.10.3"
 ethers-core = "0.17.0"

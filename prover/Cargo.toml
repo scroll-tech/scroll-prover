@@ -1,6 +1,6 @@
 [package]
 name = "prover"
-version = "0.4.0"
+version = "0.6.4"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,15 +8,15 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 
-aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x", default-features = false, features = ["test","scroll","scroll-trace","shanghai"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "release-v0.5.x" }
+aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5", default-features = false, features = ["test","scroll","scroll-trace","shanghai"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.6.5" }
 
-snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.1" }
-snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.1" }
+snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
+snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
 
 anyhow = "1.0"
 blake2 = "0.10.3"
