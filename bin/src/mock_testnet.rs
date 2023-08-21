@@ -6,6 +6,7 @@ use prover::{
     utils::init_env_and_log,
     zkevm::circuit::{
         block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+        WitnessBlock,
     },
 };
 use reqwest::Url;
@@ -33,8 +34,8 @@ async fn main() {
 
         let chunks = get_traces_by_block_api(&setting, batch_id).await;
 
-        let chunks = chunks.unwrap_or_else(|_| {
-            panic!("mock-testnet: failed to request API with batch-{batch_id}")
+        let chunks = chunks.unwrap_or_else(|e| {
+            panic!("mock-testnet: failed to request API with batch-{batch_id}, err {e:?}")
         });
 
         match chunks {
@@ -45,7 +46,7 @@ async fn main() {
             Some(chunks) => {
                 for chunk in chunks {
                     let chunk_id = chunk.index;
-                    log::info!("chunk {:?}", chunk);
+                    log::info!("mock-testnet: handling chunk {:?}", chunk_id);
 
                     // fetch traces
                     let mut block_traces: Vec<BlockTrace> = vec![];
@@ -62,9 +63,14 @@ async fn main() {
                         block_traces.push(trace);
                     }
 
-                    //let result = estimate_rows(&block_traces, i, chunk_id);
-                    let result =
-                        Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces);
+                    let witness_block = match build_block(&block_traces, batch_id, chunk_id) {
+                        Ok(block) => block,
+                        Err(e) => {
+                            log::error!("mock-testnet: building block failed {e:?}");
+                            continue;
+                        }
+                    };
+                    let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
 
                     match result {
                         Ok(_) => {
@@ -86,7 +92,11 @@ async fn main() {
     log::info!("mock-testnet: end");
 }
 
-fn estimate_rows(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> anyhow::Result<()> {
+fn build_block(
+    block_traces: &[BlockTrace],
+    batch_id: i64,
+    chunk_id: i64,
+) -> anyhow::Result<WitnessBlock> {
     let gas_total: u64 = block_traces
         .iter()
         .map(|b| b.header.gas_used.as_u64())
@@ -108,7 +118,7 @@ fn estimate_rows(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> a
         gas_total,
         gas_total as f64 / row_num as f64
     );
-    Ok(())
+    Ok(witness_block)
 }
 
 /// Request block traces by first using rollup API to get chunk info, then fetching blocks from
@@ -122,8 +132,14 @@ async fn get_traces_by_block_api(
         &[("batch_index", batch_index.to_string())],
     )?;
 
-    let resp: RollupscanResponse = reqwest::get(url).await?.json().await?;
-    log::info!("handling batch {}", resp.batch_index);
+    let resp: String = reqwest::get(url).await?.text().await?;
+    log::debug!("resp is {resp}");
+    let resp: RollupscanResponse = serde_json::from_str(&resp)?;
+    log::info!(
+        "handling batch {}, chunk size {}",
+        resp.batch_index,
+        resp.chunks.as_ref().unwrap().len()
+    );
     Ok(resp.chunks)
 }
 
