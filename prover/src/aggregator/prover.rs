@@ -1,7 +1,7 @@
 use crate::{
     common,
     config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
-    io::read_all,
+    io::{read_all, serialize_vk},
     utils::read_env_var,
     BatchProof, ChunkProof,
 };
@@ -53,6 +53,11 @@ impl Prover {
 
             result
         })
+    }
+
+    pub fn get_vk(&self) -> Option<Vec<u8>> {
+        // TODO: replace `layer4` string with an enum value.
+        self.inner.pk("layer4").map(|pk| serialize_vk(pk.get_vk()))
     }
 
     // Return the EVM proof for verification.
