@@ -24,10 +24,10 @@ pub use self::builder::{
 pub const MAX_TXS: usize = 100;
 pub const MAX_INNER_BLOCKS: usize = 100;
 pub const MAX_EXP_STEPS: usize = 10_000;
-pub const MAX_CALLDATA: usize = 400_000;
-pub const MAX_BYTECODE: usize = 400_000;
-pub const MAX_MPT_ROWS: usize = 400_000;
-pub const MAX_KECCAK_ROWS: usize = 524_000;
+pub const MAX_CALLDATA: usize = 600_000;
+pub const MAX_BYTECODE: usize = 600_000;
+pub const MAX_MPT_ROWS: usize = 1_000_000;
+pub const MAX_KECCAK_ROWS: usize = 1_000_000;
 pub const MAX_RWS: usize = 1_000_000;
 pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
 pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
