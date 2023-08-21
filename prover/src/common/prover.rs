@@ -65,14 +65,13 @@ impl Prover {
 
         {
                 let original_params19 = load_params(params_dir, 19, None).unwrap();
-/*
                 let mut downsized_params19 = load_params(params_dir, 25, None).unwrap();
                 downsized_params19.downsize(19);
 
                 assert_eq!(original_params19.n, downsized_params19.n);
                 assert_eq!(original_params19.g2(), downsized_params19.g2());
                 assert_eq!(original_params19.s_g2(), downsized_params19.s_g2());
-*/
+
                 assert_eq!(original_params19.n, params_map[&19].n);
                 assert_eq!(original_params19.g2(), params_map[&19].g2());
                 assert_eq!(original_params19.s_g2(), params_map[&19].s_g2());
