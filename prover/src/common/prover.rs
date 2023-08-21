@@ -39,7 +39,8 @@ impl Prover {
         for d in BTreeSet::from_iter(degrees).into_iter().rev() {
             let params = match (d, load_params(params_dir, *d, None)) {
                 (k, Ok(params)) if *k != 19 => params,
-                (_, Err(_)) => {
+                _ => {
+                // (_, Err(_)) => {
                     let params: &ParamsKZG<_> = params_map
                         .first_key_value()
                         .unwrap_or_else(|| {
@@ -57,7 +58,6 @@ impl Prover {
 
                     params
                 }
-                _ => panic!("gupeng - aaaa"),
             };
 
             params_map.insert(*d, params);
