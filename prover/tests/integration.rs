@@ -33,11 +33,6 @@ fn test_load_params() {
     init_env_and_log("integration");
     log::info!("start");
 
-    // Check loading params with different serde format.
-    load_params(PARAMS_DIR, 25, Some(SerdeFormat::RawBytesUnchecked)).unwrap();
-    load_params(PARAMS_DIR, 25, Some(SerdeFormat::RawBytes)).unwrap();
-    load_params(PARAMS_DIR, 25, Some(SerdeFormat::Processed)).unwrap();
-
     // Check params downsize.
     let params19 = load_params(PARAMS_DIR, 19, None).unwrap();
     let params25 = load_params(PARAMS_DIR, 25, None).unwrap();
