@@ -1,5 +1,5 @@
 [package]
-name = "bin"
+name = "testnet-runner"
 version = "0.6.4"
 edition = "2021"
 
@@ -7,30 +7,18 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-clap = { version = "3.1.3", features = ["derive"] }
 dotenv = "0.15.0"
 ethers-providers = "1.0"
 itertools = "0.10.5"
 log = "0.4"
 log4rs = { version = "1.2.0", default_features = false, features = ["console_appender", "file_appender"] }
-rand = "0.8"
-rand_xorshift = "0.3"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "rustls-tls" ] }
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0.66"
+tar = "0.4"
+flate2 = "1"
 tokio = { version = "1", features = ["full"] }
 types = { path = "../types" }
 prover = { path = "../prover" }
 
-[[bin]]
-name = "zkevm_prove"
-path = "src/zkevm_prove.rs"
-
-[[bin]]
-name = "zkevm_verify"
-path = "src/zkevm_verify.rs"
-
-[[bin]]
-name = "mock_testnet"
-path = "src/mock_testnet.rs"

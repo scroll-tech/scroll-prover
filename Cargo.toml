@@ -3,6 +3,7 @@ members = [
     "bin",
     "prover",
     "types",
+    "run-testnet",
 ]
 
 [patch.crates-io]

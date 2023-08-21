@@ -1,0 +1,7 @@
+
+
+# start: 0 #batch start from
+chunkURL: http://<server host>/api/chunks?batch_index=%d
+server:
+    #host: 0.0.0.0:8560
+    #url: #the base url server used for
