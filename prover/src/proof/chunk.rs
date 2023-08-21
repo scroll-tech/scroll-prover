@@ -1,4 +1,4 @@
-use super::{dump_as_json, dump_vk, from_json_file, Proof};
+use super::{dump_as_json, dump_data, dump_vk, from_json_file, Proof};
 use crate::ChunkHash;
 use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::G1Affine, plonk::ProvingKey};
@@ -45,7 +45,10 @@ impl ChunkProof {
     pub fn dump(&self, dir: &str, name: &str) -> Result<()> {
         let filename = dump_filename(name);
 
+        // Dump vk and protocol.
         dump_vk(dir, &filename, &self.proof.vk);
+        dump_data(dir, &format!("chunk_{filename}.protocol"), &self.protocol);
+
         dump_as_json(dir, &filename, &self)
     }
 
