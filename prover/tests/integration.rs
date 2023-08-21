@@ -41,13 +41,17 @@ fn test_load_params() {
     */
 
     // Check params downsize.
-    let original_params19 = load_params(PARAMS_DIR, 19, None).unwrap();
-    let mut downsized_params19 = load_params(PARAMS_DIR, 25, None).unwrap();
+    let params19 = load_params(PARAMS_DIR, 19, None).unwrap();
+    let params25 = load_params(PARAMS_DIR, 25, None).unwrap();
+    assert_eq!(params19.s_g2(), params25.s_g2());
+    log::info!("params s_g2 = {:?}", params19.s_g2());
+
+    let mut downsized_params19 = params25;
     downsized_params19.downsize(19);
 
-    assert_eq!(original_params19.n, downsized_params19.n);
-    assert_eq!(original_params19.g2(), downsized_params19.g2());
-    assert_eq!(original_params19.s_g2(), downsized_params19.s_g2());
+    assert_eq!(params19.n, downsized_params19.n);
+    assert_eq!(params19.g2(), downsized_params19.g2());
+    assert_eq!(params19.s_g2(), downsized_params19.s_g2());
 }
 
 #[ignore]
