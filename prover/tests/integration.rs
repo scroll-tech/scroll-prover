@@ -1,6 +1,7 @@
 use halo2_proofs::{
     dev::MockProver,
     plonk::{keygen_pk2, keygen_vk},
+    poly::commitment::Params,
     SerdeFormat,
 };
 use prover::{
@@ -26,29 +27,27 @@ fn test_short_git_version() {
     assert_eq!(git_version.len(), 7);
 }
 
-#[ignore]
+// #[ignore]
 #[test]
 fn test_load_params() {
     init_env_and_log("integration");
     log::info!("start");
-    load_params(
-        "/home/ubuntu/scroll-prover/prover/test_params",
-        26,
-        Some(SerdeFormat::RawBytesUnchecked),
-    )
-    .unwrap();
-    load_params(
-        "/home/ubuntu/scroll-prover/prover/test_params",
-        26,
-        Some(SerdeFormat::RawBytes),
-    )
-    .unwrap();
-    load_params(
-        "/home/ubuntu/scroll-prover/prover/test_params.old",
-        26,
-        Some(SerdeFormat::Processed),
-    )
-    .unwrap();
+
+    /*
+        // Check loading params with different serde format.
+        load_params(PARAMS_DIR, 25, Some(SerdeFormat::RawBytesUnchecked)).unwrap();
+        load_params(PARAMS_DIR, 25, Some(SerdeFormat::RawBytes)).unwrap();
+        load_params(PARAMS_DIR, 25, Some(SerdeFormat::Processed)).unwrap();
+    */
+
+    // Check params downsize.
+    let original_params19 = load_params(PARAMS_DIR, 19, None).unwrap();
+    let mut downsized_params19 = load_params(PARAMS_DIR, 25, None).unwrap();
+    downsized_params19.downsize(19);
+
+    assert_eq!(original_params19.n, downsized_params19.n);
+    assert_eq!(original_params19.g2(), downsized_params19.g2());
+    assert_eq!(original_params19.s_g2(), downsized_params19.s_g2());
 }
 
 #[ignore]
