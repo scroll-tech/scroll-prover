@@ -37,9 +37,9 @@ impl Prover {
         // Downsize params if any params of degree doesn't exist.
         let mut params_map = BTreeMap::new();
         for d in BTreeSet::from_iter(degrees).into_iter().rev() {
-            let params = match load_params(params_dir, *d, None) {
-                Ok(params) => params,
-                Err(_) => {
+            let params = match (d, load_params(params_dir, *d, None)) {
+                (k, Ok(params)) if *k != 19 => params,
+                (_, Err(_)) => {
                     let params: &ParamsKZG<_> = params_map
                         .first_key_value()
                         .unwrap_or_else(|| {
@@ -57,9 +57,22 @@ impl Prover {
 
                     params
                 }
+                _ => panic!("gupeng - aaaa"),
             };
 
             params_map.insert(*d, params);
+        }
+
+        {
+            /*
+                let original_params19 = load_params(PARAMS_DIR, 19, None).unwrap();
+                let mut downsized_params19 = load_params(PARAMS_DIR, 25, None).unwrap();
+                downsized_params19.downsize(19);
+
+                assert_eq!(original_params19.n, downsized_params19.n);
+                assert_eq!(original_params19.g2(), downsized_params19.g2());
+                assert_eq!(original_params19.s_g2(), downsized_params19.s_g2());
+            */
         }
 
         Self {
