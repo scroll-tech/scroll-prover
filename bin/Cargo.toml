@@ -34,3 +34,7 @@ path = "src/zkevm_verify.rs"
 [[bin]]
 name = "mock_testnet"
 path = "src/mock_testnet.rs"
+
+[[bin]]
+name = "run_testnet"
+path = "src/run_testnet.rs"
