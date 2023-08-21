@@ -26,6 +26,8 @@ use zkevm_circuits::{
     witness::WithdrawProof,
 };
 
+pub type WitnessBlock = Block<Fr>;
+
 pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
     "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "modexp", "pi", "poseidon",
     "sig", "ecc", "mpt",
@@ -48,8 +50,8 @@ pub fn calculate_row_usage_of_witness_block(
 
     assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
     assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
-    // empirical estimation is each row in mpt cost 1.2 hash (aka 11 rows)
-    rows[10].row_num_real += rows[13].row_num_real*11;
+    // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
+    rows[10].row_num_real += rows[13].row_num_real * 12;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",

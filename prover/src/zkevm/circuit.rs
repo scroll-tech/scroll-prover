@@ -13,8 +13,9 @@ use crate::utils::read_env_var;
 pub use self::builder::{
     block_traces_to_padding_witness_block, block_traces_to_witness_block,
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
-    calculate_row_usage_of_witness_block, check_batch_capacity,
-    normalize_withdraw_proof, storage_trace_to_padding_witness_block, SUB_CIRCUIT_NAMES,
+    calculate_row_usage_of_witness_block, check_batch_capacity, 
+    normalize_withdraw_proof, storage_trace_to_padding_witness_block, WitnessBlock,
+    SUB_CIRCUIT_NAMES,
 };
 
 // TODO: more smart row capacity checking rather than max_of(row_usage_details) > 1<<20 - 256

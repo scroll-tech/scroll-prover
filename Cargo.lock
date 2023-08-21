@@ -226,7 +226,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
 name = "bin"
-version = "0.4.0"
+version = "0.6.4"
 dependencies = [
  "anyhow",
  "clap",
@@ -2994,7 +2994,7 @@ dependencies = [
 
 [[package]]
 name = "prover"
-version = "0.4.0"
+version = "0.6.4"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4279,7 +4279,7 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 
 [[package]]
 name = "types"
-version = "0.4.0"
+version = "0.6.4"
 dependencies = [
  "base64 0.13.1",
  "blake2",

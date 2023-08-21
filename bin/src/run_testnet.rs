@@ -3,25 +3,77 @@ use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use prover::{
     inner::Prover,
-    utils::init_env_and_log,
+    utils::{read_env_var, init_env_and_log, GIT_VERSION, short_git_version},
     zkevm::circuit::{
         block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
         WitnessBlock,
     },
 };
+use log4rs::{
+    append::{
+        console::{ConsoleAppender, Target},
+        file::FileAppender,
+    },
+    config::{Appender, Config, Root},
+};
 use reqwest::Url;
 use serde::Deserialize;
-use std::env;
+use std::{env, str::FromStr};
 use types::eth::BlockTrace;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
 
+
+// build common config from enviroment
+fn common_log() -> Config {
+    dotenv::dotenv().ok();
+    // TODO: cannot support complicated `RUST_LOG` for now.
+    let log_level = read_env_var("RUST_LOG", "INFO".to_string());
+    let log_level = log::LevelFilter::from_str(&log_level).unwrap_or(log::LevelFilter::Info);
+
+    let stderr = ConsoleAppender::builder().target(Target::Stderr).build();
+
+    Config::builder()
+    .appenders([
+        Appender::builder().build("stderr", Box::new(stderr)),
+    ])
+    .build(
+        Root::builder()
+            .appender("stderr")
+            .build(log_level),
+    )
+    .unwrap()
+
+}
+
+// build config for failure-debug
+fn debug_log() -> Config {
+    Config::builder()
+    .appenders([
+        // Appender::builder().build("log-file", Box::new(log_file)),
+    ])
+    .build(
+        Root::builder()
+            //.appender("log-file")
+            //.appender("stderr")
+            .build(log::LevelFilter::Debug),
+    )
+    .unwrap()
+}
+
+fn task_runner() {
+    log::info!("run as task runner");
+}
+
 #[tokio::main]
 async fn main() {
-    init_env_and_log("mock_testnet");
+    let common_log_cfg = common_log();
+    let log_handle = log4rs::init_config(common_log_cfg).unwrap();
+    log::info!("git version {}", GIT_VERSION);
+    log::info!("short git version {}", short_git_version());
 
-    log::info!("mock-testnet: begin");
+    log::info!("relay-alpha testnet: begin");
 
     let setting = Setting::new();
     log::info!("mock-testnet: {setting:?}");
@@ -159,10 +211,12 @@ struct ChunkInfo {
     end_block_number: i64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Setting {
     begin_batch: i64,
     end_batch: i64,
+    task_runers: u32,
+    coordinator_url: String,
     l2geth_api_url: String,
     rollupscan_api_url: String,
 }
@@ -188,6 +242,7 @@ impl Setting {
             end_batch,
             l2geth_api_url,
             rollupscan_api_url,
+            ..Default::default()
         }
     }
 }
