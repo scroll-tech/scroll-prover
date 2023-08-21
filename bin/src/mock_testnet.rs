@@ -46,7 +46,7 @@ async fn main() {
             Some(chunks) => {
                 for chunk in chunks {
                     let chunk_id = chunk.index;
-                    log::info!("chunk {:?}", chunk);
+                    log::info!("mock-testnet: handling chunk {:?}", chunk_id);
 
                     // fetch traces
                     let mut block_traces: Vec<BlockTrace> = vec![];
