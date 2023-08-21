@@ -1,5 +1,5 @@
 use crate::{
-    common, config::ZKEVM_DEGREES, utils::chunk_trace_to_witness_block,
+    common, config::ZKEVM_DEGREES, io::serialize_vk, utils::chunk_trace_to_witness_block,
     zkevm::circuit::normalize_withdraw_proof, ChunkHash, ChunkProof,
 };
 use anyhow::Result;
@@ -20,6 +20,11 @@ impl From<common::Prover> for Prover {
 impl Prover {
     pub fn from_params_dir(params_dir: &str) -> Self {
         common::Prover::from_params_dir(params_dir, &ZKEVM_DEGREES).into()
+    }
+
+    pub fn get_vk(&self) -> Option<Vec<u8>> {
+        // TODO: replace `layer2` string with an enum value.
+        self.inner.pk("layer2").map(|pk| serialize_vk(pk.get_vk()))
     }
 
     pub fn gen_chunk_proof(
