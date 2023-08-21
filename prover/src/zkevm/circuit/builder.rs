@@ -6,9 +6,12 @@ use super::{
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
-    circuit_input_builder::{CircuitInputBuilder, CircuitsParams, PrecompileEcParams,},
+    circuit_input_builder::{
+        self, CircuitInputBuilder, CircuitsParams, PrecompileEcParams,
+    },
+    state_db::{CodeDB, StateDB},
 };
-use eth_types::{ToBigEndian, H256};
+use eth_types::{ToBigEndian, H256, U256, ToWord};
 use halo2_proofs::halo2curves::bn256::Fr;
 use is_even::IsEven;
 use itertools::Itertools;
@@ -39,9 +42,14 @@ pub fn calculate_row_usage_of_trace(
 pub fn calculate_row_usage_of_witness_block(
     witness_block: &Block<Fr>,
 ) -> Result<Vec<zkevm_circuits::super_circuit::SubcircuitRowUsage>> {
-    let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
+    let mut rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
         witness_block,
     );
+
+    assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
+    assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
+    // empirical estimation is each row in mpt cost 1.2 hash (aka 11 rows)
+    rows[10].row_num_real += rows[13].row_num_real*11;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
@@ -194,14 +202,19 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
         block_traces[0].storage_trace.root_before
     };
 
-    // the only purpose here it to get the updated zktrie state
-    let prev_witness_block =
-        block_traces_to_witness_block_with_updated_state(block_traces, false)?;
+    if block_traces.is_empty() {
+        padding_witness_block(old_root.to_word())
+    } else {
+        // the only purpose here it to get the final state root
+        let prev_witness_block =
+            block_traces_to_witness_block_with_updated_state(block_traces, false)?;
 
-    // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
-    // storage proofs of prev block
-    let storage_trace = normalize_withdraw_proof(&prev_witness_block.mpt_updates.withdraw_proof);
-    storage_trace_to_padding_witness_block(storage_trace)
+        // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
+        // storage proofs of prev block
+        let storage_trace = normalize_withdraw_proof(&prev_witness_block.mpt_updates.withdraw_proof);
+        storage_trace_to_padding_witness_block(storage_trace)
+    }
+
 }
 
 pub fn storage_trace_to_padding_witness_block(storage_trace: StorageTrace) -> Result<Block<Fr>> {
@@ -217,6 +230,27 @@ pub fn storage_trace_to_padding_witness_block(storage_trace: StorageTrace) -> Re
     }];
 
     block_traces_to_witness_block_with_updated_state(&[], false)
+}
+
+fn global_circuit_params() -> CircuitsParams {
+    CircuitsParams {
+        max_evm_rows: MAX_RWS,
+        max_rws: MAX_RWS,
+        max_copy_rows: MAX_RWS,
+        max_txs: MAX_TXS,
+        max_calldata: MAX_CALLDATA,
+        max_bytecode: MAX_BYTECODE,
+        max_inner_blocks: MAX_INNER_BLOCKS,
+        max_keccak_rows: MAX_KECCAK_ROWS,
+        max_exp_steps: MAX_EXP_STEPS,
+        max_mpt_rows: MAX_MPT_ROWS,
+        max_rlp_rows: MAX_CALLDATA,
+        max_ec_ops: PrecompileEcParams {
+            ec_add: MAX_PRECOMPILE_EC_ADD,
+            ec_mul: MAX_PRECOMPILE_EC_MUL,
+            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
+        },
+    }
 }
 
 pub fn block_traces_to_witness_block_with_updated_state(
@@ -240,25 +274,6 @@ pub fn block_traces_to_witness_block_with_updated_state(
             *CHAIN_ID
         );
     }
-
-    let circuit_params = CircuitsParams {
-        max_evm_rows: MAX_RWS,
-        max_rws: MAX_RWS,
-        max_copy_rows: MAX_RWS,
-        max_txs: MAX_TXS,
-        max_calldata: MAX_CALLDATA,
-        max_bytecode: MAX_BYTECODE,
-        max_inner_blocks: MAX_INNER_BLOCKS,
-        max_keccak_rows: MAX_KECCAK_ROWS,
-        max_exp_steps: MAX_EXP_STEPS,
-        max_mpt_rows: MAX_MPT_ROWS,
-        max_rlp_rows: MAX_CALLDATA,
-        max_ec_ops: PrecompileEcParams {
-            ec_add: MAX_PRECOMPILE_EC_ADD,
-            ec_mul: MAX_PRECOMPILE_EC_MUL,
-            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
-        },
-    };
 
     let first_trace = &block_traces[0];
     let more_traces = &block_traces[1..];
@@ -289,7 +304,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
     };
 
     let mut builder = CircuitInputBuilder::new_from_l2_trace(
-        circuit_params,
+        global_circuit_params(),
         first_trace,
         more_traces.len() != 0,
     )?;
@@ -330,19 +345,31 @@ pub fn block_traces_to_witness_block_with_updated_state(
     Ok(witness_block)
 }
 
-pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>> {
-    let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
-        stripped.to_string()
-    } else {
-        bytecode.to_string()
-    };
+/// This entry simulate the progress which use block_traces_to_witness_block_with_updated_state
+/// to generate a padding block with null trace array:
+/// + Everything use default values
+/// + no trace, no tx, so no mpt table, zktrie state light mode is useless,
+///   and what only needed is the previous state root
+pub fn padding_witness_block(
+    old_root: U256,
+) -> Result<Block<Fr>> {
+    let mut builder_block = circuit_input_builder::Block::from_headers(&[], global_circuit_params());
+    builder_block.chain_id = *CHAIN_ID;
+    builder_block.prev_state_root = old_root;
+    let mut builder = CircuitInputBuilder::new(
+        StateDB::new(), 
+        CodeDB::new(), 
+        &builder_block
+    );
+    builder.finalize_building()?;
 
-    let bytecode_len = stripped.len() as u64;
-    if !bytecode_len.is_even() {
-        stripped = format!("0{stripped}");
-    }
-
-    hex::decode(stripped).map_err(|e| e.into())
+    let witness_block =
+    block_convert_with_l1_queue_index(&builder.block, &builder.code_db, 0)?;
+    log::debug!(
+        "padding witness_block built with circuits_params {:?}",
+        witness_block.circuits_params
+    );
+    Ok(witness_block) 
 }
 
 pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {
