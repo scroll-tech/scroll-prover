@@ -1,8 +1,4 @@
-use super::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
-    MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_PRECOMPILE_EC_ADD, MAX_PRECOMPILE_EC_MUL,
-    MAX_PRECOMPILE_EC_PAIRING, MAX_RWS, MAX_TXS,
-};
+use super::{TargetCircuit, AUTO_TRUNCATE, CHAIN_ID};
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
@@ -28,10 +24,44 @@ use zkevm_circuits::{
 
 pub type WitnessBlock = Block<Fr>;
 
-pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "modexp", "pi", "poseidon",
-    "sig", "ecc", "mpt",
-];
+////// params for degree = 20 ////////////
+pub const MAX_TXS: usize = 100;
+pub const MAX_INNER_BLOCKS: usize = 100;
+pub const MAX_EXP_STEPS: usize = 10_000;
+pub const MAX_CALLDATA: usize = 600_000;
+pub const MAX_BYTECODE: usize = 600_000;
+pub const MAX_MPT_ROWS: usize = 1_000_000;
+pub const MAX_KECCAK_ROWS: usize = 1_000_000;
+pub const MAX_POSEIDON_ROWS: usize = 1_000_000;
+pub const MAX_VERTICLE_ROWS: usize = 1_000_000;
+pub const MAX_RWS: usize = 1_000_000;
+pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
+pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
+pub const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
+
+/// default params for super circuit
+pub fn get_super_circuit_params() -> CircuitsParams {
+    CircuitsParams {
+        max_evm_rows: MAX_RWS,
+        max_rws: MAX_RWS,
+        max_copy_rows: MAX_RWS,
+        max_txs: MAX_TXS,
+        max_calldata: MAX_CALLDATA,
+        max_bytecode: MAX_BYTECODE,
+        max_inner_blocks: MAX_INNER_BLOCKS,
+        max_keccak_rows: MAX_KECCAK_ROWS,
+        max_poseidon_rows: MAX_POSEIDON_ROWS,
+        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
+        max_exp_steps: MAX_EXP_STEPS,
+        max_mpt_rows: MAX_MPT_ROWS,
+        max_rlp_rows: MAX_CALLDATA,
+        max_ec_ops: PrecompileEcParams {
+            ec_add: MAX_PRECOMPILE_EC_ADD,
+            ec_mul: MAX_PRECOMPILE_EC_MUL,
+            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
+        },
+    }
+}
 
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(
@@ -48,8 +78,8 @@ pub fn calculate_row_usage_of_witness_block(
         witness_block,
     );
 
-    assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
-    assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
+    assert_eq!(rows[10].name, "poseidon");
+    assert_eq!(rows[13].name, "mpt");
     // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
     rows[10].row_num_real += rows[13].row_num_real * 12;
 
@@ -292,28 +322,6 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
 
 }
 
-/// default params for super circuit
-pub fn global_circuit_params() -> CircuitsParams {
-    CircuitsParams {
-        max_evm_rows: MAX_RWS,
-        max_rws: MAX_RWS,
-        max_copy_rows: MAX_RWS,
-        max_txs: MAX_TXS,
-        max_calldata: MAX_CALLDATA,
-        max_bytecode: MAX_BYTECODE,
-        max_inner_blocks: MAX_INNER_BLOCKS,
-        max_keccak_rows: MAX_KECCAK_ROWS,
-        max_exp_steps: MAX_EXP_STEPS,
-        max_mpt_rows: MAX_MPT_ROWS,
-        max_rlp_rows: MAX_CALLDATA,
-        max_ec_ops: PrecompileEcParams {
-            ec_add: MAX_PRECOMPILE_EC_ADD,
-            ec_mul: MAX_PRECOMPILE_EC_MUL,
-            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
-        },
-    }
-}
-
 /// update the builder with another batch of trace and then *FINALIZE* it
 /// (so the buidler CAN NOT be update any more)
 /// light_mode skip the time consuming calculation on mpt root for each
@@ -389,7 +397,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         "finish replay trie updates, root {}",
         hex::encode(builder.mpt_init_state.root())
     );
-    Ok(witness_block)
+    Ok((witness_block, code_db))
 }
 
 
