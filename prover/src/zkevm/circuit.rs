@@ -14,7 +14,7 @@ pub use self::builder::{
     block_traces_to_padding_witness_block, block_traces_to_witness_block,
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
     calculate_row_usage_of_witness_block, check_batch_capacity, 
-    normalize_withdraw_proof, storage_trace_to_padding_witness_block, WitnessBlock,
+    normalize_withdraw_proof, WitnessBlock, global_circuit_params,
     SUB_CIRCUIT_NAMES,
 };
 

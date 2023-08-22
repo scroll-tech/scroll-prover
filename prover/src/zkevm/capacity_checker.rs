@@ -1,9 +1,16 @@
 use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
+    global_circuit_params
 };
+use bus_mapping::{
+    circuit_input_builder::{self, CircuitInputBuilder},
+    state_db::{CodeDB, StateDB},
+};
+use mpt_zktrie::state::ZktrieState;
 use itertools::Itertools;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
+use eth_types::{H256, ToWord};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubCircuitRowUsage {
@@ -128,6 +135,7 @@ pub struct CircuitCapacityChecker {
     pub light_mode: bool,
     pub acc_row_usage: RowUsage,
     pub row_usages: Vec<RowUsage>,
+    pub builder_ctx: Option<(CodeDB, StateDB, ZktrieState)>,
 }
 
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of
@@ -147,9 +155,11 @@ impl CircuitCapacityChecker {
             acc_row_usage: RowUsage::new(),
             row_usages: Vec::new(),
             light_mode: true,
+            builder_ctx: None,
         }
     }
     pub fn reset(&mut self) {
+        self.builder_ctx = None;
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
     }
@@ -158,9 +168,37 @@ impl CircuitCapacityChecker {
         txs: &[TxTrace],
     ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
         assert!(!txs.is_empty());
-        let traces = txs;
+        let (mut estimate_builder, traces) = if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take() {
+            // here we create a new builder for another (sealed) witness block
+            // this builder inherit the current execution state (sdb/cdb) of
+            // the previous one and do not use zktrie state, 
+            // notice the prev_root in current builder may be not invalid (since the state has changed
+            // but we may not update it in light mode)
+            let mut builder_block = circuit_input_builder::Block::from_headers(
+                &[], 
+                global_circuit_params()
+            );
+            builder_block.chain_id = txs[0].chain_id;
+            builder_block.start_l1_queue_index = txs[0].start_l1_queue_index;
+            builder_block.prev_state_root = H256(*mpt_state.root()).to_word();
+            let mut builder = CircuitInputBuilder::new(
+                sdb,
+                code_db,
+                &builder_block
+            );
+            builder.mpt_init_state = mpt_state;
+            (
+                builder,
+                &txs[1..],
+            )       
+        } else {
+            (
+                CircuitInputBuilder::new_from_l2_trace(global_circuit_params(), &txs[0], txs.len() > 1)?,
+                txs,
+            )
+        };
         let witness_block =
-            block_traces_to_witness_block_with_updated_state(traces, self.light_mode)?;
+            block_traces_to_witness_block_with_updated_state(traces, &mut estimate_builder, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
         let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
@@ -172,6 +210,7 @@ impl CircuitCapacityChecker {
         let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());
         self.acc_row_usage.add(&tx_row_usage);
+        self.builder_ctx.replace((estimate_builder.code_db, estimate_builder.sdb, estimate_builder.mpt_init_state));
         Ok((self.acc_row_usage.normalize(), tx_row_usage.normalize()))
     }
 }
