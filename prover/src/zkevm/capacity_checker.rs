@@ -152,7 +152,7 @@ impl CircuitCapacityChecker {
     pub fn estimate_circuit_capacity(
         &mut self,
         txs: &[TxTrace],
-    ) -> Result<(RowUsage, RowUsage), anyhow::Error> {
+    ) -> Result<RowUsage, anyhow::Error> {
         assert!(!txs.is_empty());
         if self.state.is_none() {
             self.state = Some(ZktrieState::construct(txs[0].storage_trace.root_before));
@@ -186,6 +186,6 @@ impl CircuitCapacityChecker {
         let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());
         self.acc_row_usage.add(&tx_row_usage);
-        Ok((self.acc_row_usage.normalize(), tx_row_usage.normalize()))
+        Ok(self.acc_row_usage.normalize())
     }
 }
