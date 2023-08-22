@@ -193,7 +193,7 @@ fn prepare_default_builder(
 
     let mut builder_block = circuit_input_builder::Block::from_headers(
         &[], 
-        global_circuit_params()
+        get_super_circuit_params()
     );
     builder_block.chain_id = *CHAIN_ID;
     builder_block.prev_state_root = old_root.to_word();
@@ -264,7 +264,7 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
         let mut builder = prepare_default_builder(eth_types::Hash::zero(), None);
         block_traces_to_witness_block_with_updated_state(&[], &mut builder, false)       
     } else {
-        let mut builder = CircuitInputBuilder::new_from_l2_trace(global_circuit_params(), &block_traces[0], block_traces.len() > 1)?;
+        let mut builder = CircuitInputBuilder::new_from_l2_trace(get_super_circuit_params(), &block_traces[0], block_traces.len() > 1)?;
         block_traces_to_witness_block_with_updated_state(&block_traces[1..], &mut builder, false)
     }
 }
@@ -283,7 +283,7 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     } else {
         let start_l1_queue_index = block_traces[0].start_l1_queue_index;
         let mut builder = CircuitInputBuilder::new_from_l2_trace(
-            global_circuit_params(), 
+            get_super_circuit_params(), 
             &block_traces[0], 
             block_traces.len() > 1
         )?;
@@ -418,7 +418,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         "finish replay trie updates, root {}",
         hex::encode(builder.mpt_init_state.root())
     );
-    Ok((witness_block, code_db))
+    Ok(witness_block)
 }
 
 
