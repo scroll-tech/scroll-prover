@@ -171,7 +171,7 @@ impl CircuitCapacityChecker {
                 assert_eq!(rows[2].name, "bytecode");
                 rows[2].row_num_real -= bytes.len();
                 assert_eq!(rows[10].name, "poseidon");
-                rows[10].row_num_real -= bytes.len() / (31 * 2) * 8;
+                rows[10].row_num_real -= bytes.len() / (31 * 2) * 9;
             } else {
                 self.codelen.insert(*hash, bytes.len());
             }
