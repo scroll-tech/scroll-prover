@@ -169,7 +169,7 @@ impl CircuitCapacityChecker {
         for (hash, bytes) in &codedb.0 {
             if self.codelen.contains_key(hash) {
                 assert_eq!(rows[2].name, "bytecode");
-                rows[2].row_num_real -= bytes.len();
+                rows[2].row_num_real -= bytes.len() + 1;
                 assert_eq!(rows[10].name, "poseidon");
                 rows[10].row_num_real -= bytes.len() / (31 * 2) * 9;
             } else {
