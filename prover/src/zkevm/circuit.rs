@@ -15,23 +15,12 @@ pub use self::builder::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
     calculate_row_usage_of_witness_block, check_batch_capacity, fill_zktrie_state_from_proofs,
     normalize_withdraw_proof, storage_trace_to_padding_witness_block, WitnessBlock,
-    SUB_CIRCUIT_NAMES,
 };
-
-// TODO: more smart row capacity checking rather than max_of(row_usage_details) > 1<<20 - 256
-// Need to compare with real row nums like MAX_MPT_ROWS/MAX_KECCAK_ROWS etc.
-////// params for degree = 20 ////////////
-pub const MAX_TXS: usize = 100;
-pub const MAX_INNER_BLOCKS: usize = 100;
-pub const MAX_EXP_STEPS: usize = 10_000;
-pub const MAX_CALLDATA: usize = 400_000;
-pub const MAX_BYTECODE: usize = 400_000;
-pub const MAX_MPT_ROWS: usize = 400_000;
-pub const MAX_KECCAK_ROWS: usize = 524_000;
-pub const MAX_RWS: usize = 1_000_000;
-pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
-pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
-pub const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
+pub use builder::{
+    MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS,
+    MAX_POSEIDON_ROWS, MAX_PRECOMPILE_EC_ADD, MAX_PRECOMPILE_EC_MUL, MAX_PRECOMPILE_EC_PAIRING,
+    MAX_RWS, MAX_TXS, MAX_VERTICLE_ROWS,
+};
 
 static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 53077));
 static AUTO_TRUNCATE: Lazy<bool> = Lazy::new(|| read_env_var("AUTO_TRUNCATE", false));

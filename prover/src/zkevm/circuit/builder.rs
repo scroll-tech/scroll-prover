@@ -1,8 +1,4 @@
-use super::{
-    TargetCircuit, AUTO_TRUNCATE, CHAIN_ID, MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS,
-    MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_PRECOMPILE_EC_ADD, MAX_PRECOMPILE_EC_MUL,
-    MAX_PRECOMPILE_EC_PAIRING, MAX_RWS, MAX_TXS,
-};
+use super::{TargetCircuit, AUTO_TRUNCATE, CHAIN_ID};
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
@@ -30,10 +26,43 @@ use zkevm_circuits::{
 
 pub type WitnessBlock = Block<Fr>;
 
-pub const SUB_CIRCUIT_NAMES: [&str; 14] = [
-    "evm", "state", "bytecode", "copy", "keccak", "tx", "rlp", "exp", "modexp", "pi", "poseidon",
-    "sig", "ecc", "mpt",
-];
+////// params for degree = 20 ////////////
+pub const MAX_TXS: usize = 100;
+pub const MAX_INNER_BLOCKS: usize = 100;
+pub const MAX_EXP_STEPS: usize = 10_000;
+pub const MAX_CALLDATA: usize = 600_000;
+pub const MAX_BYTECODE: usize = 600_000;
+pub const MAX_MPT_ROWS: usize = 1_000_000;
+pub const MAX_KECCAK_ROWS: usize = 1_000_000;
+pub const MAX_POSEIDON_ROWS: usize = 1_000_000;
+pub const MAX_VERTICLE_ROWS: usize = 1_000_000;
+pub const MAX_RWS: usize = 1_000_000;
+pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
+pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
+pub const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
+
+fn get_super_circuit_params() -> CircuitsParams {
+    CircuitsParams {
+        max_evm_rows: MAX_RWS,
+        max_rws: MAX_RWS,
+        max_copy_rows: MAX_RWS,
+        max_txs: MAX_TXS,
+        max_calldata: MAX_CALLDATA,
+        max_bytecode: MAX_BYTECODE,
+        max_inner_blocks: MAX_INNER_BLOCKS,
+        max_keccak_rows: MAX_KECCAK_ROWS,
+        max_poseidon_rows: MAX_POSEIDON_ROWS,
+        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
+        max_exp_steps: MAX_EXP_STEPS,
+        max_mpt_rows: MAX_MPT_ROWS,
+        max_rlp_rows: MAX_CALLDATA,
+        max_ec_ops: PrecompileEcParams {
+            ec_add: MAX_PRECOMPILE_EC_ADD,
+            ec_mul: MAX_PRECOMPILE_EC_MUL,
+            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
+        },
+    }
+}
 
 // TODO: optimize it later
 pub fn calculate_row_usage_of_trace(
@@ -50,8 +79,8 @@ pub fn calculate_row_usage_of_witness_block(
         witness_block,
     );
 
-    assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
-    assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
+    assert_eq!(rows[10].name, "poseidon");
+    assert_eq!(rows[13].name, "mpt");
     // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
     rows[10].row_num_real += rows[13].row_num_real * 12;
 
@@ -237,7 +266,7 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
     };
     let mut state = ZktrieState::construct(old_root);
     fill_zktrie_state_from_proofs(&mut state, block_traces, false)?;
-    block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)
+    Ok(block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?.0)
 }
 
 pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
@@ -266,7 +295,7 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
 
     // the only purpose here it to get the updated zktrie state
     let prev_witness_block =
-        block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?;
+        block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?.0;
 
     // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
     // storage proofs of prev block
@@ -287,14 +316,14 @@ pub fn storage_trace_to_padding_witness_block(storage_trace: StorageTrace) -> Re
         ..Default::default()
     }];
     fill_zktrie_state_from_proofs(&mut state, &dummy_chunk_traces, false)?;
-    block_traces_to_witness_block_with_updated_state(&[], &mut state, false)
+    Ok(block_traces_to_witness_block_with_updated_state(&[], &mut state, false)?.0)
 }
 
 pub fn block_traces_to_witness_block_with_updated_state(
     block_traces: &[BlockTrace],
     zktrie_state: &mut ZktrieState,
     light_mode: bool, // light_mode used in row estimation
-) -> Result<Block<Fr>> {
+) -> Result<(Block<Fr>, CodeDB)> {
     let chain_id = block_traces
         .iter()
         .map(|block_trace| block_trace.chain_id)
@@ -321,28 +350,11 @@ pub fn block_traces_to_witness_block_with_updated_state(
     }
 
     let code_db = build_codedb(&state_db, block_traces)?;
-    let circuit_params = CircuitsParams {
-        max_evm_rows: MAX_RWS,
-        max_rws: MAX_RWS,
-        max_copy_rows: MAX_RWS,
-        max_txs: MAX_TXS,
-        max_calldata: MAX_CALLDATA,
-        max_bytecode: MAX_BYTECODE,
-        max_inner_blocks: MAX_INNER_BLOCKS,
-        max_keccak_rows: MAX_KECCAK_ROWS,
-        max_exp_steps: MAX_EXP_STEPS,
-        max_mpt_rows: MAX_MPT_ROWS,
-        max_rlp_rows: MAX_CALLDATA,
-        max_ec_ops: PrecompileEcParams {
-            ec_add: MAX_PRECOMPILE_EC_ADD,
-            ec_mul: MAX_PRECOMPILE_EC_MUL,
-            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
-        },
-    };
+    let circuit_params = get_super_circuit_params();
     let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
     builder_block.chain_id = chain_id;
     builder_block.prev_state_root = U256::from(zktrie_state.root());
-    let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db, &builder_block);
+    let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db.clone(), &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
         let is_last = idx == block_traces.len() - 1;
         let eth_block: EthBlock = block_trace.clone().into();
@@ -414,7 +426,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         "finish replay trie updates, root {}",
         hex::encode(zktrie_state.root())
     );
-    Ok(witness_block)
+    Ok((witness_block, code_db))
 }
 
 pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>> {

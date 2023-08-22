@@ -2,7 +2,6 @@ use halo2_proofs::{
     dev::MockProver,
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
-    SerdeFormat,
 };
 use prover::{
     config::INNER_DEGREE,
