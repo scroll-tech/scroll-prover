@@ -36,7 +36,8 @@ pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
 pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
 pub const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
 
-fn get_super_circuit_params() -> CircuitsParams {
+/// default params for super circuit
+pub fn get_super_circuit_params() -> CircuitsParams {
     CircuitsParams {
         max_evm_rows: MAX_RWS,
         max_rws: MAX_RWS,
@@ -74,10 +75,10 @@ pub fn calculate_row_usage_of_witness_block(
         witness_block,
     );
 
-    assert_eq!(SUB_CIRCUIT_NAMES[10], "poseidon");
-    assert_eq!(SUB_CIRCUIT_NAMES[13], "mpt");
-    // empirical estimation is each row in mpt cost 1.2 hash (aka 11 rows)
-    rows[10].row_num_real += rows[13].row_num_real*11;
+    assert_eq!(rows[10].name, "poseidon");
+    assert_eq!(rows[13].name, "mpt");
+    // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
+    rows[10].row_num_real += rows[13].row_num_real * 12;
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
@@ -325,28 +326,6 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     Ok(padding_block)
 }
 
-/// default params for super circuit
-pub fn global_circuit_params() -> CircuitsParams {
-    CircuitsParams {
-        max_evm_rows: MAX_RWS,
-        max_rws: MAX_RWS,
-        max_copy_rows: MAX_RWS,
-        max_txs: MAX_TXS,
-        max_calldata: MAX_CALLDATA,
-        max_bytecode: MAX_BYTECODE,
-        max_inner_blocks: MAX_INNER_BLOCKS,
-        max_keccak_rows: MAX_KECCAK_ROWS,
-        max_exp_steps: MAX_EXP_STEPS,
-        max_mpt_rows: MAX_MPT_ROWS,
-        max_rlp_rows: MAX_CALLDATA,
-        max_ec_ops: PrecompileEcParams {
-            ec_add: MAX_PRECOMPILE_EC_ADD,
-            ec_mul: MAX_PRECOMPILE_EC_MUL,
-            ec_pairing: MAX_PRECOMPILE_EC_PAIRING,
-        },
-    }
-}
-
 /// update the builder with another batch of trace and then *FINALIZE* it
 /// (so the buidler CAN NOT be update any more)
 /// light_mode skip the time consuming calculation on mpt root for each
@@ -425,7 +404,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         "finish replay trie updates, root {}",
         hex::encode(builder.mpt_init_state.root())
     );
-    Ok(witness_block)
+    Ok((witness_block, code_db))
 }
 
 pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {

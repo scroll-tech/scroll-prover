@@ -14,10 +14,8 @@ use bus_mapping::{
 use eth_types::{ToWord, H256};
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
-use itertools::Itertools;
 use serde_derive::{Deserialize, Serialize};
 use types::eth::BlockTrace;
-use eth_types::{H256, ToWord};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubCircuitRowUsage {
