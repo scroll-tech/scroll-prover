@@ -21,10 +21,6 @@ use serde::Deserialize;
 use std::{env, str::FromStr, process::ExitCode};
 use types::eth::BlockTrace;
 
-const DEFAULT_BEGIN_BATCH: i64 = 1;
-const DEFAULT_END_BATCH: i64 = i64::MAX;
-
-
 // build common config from enviroment
 fn common_log() -> Result<Config> {
     dotenv::dotenv().ok();
@@ -142,6 +138,7 @@ async fn main() -> ExitCode{
         .unwrap_or_else(|e| {
             panic!("mock-testnet: failed to request API err {e:?}")
         });
+    let mut chunks_task_complete = true;
     match chunks {
         None => {
             log::info!("mock-testnet: finished to prove at batch-{batch_id}");
@@ -157,15 +154,27 @@ async fn main() -> ExitCode{
                 let mut block_traces: Vec<BlockTrace> = vec![];
                 for block_id in chunk.start_block_number..=chunk.end_block_number {
                     log::info!("mock-testnet: requesting trace of block {block_id}");
-
-                    let trace = provider
+ 
+                    match provider
                         .request(
                             "scroll_getBlockTraceByNumberOrHash",
                             [format!("{block_id:#x}")],
                         )
-                        .await
-                        .unwrap();
-                    block_traces.push(trace);
+                        .await 
+                    {
+                        Ok(trace) => {
+                            block_traces.push(trace);
+                        }
+                        Err(e) => {
+                            log::error!("obtain trace from block provider fail: {e:?}");
+                            break;
+                        }
+                    } 
+                }
+
+                if block_traces.len() < (chunk.end_block_number - chunk.start_block_number + 1) as usize {
+                    chunks_task_complete = false;
+                    break;
                 }
 
                 // start chunk-level testing
@@ -181,11 +190,8 @@ async fn main() -> ExitCode{
                         Ok(())
                     })
                 {
-                    if notify_chunks_complete(&setting, batch_id as i64, false).await.is_ok() {
-                        return ExitCode::from(EXIT_FAILED_ENV);
-                    } else {
-                        return ExitCode::from(EXIT_FAILED_ENV_WITH_TASK);
-                    }
+                    chunks_task_complete = false;
+                    break;                    
                 }
 
                 let handling_ret = chunk_handling(batch_id as i64, chunk_id, &block_traces);
@@ -200,12 +206,17 @@ async fn main() -> ExitCode{
         }
     }
 
-    if let Err(e) = notify_chunks_complete(&setting, batch_id as i64, true).await {
+    if let Err(e) = notify_chunks_complete(&setting, batch_id as i64, chunks_task_complete).await {
         log::error!("can not deliver complete notify to coordinator: {e:?}");
         return ExitCode::from(EXIT_FAILED_ENV_WITH_TASK);
     }
-    log::info!("relay-alpha testnet runner: complete");
-    ExitCode::from(0)
+
+    if chunks_task_complete {
+        log::info!("relay-alpha testnet runner: complete");
+        ExitCode::from(0)    
+    }else {
+        ExitCode::from(EXIT_FAILED_ENV)
+    }
 }
 
 fn build_block(
@@ -241,7 +252,7 @@ fn build_block(
 async fn get_chunks_info(
     setting: &Setting,
 ) -> Result<(usize, Option<Vec<ChunkInfo>>)> {
-    let url = Url::parse(&setting.coordinator_url)?;
+    let url = Url::parse(&setting.chunks_url)?;
 
     let resp: String = reqwest::get(url).await?.text().await?;
     log::debug!("resp is {resp}");
@@ -293,7 +304,7 @@ struct ChunkInfo {
 
 #[derive(Debug, Default)]
 struct Setting {
-    coordinator_url: String,
+    chunks_url: String,
     task_url: String,
     l2geth_api_url: String,
     data_output_dir: String,
@@ -302,15 +313,33 @@ struct Setting {
 impl Setting {
     pub fn new() -> Self {
         let l2geth_api_url =
-            env::var("L2GETH_API_URL").expect("mock-testnet: Must set env L2GETH_API_URL");
-        let coordinator_url = env::var("ROLLUPSCAN_API_URL");
-        let coordinator_url =
-            coordinator_url.unwrap_or_else(|_| "http://10.0.3.119:8560/api/chunks".to_string());
+            env::var("L2GETH_API_URL").expect("run-testnet: Must set env L2GETH_API_URL");
+        let coordinator_url = env::var("COORDINATOR_API_URL");
+        let (chunks_url, task_url) = if let Ok(url_prefix) = coordinator_url {
+            (
+                Url::parse(&url_prefix).and_then(|url|url.join("chunks")).expect("run-testnet: Must be valid url for coordinator api"),
+                Url::parse(&url_prefix).and_then(|url|url.join("tasks")).expect("run-testnet: Must be valid url for coordinator api"), 
+            )
+        } else {
+            (
+                Url::parse(
+                    &env::var("CHUNKS_API_URL")
+                    .expect("run-test: CHUNKS_API_URL must be set if COORDINATOR_API_URL is not set"),
+                ).expect("run-testnet: Must be valid url for chunks api"),
+                Url::parse(
+                    &env::var("TASKS_API_URL")
+                    .expect("run-test: TASKS_API_URL must be set if COORDINATOR_API_URL is not set"),
+                ).expect("run-testnet: Must be valid url for tasks api"),    
+            )
+        };
+
+        let data_output_dir = env::var("OUTPUT_DIR").unwrap_or("output".to_string());
 
         Self {
             l2geth_api_url,
-            coordinator_url,
-            ..Default::default()
+            data_output_dir,
+            chunks_url: chunks_url.as_str().into(),
+            task_url: task_url.as_str().into(),
         }
     }
 }
