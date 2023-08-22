@@ -13,8 +13,9 @@ use crate::utils::read_env_var;
 pub use self::builder::{
     block_traces_to_padding_witness_block, block_traces_to_witness_block,
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
-    calculate_row_usage_of_witness_block, check_batch_capacity,
-    normalize_withdraw_proof, storage_trace_to_padding_witness_block, SUB_CIRCUIT_NAMES,
+    calculate_row_usage_of_witness_block, check_batch_capacity, 
+    normalize_withdraw_proof, WitnessBlock, global_circuit_params,
+    SUB_CIRCUIT_NAMES,
 };
 
 static CHAIN_ID: Lazy<u64> = Lazy::new(|| read_env_var("CHAIN_ID", 53077));
