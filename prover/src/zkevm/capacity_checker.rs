@@ -148,6 +148,7 @@ impl CircuitCapacityChecker {
         self.state = None;
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
+        self.codelen = HashMap::new();
     }
     pub fn estimate_circuit_capacity(
         &mut self,
