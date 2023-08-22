@@ -165,13 +165,13 @@ impl CircuitCapacityChecker {
             block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
         let mut rows = calculate_row_usage_of_witness_block(&witness_block)?;
 
-        // adjustment. we do dedup for bytecodes for bytecode circuit / poseidon circuit here only.
+        // Dedup bytecode row usage for bytecode circuit / poseidon circuit
         for (hash, bytes) in &codedb.0 {
             if self.codelen.contains_key(hash) {
                 assert_eq!(rows[2].name, "bytecode");
                 rows[2].row_num_real -= bytes.len();
                 assert_eq!(rows[10].name, "poseidon");
-                rows[10].row_num_real -= bytes.len() / (31 * 2);
+                rows[10].row_num_real -= bytes.len() / (31 * 2) * 8;
             } else {
                 self.codelen.insert(*hash, bytes.len());
             }
