@@ -1,7 +1,15 @@
+use std::collections::HashMap;
+
+use super::circuit::{
+    MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_POSEIDON_ROWS,
+    MAX_RWS, MAX_VERTICLE_ROWS,
+};
+
 use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
     fill_zktrie_state_from_proofs,
 };
+use eth_types::H256;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
@@ -38,41 +46,21 @@ impl RowUsage {
     }
     // We treat 1M as 100%
     pub fn normalize(&self) -> Self {
-        /*
-        const MAX_TXS: usize = 100;
-        const MAX_INNER_BLOCKS: usize = 100;
-        const MAX_EXP_STEPS: usize = 10_000;
-        const MAX_CALLDATA: usize = 400_000;
-        const MAX_BYTECODE: usize = 400_000;
-        const MAX_MPT_ROWS: usize = 400_000;
-        const MAX_KECCAK_ROWS: usize = 524_000;
-        const MAX_RWS: usize = 1_000_000;
-        const MAX_PRECOMPILE_EC_ADD: usize = 50;
-        const MAX_PRECOMPILE_EC_MUL: usize = 50;
-        const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
-        */
-        use super::circuit::{
-            MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS, MAX_KECCAK_ROWS, MAX_MPT_ROWS, MAX_RWS,
-        };
-        // 14 in total
-        // "evm", "state", "bytecode", "copy",
-        // "keccak", "tx", "rlp", "exp", "modexp", "pi",
-        // "poseidon", "sig", "ecc", "mpt",
         let real_available_rows = [
-            MAX_RWS,
-            MAX_RWS,
-            MAX_BYTECODE,
-            MAX_RWS,
-            MAX_KECCAK_ROWS,
-            MAX_CALLDATA,
-            MAX_CALLDATA,
+            MAX_RWS,           // evm
+            MAX_RWS,           // state
+            MAX_BYTECODE,      // bytecode
+            MAX_RWS,           // copy
+            MAX_KECCAK_ROWS,   // keccak
+            MAX_CALLDATA,      // tx
+            MAX_CALLDATA,      // rlp
             7 * MAX_EXP_STEPS, // exp
-            MAX_KECCAK_ROWS,
-            MAX_RWS,
-            MAX_MPT_ROWS,    // poseidon
-            (1 << 20) - 256, // sig
-            (1 << 20) - 256, // FIXME: pairing may be limit to 1, fix later
-            MAX_MPT_ROWS,
+            MAX_KECCAK_ROWS,   // modexp
+            MAX_RWS,           // pi
+            MAX_POSEIDON_ROWS, // poseidon
+            MAX_VERTICLE_ROWS, // sig
+            MAX_VERTICLE_ROWS, // ecc
+            MAX_MPT_ROWS,      // mpt
         ]
         .map(|x| (x as f32 * 0.95) as usize);
         let details = self
@@ -131,6 +119,8 @@ pub struct CircuitCapacityChecker {
     pub acc_row_usage: RowUsage,
     pub row_usages: Vec<RowUsage>,
     pub state: Option<ZktrieState>,
+    // poseidon codehash to code len
+    pub codelen: HashMap<H256, usize>,
 }
 
 // Currently TxTrace is same as BlockTrace, with "transactions" and "executionResults" should be of
@@ -151,6 +141,7 @@ impl CircuitCapacityChecker {
             row_usages: Vec::new(),
             state: None,
             light_mode: true,
+            codelen: HashMap::new(),
         }
     }
     pub fn reset(&mut self) {
@@ -169,9 +160,22 @@ impl CircuitCapacityChecker {
         let traces = txs;
         let state = self.state.as_mut().unwrap();
         fill_zktrie_state_from_proofs(state, traces, self.light_mode)?;
-        let witness_block =
+        let (witness_block, codedb) =
             block_traces_to_witness_block_with_updated_state(traces, state, self.light_mode)?;
-        let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+        let mut rows = calculate_row_usage_of_witness_block(&witness_block)?;
+
+        // adjustment. we do dedup for bytecodes for bytecode circuit / poseidon circuit here only.
+        for (hash, bytes) in &codedb.0 {
+            if self.codelen.contains_key(hash) {
+                assert_eq!(rows[2].name, "bytecode");
+                rows[2].row_num_real -= bytes.len();
+                assert_eq!(rows[10].name, "poseidon");
+                rows[10].row_num_real -= bytes.len() / (31 * 2);
+            } else {
+                self.codelen.insert(*hash, bytes.len());
+            }
+        }
+
         let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
             .map(|x| SubCircuitRowUsage {
