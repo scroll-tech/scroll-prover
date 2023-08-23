@@ -1,13 +1,9 @@
-use aggregator::CompressionCircuit;
 use prover::{
-    aggregator::{Prover, Verifier},
-    common,
-    config::{LAYER4_CONFIG_PATH, LAYER4_DEGREE},
-    test_util::{load_block_traces_for_test, PARAMS_DIR},
+    aggregator::Prover,
+    test_util::{gen_and_verify_batch_proofs, load_block_traces_for_test, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
-    zkevm, BatchProof, ChunkHash, ChunkProof, EvmProof, Proof,
+    zkevm, ChunkHash, ChunkProof,
 };
-use snark_verifier_sdk::Snark;
 use std::env;
 
 #[cfg(feature = "prove_verify")]
@@ -33,85 +29,7 @@ fn test_agg_prove_verify() {
         .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
         .unwrap();
 
-    let (evm_proof, agg_verifier) =
-        gen_and_verify_evm_proof(&output_dir, &mut agg_prover, layer3_snark.clone());
-
-    gen_and_verify_normal_proof(
-        &output_dir,
-        &mut agg_prover,
-        &agg_verifier,
-        evm_proof.proof.raw_vk().to_vec(),
-        layer3_snark,
-    );
-}
-
-fn gen_and_verify_evm_proof(
-    output_dir: &str,
-    prover: &mut Prover,
-    layer3_snark: Snark,
-) -> (EvmProof, Verifier) {
-    // Load or generate compression EVM proof (layer-4).
-    let evm_proof = prover
-        .inner
-        .load_or_gen_comp_evm_proof(
-            "evm",
-            "layer4",
-            true,
-            *LAYER4_DEGREE,
-            layer3_snark,
-            Some(&output_dir),
-        )
-        .unwrap();
-    log::info!("Got compression-EVM-proof (layer-4)");
-
-    env::set_var("COMPRESSION_CONFIG", &*LAYER4_CONFIG_PATH);
-    let vk = evm_proof.proof.vk::<CompressionCircuit>();
-
-    let params = prover.inner.params(*LAYER4_DEGREE).clone();
-    common::Verifier::<CompressionCircuit>::new(params, vk).evm_verify(&evm_proof, &output_dir);
-    log::info!("Generated deployment bytecode");
-
-    env::set_var("AGG_VK_FILENAME", "vk_evm_layer4_evm.vkey");
-    let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
-    log::info!("Constructed aggregator verifier");
-
-    let batch_proof = BatchProof::from(evm_proof.proof.clone());
-    batch_proof.dump(output_dir, "agg").unwrap();
-    batch_proof.clone().assert_calldata();
-
-    let success = verifier.verify_agg_evm_proof(batch_proof);
-    assert!(success);
-    log::info!("Finished EVM verification");
-
-    (evm_proof, verifier)
-}
-
-fn gen_and_verify_normal_proof(
-    output_dir: &str,
-    prover: &mut Prover,
-    verifier: &Verifier,
-    raw_vk: Vec<u8>,
-    layer3_snark: Snark,
-) {
-    // Load or generate compression thin snark (layer-4).
-    let layer4_snark = prover
-        .inner
-        .load_or_gen_comp_snark(
-            "layer4",
-            "layer4",
-            true,
-            *LAYER4_DEGREE,
-            layer3_snark,
-            Some(&output_dir),
-        )
-        .unwrap();
-    log::info!("Got compression thin snark (layer-4)");
-
-    let proof = Proof::from_snark(layer4_snark, raw_vk);
-    log::info!("Got normal proof");
-
-    assert!(verifier.inner.verify_proof(proof));
-    log::info!("Finished normal verification");
+    gen_and_verify_batch_proofs(&mut agg_prover, layer3_snark, &output_dir);
 }
 
 fn gen_chunk_hashes_and_proofs(

@@ -6,7 +6,7 @@ use halo2_proofs::{
 };
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct EvmProof {
     pub proof: Proof,
     pub num_instance: Vec<usize>,

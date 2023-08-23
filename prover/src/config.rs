@@ -1,7 +1,7 @@
 use crate::utils::read_env_var;
 use aggregator::ConfigParams;
 use once_cell::sync::Lazy;
-use std::{collections::HashSet, fs::File, path::Path};
+use std::{collections::HashSet, fmt, fs::File, path::Path};
 
 pub static INNER_DEGREE: Lazy<u32> = Lazy::new(|| read_env_var("SCROLL_PROVER_INNER_DEGREE", 20));
 
@@ -28,6 +28,52 @@ pub static ZKEVM_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
 
 pub static AGG_DEGREES: Lazy<Vec<u32>> =
     Lazy::new(|| Vec::from_iter(HashSet::from([*LAYER3_DEGREE, *LAYER4_DEGREE])));
+
+pub enum LayerId {
+    /// Compression wide layer
+    Layer1,
+    /// Compression thin layer (to generate chunk-proof)
+    Layer2,
+    /// Aggregation layer
+    Layer3,
+    /// Compression thin layer (to generate batch-proof)
+    Layer4,
+}
+
+impl fmt::Display for LayerId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.id())
+    }
+}
+
+impl LayerId {
+    pub fn id(&self) -> &str {
+        match self {
+            Self::Layer1 => "layer1",
+            Self::Layer2 => "layer2",
+            Self::Layer3 => "layer3",
+            Self::Layer4 => "layer4",
+        }
+    }
+
+    pub fn degree(&self) -> u32 {
+        match self {
+            Self::Layer1 => *LAYER1_DEGREE,
+            Self::Layer2 => *LAYER2_DEGREE,
+            Self::Layer3 => *LAYER3_DEGREE,
+            Self::Layer4 => *LAYER4_DEGREE,
+        }
+    }
+
+    pub fn config_path(&self) -> &str {
+        match self {
+            Self::Layer1 => &LAYER1_CONFIG_PATH,
+            Self::Layer2 => &LAYER2_CONFIG_PATH,
+            Self::Layer3 => &LAYER3_CONFIG_PATH,
+            Self::Layer4 => &LAYER4_CONFIG_PATH,
+        }
+    }
+}
 
 pub fn layer_config_path(id: &str) -> &str {
     match id {
