@@ -1,24 +1,24 @@
 #![allow(dead_code)]
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
-use prover::{
-    inner::Prover,
-    utils::{read_env_var, GIT_VERSION, short_git_version},
-    zkevm::circuit::{
-        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-        WitnessBlock,
-    },
-};
 use log4rs::{
     append::{
         console::{ConsoleAppender, Target},
         file::FileAppender,
     },
-    config::{Appender, Logger, Config, Root},
+    config::{Appender, Config, Logger, Root},
+};
+use prover::{
+    inner::Prover,
+    utils::{read_env_var, short_git_version, GIT_VERSION},
+    zkevm::circuit::{
+        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+        WitnessBlock,
+    },
 };
 use reqwest::Url;
 use serde::Deserialize;
-use std::{env, str::FromStr, process::ExitCode};
+use std::{env, process::ExitCode, str::FromStr};
 use types::eth::BlockTrace;
 
 // build common config from enviroment
@@ -31,13 +31,8 @@ fn common_log() -> Result<Config> {
     let stdoutput = ConsoleAppender::builder().target(Target::Stdout).build();
 
     let config = Config::builder()
-    .appenders([
-        Appender::builder().build("std", Box::new(stdoutput)),
-    ]).build(
-        Root::builder()
-            .appender("std")
-            .build(log_level),
-    )?;
+        .appenders([Appender::builder().build("std", Box::new(stdoutput))])
+        .build(Root::builder().appender("std").build(log_level))?;
 
     Ok(config)
 }
@@ -49,39 +44,39 @@ fn debug_log(output_dir: &str) -> Result<Config> {
     let log_file_path = Path::new(output_dir).join("runner.log");
     let log_file = FileAppender::builder().build(log_file_path).unwrap();
     let config = Config::builder()
-    .appenders([
-        Appender::builder().build("log-file", Box::new(log_file)),
-        Appender::builder().build("stderr", Box::new(err_output)),
-    ])
-    .logger(
-        Logger::builder()
-        .appender("log-file")
-        .additive(true)
-        .build("", log::LevelFilter::Debug)
-    )
-    .build(
-        Root::builder()
-            .appender("stderr")
-            .build(log::LevelFilter::Warn),
-    )?;
-    
+        .appenders([
+            Appender::builder().build("log-file", Box::new(log_file)),
+            Appender::builder().build("stderr", Box::new(err_output)),
+        ])
+        .logger(
+            Logger::builder()
+                .appender("log-file")
+                .additive(true)
+                .build("", log::LevelFilter::Debug),
+        )
+        .build(
+            Root::builder()
+                .appender("stderr")
+                .build(log::LevelFilter::Warn),
+        )?;
+
     Ok(config)
 }
 
 fn prepare_chunk_dir(output_dir: &str, chunk_id: u64) -> Result<String> {
-    use std::{path::Path, fs};
-    let chunk_path = Path::new(output_dir).join(format!("{}", chunk_id));
+    use std::{fs, path::Path};
+    let chunk_path = Path::new(output_dir).join(format!("{chunk_id}"));
     fs::create_dir(chunk_path.as_path())?;
-    Ok(chunk_path.to_str().ok_or_else(||anyhow::anyhow!("invalid chunk path"))?.into())
+    Ok(chunk_path
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("invalid chunk path"))?
+        .into())
 }
 
-fn record_chunk_traces(chunk_dir: &str, traces: &[BlockTrace]) -> Result<()>{
-
-    use flate2::Compression;
-    use flate2::write::GzEncoder;
-    use std::fs::File;
-    use tar::{Header, Builder};
-    use std::path::Path;
+fn record_chunk_traces(chunk_dir: &str, traces: &[BlockTrace]) -> Result<()> {
+    use flate2::{write::GzEncoder, Compression};
+    use std::{fs::File, path::Path};
+    use tar::{Builder, Header};
 
     let trace_file_path = Path::new(chunk_dir).join("traces.tar.gz");
     let tarfile = File::create(trace_file_path)?;
@@ -93,8 +88,8 @@ fn record_chunk_traces(chunk_dir: &str, traces: &[BlockTrace]) -> Result<()>{
 
         let mut header = Header::new_gnu();
         header.set_path(trace.header.number.map_or_else(
-            ||format!("unknown_block_{}.json", i), 
-            |blkn|format!("{}.json", blkn), 
+            || format!("unknown_block_{i}.json"),
+            |blkn| format!("{blkn}.json"),
         ))?;
         header.set_size(trace_str.len() as u64);
         header.set_cksum();
@@ -104,23 +99,23 @@ fn record_chunk_traces(chunk_dir: &str, traces: &[BlockTrace]) -> Result<()>{
     Ok(())
 }
 
-fn chunk_handling(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> Result<()>{
+fn chunk_handling(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> Result<()> {
+    let witness_block = build_block(block_traces, batch_id, chunk_id)
+        .map_err(|e| anyhow::anyhow!("testnet: building block failed {e:?}"))?;
 
-    let witness_block = build_block(&block_traces, batch_id, chunk_id)
-    .map_err(|e|anyhow::anyhow!("testnet: building block failed {e:?}"))?;
-
-    Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block)
-    .map_err(|e|anyhow::anyhow!("testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{e:?}"))?;
+    Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block).map_err(|e| {
+        anyhow::anyhow!("testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{e:?}")
+    })?;
 
     Ok(())
 }
 
-const EXIT_NO_MORE_TASK : u8 = 9;
-const EXIT_FAILED_ENV : u8 = 13;
-const EXIT_FAILED_ENV_WITH_TASK : u8 = 17;
+const EXIT_NO_MORE_TASK: u8 = 9;
+const EXIT_FAILED_ENV: u8 = 13;
+const EXIT_FAILED_ENV_WITH_TASK: u8 = 17;
 
 #[tokio::main]
-async fn main() -> ExitCode{
+async fn main() -> ExitCode {
     let log_handle = log4rs::init_config(common_log().unwrap()).unwrap();
     log::info!("git version {}", GIT_VERSION);
     log::info!("short git version {}", short_git_version());
@@ -135,9 +130,7 @@ async fn main() -> ExitCode{
 
     let (batch_id, chunks) = get_chunks_info(&setting)
         .await
-        .unwrap_or_else(|e| {
-            panic!("mock-testnet: failed to request API err {e:?}")
-        });
+        .unwrap_or_else(|e| panic!("mock-testnet: failed to request API err {e:?}"));
     let mut chunks_task_complete = true;
     match chunks {
         None => {
@@ -154,13 +147,13 @@ async fn main() -> ExitCode{
                 let mut block_traces: Vec<BlockTrace> = vec![];
                 for block_id in chunk.start_block_number..=chunk.end_block_number {
                     log::info!("mock-testnet: requesting trace of block {block_id}");
- 
+
                     match provider
                         .request(
                             "scroll_getBlockTraceByNumberOrHash",
                             [format!("{block_id:#x}")],
                         )
-                        .await 
+                        .await
                     {
                         Ok(trace) => {
                             block_traces.push(trace);
@@ -169,29 +162,37 @@ async fn main() -> ExitCode{
                             log::error!("obtain trace from block provider fail: {e:?}");
                             break;
                         }
-                    } 
+                    }
                 }
 
-                if block_traces.len() < (chunk.end_block_number - chunk.start_block_number + 1) as usize {
+                if block_traces.len()
+                    < (chunk.end_block_number - chunk.start_block_number + 1) as usize
+                {
                     chunks_task_complete = false;
                     break;
                 }
 
                 // start chunk-level testing
-                //let chunk_dir = prepare_chunk_dir(&setting.data_output_dir, chunk_id as u64).unwrap();
-                if let Err(_) = prepare_chunk_dir(&setting.data_output_dir, chunk_id as u64)
-                    .and_then(|chunk_dir|{
+                //let chunk_dir = prepare_chunk_dir(&setting.data_output_dir, chunk_id as
+                // u64).unwrap();
+                if let Err(e) = prepare_chunk_dir(&setting.data_output_dir, chunk_id as u64)
+                    .and_then(|chunk_dir| {
                         record_chunk_traces(&chunk_dir, &block_traces)?;
                         Ok(chunk_dir)
                     })
-                    .and_then(|chunk_dir|{
+                    .and_then(|chunk_dir| {
                         log::info!("chunk {} has been recorded to {}", chunk_id, chunk_dir);
                         log_handle.set_config(debug_log(&chunk_dir)?);
                         Ok(())
                     })
                 {
+                    log::error!(
+                        "can not prepare output enviroment for chunk {}: {:?}",
+                        chunk_id,
+                        e
+                    );
                     chunks_task_complete = false;
-                    break;                    
+                    break;
                 }
 
                 let handling_ret = chunk_handling(batch_id as i64, chunk_id, &block_traces);
@@ -201,7 +202,7 @@ async fn main() -> ExitCode{
                     // TODO: move data to output dir
                 }
 
-                log::info!("chunk {} has been handled", chunk_id);          
+                log::info!("chunk {} has been handled", chunk_id);
             }
         }
     }
@@ -213,8 +214,8 @@ async fn main() -> ExitCode{
 
     if chunks_task_complete {
         log::info!("relay-alpha testnet runner: complete");
-        ExitCode::from(0)    
-    }else {
+        ExitCode::from(0)
+    } else {
         ExitCode::from(EXIT_FAILED_ENV)
     }
 }
@@ -248,10 +249,8 @@ fn build_block(
     Ok(witness_block)
 }
 
-/// Request chunk info from cordinator 
-async fn get_chunks_info(
-    setting: &Setting,
-) -> Result<(usize, Option<Vec<ChunkInfo>>)> {
+/// Request chunk info from cordinator
+async fn get_chunks_info(setting: &Setting) -> Result<(usize, Option<Vec<ChunkInfo>>)> {
     let url = Url::parse(&setting.chunks_url)?;
 
     let resp: String = reqwest::get(url).await?.text().await?;
@@ -272,15 +271,17 @@ async fn notify_chunks_complete(
 ) -> Result<()> {
     let url = Url::parse_with_params(
         &setting.task_url,
-        &[(if completed {"done"} else {"drop"}, 
-        batch_index.to_string())],
+        &[(
+            if completed { "done" } else { "drop" },
+            batch_index.to_string(),
+        )],
     )?;
 
     let resp = reqwest::get(url).await?.text().await?;
     log::info!(
         "notify batch {} {}, resp {}",
         batch_index,
-        if completed {"done"} else {"drop"},
+        if completed { "done" } else { "drop" },
         resp,
     );
     Ok(())
@@ -317,19 +318,23 @@ impl Setting {
         let coordinator_url = env::var("COORDINATOR_API_URL");
         let (chunks_url, task_url) = if let Ok(url_prefix) = coordinator_url {
             (
-                Url::parse(&url_prefix).and_then(|url|url.join("chunks")).expect("run-testnet: Must be valid url for coordinator api"),
-                Url::parse(&url_prefix).and_then(|url|url.join("tasks")).expect("run-testnet: Must be valid url for coordinator api"), 
+                Url::parse(&url_prefix)
+                    .and_then(|url| url.join("chunks"))
+                    .expect("run-testnet: Must be valid url for coordinator api"),
+                Url::parse(&url_prefix)
+                    .and_then(|url| url.join("tasks"))
+                    .expect("run-testnet: Must be valid url for coordinator api"),
             )
         } else {
             (
-                Url::parse(
-                    &env::var("CHUNKS_API_URL")
-                    .expect("run-test: CHUNKS_API_URL must be set if COORDINATOR_API_URL is not set"),
-                ).expect("run-testnet: Must be valid url for chunks api"),
-                Url::parse(
-                    &env::var("TASKS_API_URL")
-                    .expect("run-test: TASKS_API_URL must be set if COORDINATOR_API_URL is not set"),
-                ).expect("run-testnet: Must be valid url for tasks api"),    
+                Url::parse(&env::var("CHUNKS_API_URL").expect(
+                    "run-test: CHUNKS_API_URL must be set if COORDINATOR_API_URL is not set",
+                ))
+                .expect("run-testnet: Must be valid url for chunks api"),
+                Url::parse(&env::var("TASKS_API_URL").expect(
+                    "run-test: TASKS_API_URL must be set if COORDINATOR_API_URL is not set",
+                ))
+                .expect("run-testnet: Must be valid url for tasks api"),
             )
         };
 

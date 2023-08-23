@@ -13,8 +13,8 @@ use crate::utils::read_env_var;
 pub use self::builder::{
     block_traces_to_padding_witness_block, block_traces_to_witness_block,
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_trace,
-    calculate_row_usage_of_witness_block, check_batch_capacity,
-    normalize_withdraw_proof, get_super_circuit_params, WitnessBlock,
+    calculate_row_usage_of_witness_block, check_batch_capacity, get_super_circuit_params,
+    normalize_withdraw_proof, WitnessBlock,
 };
 pub use builder::{
     MAX_BYTECODE, MAX_CALLDATA, MAX_EXP_STEPS, MAX_INNER_BLOCKS, MAX_KECCAK_ROWS, MAX_MPT_ROWS,
