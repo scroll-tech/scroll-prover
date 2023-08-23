@@ -2,22 +2,19 @@ use super::{TargetCircuit, AUTO_TRUNCATE, CHAIN_ID};
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
-    circuit_input_builder::{
-        self, CircuitInputBuilder, CircuitsParams, PrecompileEcParams,
-    },
+    circuit_input_builder::{self, CircuitInputBuilder, CircuitsParams, PrecompileEcParams},
     state_db::{CodeDB, StateDB},
 };
-use eth_types::{ToBigEndian, H256, ToWord};
+use eth_types::{ToBigEndian, ToWord, H256};
 use halo2_proofs::halo2curves::bn256::Fr;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
-use std::{
-    collections::HashMap,
-    time::Instant,
-};
+use std::{collections::HashMap, time::Instant};
 use types::eth::{BlockTrace, StorageTrace};
 use zkevm_circuits::{
-    evm_circuit::witness::{block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block},
+    evm_circuit::witness::{
+        block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block,
+    },
     util::SubCircuit,
     witness::WithdrawProof,
 };
@@ -49,8 +46,8 @@ fn get_super_circuit_params() -> CircuitsParams {
         max_bytecode: MAX_BYTECODE,
         max_inner_blocks: MAX_INNER_BLOCKS,
         max_keccak_rows: MAX_KECCAK_ROWS,
-//        max_poseidon_rows: MAX_POSEIDON_ROWS,
-//        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
+        //        max_poseidon_rows: MAX_POSEIDON_ROWS,
+        //        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
         max_mpt_rows: MAX_MPT_ROWS,
         max_rlp_rows: MAX_CALLDATA,
@@ -181,7 +178,6 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
     Ok(())
 }
 
-
 // prepare an empty builder which can updated by more trace
 // from the default settings
 // only require the prev state root being provided
@@ -190,46 +186,38 @@ fn prepare_default_builder(
     old_root: H256,
     initial_mpt_state: Option<ZktrieState>,
 ) -> CircuitInputBuilder {
-
-    let mut builder_block = circuit_input_builder::Block::from_headers(
-        &[], 
-        get_super_circuit_params()
-    );
+    let mut builder_block =
+        circuit_input_builder::Block::from_headers(&[], get_super_circuit_params());
     builder_block.chain_id = *CHAIN_ID;
     builder_block.prev_state_root = old_root.to_word();
     let code_db = CodeDB::new();
 
     if let Some(mpt_state) = initial_mpt_state {
-        assert_eq!(H256::from_slice(mpt_state.root()), old_root, "the provided zktrie state must be the prev state");
-        let state_db = StateDB::from(&mpt_state);
-        let mut builder = CircuitInputBuilder::new(
-            state_db, 
-            code_db,
-            &builder_block
+        assert_eq!(
+            H256::from_slice(mpt_state.root()),
+            old_root,
+            "the provided zktrie state must be the prev state"
         );
+        let state_db = StateDB::from(&mpt_state);
+        let mut builder = CircuitInputBuilder::new(state_db, code_db, &builder_block);
         builder.mpt_init_state = mpt_state;
         builder
     } else {
-        CircuitInputBuilder::new(
-            StateDB::new(), 
-            code_db,
-            &builder_block
-        )
+        CircuitInputBuilder::new(StateDB::new(), code_db, &builder_block)
     }
-
 }
 
 // check if block traces match preset parameters
-fn validite_block_traces(block_traces: &[BlockTrace]) -> Result<()>{
+fn validite_block_traces(block_traces: &[BlockTrace]) -> Result<()> {
     let chain_id = block_traces
-    .iter()
-    .map(|block_trace| block_trace.chain_id)
-    .next()
-    .unwrap_or(*CHAIN_ID);
+        .iter()
+        .map(|block_trace| block_trace.chain_id)
+        .next()
+        .unwrap_or(*CHAIN_ID);
     if *CHAIN_ID != chain_id {
         bail!(
-        "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
-        *CHAIN_ID
+            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
+            *CHAIN_ID
         );
     }
     Ok(())
@@ -262,9 +250,13 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
     // etc, so the generated block maybe invalid without any message
     if block_traces.is_empty() {
         let mut builder = prepare_default_builder(eth_types::Hash::zero(), None);
-        block_traces_to_witness_block_with_updated_state(&[], &mut builder, false)       
+        block_traces_to_witness_block_with_updated_state(&[], &mut builder, false)
     } else {
-        let mut builder = CircuitInputBuilder::new_from_l2_trace(get_super_circuit_params(), &block_traces[0], block_traces.len() > 1)?;
+        let mut builder = CircuitInputBuilder::new_from_l2_trace(
+            get_super_circuit_params(),
+            &block_traces[0],
+            block_traces.len() > 1,
+        )?;
         block_traces_to_witness_block_with_updated_state(&block_traces[1..], &mut builder, false)
     }
 }
@@ -283,19 +275,22 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     } else {
         let start_l1_queue_index = block_traces[0].start_l1_queue_index;
         let mut builder = CircuitInputBuilder::new_from_l2_trace(
-            get_super_circuit_params(), 
-            &block_traces[0], 
-            block_traces.len() > 1
+            get_super_circuit_params(),
+            &block_traces[0],
+            block_traces.len() > 1,
         )?;
         for (idx, block_trace) in block_traces[1..].iter().enumerate() {
             builder.add_more_l2_trace(
                 block_trace,
-                idx + 2 == block_traces.len(),//not typo, we use 1..end of the traces only
+                idx + 2 == block_traces.len(), //not typo, we use 1..end of the traces only
             )?;
         }
         builder.finalize_building()?;
-        let mut witness_block =
-            block_convert_with_l1_queue_index::<Fr>(&builder.block, &builder.code_db, start_l1_queue_index)?;
+        let mut witness_block = block_convert_with_l1_queue_index::<Fr>(
+            &builder.block,
+            &builder.code_db,
+            start_l1_queue_index,
+        )?;
         log::debug!(
             "witness_block built with circuits_params {:?} for padding",
             witness_block.circuits_params
@@ -303,10 +298,7 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
         // so we have the finalized state which contain withdraw proof
         block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         let old_root = H256(*builder.mpt_init_state.root());
-        prepare_default_builder(
-            old_root, 
-            Some(builder.mpt_init_state),
-        )
+        prepare_default_builder(old_root, Some(builder.mpt_init_state))
     };
 
     // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
@@ -318,7 +310,6 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     block_apply_mpt_state(&mut padding_block, &padding_builder.mpt_init_state);
 
     Ok(padding_block)
-
 }
 
 /// default params for super circuit
@@ -352,8 +343,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
     builder: &mut CircuitInputBuilder,
     light_mode: bool,
 ) -> Result<Block<Fr>> {
-
-    let metric = |builder: &CircuitInputBuilder, idx: usize| -> Result<(), bus_mapping::Error>{            
+    let metric = |builder: &CircuitInputBuilder, idx: usize| -> Result<(), bus_mapping::Error> {
         let t = Instant::now();
         let block = block_convert_with_l1_queue_index::<Fr>(
             &builder.block,
@@ -385,7 +375,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         0
     } else {
         if per_block_metric {
-            metric(&builder, 0)?;
+            metric(builder, 0)?;
         }
         1
     };
@@ -394,7 +384,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         let is_last = idx == block_traces.len() - 1;
         builder.add_more_l2_trace(block_trace, !is_last)?;
         if per_block_metric {
-            metric(&builder, idx + initial_blk_index)?;
+            metric(builder, idx + initial_blk_index)?;
         }
     }
 
@@ -420,7 +410,6 @@ pub fn block_traces_to_witness_block_with_updated_state(
     );
     Ok(witness_block)
 }
-
 
 pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {
     let address = *bus_mapping::l2_predeployed::message_queue::ADDRESS;

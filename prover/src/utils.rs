@@ -24,7 +24,7 @@ use std::{
     str::FromStr,
     sync::Once,
 };
-use types::{BlockTraceJsonRpcResult, eth::BlockTrace};
+use types::{eth::BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 pub static LOGGER: Once = Once::new();
