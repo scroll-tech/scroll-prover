@@ -17,6 +17,7 @@ type TaskAssigner struct {
 	sync.Mutex
 	begin_with  uint64
 	runingTasks map[uint64]TaskStatus
+	message     *notifier
 }
 
 func construct(start uint64) *TaskAssigner {
