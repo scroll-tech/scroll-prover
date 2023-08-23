@@ -124,20 +124,26 @@ const EXIT_FAILED_ENV_WITH_TASK: u8 = 17;
 #[tokio::main]
 async fn main() -> ExitCode {
     let log_handle = log4rs::init_config(common_log().unwrap()).unwrap();
-    log::info!("git version {}", GIT_VERSION);
-    log::info!("short git version {}", short_git_version());
-
-    log::info!("relay-alpha testnet runner: begin");
 
     let setting = Setting::new();
-    log::info!("settings: {setting:?}");
 
     let provider = Provider::<Http>::try_from(&setting.l2geth_api_url)
         .expect("run-testnet: failed to initialize ethers Provider");
 
-    let (batch_id, chunks) = get_chunks_info(&setting)
-        .await
-        .unwrap_or_else(|e| panic!("run-testnet: failed to request API err {e:?}"));
+    log::info!("git version {}", GIT_VERSION);
+    log::info!("short git version {}", short_git_version());
+    log::info!("settings: {setting:?}");
+
+    log::info!("relay-alpha testnet runner: begin");
+
+    let (batch_id, chunks) = match get_chunks_info(&setting).await {
+        Ok(r) => r,
+        Err(e) => {
+            log::error!("run-testnet: failed to request API err {e:?}");
+            return ExitCode::from(EXIT_FAILED_ENV);
+        }
+    };
+
     let mut chunks_task_complete = true;
     match chunks {
         None => {
