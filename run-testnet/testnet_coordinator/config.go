@@ -22,7 +22,7 @@ func NewConfig() *Config {
 	return &Config{
 		Server: &ServerConfig{
 			ServerHost: "localhost:8560",
-			ServerURL:  "/",
+			ServerURL:  "/api",
 		},
 	}
 }

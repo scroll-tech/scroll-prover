@@ -34,18 +34,26 @@ func main() {
 		log.Fatalf("Error reading config file: %v", err)
 	}
 
-	taskAssigner := &TaskAssigner{}
+	taskAssigner := construct(serverConfig.StartBatch)
 
 	http.HandleFunc(
 		serverConfig.Server.ServerURL+"/chunks",
 		chunksHandler(taskAssigner, serverConfig.ChunkURLTemplate),
 	)
+	http.HandleFunc(
+		serverConfig.Server.ServerURL+"/tasks",
+		taskHandler(taskAssigner, serverConfig.ChunkURLTemplate),
+	)
+	http.HandleFunc(
+		serverConfig.Server.ServerURL+"/status",
+		statusHandler(taskAssigner, serverConfig.ChunkURLTemplate),
+	)
 	http.Handle("/", http.NotFoundHandler())
 
-	log.Printf("Starting server on %s...", serverConfig.Server.ServerHost)
+	log.Printf("Starting server on %s...\n", serverConfig.Server.ServerHost)
 	err := http.ListenAndServe(serverConfig.Server.ServerHost, nil)
 	if err != nil {
-		log.Print("ListenAndServe: ", err)
+		log.Println("ListenAndServe: ", err)
 	}
 }
 
@@ -54,6 +62,7 @@ func chunksHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc
 		assigned_done := false
 		assigned := assigner.assign_new()
 		defer func() {
+			log.Println("send new batch out", assigned, assigned_done)
 			if !assigned_done {
 				assigner.drop(assigned)
 			}
@@ -73,8 +82,48 @@ func chunksHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc
 			log.Printf("Error writing response: %v\n", err)
 			return
 		}
-		log.Println("send new batch out", assigned)
 		assigned_done = true
 
+	}
+}
+
+func taskHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		done_index := r.URL.Query().Get("done")
+		drop_index := r.URL.Query().Get("drop")
+
+		if done_index != "" {
+			log.Println("receive done notify for batch:", done_index)
+			var ind uint64
+			if _, err := fmt.Sscanf(done_index, "%d", &ind); err != nil {
+				http.Error(w, "invalid done index, need integer", http.StatusBadRequest)
+				return
+			}
+			assigner.complete(ind)
+		} else if drop_index != "" {
+			log.Println("receive drop notify for batch:", drop_index)
+			var ind uint64
+			if _, err := fmt.Sscanf(drop_index, "%d", &ind); err != nil {
+				http.Error(w, "invalid drop index, need integer", http.StatusBadRequest)
+				return
+			}
+			assigner.drop(ind)
+		} else {
+			http.Error(w, "must query with drop or done", http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func statusHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		ret := fmt.Sprintf("%v", assigner.status())
+		if _, err := w.Write([]byte(ret)); err != nil {
+			log.Println("unexpected output of status", err)
+		}
 	}
 }
