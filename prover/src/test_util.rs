@@ -3,6 +3,9 @@ use glob::glob;
 use types::eth::BlockTrace;
 
 pub mod mock_plonk;
+mod proof;
+
+pub use proof::{gen_and_verify_batch_proofs, gen_and_verify_chunk_proofs};
 
 pub const PARAMS_DIR: &str = "./test_params";
 
