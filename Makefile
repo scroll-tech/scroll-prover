@@ -44,6 +44,9 @@ test-chunk-prove:
 test-agg-prove:
 	@cargo test --features prove_verify --release test_agg_prove_verify
 
+test-batch-prove:
+	@cargo test --features prove_verify --release test_batch_prove_verify
+
 test-ccc:
 	@cargo test --release test_capacity_checker
 
