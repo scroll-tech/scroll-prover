@@ -1,4 +1,9 @@
 
+Env:
++ TESTNET_TASKS: specify which task should be run: `mock`, `prove`, `agg`
++ OUTPUT_DIR: the output dir, default is `output`
++ COORDINATOR_API_URL: `http://<host>/api/` (notice the ending slash '/' is important)
+
 App exits:
 
 + 9: no more batch avaliable

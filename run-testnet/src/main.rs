@@ -18,7 +18,7 @@ use prover::{
 };
 use reqwest::Url;
 use serde::Deserialize;
-use std::{env, process::ExitCode, str::FromStr};
+use std::{backtrace, env, panic, process::ExitCode, str::FromStr};
 use types::eth::BlockTrace;
 
 // build common config from enviroment
@@ -51,8 +51,8 @@ fn debug_log(output_dir: &str) -> Result<Config> {
         .logger(
             Logger::builder()
                 .appender("log-file")
-                .additive(true)
-                .build("", log::LevelFilter::Debug),
+                .additive(false)
+                .build("prover", log::LevelFilter::Debug),
         )
         .build(
             Root::builder()
@@ -91,11 +91,18 @@ fn record_chunk_traces(chunk_dir: &str, traces: &[BlockTrace]) -> Result<()> {
             || format!("unknown_block_{i}.json"),
             |blkn| format!("{blkn}.json"),
         ))?;
+        header.set_mode(0o644);
         header.set_size(trace_str.len() as u64);
         header.set_cksum();
         tar.append(&header, trace_str.as_bytes())?;
     }
 
+    Ok(())
+}
+
+fn mark_chunk_failure(chunk_dir: &str, data: &str) -> Result<()> {
+    use std::{fs, path::Path};
+    fs::write(Path::new(chunk_dir).join("failure"), data)?;
     Ok(())
 }
 
@@ -126,15 +133,15 @@ async fn main() -> ExitCode {
     log::info!("settings: {setting:?}");
 
     let provider = Provider::<Http>::try_from(&setting.l2geth_api_url)
-        .expect("mock-testnet: failed to initialize ethers Provider");
+        .expect("run-testnet: failed to initialize ethers Provider");
 
     let (batch_id, chunks) = get_chunks_info(&setting)
         .await
-        .unwrap_or_else(|e| panic!("mock-testnet: failed to request API err {e:?}"));
+        .unwrap_or_else(|e| panic!("run-testnet: failed to request API err {e:?}"));
     let mut chunks_task_complete = true;
     match chunks {
         None => {
-            log::info!("mock-testnet: finished to prove at batch-{batch_id}");
+            log::info!("run-testnet: finished to prove at batch-{batch_id}");
             return ExitCode::from(EXIT_NO_MORE_TASK);
         }
         Some(chunks) => {
@@ -146,7 +153,7 @@ async fn main() -> ExitCode {
                 // fetch traces
                 let mut block_traces: Vec<BlockTrace> = vec![];
                 for block_id in chunk.start_block_number..=chunk.end_block_number {
-                    log::info!("mock-testnet: requesting trace of block {block_id}");
+                    log::info!("run-testnet: requesting trace of block {block_id}");
 
                     match provider
                         .request(
@@ -173,9 +180,7 @@ async fn main() -> ExitCode {
                 }
 
                 // start chunk-level testing
-                //let chunk_dir = prepare_chunk_dir(&setting.data_output_dir, chunk_id as
-                // u64).unwrap();
-                if let Err(e) = prepare_chunk_dir(&setting.data_output_dir, chunk_id as u64)
+                let chunk_dir = prepare_chunk_dir(&setting.data_output_dir, chunk_id as u64)
                     .and_then(|chunk_dir| {
                         record_chunk_traces(&chunk_dir, &block_traces)?;
                         Ok(chunk_dir)
@@ -183,9 +188,10 @@ async fn main() -> ExitCode {
                     .and_then(|chunk_dir| {
                         log::info!("chunk {} has been recorded to {}", chunk_id, chunk_dir);
                         log_handle.set_config(debug_log(&chunk_dir)?);
-                        Ok(())
-                    })
-                {
+                        Ok(chunk_dir)
+                    });
+                // u64).unwrap();
+                if let Err(e) = chunk_dir {
                     log::error!(
                         "can not prepare output enviroment for chunk {}: {:?}",
                         chunk_id,
@@ -194,12 +200,73 @@ async fn main() -> ExitCode {
                     chunks_task_complete = false;
                     break;
                 }
+                let chunk_dir = chunk_dir.expect("ok ensured");
 
-                let handling_ret = chunk_handling(batch_id as i64, chunk_id, &block_traces);
+                let handling_error = std::sync::Arc::new(std::sync::RwLock::new(String::from(
+                    "unknown error, message not recorded",
+                )));
+
+                let write_error = |handling_error: &std::sync::Arc<std::sync::RwLock<String>>,
+                                   err_msg: String| {
+                    match handling_error.write() {
+                        Ok(mut error_str) => {
+                            *error_str = err_msg;
+                        }
+                        Err(e) => {
+                            log::error!(
+                                "fail to write error message: {:?}\n backup {}",
+                                e,
+                                err_msg
+                            );
+                        }
+                    }
+                };
+
+                let out_err = handling_error.clone();
+                // prepare for running test phase
+                panic::set_hook(Box::new(move |panic_info| {
+                    write_error(
+                        &out_err,
+                        format!(
+                            "catch test panic: {} \nbacktrace: {}",
+                            panic_info,
+                            backtrace::Backtrace::capture(),
+                        ),
+                    );
+                }));
+
+                let spec_tasks = setting.spec_tasks.clone();
+
+                let out_err = handling_error.clone();
+                let handling_ret = panic::catch_unwind(move || {
+                    // mock
+                    if spec_tasks.iter().any(|str| str.as_str() == "mock") {
+                        if let Err(e) = chunk_handling(batch_id as i64, chunk_id, &block_traces) {
+                            write_error(&out_err, format!("chunk handling fail: {e:?}"));
+                            return false;
+                        }
+                    }
+                    // TODO: prove
+                    true
+                });
+
+                let _ = panic::take_hook();
+
                 log_handle.set_config(common_log().unwrap());
-
-                if handling_ret.is_err() {
-                    // TODO: move data to output dir
+                if handling_ret.unwrap_or(false) {
+                    log::debug!("encounter some error in batch {}", batch_id);
+                    if let Err(e) = mark_chunk_failure(
+                        &chunk_dir,
+                        handling_error
+                            .read()
+                            .map(|reader| reader.clone())
+                            .unwrap_or(String::from("default"))
+                            .as_str(),
+                    ) {
+                        log::error!("can not output error data for chunk {}: {:?}", chunk_id, e);
+                        chunks_task_complete = false;
+                        break;
+                    }
                 }
 
                 log::info!("chunk {} has been handled", chunk_id);
@@ -211,6 +278,8 @@ async fn main() -> ExitCode {
         log::error!("can not deliver complete notify to coordinator: {e:?}");
         return ExitCode::from(EXIT_FAILED_ENV_WITH_TASK);
     }
+
+    //TODO: batch level ops
 
     if chunks_task_complete {
         log::info!("relay-alpha testnet runner: complete");
@@ -309,6 +378,7 @@ struct Setting {
     task_url: String,
     l2geth_api_url: String,
     data_output_dir: String,
+    spec_tasks: Vec<String>,
 }
 
 impl Setting {
@@ -340,11 +410,15 @@ impl Setting {
 
         let data_output_dir = env::var("OUTPUT_DIR").unwrap_or("output".to_string());
 
+        let spec_tasks_str = env::var("TESTNET_TASKS").unwrap_or_default();
+        let spec_tasks = spec_tasks_str.split(',').map(String::from).collect();
+
         Self {
             l2geth_api_url,
             data_output_dir,
             chunks_url: chunks_url.as_str().into(),
             task_url: task_url.as_str().into(),
+            spec_tasks,
         }
     }
 }
