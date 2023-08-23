@@ -154,7 +154,7 @@ impl CircuitCapacityChecker {
         txs: &[TxTrace],
     ) -> Result<RowUsage, anyhow::Error> {
         assert!(!txs.is_empty());
-        let (mut estimate_builder, traces) = if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take() {
+        let mut estimate_builder = if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take() {
             // here we create a new builder for another (sealed) witness block
             // this builder inherit the current execution state (sdb/cdb) of
             // the previous one and do not use zktrie state, 
@@ -167,22 +167,18 @@ impl CircuitCapacityChecker {
             builder_block.chain_id = txs[0].chain_id;
             builder_block.start_l1_queue_index = txs[0].start_l1_queue_index;
             builder_block.prev_state_root = H256(*mpt_state.root()).to_word();
-            let mut builder = CircuitInputBuilder::new(
+            let mut builder = CircuitInputBuilder::new_with_trie_state(
                 sdb,
                 code_db,
-                &builder_block
+                mpt_state,
+                &builder_block,
             );
-            builder.mpt_init_state = mpt_state;
-            (
-                builder,
-                &txs[1..],
-            )       
+            builder.add_more_l2_trace(&txs[0], txs.len() > 1)?;
+            builder
         } else {
-            (
-                CircuitInputBuilder::new_from_l2_trace(get_super_circuit_params(), &txs[0], txs.len() > 1)?,
-                txs,
-            )
+            CircuitInputBuilder::new_from_l2_trace(get_super_circuit_params(), &txs[0], txs.len() > 1)?
         };
+        let traces = &txs[1..];
         let witness_block =
             block_traces_to_witness_block_with_updated_state(traces, &mut estimate_builder, self.light_mode)?;
         let rows = calculate_row_usage_of_witness_block(&witness_block)?;
