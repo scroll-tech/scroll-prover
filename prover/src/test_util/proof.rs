@@ -3,11 +3,12 @@ use crate::{
     common,
     config::LayerId,
     test_util::PARAMS_DIR,
-    zkevm, BatchProof, EvmProof,
+    zkevm, BatchProof, ChunkProof, EvmProof,
 };
 use aggregator::CompressionCircuit;
 use snark_verifier_sdk::Snark;
 use std::env;
+use types::eth::StorageTrace;
 
 pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
     let normal_proof = gen_normal_proof(
@@ -52,10 +53,11 @@ pub fn gen_and_verify_chunk_proofs(
     verify_normal_and_evm_proofs(
         &mut zkevm_prover.inner,
         LayerId::Layer2,
-        normal_proof,
+        normal_proof.clone(),
         &evm_proof,
         output_dir,
     );
+    verify_chunk_proof(&zkevm_prover.inner, normal_proof, output_dir);
 }
 
 fn gen_evm_proof(
@@ -105,6 +107,20 @@ fn verify_batch_proof(evm_proof: EvmProof, output_dir: &str) {
 
     assert!(verifier.verify_agg_evm_proof(batch_proof));
     log::info!("Verified batch proof");
+}
+
+fn verify_chunk_proof(prover: &common::Prover, normal_proof: Snark, output_dir: &str) {
+    let pk = prover.pk(LayerId::Layer2.id()).unwrap();
+    let chunk_proof =
+        ChunkProof::new(normal_proof, StorageTrace::default(), Some(pk), None).unwrap();
+    chunk_proof.dump(output_dir, "0").unwrap();
+
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
+    let verifier = zkevm::Verifier::from_dirs(PARAMS_DIR, output_dir);
+    log::info!("Constructed zkevm verifier");
+
+    assert!(verifier.verify_chunk_proof(chunk_proof));
+    log::info!("Verified chunk proof");
 }
 
 fn verify_normal_and_evm_proofs(
