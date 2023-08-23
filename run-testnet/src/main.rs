@@ -40,24 +40,24 @@ fn common_log() -> Result<Config> {
 // build config for circuit-debug
 fn debug_log(output_dir: &str) -> Result<Config> {
     use std::path::Path;
-    let err_output = ConsoleAppender::builder().target(Target::Stderr).build();
+    let app_output = ConsoleAppender::builder().target(Target::Stdout).build();
     let log_file_path = Path::new(output_dir).join("runner.log");
     let log_file = FileAppender::builder().build(log_file_path).unwrap();
     let config = Config::builder()
         .appenders([
             Appender::builder().build("log-file", Box::new(log_file)),
-            Appender::builder().build("stderr", Box::new(err_output)),
+            Appender::builder().build("std", Box::new(app_output)),
         ])
         .logger(
             Logger::builder()
-                .appender("log-file")
+                .appender("std")
                 .additive(false)
-                .build("prover", log::LevelFilter::Debug),
+                .build("testnet_runner", log::LevelFilter::Info),
         )
         .build(
             Root::builder()
-                .appender("stderr")
-                .build(log::LevelFilter::Warn),
+                .appender("log-file")
+                .build(log::LevelFilter::Debug),
         )?;
 
     Ok(config)
