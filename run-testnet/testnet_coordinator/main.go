@@ -132,7 +132,7 @@ func nodeProxyHandler(assigner *TaskAssigner) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		chunk_issue_index := r.URL.Query().Get("chunk_issue")
-		node_panic := r.URL.Query().Get("panic")
+		node_panic_reason := r.URL.Query().Get("panic")
 
 		if chunk_issue_index != "" {
 			var ind uint64
@@ -141,10 +141,10 @@ func nodeProxyHandler(assigner *TaskAssigner) http.HandlerFunc {
 				return
 			}
 			assigner.nodeProxyNotify(r.RemoteAddr, fmt.Sprintf("Prover has issue in chunk %d, check it", ind))
-		} else if node_panic != "" {
-			assigner.nodeProxyNotify(r.RemoteAddr, fmt.Sprintf("Node status bad, check it"))
+		} else if node_panic_reason != "" {
+			assigner.nodeProxyNotify(r.RemoteAddr, fmt.Sprintf("Node status bad because <%s>, check it", node_panic_reason))
 		} else {
-			http.Error(w, "must query with drop or done", http.StatusBadRequest)
+			http.Error(w, "must query with panic or chunk_issue", http.StatusBadRequest)
 			return
 		}
 
