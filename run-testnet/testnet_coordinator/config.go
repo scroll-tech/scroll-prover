@@ -15,6 +15,7 @@ type ServerConfig struct {
 type Config struct {
 	StartBatch       uint64        `yaml:"start,omitempty"`
 	ChunkURLTemplate string        `yaml:"chunkURL"`
+	NotifierURL      string        `yaml:"notifierURL"`
 	Server           *ServerConfig `yaml:"server,omitempty"`
 }
 
