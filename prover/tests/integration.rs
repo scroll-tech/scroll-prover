@@ -14,6 +14,7 @@ use prover::{
         CircuitCapacityChecker,
     },
 };
+use types::eth::BlockTrace;
 use zkevm_circuits::util::SubCircuit;
 
 #[test]
@@ -81,19 +82,30 @@ fn test_capacity_checker() {
     for (block_idx, block) in batch.iter().enumerate() {
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
-            // the capacity_checker is expected to be used inside sequencer, where we don't have the
-            // traces of blocks, instead we only have traces of tx.
-            // For the "TxTrace":
-            //   transactions: the tx itself. For compatibility reasons, transactions is a vector of
-            // len 1 now.   execution_results: tx execution trace. Similar with above,
-            // it is also of len 1 vevtor.   storage_trace:
-            //     storage_trace is prestate + siblings(or proofs) of touched storage_slots and
-            // accounts of this tx.
-            let mut tx_trace = block.clone();
-            tx_trace.transactions = vec![tx_trace.transactions[i].clone()];
-            tx_trace.execution_results = vec![tx_trace.execution_results[i].clone()];
-            tx_trace.storage_trace = tx_trace.tx_storage_trace[i].clone();
 
+            #[rustfmt::skip]
+            /*  
+            The capacity_checker is expected to be run inside sequencer, where we don't have the traces of blocks, instead we only have traces of tx.
+            For the "tx_trace":
+                transactions: 
+                    the tx itself. For compatibility reasons, transactions is a vector of len 1 now.   
+                execution_results: 
+                    tx execution trace. Similar with above, it is also of len 1 vevtor.   
+                storage_trace: 
+                    storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
+            */
+            let tx_trace = BlockTrace {
+                transactions: vec![block.transactions[i].clone()],
+                execution_results: vec![block.execution_results[i].clone()],
+                storage_trace: block.tx_storage_trace[i].clone(),
+                chain_id: block.chain_id,
+                coinbase: block.coinbase.clone(),
+                header: block.header.clone(),
+                start_l1_queue_index: block.start_l1_queue_index,
+                tx_storage_trace: Vec::new(), // not used
+            };
+
+            log::debug!("calling estimate_circuit_capacity");
             let results = checker.estimate_circuit_capacity(&[tx_trace]);
             log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
         }
