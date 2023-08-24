@@ -12,7 +12,7 @@ fi
 function exit_trap {
   if [ $exit_code -eq 17 ]; then
     curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error_with_batch_stuck
-  elif [ $1 -ne 0 ]; then
+  elif [ $1 -eq 1 ]; then
     curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error
   fi
 }
@@ -40,6 +40,7 @@ function debug_run {
 }
 
 function check_output {
+  set -e
   find "$output_dir" -type d | while read -r chunk_dir; do
     fail_file="${chunk_dir}/failure"
 
@@ -50,19 +51,19 @@ function check_output {
       curl -s "${COORDINATOR_API_URL}nodewarning?chunk_issue=${chunk_name}"
     fi
   done
+  set +e
 }
 
+set +e
 while true; do
 # clean output dir before each running
   rm -rf ${output_dir}/*
-  set +e
   if [ -z "${DEBUG_RUN:-}"]; then
     echo "no implement!"
     exit 1  
   else
     debug_run
   fi
-  set -e
   if [ $exit_code -eq 0 ]; then
     # normal run, still sleep a while for avoiding unexpected crazy loop
     check_output
