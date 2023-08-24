@@ -1,6 +1,11 @@
 use crate::{
-    common, config::ZKEVM_DEGREES, io::serialize_vk, utils::chunk_trace_to_witness_block,
-    zkevm::circuit::normalize_withdraw_proof, ChunkHash, ChunkProof,
+    common,
+    config::{LayerId, ZKEVM_DEGREES},
+    consts::CHUNK_VK_FILENAME,
+    io::{serialize_vk, try_to_read},
+    utils::chunk_trace_to_witness_block,
+    zkevm::circuit::normalize_withdraw_proof,
+    ChunkHash, ChunkProof,
 };
 use anyhow::Result;
 use types::eth::BlockTrace;
@@ -9,22 +14,26 @@ use types::eth::BlockTrace;
 pub struct Prover {
     // Make it public for testing with inner functions (unnecessary for FFI).
     pub inner: common::Prover,
-}
-
-impl From<common::Prover> for Prover {
-    fn from(inner: common::Prover) -> Self {
-        Self { inner }
-    }
+    vk: Option<Vec<u8>>,
 }
 
 impl Prover {
-    pub fn from_params_dir(params_dir: &str) -> Self {
-        common::Prover::from_params_dir(params_dir, &ZKEVM_DEGREES).into()
+    pub fn from_dirs(params_dir: &str, assets_dir: &str) -> Self {
+        let inner = common::Prover::from_params_dir(params_dir, &ZKEVM_DEGREES);
+
+        let vk = try_to_read(assets_dir, &CHUNK_VK_FILENAME);
+        if vk.is_none() {
+            log::warn!("{} doesn't exist in {}", *CHUNK_VK_FILENAME, assets_dir);
+        }
+
+        Self { inner, vk }
     }
 
     pub fn get_vk(&self) -> Option<Vec<u8>> {
-        // TODO: replace `layer2` string with an enum value.
-        self.inner.pk("layer2").map(|pk| serialize_vk(pk.get_vk()))
+        self.inner
+            .pk(LayerId::Layer2.id())
+            .map(|pk| serialize_vk(pk.get_vk()))
+            .or_else(|| self.vk.clone())
     }
 
     pub fn gen_chunk_proof(

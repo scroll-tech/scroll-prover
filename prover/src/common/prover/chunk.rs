@@ -1,15 +1,37 @@
 use super::Prover;
 use crate::{
-    config::{LAYER1_DEGREE, LAYER2_DEGREE},
-    utils::gen_rng,
+    config::{asset_file_path, LayerId, LAYER1_DEGREE, LAYER2_DEGREE},
+    utils::{chunk_trace_to_witness_block, gen_rng, get_block_trace_from_file, read_env_var},
 };
 use aggregator::extract_proof_and_instances_with_pairing_check;
 use anyhow::{anyhow, Result};
 use halo2_proofs::halo2curves::bn256::Fr;
+use once_cell::sync::Lazy;
 use snark_verifier_sdk::Snark;
+use std::path::Path;
 use zkevm_circuits::evm_circuit::witness::Block;
 
+static SIMPLE_TRACE_FILENAME: Lazy<String> =
+    Lazy::new(|| read_env_var("SIMPLE_TRACE_FILENAME", "simple_trace.json".to_string()));
+
 impl Prover {
+    pub fn gen_chunk_pk(&mut self, output_dir: Option<&str>) -> Result<()> {
+        if self.pk(LayerId::Layer2.id()).is_some() {
+            return Ok(());
+        }
+
+        let simple_trace_path = asset_file_path(&SIMPLE_TRACE_FILENAME);
+        if !Path::new(&simple_trace_path).exists() {
+            panic!("File {simple_trace_path} must exist");
+        }
+        let simple_trace = get_block_trace_from_file(simple_trace_path);
+        let witness_block = chunk_trace_to_witness_block(vec![simple_trace])?;
+        let layer1_snark =
+            self.load_or_gen_last_chunk_snark("empty", &witness_block, output_dir)?;
+
+        self.gen_comp_pk(LayerId::Layer2, layer1_snark)
+    }
+
     pub fn load_or_gen_final_chunk_snark(
         &mut self,
         name: &str,

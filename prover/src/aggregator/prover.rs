@@ -1,40 +1,38 @@
 use crate::{
     common,
-    config::{AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
-    io::{read_all, serialize_vk},
-    utils::read_env_var,
+    config::{LayerId, AGG_DEGREES, LAYER3_DEGREE, LAYER4_DEGREE},
+    consts::{AGG_VK_FILENAME, CHUNK_PROTOCOL_FILENAME},
+    io::{force_to_read, serialize_vk, try_to_read},
     BatchProof, ChunkProof,
 };
 use aggregator::{ChunkHash, MAX_AGG_SNARKS};
 use anyhow::{bail, Result};
-use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
 use snark_verifier_sdk::Snark;
-use std::{iter::repeat, path::Path};
-
-static CHUNK_PROTOCOL_FILENAME: Lazy<String> =
-    Lazy::new(|| read_env_var("CHUNK_PROTOCOL_FILENAME", "chunk.protocol".to_string()));
+use std::iter::repeat;
 
 #[derive(Debug)]
 pub struct Prover {
     // Make it public for testing with inner functions (unnecessary for FFI).
     pub inner: common::Prover,
     pub chunk_protocol: Vec<u8>,
+    vk: Option<Vec<u8>>,
 }
 
 impl Prover {
     pub fn from_dirs(params_dir: &str, assets_dir: &str) -> Self {
         let inner = common::Prover::from_params_dir(params_dir, &AGG_DEGREES);
+        let chunk_protocol = force_to_read(assets_dir, &CHUNK_PROTOCOL_FILENAME);
 
-        let chunk_protocol_path = format!("{assets_dir}/{}", *CHUNK_PROTOCOL_FILENAME);
-        if !Path::new(&chunk_protocol_path).exists() {
-            panic!("File {chunk_protocol_path} must exist");
+        let vk = try_to_read(assets_dir, &AGG_VK_FILENAME);
+        if vk.is_none() {
+            log::warn!("{} doesn't exist in {}", *AGG_VK_FILENAME, assets_dir);
         }
-        let chunk_protocol = read_all(&chunk_protocol_path);
 
         Self {
             inner,
             chunk_protocol,
+            vk,
         }
     }
 
@@ -56,8 +54,10 @@ impl Prover {
     }
 
     pub fn get_vk(&self) -> Option<Vec<u8>> {
-        // TODO: replace `layer4` string with an enum value.
-        self.inner.pk("layer4").map(|pk| serialize_vk(pk.get_vk()))
+        self.inner
+            .pk(LayerId::Layer4.id())
+            .map(|pk| serialize_vk(pk.get_vk()))
+            .or_else(|| self.vk.clone())
     }
 
     // Return the EVM proof for verification.

@@ -1,6 +1,6 @@
 use prover::{
     aggregator::Prover,
-    test_util::{gen_and_verify_batch_proofs, load_block_traces_for_test, PARAMS_DIR},
+    test_util::{gen_and_verify_batch_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm, ChunkHash, ChunkProof,
 };
@@ -12,10 +12,7 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let trace_paths = vec![
-        "./tests/traces/erc20/1_transfer.json".to_string(),
-        "./tests/traces/erc20/10_transfer.json".to_string(),
-    ];
+    let trace_paths = vec!["./tests/extra_traces/new.json".to_string()];
 
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
     log::info!("Generated chunk hashes and proofs");
@@ -36,7 +33,7 @@ fn gen_chunk_hashes_and_proofs(
     output_dir: &str,
     trace_paths: &[String],
 ) -> Vec<(ChunkHash, ChunkProof)> {
-    let mut zkevm_prover = zkevm::Prover::from_params_dir(PARAMS_DIR);
+    let mut zkevm_prover = zkevm::Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
     log::info!("Constructed zkevm prover");
 
     let chunk_traces: Vec<_> = trace_paths

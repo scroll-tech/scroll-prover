@@ -1,6 +1,7 @@
 pub mod aggregator;
 pub mod common;
 pub mod config;
+pub mod consts;
 mod evm_verifier;
 pub mod inner;
 pub mod io;
