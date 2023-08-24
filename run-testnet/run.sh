@@ -10,14 +10,16 @@ if [ -z "${COORDINATOR_API_URL:-}" ]; then
 fi
 
 function exit_trap {
-  if [ $1 -ne 0 ]; then
-    curl ${COORDINATOR_API_URL}nodewarning?panic=runtime_error
+  if [ $exit_code -eq 17 ]; then
+    curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error_with_batch_stuck
+  elif [ $1 -ne 0 ]; then
+    curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error
   fi
 }
 
-trap "curl ${COORDINATOR_API_URL}nodewarning?panic=script_error" ERR
+trap "curl -s ${COORDINATOR_API_URL}nodewarning?panic=script_error" ERR
 trap 'exit_trap $?' EXIT
-trap "curl ${COORDINATOR_API_URL}nodewarning?panic=user_interrupt" SIGINT
+trap "curl -s ${COORDINATOR_API_URL}nodewarning?panic=user_interrupt" SIGINT
 
 if [ -z "${TESTNET_TASKS:-}" ]; then
   echo "should specify at least one tasks from mock, prove and agg, or combine them with commas"
@@ -45,7 +47,7 @@ function check_output {
       #TODO copy $chunk_dir
       chunk_name=`echo "$chunk_dir" | grep -oE '[^/]+$'`
       echo "${chunk_name} fail (${chunk_dir})"
-      curl "${COORDINATOR_API_URL}nodewarning?chunk_issue=${chunk_name}"
+      curl -s "${COORDINATOR_API_URL}nodewarning?chunk_issue=${chunk_name}"
     fi
   done
 }
@@ -64,6 +66,7 @@ while true; do
   if [ $exit_code -eq 0 ]; then
     # normal run, still sleep a while for avoiding unexpected crazy loop
     check_output
+    echo "checking output done"
     sleep 10
   elif [ $exit_code -eq 9 ]; then
     # there maybe more batchs, wait 10 min
@@ -73,8 +76,7 @@ while true; do
     exit 1
     # Perform action B
   elif [ $exit_code -eq 17 ]; then
-    curl ${COORDINATOR_API_URL}nodewarning?panic=runtime_error_with_batch_stuck
-    exit 1
+    exit $exit_code
   else
     echo "exit with unknown reason"
     exit 1
