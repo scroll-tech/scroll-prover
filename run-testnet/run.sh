@@ -10,11 +10,16 @@ if [ -z "${COORDINATOR_API_URL:-}" ]; then
 fi
 
 function exit_trap {
-  if [ $exit_code -eq 17 ]; then
-    curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error_with_batch_stuck
-  elif [ $1 -eq 1 ]; then
-    curl -s ${COORDINATOR_API_URL}nodewarning?panic=runtime_error
+  reason="unknown_error"
+  if [ $1 -eq 17 ]; then
+    reason=runtime_error_with_batch_stuck
+  elif [ $1 -eq 13 ]; then
+    # wrong runtime
+    reason=runtime_error
+  elif [ $1 -eq 0 ]; then
+    return
   fi
+  curl -s ${COORDINATOR_API_URL}nodewarning?panic=${reason}
 }
 
 trap "curl -s ${COORDINATOR_API_URL}nodewarning?panic=script_error" ERR
@@ -59,8 +64,8 @@ while true; do
 # clean output dir before each running
   rm -rf ${output_dir}/*
   if [ -z "${DEBUG_RUN:-}"]; then
-    echo "no implement!"
-    exit 1  
+    testnet-runner
+    exit_code=$?
   else
     debug_run
   fi
@@ -72,14 +77,7 @@ while true; do
   elif [ $exit_code -eq 9 ]; then
     # there maybe more batchs, wait 10 min
     sleep 600
-  elif [ $exit_code -eq 13 ]; then
-    # wrong runtime
-    exit 1
-    # Perform action B
-  elif [ $exit_code -eq 17 ]; then
-    exit $exit_code
   else
-    echo "exit with unknown reason"
-    exit 1
+    exit $exit_code
   fi
 done
