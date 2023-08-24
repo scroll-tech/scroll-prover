@@ -259,7 +259,7 @@ async fn main() -> ExitCode {
                 let _ = panic::take_hook();
 
                 log_handle.set_config(common_log().unwrap());
-                if handling_ret.unwrap_or(false) {
+                if !handling_ret.unwrap_or(false) {
                     log::debug!("encounter some error in batch {}", batch_id);
                     if let Err(e) = mark_chunk_failure(
                         &chunk_dir,
