@@ -106,17 +106,6 @@ fn mark_chunk_failure(chunk_dir: &str, data: &str) -> Result<()> {
     Ok(())
 }
 
-fn chunk_handling(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> Result<()> {
-    let witness_block = build_block(block_traces, batch_id, chunk_id)
-        .map_err(|e| anyhow::anyhow!("testnet: building block failed {e:?}"))?;
-
-    Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block).map_err(|e| {
-        anyhow::anyhow!("testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{e:?}")
-    })?;
-
-    Ok(())
-}
-
 const EXIT_NO_MORE_TASK: u8 = 9;
 const EXIT_FAILED_ENV: u8 = 13;
 const EXIT_FAILED_ENV_WITH_TASK: u8 = 17;
@@ -245,14 +234,36 @@ async fn main() -> ExitCode {
 
                 let out_err = handling_error.clone();
                 let handling_ret = panic::catch_unwind(move || {
+                    let witness_block = build_block(&block_traces, batch_id as i64, chunk_id)
+                        .map_err(|e| anyhow::anyhow!("testnet: building block failed {e:?}"));
+
+                    if let Err(e) = witness_block {
+                        write_error(&out_err, format!("building block fail: {e:?}"));
+                        return false;
+                    }
+                    let witness_block = witness_block.expect("has handled error");
+
                     // mock
                     if spec_tasks.iter().any(|str| str.as_str() == "mock") {
-                        if let Err(e) = chunk_handling(batch_id as i64, chunk_id, &block_traces) {
+                        if let Err(e) = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block)
+                        .map_err(|e| {
+                            anyhow::anyhow!("testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{e:?}")
+                        })
+                        {
                             write_error(&out_err, format!("chunk handling fail: {e:?}"));
                             return false;
                         }
                     }
-                    // TODO: prove
+
+                    // prove
+                    if spec_tasks.iter().any(|str| str.as_str() == "mock") {
+                        // TODO: add prove code here
+                        let prove_ret: Result<()> = Ok(());
+                        if let Err(e) = prove_ret {
+                            write_error(&out_err, format!("chunk handling fail: {e:?}"));
+                            return false;
+                        }
+                    }
                     true
                 });
 
