@@ -42,7 +42,7 @@ func (t *TaskAssigner) assign_new() uint64 {
 	t.Lock()
 	defer t.Unlock()
 
-	used := t.begin_with
+	used := t.progress
 	for tid, status := range t.runingTasks {
 		if status == TaskReAssign {
 			t.runingTasks[tid] = TaskAssigned
