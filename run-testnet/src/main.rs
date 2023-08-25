@@ -234,7 +234,7 @@ async fn main() -> ExitCode {
 
                 let out_err = handling_error.clone();
                 let handling_ret = panic::catch_unwind(move || {
-                    let witness_block = build_block(&block_traces, batch_id as i64, chunk_id)
+                    let witness_block = build_block(&block_traces, batch_id, chunk_id)
                         .map_err(|e| anyhow::anyhow!("testnet: building block failed {e:?}"));
 
                     if let Err(e) = witness_block {
@@ -291,7 +291,7 @@ async fn main() -> ExitCode {
         }
     }
 
-    if let Err(e) = notify_chunks_complete(&setting, batch_id as i64, chunks_task_complete).await {
+    if let Err(e) = notify_chunks_complete(&setting, batch_id, chunks_task_complete).await {
         log::error!("can not deliver complete notify to coordinator: {e:?}");
         return ExitCode::from(EXIT_FAILED_ENV_WITH_TASK);
     }
@@ -336,7 +336,7 @@ fn build_block(
 }
 
 /// Request chunk info from cordinator
-async fn get_chunks_info(setting: &Setting) -> Result<(usize, Option<Vec<ChunkInfo>>)> {
+async fn get_chunks_info(setting: &Setting) -> Result<(i64, Option<Vec<ChunkInfo>>)> {
     let url = Url::parse(&setting.chunks_url)?;
 
     let resp: String = reqwest::get(url).await?.text().await?;
@@ -375,7 +375,7 @@ async fn notify_chunks_complete(
 
 #[derive(Deserialize, Debug)]
 struct RollupscanResponse {
-    batch_index: usize,
+    batch_index: i64,
     chunks: Option<Vec<ChunkInfo>>,
 }
 
