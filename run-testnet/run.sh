@@ -38,6 +38,14 @@ if [ ! -d "$output_dir" ]; then
   echo "Directory $output_dir created."
 fi
 
+
+issue_dir="${ISSUE_DIR:-issues}" 
+
+if [ ! -d "$issue_dir" ]; then
+  echo "issue dir must be created before running"
+  exit 1
+fi
+
 # A function representing your command 'a'
 function debug_run {
     cargo run --bin testnet-runner --release
@@ -54,6 +62,7 @@ function check_output {
       chunk_name=`echo "$chunk_dir" | grep -oE '[^/]+$'`
       echo "${chunk_name} fail (${chunk_dir})"
       curl -s "${COORDINATOR_API_URL}nodewarning?chunk_issue=${chunk_name}"
+      mv ${chunk_dir} ${issue_dir}
     fi
   done
   set +e
@@ -63,7 +72,7 @@ set +e
 while true; do
 # clean output dir before each running
   rm -rf ${output_dir}/*
-  if [ -z "${DEBUG_RUN:-}"]; then
+  if [ -z "${DEBUG_RUN:-}" ]; then
     testnet-runner
     exit_code=$?
   else
