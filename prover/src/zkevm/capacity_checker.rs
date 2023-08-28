@@ -167,13 +167,14 @@ impl CircuitCapacityChecker {
             builder_block.prev_state_root = H256(*mpt_state.root()).to_word();
             let mut builder =
                 CircuitInputBuilder::new_with_trie_state(sdb, code_db, mpt_state, &builder_block);
-            builder.add_more_l2_trace(&txs[0], txs.len() > 1)?;
+            builder.add_more_l2_trace(&txs[0], txs.len() > 1, true)?;
             builder
         } else {
             CircuitInputBuilder::new_from_l2_trace(
                 get_super_circuit_params(),
                 &txs[0],
                 txs.len() > 1,
+                true,
             )?
         };
         let traces = &txs[1..];
