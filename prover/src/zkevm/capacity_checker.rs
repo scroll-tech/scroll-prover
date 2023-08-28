@@ -54,7 +54,7 @@ impl RowUsage {
             MAX_BYTECODE,      // bytecode
             MAX_RWS,           // copy
             MAX_KECCAK_ROWS,   // keccak
-            MAX_CALLDATA,      // tx
+            MAX_VERTICLE_ROWS, // tx
             MAX_CALLDATA,      // rlp
             7 * MAX_EXP_STEPS, // exp
             MAX_KECCAK_ROWS,   // modexp
