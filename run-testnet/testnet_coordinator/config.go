@@ -1,8 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -14,6 +14,8 @@ type ServerConfig struct {
 
 type Config struct {
 	StartBatch       uint64        `yaml:"start,omitempty"`
+	GroupID          int           `yaml:"group_id,omitempty"`
+	ProxyOnly        bool          `yaml:"proxy_only,omitempty"`
 	ChunkURLTemplate string        `yaml:"chunkURL"`
 	NotifierURL      string        `yaml:"notifierURL"`
 	Server           *ServerConfig `yaml:"server,omitempty"`
@@ -34,7 +36,7 @@ func (cfg *Config) LoadEnv(path string) error {
 
 func (cfg *Config) Load(path string) error {
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

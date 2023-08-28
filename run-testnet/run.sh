@@ -12,17 +12,24 @@ fi
 function exit_trap {
   reason="unknown_error"
   if [ $1 -eq 17 ]; then
-    reason=runtime_error_with_batch_stuck
+    reason="runtime_error, batch_stuck"
   elif [ $1 -eq 13 ]; then
     # wrong runtime
     reason=runtime_error
+  elif [ $1 -eq 1 ]; then
+    # unexpected quit
+    reason="unexpected_error, batch_stuck"
   elif [ $1 -eq 0 ]; then
     return
+  fi
+
+  if [ -z "${SCRIPT_ERROR:-}" ]; then
+    reason="${reason}, script error"
   fi
   curl -s ${COORDINATOR_API_URL}nodewarning?panic=${reason}
 }
 
-trap "curl -s ${COORDINATOR_API_URL}nodewarning?panic=script_error" ERR
+trap "SCRIPT_ERROR=1" ERR
 trap 'exit_trap $?' EXIT
 trap "curl -s ${COORDINATOR_API_URL}nodewarning?panic=user_interrupt" SIGINT
 
@@ -83,10 +90,14 @@ while true; do
     check_output
     echo "checking output done"
     sleep 10
+    exit_code=$?
   elif [ $exit_code -eq 9 ]; then
     # there maybe more batchs, wait 10 min
     sleep 600
-  else
+    exit_code=$?
+  fi
+
+  if [ $exit_code -ne 0 ]; then
     exit $exit_code
   fi
 done

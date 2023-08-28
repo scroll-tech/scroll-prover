@@ -17,6 +17,7 @@ const TaskReAssign TaskStatus = 2
 type TaskAssigner struct {
 	sync.Mutex
 	notifier
+	stop_assign bool
 	begin_with  uint64
 	progress    uint64
 	runingTasks map[uint64]TaskStatus
@@ -30,11 +31,27 @@ func construct(start uint64) *TaskAssigner {
 	}
 }
 
-func (t *TaskAssigner) setMessenger(url string) *TaskAssigner {
+func (t *TaskAssigner) setMessenger(url string, id int) *TaskAssigner {
 	t.Lock()
 	defer t.Unlock()
-	t.notifier = notifier(url)
+	t.notifier = notifier{
+		api:            url,
+		coordinator_id: id,
+	}
 	return t
+}
+
+func (t *TaskAssigner) stopAssignment(stop bool) {
+	t.Lock()
+	defer t.Unlock()
+	t.stop_assign = stop
+}
+
+func (t *TaskAssigner) isStopped() bool {
+
+	t.Lock()
+	defer t.Unlock()
+	return t.stop_assign
 }
 
 func (t *TaskAssigner) assign_new() uint64 {
@@ -124,14 +141,20 @@ func (t *TaskAssigner) complete(id uint64) (bool, uint64) {
 	return nowProg > t.progress, nowProg
 }
 
-func (t *TaskAssigner) status() (result []uint64) {
+func (t *TaskAssigner) status() (result []uint64, workRange [2]uint64) {
 
 	t.Lock()
 	defer t.Unlock()
 
+	workRange[0] = t.progress
+	workRange[1] = t.progress
+
 	for id, status := range t.runingTasks {
 		if status != TaskCompleted {
 			result = append(result, id)
+		}
+		if id >= workRange[1] {
+			workRange[1] = id
 		}
 	}
 

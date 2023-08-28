@@ -6,22 +6,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
-type notifier string
+type notifier struct {
+	api            string
+	coordinator_id int
+}
 
 type slackData struct {
 	Text  string `json:"text"`
 	Agent string `json:"username,omitempty"`
 	Icon  string `json:"icon_emoji,omitempty"`
-}
-
-func getSlackData(text string, agent string) *slackData {
-	return &slackData{
-		Text:  text,
-		Agent: fmt.Sprintf("Testnet-%s", agent),
-		Icon:  "eyes",
-	}
 }
 
 func notifySlackChannel(url string, slack *slackData) (string, error) {
@@ -46,23 +42,23 @@ const COORDINATOR_COMMON = ":white_check_mark:"
 const COORDINATOR_GOODJOB = ":tada:"
 const COORDINATOR_BADNEWS = ":tired_face:"
 
-var agentData = map[string]string{
-	COORDINATOR_COMMON:  "Testnet-coordinator",
-	COORDINATOR_BADNEWS: "Oh no ...",
-	COORDINATOR_GOODJOB: "Congraduations!",
+var agentDataTemplate = map[string]string{
+	COORDINATOR_COMMON:  "Testnet-coordinator %d",
+	COORDINATOR_BADNEWS: "Oh no ... (from coordinator %d)",
+	COORDINATOR_GOODJOB: "Coordinator %d: Congraduations!",
 }
 
-func (n notifier) coordinatorNotify(txt string, icon string) error {
-	if n == "" {
+func (n *notifier) coordinatorNotify(txt string, icon string) error {
+	if n.api == "" {
 		return nil
 	}
 
 	if icon == "" {
 		icon = COORDINATOR_COMMON
 	}
-	resp, err := notifySlackChannel(string(n), &slackData{
+	resp, err := notifySlackChannel(n.api, &slackData{
 		Text:  txt,
-		Agent: agentData[icon],
+		Agent: fmt.Sprintf(agentDataTemplate[icon], n.coordinator_id),
 		Icon:  icon,
 	})
 	if err == nil {
@@ -72,13 +68,15 @@ func (n notifier) coordinatorNotify(txt string, icon string) error {
 }
 
 func (n notifier) nodeProxyNotify(node string, txt string) error {
-	if n == "" {
+	if n.api == "" {
 		return nil
 	}
 
-	resp, err := notifySlackChannel(string(n), &slackData{
+	node_names := strings.Split(node, ":")
+
+	resp, err := notifySlackChannel(n.api, &slackData{
 		Text:  txt,
-		Agent: fmt.Sprintf("Testnet-%s", node),
+		Agent: fmt.Sprintf("Testnet-%s", node_names[0]),
 		Icon:  ":scream:",
 	})
 	if err == nil {

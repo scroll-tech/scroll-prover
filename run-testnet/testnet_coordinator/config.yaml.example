@@ -1,6 +1,8 @@
 
 
 # start: 0 #batch start from
+# proxy_only: true #only proxy node message
+# group_id: 0 #would be send in channel notification
 chunkURL: http://<server host>/api/chunks?batch_index=%d
 # notifierURL: <notifier, full POST url>
 server:

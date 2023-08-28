@@ -1,8 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
@@ -24,7 +25,7 @@ func readSrcUrl(url string) ([]byte, error) {
 		return nil, UpstreamError(resp.StatusCode)
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 func main() {
@@ -34,7 +35,12 @@ func main() {
 		log.Fatalf("Error reading config file: %v", err)
 	}
 
-	taskAssigner := construct(serverConfig.StartBatch).setMessenger(serverConfig.NotifierURL)
+	taskAssigner := construct(serverConfig.StartBatch).setMessenger(serverConfig.NotifierURL, serverConfig.GroupID)
+
+	if serverConfig.ProxyOnly {
+		log.Println("stop assignment for proxy-only service")
+		taskAssigner.stopAssignment(true)
+	}
 
 	http.HandleFunc(
 		serverConfig.Server.ServerURL+"/chunks",
@@ -61,8 +67,32 @@ func main() {
 	}
 }
 
+type apiDataHead struct {
+	BatchIndex int64 `json:"batch_index,omitempty"`
+	ChunkIndex int64 `json:"chunk_index,omitempty"`
+}
+
 func chunksHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		disable_spec := r.URL.Query().Get("stop")
+		if disable_spec != "" {
+			switch disable_spec {
+			case "yes":
+				assigner.stopAssignment(true)
+			case "no":
+				assigner.stopAssignment(false)
+			default:
+				http.Error(w, "should be yes or no", http.StatusBadRequest)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			return
+		} else if assigner.isStopped() {
+			log.Println("stop assignment")
+			http.Error(w, "assignment stopped", http.StatusForbidden)
+			return
+		}
 
 		assigned_done := false
 		assigned := assigner.assign_new()
@@ -84,12 +114,21 @@ func chunksHandler(assigner *TaskAssigner, url_template string) http.HandlerFunc
 			return
 		}
 
+		testHead := new(apiDataHead)
+		if err := json.Unmarshal(resp, testHead); err != nil {
+			log.Println("Testing resp head fail, must given up", err)
+			http.Error(w, "Resp is invalid", http.StatusInternalServerError)
+			return
+		}
+
 		_, err = w.Write(resp)
 		if err != nil {
 			log.Printf("Error writing response: %v\n", err)
 			return
 		}
-		assigned_done = true
+
+		//assignment is not counted if resp contains unexpected index (often -1 for out of range)
+		assigned_done = testHead.BatchIndex == int64(assigned) || testHead.ChunkIndex == int64(assigned)
 
 	}
 }
@@ -155,7 +194,9 @@ func nodeProxyHandler(assigner *TaskAssigner) http.HandlerFunc {
 func statusHandler(assigner *TaskAssigner) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		ret := fmt.Sprintf("%v", assigner.status())
+		status, rng := assigner.status()
+
+		ret := fmt.Sprintf("{%d-%d}, activing: %v", rng[0], rng[1], status)
 		if _, err := w.Write([]byte(ret)); err != nil {
 			log.Println("unexpected output of status", err)
 		}
