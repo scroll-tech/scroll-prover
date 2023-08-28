@@ -46,8 +46,8 @@ fn get_super_circuit_params() -> CircuitsParams {
         max_bytecode: MAX_BYTECODE,
         max_inner_blocks: MAX_INNER_BLOCKS,
         max_keccak_rows: MAX_KECCAK_ROWS,
-        //        max_poseidon_rows: MAX_POSEIDON_ROWS,
-        //        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
+        max_poseidon_rows: MAX_POSEIDON_ROWS,
+        max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
         max_mpt_rows: MAX_MPT_ROWS,
         max_rlp_rows: MAX_CALLDATA,
@@ -256,6 +256,7 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
             get_super_circuit_params(),
             &block_traces[0],
             block_traces.len() > 1,
+            false,
         )?;
         block_traces_to_witness_block_with_updated_state(&block_traces[1..], &mut builder, false)
     }
@@ -271,18 +272,30 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
     // the only purpose here it to get the final zktrie state and
     // proof for withdraw root
     let mut padding_builder = if block_traces.is_empty() {
+        log::debug!("preparing default builder");
         prepare_default_builder(H256::zero(), None)
     } else {
         let start_l1_queue_index = block_traces[0].start_l1_queue_index;
+        log::debug!(
+            "new from l2 trace, block num {:?}",
+            block_traces[0].header.number
+        );
         let mut builder = CircuitInputBuilder::new_from_l2_trace(
             get_super_circuit_params(),
             &block_traces[0],
             block_traces.len() > 1,
+            false,
         )?;
         for (idx, block_trace) in block_traces[1..].iter().enumerate() {
+            log::debug!(
+                "adding more l2 trace block_trace idx {}, block num {:?}",
+                idx + 1,
+                block_trace.header.number
+            );
             builder.add_more_l2_trace(
                 block_trace,
                 idx + 2 == block_traces.len(), //not typo, we use 1..end of the traces only
+                false,
             )?;
         }
         builder.finalize_building()?;
@@ -382,7 +395,11 @@ pub fn block_traces_to_witness_block_with_updated_state(
 
     for (idx, block_trace) in block_traces.iter().enumerate() {
         let is_last = idx == block_traces.len() - 1;
-        builder.add_more_l2_trace(block_trace, !is_last)?;
+        log::debug!(
+            "add_more_l2_trace idx {idx}, block num {:?}",
+            block_trace.header.number
+        );
+        builder.add_more_l2_trace(block_trace, !is_last, false)?;
         if per_block_metric {
             metric(builder, idx + initial_blk_index)?;
         }
