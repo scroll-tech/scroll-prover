@@ -29,6 +29,7 @@ pub static ZKEVM_DEGREES: Lazy<Vec<u32>> = Lazy::new(|| {
 pub static AGG_DEGREES: Lazy<Vec<u32>> =
     Lazy::new(|| Vec::from_iter(HashSet::from([*LAYER3_DEGREE, *LAYER4_DEGREE])));
 
+#[derive(Clone, Copy, Debug)]
 pub enum LayerId {
     /// Compression wide layer
     Layer1,
