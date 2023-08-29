@@ -404,7 +404,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         "finish replay trie updates, root {}",
         hex::encode(builder.mpt_init_state.root())
     );
-    Ok((witness_block, code_db))
+    Ok(witness_block)
 }
 
 pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {
