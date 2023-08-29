@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use ethers_providers::{Http, Provider};
 use log4rs::{
     append::{
@@ -9,17 +9,51 @@ use log4rs::{
     config::{Appender, Config, Logger, Root},
 };
 use prover::{
+    config::LayerId,
     inner::Prover,
+    test_util::{gen_and_verify_normal_and_evm_proofs, PARAMS_DIR},
     utils::{read_env_var, short_git_version, GIT_VERSION},
-    zkevm::circuit::{
-        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-        WitnessBlock,
+    zkevm::{
+        self,
+        circuit::{
+            block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+            WitnessBlock,
+        },
     },
 };
 use reqwest::Url;
 use serde::Deserialize;
 use std::{backtrace, env, panic, process::ExitCode, str::FromStr};
 use types::eth::BlockTrace;
+
+fn chunk_prove(witness_block: &WitnessBlock) -> Result<()> {
+    // TODO: replace to one global chunk-prover.
+    let mut prover = zkevm::Prover::from_params_dir(PARAMS_DIR);
+
+    panic::catch_unwind(move || {
+        let layer1_snark = prover
+            .inner
+            .load_or_gen_last_chunk_snark("layer1", witness_block, None)
+            .unwrap();
+        log::info!("Generated layer1 snark");
+
+        gen_and_verify_normal_and_evm_proofs(
+            &mut prover.inner,
+            LayerId::Layer2,
+            layer1_snark,
+            None,
+        );
+        log::info!("Generated and verified chunk-proof");
+    })
+    .map_err(|err| {
+        let err_msg = if let Some(err_msg) = err.downcast_ref::<String>() {
+            err_msg
+        } else {
+            "unknown"
+        };
+        anyhow!("Failed to generate or verify chunk-proof: {err_msg}")
+    })
+}
 
 // build common config from enviroment
 fn common_log() -> Result<Config> {
@@ -256,9 +290,8 @@ async fn main() -> ExitCode {
                     }
 
                     // prove
-                    if spec_tasks.iter().any(|str| str.as_str() == "mock") {
-                        // TODO: add prove code here
-                        let prove_ret: Result<()> = Ok(());
+                    if spec_tasks.iter().any(|str| str.as_str() == "prove") {
+                        let prove_ret = chunk_prove(&witness_block);
                         if let Err(e) = prove_ret {
                             write_error(&out_err, format!("chunk handling fail: {e:?}"));
                             return false;
