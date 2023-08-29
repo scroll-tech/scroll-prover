@@ -1,4 +1,10 @@
-pub mod eth;
+pub use eth_types::l2_types as eth;
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+pub struct BlockTraceJsonRpcResult {
+    pub result: eth::BlockTrace,
+}
 
 pub mod base64 {
     use base64::{decode, encode};

@@ -2,24 +2,19 @@ use super::{TargetCircuit, AUTO_TRUNCATE, CHAIN_ID};
 use crate::config::INNER_DEGREE;
 use anyhow::{bail, Result};
 use bus_mapping::{
-    circuit_input_builder::{
-        self, BlockHead, CircuitInputBuilder, CircuitsParams, PrecompileEcParams,
-    },
-    state_db::{Account, CodeDB, StateDB},
+    circuit_input_builder::{self, CircuitInputBuilder, CircuitsParams, PrecompileEcParams},
+    state_db::{CodeDB, StateDB},
 };
-use eth_types::{evm_types::opcode_ids::OpcodeId, ToAddress, ToBigEndian, H256};
-use ethers_core::types::{Bytes, U256};
+use eth_types::{ToBigEndian, ToWord, H256};
 use halo2_proofs::halo2curves::bn256::Fr;
-use is_even::IsEven;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    time::Instant,
-};
-use types::eth::{BlockTrace, EthBlock, ExecStep, StorageTrace};
+use std::{collections::HashMap, time::Instant};
+use types::eth::{BlockTrace, StorageTrace};
 use zkevm_circuits::{
-    evm_circuit::witness::{block_apply_mpt_state, block_convert_with_l1_queue_index, Block},
+    evm_circuit::witness::{
+        block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block,
+    },
     util::SubCircuit,
     witness::WithdrawProof,
 };
@@ -41,7 +36,8 @@ pub const MAX_PRECOMPILE_EC_ADD: usize = 50;
 pub const MAX_PRECOMPILE_EC_MUL: usize = 50;
 pub const MAX_PRECOMPILE_EC_PAIRING: usize = 2;
 
-fn get_super_circuit_params() -> CircuitsParams {
+/// default params for super circuit
+pub fn get_super_circuit_params() -> CircuitsParams {
     CircuitsParams {
         max_evm_rows: MAX_RWS,
         max_rws: MAX_RWS,
@@ -183,57 +179,48 @@ pub fn check_batch_capacity(block_traces: &mut Vec<BlockTrace>) -> Result<()> {
     Ok(())
 }
 
-pub fn fill_zktrie_state_from_proofs(
-    zktrie_state: &mut ZktrieState,
-    block_traces: &[BlockTrace],
-    light_mode: bool,
-) -> Result<()> {
-    log::debug!(
-        "building partial statedb, old root {}, light_mode {}",
-        hex::encode(zktrie_state.root()),
-        light_mode
-    );
-    let account_proofs = block_traces.iter().flat_map(|block| {
-        log::trace!("account proof for block {:?}:", block.header.number);
-        block.storage_trace.proofs.iter().flat_map(|kv_map| {
-            kv_map
-                .iter()
-                .map(|(k, bts)| (k, bts.iter().map(Bytes::as_ref)))
-        })
-    });
-    let storage_proofs = block_traces.iter().flat_map(|block| {
-        log::trace!("storage proof for block {:?}:", block.header.number);
-        block
-            .storage_trace
-            .storage_proofs
-            .iter()
-            .flat_map(|(k, kv_map)| {
-                kv_map
-                    .iter()
-                    .map(move |(sk, bts)| (k, sk, bts.iter().map(Bytes::as_ref)))
-            })
-    });
-    let additional_proofs = block_traces.iter().flat_map(|block| {
-        log::trace!("storage proof for block {:?}:", block.header.number);
-        log::trace!("additional proof for block {:?}:", block.header.number);
-        block
-            .storage_trace
-            .deletion_proofs
-            .iter()
-            .map(Bytes::as_ref)
-    });
-    zktrie_state.update_statedb_from_proofs(
-        account_proofs.clone(),
-        storage_proofs.clone(),
-        additional_proofs.clone(),
-    )?;
-    if !light_mode {
-        zktrie_state.update_nodes_from_proofs(account_proofs, storage_proofs, additional_proofs)?;
+// prepare an empty builder which can updated by more trace
+// from the default settings
+// only require the prev state root being provided
+// any initial zktrie state can be also set
+fn prepare_default_builder(
+    old_root: H256,
+    initial_mpt_state: Option<ZktrieState>,
+) -> CircuitInputBuilder {
+    let mut builder_block =
+        circuit_input_builder::Block::from_headers(&[], get_super_circuit_params());
+    builder_block.chain_id = *CHAIN_ID;
+    builder_block.prev_state_root = old_root.to_word();
+    let code_db = CodeDB::new();
+
+    if let Some(mpt_state) = initial_mpt_state {
+        assert_eq!(
+            H256::from_slice(mpt_state.root()),
+            old_root,
+            "the provided zktrie state must be the prev state"
+        );
+        let state_db = StateDB::from(&mpt_state);
+        let mut builder = CircuitInputBuilder::new(state_db, code_db, &builder_block);
+        builder.mpt_init_state = mpt_state;
+        builder
+    } else {
+        CircuitInputBuilder::new(StateDB::new(), code_db, &builder_block)
     }
-    log::debug!(
-        "building partial statedb done, root {}",
-        hex::encode(zktrie_state.root())
-    );
+}
+
+// check if block traces match preset parameters
+fn validite_block_traces(block_traces: &[BlockTrace]) -> Result<()> {
+    let chain_id = block_traces
+        .iter()
+        .map(|block_trace| block_trace.chain_id)
+        .next()
+        .unwrap_or(*CHAIN_ID);
+    if *CHAIN_ID != chain_id {
+        bail!(
+            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
+            *CHAIN_ID
+        );
+    }
     Ok(())
 }
 
@@ -259,14 +246,21 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
     for block_trace in block_traces {
         log::debug!("start_l1_queue_index: {}", block_trace.start_l1_queue_index,);
     }
-    let old_root = if block_traces.is_empty() {
-        eth_types::Hash::zero()
+
+    // TODO: now witness block is context senstive (?) with prev_root, start l1 index
+    // etc, so the generated block maybe invalid without any message
+    if block_traces.is_empty() {
+        let mut builder = prepare_default_builder(eth_types::Hash::zero(), None);
+        block_traces_to_witness_block_with_updated_state(&[], &mut builder, false)
     } else {
-        block_traces[0].storage_trace.root_before
-    };
-    let mut state = ZktrieState::construct(old_root);
-    fill_zktrie_state_from_proofs(&mut state, block_traces, false)?;
-    Ok(block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?.0)
+        let mut builder = CircuitInputBuilder::new_from_l2_trace(
+            get_super_circuit_params(),
+            &block_traces[0],
+            block_traces.len() > 1,
+            false,
+        )?;
+        block_traces_to_witness_block_with_updated_state(&block_traces[1..], &mut builder, false)
+    }
 }
 
 pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
@@ -274,139 +268,124 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
         "block_traces_to_padding_witness_block, input len {:?}",
         block_traces.len()
     );
-    let chain_id = block_traces
-        .iter()
-        .map(|block_trace| block_trace.chain_id)
-        .next()
-        .unwrap_or(*CHAIN_ID);
-    if *CHAIN_ID != chain_id {
-        bail!(
-            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
-            *CHAIN_ID
-        );
-    }
-    let old_root = if block_traces.is_empty() {
-        eth_types::Hash::zero()
-    } else {
-        block_traces[0].storage_trace.root_before
-    };
-    let mut state = ZktrieState::construct(old_root);
-    fill_zktrie_state_from_proofs(&mut state, block_traces, false)?;
+    validite_block_traces(block_traces)?;
 
-    // the only purpose here it to get the updated zktrie state
-    let prev_witness_block =
-        block_traces_to_witness_block_with_updated_state(block_traces, &mut state, false)?.0;
+    // the only purpose here it to get the final zktrie state and
+    // proof for withdraw root
+    let mut padding_builder = if block_traces.is_empty() {
+        log::debug!("preparing default builder");
+        prepare_default_builder(H256::zero(), None)
+    } else {
+        let start_l1_queue_index = block_traces[0].start_l1_queue_index;
+        log::debug!(
+            "new from l2 trace, block num {:?}",
+            block_traces[0].header.number
+        );
+        let mut builder = CircuitInputBuilder::new_from_l2_trace(
+            get_super_circuit_params(),
+            &block_traces[0],
+            block_traces.len() > 1,
+            false,
+        )?;
+        for (idx, block_trace) in block_traces[1..].iter().enumerate() {
+            log::debug!(
+                "adding more l2 trace block_trace idx {}, block num {:?}",
+                idx + 1,
+                block_trace.header.number
+            );
+            builder.add_more_l2_trace(
+                block_trace,
+                idx + 2 == block_traces.len(), //not typo, we use 1..end of the traces only
+                false,
+            )?;
+        }
+        builder.finalize_building()?;
+        let mut witness_block = block_convert_with_l1_queue_index::<Fr>(
+            &builder.block,
+            &builder.code_db,
+            start_l1_queue_index,
+        )?;
+        log::debug!(
+            "witness_block built with circuits_params {:?} for padding",
+            witness_block.circuits_params
+        );
+        // so we have the finalized state which contain withdraw proof
+        block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
+        let old_root = H256(*builder.mpt_init_state.root());
+        prepare_default_builder(old_root, Some(builder.mpt_init_state))
+    };
 
     // TODO: when prev_witness_block.tx.is_empty(), the `withdraw_proof` here should be a subset of
     // storage proofs of prev block
-    let storage_trace = normalize_withdraw_proof(&prev_witness_block.mpt_updates.withdraw_proof);
-    storage_trace_to_padding_witness_block(storage_trace)
+    padding_builder.finalize_building()?;
+
+    let mut padding_block = block_convert(&padding_builder.block, &padding_builder.code_db)?;
+    // drag the withdraw proof from zktrie state
+    block_apply_mpt_state(&mut padding_block, &padding_builder.mpt_init_state);
+
+    Ok(padding_block)
 }
 
-pub fn storage_trace_to_padding_witness_block(storage_trace: StorageTrace) -> Result<Block<Fr>> {
-    log::debug!(
-        "withdraw proof {}",
-        serde_json::to_string_pretty(&storage_trace)?
-    );
-
-    let mut state = ZktrieState::construct(storage_trace.root_before);
-    let dummy_chunk_traces = vec![BlockTrace {
-        chain_id: *CHAIN_ID,
-        storage_trace,
-        ..Default::default()
-    }];
-    fill_zktrie_state_from_proofs(&mut state, &dummy_chunk_traces, false)?;
-    Ok(block_traces_to_witness_block_with_updated_state(&[], &mut state, false)?.0)
-}
-
+/// update the builder with another batch of trace and then *FINALIZE* it
+/// (so the buidler CAN NOT be update any more)
+/// light_mode skip the time consuming calculation on mpt root for each
+/// tx, currently used in row estimation
 pub fn block_traces_to_witness_block_with_updated_state(
     block_traces: &[BlockTrace],
-    zktrie_state: &mut ZktrieState,
-    light_mode: bool, // light_mode used in row estimation
-) -> Result<(Block<Fr>, CodeDB)> {
-    let chain_id = block_traces
-        .iter()
-        .map(|block_trace| block_trace.chain_id)
-        .next()
-        .unwrap_or(*CHAIN_ID);
-    // total l1 msgs popped before this chunk
-    let start_l1_queue_index = block_traces
-        .iter()
-        .map(|block_trace| block_trace.start_l1_queue_index)
-        .next()
-        .unwrap_or(0);
-    if *CHAIN_ID != chain_id {
-        bail!(
-            "CHAIN_ID env var is wrong. chain id in trace {chain_id}, CHAIN_ID {}",
-            *CHAIN_ID
+    builder: &mut CircuitInputBuilder,
+    light_mode: bool,
+) -> Result<Block<Fr>> {
+    let metric = |builder: &CircuitInputBuilder, idx: usize| -> Result<(), bus_mapping::Error> {
+        let t = Instant::now();
+        let block = block_convert_with_l1_queue_index::<Fr>(
+            &builder.block,
+            &builder.code_db,
+            builder.block.start_l1_queue_index,
+        )?;
+        log::debug!("block convert time {:?}", t.elapsed());
+        let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
+        log::debug!(
+            "after block {}, tx num {:?}, tx len sum {}, rows needed {:?}. estimate time: {:?}",
+            idx,
+            builder.block.txs().len(),
+            builder
+                .block
+                .txs()
+                .iter()
+                .map(|t| t.input.len())
+                .sum::<usize>(),
+            rows,
+            t.elapsed()
         );
-    }
+        Ok(())
+    };
 
-    let mut state_db: StateDB = zktrie_state.state().clone();
+    // TODO: enable this switch
+    let per_block_metric = false;
 
-    let (zero_coinbase_exist, _) = state_db.get_account(&Default::default());
-    if !zero_coinbase_exist {
-        state_db.set_account(&Default::default(), Account::zero());
-    }
+    let initial_blk_index = if builder.block.txs.is_empty() {
+        0
+    } else {
+        if per_block_metric {
+            metric(builder, 0)?;
+        }
+        1
+    };
 
-    let code_db = build_codedb(&state_db, block_traces)?;
-    let circuit_params = get_super_circuit_params();
-    let mut builder_block = circuit_input_builder::Block::from_headers(&[], circuit_params);
-    builder_block.chain_id = chain_id;
-    builder_block.prev_state_root = U256::from(zktrie_state.root());
-    let mut builder = CircuitInputBuilder::new(state_db.clone(), code_db.clone(), &builder_block);
     for (idx, block_trace) in block_traces.iter().enumerate() {
         let is_last = idx == block_traces.len() - 1;
-        let eth_block: EthBlock = block_trace.clone().into();
-
-        let mut geth_trace = Vec::new();
-        for result in &block_trace.execution_results {
-            geth_trace.push(result.into());
-        }
-        // TODO: Get the history_hashes.
-        let mut header = BlockHead::new_with_l1_queue_index(
-            chain_id,
-            block_trace.start_l1_queue_index,
-            Vec::new(),
-            &eth_block,
-        )?;
-        // override zeroed minder field with additional "coinbase" field in blocktrace
-        if let Some(address) = block_trace.coinbase.address {
-            header.coinbase = address;
-        }
-        let block_num = header.number.as_u64();
-        builder.block.start_l1_queue_index = start_l1_queue_index; // the chunk's start_l1_queue_index
-        builder.block.headers.insert(block_num, header);
-        builder.handle_block_inner(&eth_block, geth_trace.as_slice(), false, is_last)?;
-        log::debug!("handle_block_inner done for block {:?}", block_num);
-        let per_block_metric = false;
+        log::debug!(
+            "add_more_l2_trace idx {idx}, block num {:?}",
+            block_trace.header.number
+        );
+        builder.add_more_l2_trace(block_trace, !is_last, false)?;
         if per_block_metric {
-            let t = Instant::now();
-            let block = block_convert_with_l1_queue_index::<Fr>(
-                &builder.block,
-                &builder.code_db,
-                start_l1_queue_index,
-            )?;
-            log::debug!("block convert time {:?}", t.elapsed());
-            let rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block(&block);
-            log::debug!(
-                "after block {}, tx num {:?}, tx len sum {}, rows needed {:?}. estimate time: {:?}",
-                idx,
-                builder.block.txs().len(),
-                builder
-                    .block
-                    .txs()
-                    .iter()
-                    .map(|t| t.input.len())
-                    .sum::<usize>(),
-                rows,
-                t.elapsed()
-            );
+            metric(builder, idx + initial_blk_index)?;
         }
     }
 
-    builder.set_value_ops_call_context_rwc_eor();
-    builder.set_end_block()?;
+    builder.finalize_building()?;
+    let start_l1_queue_index = builder.block.start_l1_queue_index;
 
     log::debug!("converting builder.block to witness block");
     let mut witness_block =
@@ -416,176 +395,16 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode && zktrie_state.root() != &[0u8; 32] {
+    if !light_mode && builder.mpt_init_state.root() != &[0u8; 32] {
         log::debug!("block_apply_mpt_state");
-        block_apply_mpt_state(&mut witness_block, zktrie_state);
+        block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         log::debug!("block_apply_mpt_state done");
     }
-    zktrie_state.set_state(builder.sdb.clone());
     log::debug!(
         "finish replay trie updates, root {}",
-        hex::encode(zktrie_state.root())
+        hex::encode(builder.mpt_init_state.root())
     );
-    Ok((witness_block, code_db))
-}
-
-pub fn decode_bytecode(bytecode: &str) -> Result<Vec<u8>> {
-    let mut stripped = if let Some(stripped) = bytecode.strip_prefix("0x") {
-        stripped.to_string()
-    } else {
-        bytecode.to_string()
-    };
-
-    let bytecode_len = stripped.len() as u64;
-    if !bytecode_len.is_even() {
-        stripped = format!("0{stripped}");
-    }
-
-    hex::decode(stripped).map_err(|e| e.into())
-}
-
-fn trace_code(
-    cdb: &mut CodeDB,
-    code_hash: Option<H256>,
-    code: Bytes,
-    step: &ExecStep,
-    sdb: &StateDB,
-    stack_pos: usize,
-) {
-    // first, try to read from sdb
-    let stack = step
-        .stack
-        .as_ref()
-        .expect("should have stack in call context");
-    let addr = stack[stack.len() - stack_pos - 1].to_address(); //stack N-stack_pos
-
-    let code_hash = code_hash.or_else(|| {
-        let (_existed, acc_data) = sdb.get_account(&addr);
-        if acc_data.code_hash != CodeDB::empty_code_hash() && !code.is_empty() {
-            // they must be same
-            Some(acc_data.code_hash)
-        } else {
-            // let us re-calculate it
-            None
-        }
-    });
-    let code_hash = match code_hash {
-        Some(code_hash) => {
-            if code_hash.is_zero() {
-                CodeDB::hash(&code)
-            } else {
-                if log::log_enabled!(log::Level::Trace) {
-                    assert_eq!(
-                        code_hash,
-                        CodeDB::hash(&code),
-                        "bytecode len {:?}, step {:?}",
-                        code.len(),
-                        step
-                    );
-                }
-                code_hash
-            }
-        }
-        None => {
-            let hash = CodeDB::hash(&code);
-            log::debug!(
-                "hash_code done: addr {addr:?}, size {}, hash {hash:?}",
-                &code.len()
-            );
-            hash
-        }
-    };
-
-    cdb.0.entry(code_hash).or_insert_with(|| {
-        log::trace!(
-            "trace code addr {:?}, size {} hash {:?}",
-            addr,
-            &code.len(),
-            code_hash
-        );
-        code.to_vec()
-    });
-}
-
-pub fn build_codedb(sdb: &StateDB, blocks: &[BlockTrace]) -> Result<CodeDB> {
-    let mut cdb = CodeDB::new();
-    log::debug!("building codedb");
-
-    cdb.insert(Vec::new());
-
-    for block in blocks.iter().rev() {
-        log::debug!("build_codedb for block {:?}", block.header.number);
-        for (er_idx, execution_result) in block.execution_results.iter().enumerate() {
-            if let Some(bytecode) = &execution_result.byte_code {
-                let bytecode = decode_bytecode(bytecode)?.to_vec();
-
-                let code_hash = execution_result
-                    .to
-                    .as_ref()
-                    .and_then(|t| t.poseidon_code_hash)
-                    .unwrap_or_else(|| CodeDB::hash(&bytecode));
-                let code_hash = if code_hash.is_zero() {
-                    CodeDB::hash(&bytecode)
-                } else {
-                    code_hash
-                };
-                if let Entry::Vacant(e) = cdb.0.entry(code_hash) {
-                    e.insert(bytecode);
-                    //log::debug!("inserted tx bytecode {:?} {:?}", code_hash, hash);
-                }
-                if execution_result.account_created.is_none() {
-                    //assert_eq!(Some(hash), execution_result.code_hash);
-                }
-            }
-
-            for step in execution_result.exec_steps.iter().rev() {
-                if let Some(data) = &step.extra_data {
-                    match step.op {
-                        OpcodeId::CALL
-                        | OpcodeId::CALLCODE
-                        | OpcodeId::DELEGATECALL
-                        | OpcodeId::STATICCALL => {
-                            let code_idx = if block.transactions[er_idx].to.is_none() {
-                                0
-                            } else {
-                                1
-                            };
-                            let callee_code = data.get_code_at(code_idx);
-                            if callee_code.is_none() {
-                                bail!("invalid trace: cannot get code of call: {:?}", step);
-                            }
-                            let code_hash = match step.op {
-                                OpcodeId::CALL | OpcodeId::CALLCODE => data.get_code_hash_at(1),
-                                OpcodeId::STATICCALL => data.get_code_hash_at(0),
-                                _ => None,
-                            };
-                            trace_code(&mut cdb, code_hash, callee_code.unwrap(), step, sdb, 1);
-                        }
-                        OpcodeId::CREATE | OpcodeId::CREATE2 => {
-                            // notice we do not need to insert code for CREATE,
-                            // bustmapping do this job
-                        }
-                        OpcodeId::EXTCODESIZE | OpcodeId::EXTCODECOPY => {
-                            let code = data.get_code_at(0);
-                            if code.is_none() {
-                                bail!("invalid trace: cannot get code of ext: {:?}", step);
-                            }
-                            trace_code(&mut cdb, None, code.unwrap(), step, sdb, 0);
-                        }
-
-                        _ => {}
-                    }
-                }
-            }
-        }
-    }
-
-    log::debug!("building codedb done");
-    for (k, v) in &cdb.0 {
-        assert!(!k.is_zero());
-        log::trace!("codedb codehash {:?}, len {}", k, v.len());
-    }
-    Ok(cdb)
+    Ok(witness_block)
 }
 
 pub fn normalize_withdraw_proof(proof: &WithdrawProof) -> StorageTrace {
