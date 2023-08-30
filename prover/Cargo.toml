@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 
-aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5", default-features = false, features = ["test","scroll","scroll-trace","shanghai"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.5" }
+aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6", default-features = false, features = ["test","scroll","scroll-trace","shanghai"] }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.7.6" }
 
 snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
 snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
