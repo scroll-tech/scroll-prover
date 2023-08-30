@@ -11,25 +11,13 @@ use std::env;
 use types::eth::StorageTrace;
 
 pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
-    let normal_proof = gen_normal_proof(
-        &mut agg_prover.inner,
-        LayerId::Layer4,
-        layer3_snark.clone(),
-        output_dir,
-    );
-    let evm_proof = gen_evm_proof(
+    let evm_proof = gen_and_verify_normal_and_evm_proofs(
         &mut agg_prover.inner,
         LayerId::Layer4,
         layer3_snark,
-        output_dir,
-    );
-    verify_normal_and_evm_proofs(
-        &mut agg_prover.inner,
-        LayerId::Layer4,
-        normal_proof,
-        &evm_proof,
-        output_dir,
-    );
+        Some(output_dir),
+    )
+    .1;
     verify_batch_proof(evm_proof, output_dir);
 }
 
@@ -38,40 +26,47 @@ pub fn gen_and_verify_chunk_proofs(
     layer1_snark: Snark,
     output_dir: &str,
 ) {
-    let normal_proof = gen_normal_proof(
-        &mut zkevm_prover.inner,
-        LayerId::Layer2,
-        layer1_snark.clone(),
-        output_dir,
-    );
-    let evm_proof = gen_evm_proof(
+    let normal_proof = gen_and_verify_normal_and_evm_proofs(
         &mut zkevm_prover.inner,
         LayerId::Layer2,
         layer1_snark,
-        output_dir,
-    );
+        Some(output_dir),
+    )
+    .0;
+    verify_chunk_proof(&zkevm_prover.inner, normal_proof, output_dir);
+}
+
+pub fn gen_and_verify_normal_and_evm_proofs(
+    prover: &mut common::Prover,
+    layer_id: LayerId,
+    previous_snark: Snark,
+    output_dir: Option<&str>,
+) -> (Snark, EvmProof) {
+    let normal_proof = gen_normal_proof(prover, layer_id, previous_snark.clone(), output_dir);
+    let evm_proof = gen_evm_proof(prover, layer_id, previous_snark, output_dir);
     verify_normal_and_evm_proofs(
-        &mut zkevm_prover.inner,
-        LayerId::Layer2,
+        prover,
+        layer_id,
         normal_proof.clone(),
         &evm_proof,
         output_dir,
     );
-    verify_chunk_proof(&zkevm_prover.inner, normal_proof, output_dir);
+
+    (normal_proof, evm_proof)
 }
 
 fn gen_evm_proof(
     prover: &mut common::Prover,
     layer_id: LayerId,
     previous_snark: Snark,
-    output_dir: &str,
+    output_dir: Option<&str>,
 ) -> EvmProof {
     let id = layer_id.id();
     let degree = layer_id.degree();
 
     // Load or generate compression EVM proof.
     let evm_proof = prover
-        .load_or_gen_comp_evm_proof("evm", id, true, degree, previous_snark, Some(output_dir))
+        .load_or_gen_comp_evm_proof("evm", id, true, degree, previous_snark, output_dir)
         .unwrap();
     log::info!("Generated EVM proof: {id}");
 
@@ -82,14 +77,14 @@ fn gen_normal_proof(
     prover: &mut common::Prover,
     layer_id: LayerId,
     previous_snark: Snark,
-    output_dir: &str,
+    output_dir: Option<&str>,
 ) -> Snark {
     let id = layer_id.id();
     let degree = layer_id.degree();
 
     // Load or generate compression snark.
     let snark = prover
-        .load_or_gen_comp_snark("normal", id, true, degree, previous_snark, Some(output_dir))
+        .load_or_gen_comp_snark("normal", id, true, degree, previous_snark, output_dir)
         .unwrap();
     log::info!("Generated compression snark: {id}");
 
@@ -128,7 +123,7 @@ fn verify_normal_and_evm_proofs(
     layer_id: LayerId,
     normal_proof: Snark,
     evm_proof: &EvmProof,
-    output_dir: &str,
+    output_dir: Option<&str>,
 ) {
     let id = layer_id.id();
     let degree = layer_id.degree();
