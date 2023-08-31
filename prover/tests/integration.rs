@@ -130,7 +130,6 @@ fn estimate_circuit_rows() {
     log::info!("super circuit: {:?}", rows);
 }
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove_padding() {
     init_env_and_log("integration");
@@ -147,7 +146,6 @@ fn test_mock_prove_padding() {
     }
 }
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_mock_prove() {
     init_env_and_log("integration");
@@ -155,13 +153,11 @@ fn test_mock_prove() {
     Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces).unwrap();
 }
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_inner_prove_verify() {
     test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_deterministic() {
     use halo2_proofs::dev::MockProver;
@@ -194,7 +190,6 @@ fn test_deterministic() {
     log::info!("test_deterministic done");
 }
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_vk_same() {
     use halo2_proofs::dev::MockProver;

@@ -4,7 +4,6 @@ use prover::{
     zkevm::Prover,
 };
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_chunk_prove_verify() {
     let output_dir = init_env_and_log("chunk_tests");

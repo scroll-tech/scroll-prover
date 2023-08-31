@@ -11,12 +11,12 @@ halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.gi
 aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
 bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
 eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["test","scroll","scroll-trace","shanghai"] }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
 mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["shanghai", "scroll"] }
 
-snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
-snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.2" }
+snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.3" }
+snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.3", default-features=false, features = ["loader_halo2", "loader_evm", "halo2-pse"] }
 
 anyhow = "1.0"
 blake2 = "0.10.3"
@@ -48,5 +48,3 @@ procfs = "0.13.0"
 
 [features]
 default = []
-# default = ["prove_verify"]
-prove_verify = []

@@ -8,7 +8,6 @@ use prover::{
 use serde_derive::{Deserialize, Serialize};
 use std::env;
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");

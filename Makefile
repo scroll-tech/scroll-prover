@@ -17,7 +17,7 @@ fmt: ## Check whether the code is formatted correctly
 
 clippy: ## Run clippy checks over all workspace members
 	@cargo check --all-features
-	@cargo clippy --release --features prove_verify -- -D warnings
+	@cargo clippy --release -- -D warnings
 
 test: ## Run tests for all the workspace members
 	@cargo test --release --all
@@ -27,31 +27,31 @@ bridge-test:
 	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
 
 mock:
-	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
+	@cargo test --release test_mock_prove -- --exact --nocapture
 
 mock-debug:
-	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
+	@cargo test test_mock_prove -- --exact --nocapture
 
 mock-testnet:
 	@cargo run --bin mock_testnet --release
 
 test-inner-prove:
-	@cargo test --features prove_verify --release test_inner_prove_verify
+	@cargo test --release test_inner_prove_verify
 
 test-chunk-prove:
-	@cargo test --features prove_verify --release test_chunk_prove_verify
+	@cargo test --release test_chunk_prove_verify
 
 test-agg-prove:
-	@cargo test --features prove_verify --release test_agg_prove_verify
+	@cargo test --release test_agg_prove_verify
 
 test-batch-prove:
-	@cargo test --features prove_verify --release test_batch_prove_verify
+	@cargo test --release test_batch_prove_verify
 
 test-ccc:
 	@cargo test --release test_capacity_checker
 
 rows:
-	@cargo test --features prove_verify --release estimate_circuit_rows
+	@cargo test --release estimate_circuit_rows
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
 # As default `degree=25` and `params_dir=./prover/test_params`.

@@ -6,7 +6,6 @@ use prover::{
 };
 use std::env;
 
-#[cfg(feature = "prove_verify")]
 #[test]
 fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
