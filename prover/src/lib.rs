@@ -11,6 +11,9 @@ pub mod utils;
 pub mod zkevm;
 
 pub use common::ChunkHash;
+pub use consts::{
+    AGG_VK_FILENAME, CHUNK_PROTOCOL_FILENAME, CHUNK_VK_FILENAME, DEPLOYMENT_CODE_FILENAME,
+};
 pub use evm_verifier::EvmVerifier;
 pub use proof::{BatchProof, ChunkProof, EvmProof, Proof};
 pub use snark_verifier_sdk::Snark;
