@@ -18,6 +18,7 @@ fn test_chunk_prove_verify() {
     let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
     log::info!("Got witness block");
 
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
     let mut zkevm_prover = Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
     log::info!("Constructed zkevm prover");
 
