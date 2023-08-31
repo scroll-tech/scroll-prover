@@ -2981,6 +2981,7 @@ version = "0.7.5"
 dependencies = [
  "aggregator",
  "anyhow",
+ "base64 0.13.1",
  "blake2",
  "bus-mapping",
  "chrono",
