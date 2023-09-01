@@ -5,16 +5,19 @@ use crate::{
     utils::read_env_var,
     BatchProof, ChunkProof,
 };
-use aggregator::{ChunkHash, MAX_AGG_SNARKS};
+use aggregator::ChunkHash;
 use anyhow::{bail, Result};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
 use snark_verifier_sdk::Snark;
 use std::{iter::repeat, path::Path};
+use std::string::ToString;
 
 static CHUNK_PROTOCOL_FILENAME: Lazy<String> =
     Lazy::new(|| read_env_var("CHUNK_PROTOCOL_FILENAME", "chunk.protocol".to_string()));
 
+static MAX_AGG_SNARKS: Lazy<usize> =
+    Lazy::new(|| read_env_var("MAX_AGG_SNARKS", 10));
 #[derive(Debug)]
 pub struct Prover {
     // Make it public for testing with inner functions (unnecessary for FFI).
@@ -111,7 +114,7 @@ impl Prover {
         output_dir: Option<&str>,
     ) -> Result<Snark> {
         let real_chunk_count = chunk_hashes_proofs.len();
-        assert!((1..=MAX_AGG_SNARKS).contains(&real_chunk_count));
+        assert!((1..=*MAX_AGG_SNARKS).contains(&real_chunk_count));
 
         let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
             chunk_hashes_proofs.into_iter().unzip();
@@ -122,14 +125,14 @@ impl Prover {
 
         let mut layer2_snarks: Vec<_> = chunk_proofs.into_iter().map(|p| p.to_snark()).collect();
 
-        if real_chunk_count < MAX_AGG_SNARKS {
+        if real_chunk_count < *MAX_AGG_SNARKS {
             let padding_snark = layer2_snarks.last().unwrap().clone();
             let mut padding_chunk_hash = *chunk_hashes.last().unwrap();
             padding_chunk_hash.is_padding = true;
 
             // Extend to MAX_AGG_SNARKS for both chunk hashes and layer-2 snarks.
-            chunk_hashes.extend(repeat(padding_chunk_hash).take(MAX_AGG_SNARKS - real_chunk_count));
-            layer2_snarks.extend(repeat(padding_snark).take(MAX_AGG_SNARKS - real_chunk_count));
+            chunk_hashes.extend(repeat(padding_chunk_hash).take(*MAX_AGG_SNARKS - real_chunk_count));
+            layer2_snarks.extend(repeat(padding_snark).take(*MAX_AGG_SNARKS - real_chunk_count));
         }
 
         // Load or generate aggregation snark (layer-3).
