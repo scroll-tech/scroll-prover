@@ -4,7 +4,7 @@ use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm, ChunkHash, ChunkProof,
 };
-use std::env;
+use std::{env, env::set_var};
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -17,6 +17,7 @@ fn test_agg_prove_verify() {
         "./tests/traces/erc20/10_transfer.json".to_string(),
     ];
 
+    set_var("KECCAK_ROWS", 12);
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
     log::info!("Generated chunk hashes and proofs");
 
@@ -24,6 +25,7 @@ fn test_agg_prove_verify() {
     let mut agg_prover = Prover::from_dirs(PARAMS_DIR, &output_dir);
     log::info!("Constructed aggregation prover");
 
+    set_var("KECCAK_ROWS", 50);
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = agg_prover
         .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
