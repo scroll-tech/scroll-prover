@@ -25,7 +25,8 @@ pub type WitnessBlock = Block<Fr>;
 pub const MAX_TXS: usize = 100;
 pub const MAX_INNER_BLOCKS: usize = 100;
 pub const MAX_EXP_STEPS: usize = 10_000;
-pub const MAX_CALLDATA: usize = 600_000;
+pub const MAX_CALLDATA: usize = 350_000;
+pub const MAX_RLP_ROWS: usize = 800_000;
 pub const MAX_BYTECODE: usize = 600_000;
 pub const MAX_MPT_ROWS: usize = 1_000_000;
 pub const MAX_KECCAK_ROWS: usize = 1_000_000;
@@ -51,7 +52,7 @@ pub fn get_super_circuit_params() -> CircuitsParams {
         max_vertical_circuit_rows: MAX_VERTICLE_ROWS,
         max_exp_steps: MAX_EXP_STEPS,
         max_mpt_rows: MAX_MPT_ROWS,
-        max_rlp_rows: MAX_CALLDATA,
+        max_rlp_rows: MAX_RLP_ROWS,
         max_ec_ops: PrecompileEcParams {
             ec_add: MAX_PRECOMPILE_EC_ADD,
             ec_mul: MAX_PRECOMPILE_EC_MUL,
