@@ -1,8 +1,9 @@
 use prover::{
-    test_util::{gen_and_verify_chunk_proofs, load_block_traces_for_test, PARAMS_DIR},
+    test_util::{gen_and_verify_chunk_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm::Prover,
 };
+use std::env;
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -10,13 +11,15 @@ fn test_chunk_prove_verify() {
     let output_dir = init_env_and_log("chunk_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
+    env::set_var("TRACE_PATH", "./tests/extra_traces/new.json");
     let chunk_trace = load_block_traces_for_test().1;
     log::info!("Loaded chunk trace");
 
     let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
     log::info!("Got witness block");
 
-    let mut zkevm_prover = Prover::from_params_dir(PARAMS_DIR);
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
+    let mut zkevm_prover = Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
     log::info!("Constructed zkevm prover");
 
     // Load or generate compression wide snark (layer-1).

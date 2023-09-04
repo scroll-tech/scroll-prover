@@ -8,9 +8,12 @@ use std::{env, fs, path::PathBuf, time::Instant};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    /// Get params and write into file.
+    /// Get params dir path.
     #[clap(short, long = "params", default_value = "test_params")]
     params_path: String,
+    /// Get asserts dir path.
+    #[clap(short, long = "assets", default_value = "test_assets")]
+    assets_path: String,
     /// Get BlockTrace from file or dir.
     #[clap(
         short,
@@ -27,7 +30,7 @@ fn main() {
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
     let args = Args::parse();
-    let mut prover = Prover::from_params_dir(&args.params_path);
+    let mut prover = Prover::from_dirs(&args.params_path, &args.assets_path);
 
     let mut traces = Vec::new();
     let trace_path = PathBuf::from(&args.trace_path);

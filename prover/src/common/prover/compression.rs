@@ -1,6 +1,6 @@
 use super::Prover;
 use crate::{
-    config::layer_config_path,
+    config::{layer_config_path, LayerId},
     io::{load_snark, write_snark},
     utils::gen_rng,
 };
@@ -11,6 +11,22 @@ use snark_verifier_sdk::Snark;
 use std::env;
 
 impl Prover {
+    pub fn gen_comp_pk(&mut self, layer: LayerId, prev_snark: Snark) -> Result<()> {
+        let id = layer.id();
+        let degree = layer.degree();
+        let config_path = layer.config_path();
+
+        let rng = gen_rng();
+        env::set_var("COMPRESSION_CONFIG", config_path);
+        let circuit = CompressionCircuit::new(self.params(degree), prev_snark, true, rng)
+            .map_err(|err| anyhow!("Failed to construct compression circuit: {err:?}"))?;
+        Self::assert_if_mock_prover(id, degree, &circuit);
+
+        self.params_and_pk(id, degree, &circuit)?;
+
+        Ok(())
+    }
+
     pub fn gen_comp_snark(
         &mut self,
         id: &str,

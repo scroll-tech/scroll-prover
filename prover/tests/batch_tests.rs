@@ -23,6 +23,8 @@ fn test_batch_prove_verify() {
         .1
         .dump(&output_dir, "0")
         .unwrap();
+
+    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
     env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
     let mut agg_prover = Prover::from_dirs(PARAMS_DIR, &output_dir);
     log::info!("Constructed aggregation prover");
