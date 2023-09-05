@@ -153,37 +153,62 @@ impl CircuitCapacityChecker {
         txs: &[TxTrace],
     ) -> Result<RowUsage, anyhow::Error> {
         assert!(!txs.is_empty());
-        let mut estimate_builder = if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take()
-        {
-            // here we create a new builder for another (sealed) witness block
-            // this builder inherit the current execution state (sdb/cdb) of
-            // the previous one and do not use zktrie state,
-            // notice the prev_root in current builder may be not invalid (since the state has
-            // changed but we may not update it in light mode)
-            let mut builder_block =
-                circuit_input_builder::Block::from_headers(&[], get_super_circuit_params());
-            builder_block.chain_id = txs[0].chain_id;
-            builder_block.start_l1_queue_index = txs[0].start_l1_queue_index;
-            builder_block.prev_state_root = H256(*mpt_state.root()).to_word();
-            let mut builder =
-                CircuitInputBuilder::new_with_trie_state(sdb, code_db, mpt_state, &builder_block);
-            builder.add_more_l2_trace(&txs[0], txs.len() > 1, true)?;
-            builder
-        } else {
-            CircuitInputBuilder::new_from_l2_trace(
-                get_super_circuit_params(),
-                &txs[0],
-                txs.len() > 1,
-                true,
-            )?
-        };
+        let (mut estimate_builder, codedb_prev) =
+            if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take() {
+                // here we create a new builder for another (sealed) witness block
+                // this builder inherit the current execution state (sdb) of
+                // the previous one and do not use zktrie state,
+                // notice the prev_root in current builder may be not invalid (since the state has
+                // changed but we may not update it in light mode)
+                let mut builder_block =
+                    circuit_input_builder::Block::from_headers(&[], get_super_circuit_params());
+                builder_block.chain_id = txs[0].chain_id;
+                builder_block.start_l1_queue_index = txs[0].start_l1_queue_index;
+                builder_block.prev_state_root = H256(*mpt_state.root()).to_word();
+                // notice the trace has included all code required for builidng witness block,
+                // so we do not need to pick them from previous one, but we still keep the
+                // old codedb in previous run for some dedup work
+                let mut builder = CircuitInputBuilder::new_with_trie_state(
+                    sdb,
+                    CodeDB::new(),
+                    mpt_state,
+                    &builder_block,
+                );
+                builder.add_more_l2_trace(&txs[0], txs.len() > 1, true)?;
+                (builder, Some(code_db))
+            } else {
+                (
+                    CircuitInputBuilder::new_from_l2_trace(
+                        get_super_circuit_params(),
+                        &txs[0],
+                        txs.len() > 1,
+                        true,
+                    )?,
+                    None,
+                )
+            };
         let traces = &txs[1..];
         let witness_block = block_traces_to_witness_block_with_updated_state(
             traces,
             &mut estimate_builder,
             self.light_mode,
         )?;
-        let rows = calculate_row_usage_of_witness_block(&witness_block)?;
+        let mut rows = calculate_row_usage_of_witness_block(&witness_block)?;
+
+        let mut code_db = codedb_prev.unwrap_or_else(CodeDB::new);
+        // merge current codes with previous , and dedup bytecode row usage
+        // for bytecode circuit / poseidon circuit
+        for (hash, bytes) in estimate_builder.code_db.0 {
+            let bytes_len = bytes.len();
+            // code for current run has been evaluated in previous
+            if code_db.0.insert(hash, bytes).is_some() {
+                assert_eq!(rows[2].name, "bytecode");
+                rows[2].row_num_real -= bytes_len + 1;
+                assert_eq!(rows[10].name, "poseidon");
+                rows[10].row_num_real -= bytes_len / (31 * 2) * 9;
+            }
+        }
+
         let row_usage_details: Vec<SubCircuitRowUsage> = rows
             .into_iter()
             .map(|x| SubCircuitRowUsage {
@@ -194,8 +219,9 @@ impl CircuitCapacityChecker {
         let tx_row_usage = RowUsage::from_row_usage_details(row_usage_details);
         self.row_usages.push(tx_row_usage.clone());
         self.acc_row_usage.add(&tx_row_usage);
+
         self.builder_ctx.replace((
-            estimate_builder.code_db,
+            code_db,
             estimate_builder.sdb,
             estimate_builder.mpt_init_state,
         ));
