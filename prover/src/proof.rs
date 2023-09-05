@@ -118,7 +118,7 @@ impl Proof {
 pub fn dump_as_json<P: serde::Serialize>(dir: &str, filename: &str, proof: &P) -> Result<()> {
     // Write full proof as json.
     let mut fd = File::create(dump_proof_path(dir, filename))?;
-    serde_json::to_writer_pretty(&mut fd, proof)?;
+    serde_json::to_writer(&mut fd, proof)?;
 
     Ok(())
 }
