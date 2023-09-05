@@ -195,19 +195,17 @@ impl CircuitCapacityChecker {
         )?;
         let mut rows = calculate_row_usage_of_witness_block(&witness_block)?;
 
-        let mut code_db = estimate_builder.code_db;
-        // merge previous codes with current, and dedup bytecode row usage
+        let mut code_db = codedb_prev.unwrap_or_else(CodeDB::new);
+        // merge current codes with previous , and dedup bytecode row usage
         // for bytecode circuit / poseidon circuit
-        if let Some(code_map) = codedb_prev.map(|cdb| cdb.0) {
-            for (hash, bytes) in code_map {
-                let bytes_len = bytes.len();
-                // code for current run has been evaluated in previous
-                if code_db.0.insert(hash, bytes).is_some() {
-                    assert_eq!(rows[2].name, "bytecode");
-                    rows[2].row_num_real -= bytes_len + 1;
-                    assert_eq!(rows[10].name, "poseidon");
-                    rows[10].row_num_real -= bytes_len / (31 * 2) * 9;
-                }
+        for (hash, bytes) in estimate_builder.code_db.0 {
+            let bytes_len = bytes.len();
+            // code for current run has been evaluated in previous
+            if code_db.0.insert(hash, bytes).is_some() {
+                assert_eq!(rows[2].name, "bytecode");
+                rows[2].row_num_real -= bytes_len + 1;
+                assert_eq!(rows[10].name, "poseidon");
+                rows[10].row_num_real -= bytes_len / (31 * 2) * 9;
             }
         }
 
