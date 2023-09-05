@@ -157,7 +157,7 @@ pub fn serialize_verify_circuit_final_pair(pair: &(G1Affine, G1Affine, Vec<Fr>))
 
 pub fn write_snark(file_path: &str, snark: &Snark) {
     let mut fd = std::fs::File::create(file_path).unwrap();
-    serde_json::to_writer_pretty(&mut fd, snark).unwrap()
+    serde_json::to_writer(&mut fd, snark).unwrap()
 }
 
 pub fn load_snark(file_path: &str) -> anyhow::Result<Option<Snark>> {
