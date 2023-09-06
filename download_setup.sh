@@ -11,4 +11,5 @@ mkdir -p "$params_dir"
 output_file="$params_dir"/params"${degree}"
 rm -f "$output_file"
 
-axel -ac https://trusted-setup-halo2kzg.s3.eu-central-1.amazonaws.com/perpetual-powers-of-tau-raw-"$degree" -o "$output_file"
+# degree 1 - 26
+axel -ac https://circuit-release.s3.us-west-2.amazonaws.com/setup/params"$degree" -o "$output_file"
