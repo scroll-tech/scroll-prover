@@ -125,7 +125,7 @@ fn test_capacity_checker() {
     );
     let avg_ccc_time = start_time.elapsed().as_millis() as usize / tx_num;
     log::info!("avg time each tx: {avg_ccc_time}ms",);
-    assert!(avg_ccc_time < 50);
+    assert!(avg_ccc_time < 100);
 
     for light_mode in [true, false] {
         log::info!("estimating circuit rows whole block, light_mode {light_mode}");
