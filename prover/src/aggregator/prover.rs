@@ -118,6 +118,7 @@ impl Prover {
         let real_chunk_count = chunk_hashes_proofs.len();
         assert!((1..=MAX_AGG_SNARKS).contains(&real_chunk_count));
 
+        check_chunk_hashes(name, &chunk_hashes_proofs)?;
         let (mut chunk_hashes, chunk_proofs): (Vec<_>, Vec<_>) =
             chunk_hashes_proofs.into_iter().unzip();
 
@@ -165,5 +166,83 @@ impl Prover {
                 );
             }
         }
+    }
+}
+
+macro_rules! compare_field {
+    ($name:expr, $idx:expr, $field:ident, $lhs:ident, $rhs:ident) => {
+        if $lhs.$field != $rhs.$field {
+            bail!(
+                "{} chunk-no-{}, different {}: {} != {}",
+                $name,
+                $idx,
+                stringify!($field),
+                $lhs.$field,
+                $rhs.$field
+            );
+        }
+    };
+}
+
+fn check_chunk_hashes(name: &str, chunk_hashes_proofs: &[(ChunkHash, ChunkProof)]) -> Result<()> {
+    for (idx, (in_arg, chunk_proof)) in chunk_hashes_proofs.iter().enumerate() {
+        if let Some(in_proof) = chunk_proof.chunk_hash {
+            compare_field!(name, idx, chain_id, in_arg, in_proof);
+            compare_field!(name, idx, prev_state_root, in_arg, in_proof);
+            compare_field!(name, idx, post_state_root, in_arg, in_proof);
+            compare_field!(name, idx, withdraw_root, in_arg, in_proof);
+            compare_field!(name, idx, data_hash, in_arg, in_proof);
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use eth_types::H256;
+
+    #[test]
+    fn test_check_chunk_hashes() {
+        let chunk_hashes_proofs = vec![
+            (ChunkHash::default(), ChunkProof::default()),
+            (
+                ChunkHash {
+                    chain_id: 1,
+                    prev_state_root: H256::zero(),
+                    data_hash: [100; 32].into(),
+                    ..Default::default()
+                },
+                ChunkProof {
+                    chunk_hash: Some(ChunkHash {
+                        chain_id: 1,
+                        prev_state_root: [0; 32].into(),
+                        data_hash: [100; 32].into(),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            ),
+            (
+                ChunkHash {
+                    post_state_root: H256::zero(),
+                    ..Default::default()
+                },
+                ChunkProof {
+                    chunk_hash: Some(ChunkHash {
+                        post_state_root: [1; 32].into(),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            ),
+        ];
+
+        let result = check_chunk_hashes("test-batch", &chunk_hashes_proofs);
+        assert_eq!(
+            result.unwrap_err().downcast_ref::<String>().unwrap(),
+            "test-batch chunk-no-2, different post_state_root: 0x0000…0000 != 0x0101…0101"
+        );
     }
 }
