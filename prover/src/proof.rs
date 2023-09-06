@@ -1,5 +1,6 @@
 use crate::{
     io::{deserialize_fr, deserialize_vk, serialize_fr, serialize_vk, write_file},
+    types::base64,
     utils::short_git_version,
 };
 use anyhow::{bail, Result};
@@ -20,7 +21,6 @@ use std::{
     fs::File,
     path::{Path, PathBuf},
 };
-use types::base64;
 
 mod batch;
 mod chunk;

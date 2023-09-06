@@ -1,5 +1,8 @@
 use super::{TargetCircuit, AUTO_TRUNCATE, CHAIN_ID};
-use crate::config::INNER_DEGREE;
+use crate::{
+    config::INNER_DEGREE,
+    types::eth::{BlockTrace, StorageTrace},
+};
 use anyhow::{bail, Result};
 use bus_mapping::{
     circuit_input_builder::{self, CircuitInputBuilder, CircuitsParams, PrecompileEcParams},
@@ -10,7 +13,6 @@ use halo2_proofs::halo2curves::bn256::Fr;
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use std::{collections::HashMap, time::Instant};
-use types::eth::{BlockTrace, StorageTrace};
 use zkevm_circuits::{
     evm_circuit::witness::{
         block_apply_mpt_state, block_convert, block_convert_with_l1_queue_index, Block,
@@ -75,11 +77,17 @@ pub fn calculate_row_usage_of_witness_block(
     let mut rows = <super::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(
         witness_block,
     );
-
     assert_eq!(rows[10].name, "poseidon");
     assert_eq!(rows[13].name, "mpt");
     // empirical estimation is each row in mpt cost 1.5 hash (aka 12 rows)
-    rows[10].row_num_real += rows[13].row_num_real * 12;
+    let mpt_poseidon_rows = rows[13].row_num_real * 12;
+    if witness_block.mpt_updates.smt_traces.is_empty() {
+        rows[10].row_num_real += mpt_poseidon_rows;
+        log::debug!("calculate_row_usage_of_witness_block light mode, adding {mpt_poseidon_rows} poseidon rows");
+    } else {
+        //rows[10].row_num_real += mpt_poseidon_rows;
+        log::debug!("calculate_row_usage_of_witness_block normal mode, skip adding {mpt_poseidon_rows} poseidon rows");
+    }
 
     log::debug!(
         "row usage of block {:?}, tx num {:?}, tx calldata len sum {}, rows needed {:?}",
@@ -210,6 +218,7 @@ fn prepare_default_builder(
 }
 
 // check if block traces match preset parameters
+#[allow(dead_code)]
 fn validite_block_traces(block_traces: &[BlockTrace]) -> Result<()> {
     let chain_id = block_traces
         .iter()
@@ -264,6 +273,8 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
     }
 }
 
+#[deprecated]
+#[allow(dead_code)]
 pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
     log::debug!(
         "block_traces_to_padding_witness_block, input len {:?}",
@@ -396,7 +407,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
         witness_block.circuits_params
     );
 
-    if !light_mode && builder.mpt_init_state.root() != &[0u8; 32] {
+    if !light_mode && *builder.mpt_init_state.root() != [0u8; 32] {
         log::debug!("block_apply_mpt_state");
         block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         log::debug!("block_apply_mpt_state done");

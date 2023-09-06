@@ -3,6 +3,7 @@ use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use prover::{
     inner::Prover,
+    types::eth::BlockTrace,
     utils::init_env_and_log,
     zkevm::circuit::{
         block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
@@ -12,7 +13,6 @@ use prover::{
 use reqwest::Url;
 use serde::Deserialize;
 use std::env;
-use types::eth::BlockTrace;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
@@ -70,6 +70,7 @@ async fn main() {
                             continue;
                         }
                     };
+
                     let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
 
                     match result {
@@ -94,7 +95,7 @@ async fn main() {
 
 fn build_block(
     block_traces: &[BlockTrace],
-    batch_id: i64,
+    _batch_id: i64,
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
     let gas_total: u64 = block_traces
@@ -104,19 +105,19 @@ fn build_block(
     let witness_block = block_traces_to_witness_block(block_traces)?;
     let rows = calculate_row_usage_of_witness_block(&witness_block)?;
     log::info!(
-        "rows of batch {batch_id}(block range {:?} to {:?}):",
+        "rows of chunk {chunk_id}(block range {:?} to {:?}):",
         block_traces.first().and_then(|b| b.header.number),
         block_traces.last().and_then(|b| b.header.number),
     );
     for r in &rows {
         log::info!("rows of {}: {}", r.name, r.row_num_real);
     }
-    let row_num = rows.iter().map(|x| x.row_num_real).max().unwrap();
+    let row_num = rows.iter().max_by_key(|x| x.row_num_real).unwrap();
     log::info!(
-        "final rows of chunk {chunk_id}: row {}, gas {}, gas/row {:.2}",
-        row_num,
-        gas_total,
-        gas_total as f64 / row_num as f64
+        "final rows of chunk {chunk_id}: row {}({}), gas {gas_total}, gas/row {:.2}",
+        row_num.row_num_real,
+        row_num.name,
+        gas_total as f64 / row_num.row_num_real as f64
     );
     Ok(witness_block)
 }

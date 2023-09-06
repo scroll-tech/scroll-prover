@@ -3,18 +3,19 @@ use halo2_proofs::{
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
 };
+use itertools::Itertools;
 use prover::{
     config::INNER_DEGREE,
     inner::{Prover, Verifier},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
+    types::eth::BlockTrace,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::{
-        circuit::{block_traces_to_padding_witness_block, SuperCircuit, TargetCircuit},
+        circuit::{SuperCircuit, TargetCircuit},
         CircuitCapacityChecker,
     },
 };
-use types::eth::BlockTrace;
 use zkevm_circuits::util::SubCircuit;
 
 #[test]
@@ -69,20 +70,25 @@ fn test_cs_same_for_vk_consistent() {
 fn test_capacity_checker() {
     init_env_and_log("integration");
     let trace_path = parse_trace_path_from_mode("multiswap");
+    //let trace_path = "./tests/extra_traces/new.json";
     let batch = vec![get_block_trace_from_file(trace_path)];
-    log::info!("estimating circuit rows tx by tx");
 
-    let mut checker = CircuitCapacityChecker::new();
-    let results = checker.estimate_circuit_capacity(&batch);
-    log::info!("after whole block: {:?}", results);
+    // Force the evm_circuit::param::EXECUTION_STATE_HEIGHT_MAP be inited;
+    let mulmod_height = zkevm_circuits::evm_circuit::ExecutionState::MULMOD.get_step_height();
+    log::debug!("mulmod_height {mulmod_height}");
+    debug_assert_eq!(mulmod_height, 18);
 
+    log::info!(
+        "estimating circuit rows tx by tx, tx num {}",
+        batch[0].execution_results.len()
+    );
     let mut checker = CircuitCapacityChecker::new();
+    //checker.light_mode = false;
     let start_time = std::time::Instant::now();
     let mut tx_num = 0;
     for (block_idx, block) in batch.iter().enumerate() {
         for i in 0..block.transactions.len() {
             log::info!("processing {}th block {}th tx", block_idx, i);
-
             #[rustfmt::skip]
             /*  
             The capacity_checker is expected to be run inside sequencer, where we don't have the traces of blocks, instead we only have traces of tx.
@@ -104,21 +110,52 @@ fn test_capacity_checker() {
                 start_l1_queue_index: block.start_l1_queue_index,
                 tx_storage_trace: Vec::new(), // not used
             };
-
             log::debug!("calling estimate_circuit_capacity");
             let results = checker.estimate_circuit_capacity(&[tx_trace]);
-            log::info!("after {}th block {}th tx: {:?}", block_idx, i, results);
+            log::info!("after {}th block {}th tx: {:#?}", block_idx, i, results);
         }
         tx_num += block.transactions.len();
     }
     log::info!("capacity_checker test done");
+    let ccc_result_tx_by_tx = checker.get_acc_row_usage(false);
     log::info!(
-        "avg time each tx: {}ms",
-        start_time.elapsed().as_millis() as usize / tx_num
+        "ccc result tx by tx {:#?}, after normalize {:#?}",
+        ccc_result_tx_by_tx,
+        ccc_result_tx_by_tx.normalize()
     );
+    let avg_ccc_time = start_time.elapsed().as_millis() as usize / tx_num;
+    log::info!("avg time each tx: {avg_ccc_time}ms",);
+    assert!(avg_ccc_time < 100);
+
+    for light_mode in [true, false] {
+        log::info!("estimating circuit rows whole block, light_mode {light_mode}");
+        let mut checker = CircuitCapacityChecker::new();
+        checker.light_mode = light_mode;
+        checker.estimate_circuit_capacity(&batch).unwrap();
+        let ccc_result_whole_block = checker.get_acc_row_usage(false);
+        log::info!(
+            "ccc result whole block {:#?}, after normalize {:#?}",
+            ccc_result_whole_block,
+            ccc_result_whole_block.normalize()
+        );
+
+        for (t, b) in ccc_result_tx_by_tx
+            .row_usage_details
+            .iter()
+            .zip_eq(ccc_result_whole_block.row_usage_details.iter())
+        {
+            log::info!(
+                "{}: {}(tx) vs {}(block), over estimate ratio {}",
+                t.name,
+                t.row_number,
+                b.row_number,
+                t.row_number as f64 / b.row_number as f64
+            );
+            assert!(t.row_number >= b.row_number);
+        }
+    }
 }
 
-#[ignore]
 #[test]
 fn estimate_circuit_rows() {
     init_env_and_log("integration");
@@ -128,23 +165,6 @@ fn estimate_circuit_rows() {
     log::info!("estimating used rows for batch");
     let rows = SuperCircuit::estimate_rows(&block_trace);
     log::info!("super circuit: {:?}", rows);
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_mock_prove_padding() {
-    init_env_and_log("integration");
-    let block_traces = load_block_traces_for_test().1;
-    let witness_block = block_traces_to_padding_witness_block(&block_traces).unwrap();
-    let (circuit, instance) = SuperCircuit::from_witness_block(&witness_block).unwrap();
-    let prover = MockProver::<_>::run(*INNER_DEGREE, &circuit, instance).unwrap();
-    if let Err(errs) = prover.verify_par() {
-        log::error!("err num: {}", errs.len());
-        for err in &errs {
-            log::error!("{}", err);
-        }
-        panic!("mock prove failed");
-    }
 }
 
 #[cfg(feature = "prove_verify")]

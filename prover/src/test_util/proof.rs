@@ -3,12 +3,12 @@ use crate::{
     common,
     config::LayerId,
     test_util::PARAMS_DIR,
+    types::eth::StorageTrace,
     zkevm, BatchProof, ChunkProof, EvmProof,
 };
 use aggregator::CompressionCircuit;
 use snark_verifier_sdk::Snark;
 use std::env;
-use types::eth::StorageTrace;
 
 pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
     let evm_proof = gen_and_verify_normal_and_evm_proofs(

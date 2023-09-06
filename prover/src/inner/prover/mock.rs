@@ -1,12 +1,12 @@
 use super::Prover;
 use crate::{
     config::INNER_DEGREE,
+    types::eth::BlockTrace,
     utils::metric_of_witness_block,
     zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
 };
 use anyhow::bail;
 use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
-use types::eth::BlockTrace;
 use zkevm_circuits::witness::Block;
 
 impl<C: TargetCircuit> Prover<C> {
