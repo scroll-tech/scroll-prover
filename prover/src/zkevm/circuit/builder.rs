@@ -218,6 +218,7 @@ fn prepare_default_builder(
 }
 
 // check if block traces match preset parameters
+#[allow(dead_code)]
 fn validite_block_traces(block_traces: &[BlockTrace]) -> Result<()> {
     let chain_id = block_traces
         .iter()
@@ -273,6 +274,7 @@ pub fn block_traces_to_witness_block(block_traces: &[BlockTrace]) -> Result<Bloc
 }
 
 #[deprecated]
+#[allow(dead_code)]
 pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Result<Block<Fr>> {
     log::debug!(
         "block_traces_to_padding_witness_block, input len {:?}",
@@ -320,7 +322,7 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
             witness_block.circuits_params
         );
         // so we have the finalized state which contain withdraw proof
-        block_apply_mpt_state(&mut witness_block, &mut builder.mpt_init_state);
+        block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         let old_root = H256(*builder.mpt_init_state.root());
         prepare_default_builder(old_root, Some(builder.mpt_init_state))
     };
@@ -331,7 +333,7 @@ pub fn block_traces_to_padding_witness_block(block_traces: &[BlockTrace]) -> Res
 
     let mut padding_block = block_convert(&padding_builder.block, &padding_builder.code_db)?;
     // drag the withdraw proof from zktrie state
-    block_apply_mpt_state(&mut padding_block, &mut padding_builder.mpt_init_state);
+    block_apply_mpt_state(&mut padding_block, &padding_builder.mpt_init_state);
 
     Ok(padding_block)
 }
@@ -407,7 +409,7 @@ pub fn block_traces_to_witness_block_with_updated_state(
 
     if !light_mode && *builder.mpt_init_state.root() != [0u8; 32] {
         log::debug!("block_apply_mpt_state");
-        block_apply_mpt_state(&mut witness_block, &mut builder.mpt_init_state);
+        block_apply_mpt_state(&mut witness_block, &builder.mpt_init_state);
         log::debug!("block_apply_mpt_state done");
     }
     log::debug!(

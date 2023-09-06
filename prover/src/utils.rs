@@ -110,9 +110,9 @@ pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
         Address::from_str("0x5300000000000000000000000000000000000002").unwrap(),
     ];
     for tx_storage_trace in &mut trace.tx_storage_trace {
-        tx_storage_trace.proofs.as_mut().map(|p| {
+        if let Some(proof) = tx_storage_trace.proofs.as_mut() {
             for addr in &addrs {
-                p.insert(
+                proof.insert(
                     *addr,
                     trace
                         .storage_trace
@@ -122,7 +122,7 @@ pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
                         .unwrap(),
                 );
             }
-        });
+        }
         for addr in &addrs {
             tx_storage_trace
                 .storage_proofs
