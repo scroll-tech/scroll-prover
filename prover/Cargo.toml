@@ -1,6 +1,6 @@
 [package]
 name = "prover"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
 
-aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16" }
-bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16" }
-eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16" }
-mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16" }
-mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16" }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/max_snark=16", default-features = false, features = ["shanghai", "scroll"] }
+aggregator = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1" }
+bus-mapping = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1" }
+eth-types = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1" }
+mock = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1" }
+mpt-zktrie = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1" }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.8.1", default-features = false, features = ["shanghai", "scroll", "parallel_syn"] }
 
 snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.4" }
 snark-verifier-sdk = { git = "https://github.com/scroll-tech/snark-verifier", tag = "v0.1.4", default-features = false, features = ["loader_halo2", "loader_evm", "halo2-pse"] }
