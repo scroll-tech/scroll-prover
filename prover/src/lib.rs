@@ -11,7 +11,7 @@ pub mod types;
 pub mod utils;
 pub mod zkevm;
 
-pub use common::ChunkHash;
+pub use common::{ChunkHash, CompressionCircuit};
 pub use evm_verifier::EvmVerifier;
 pub use proof::{BatchProof, ChunkProof, EvmProof, Proof};
 pub use snark_verifier_sdk::Snark;

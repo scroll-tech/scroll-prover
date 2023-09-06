@@ -55,6 +55,17 @@ pub fn gen_and_verify_normal_and_evm_proofs(
     (normal_proof, evm_proof)
 }
 
+pub fn gen_and_verify_normal_proof(
+    prover: &mut common::Prover,
+    layer_id: LayerId,
+    previous_snark: Snark,
+) -> (bool, Snark) {
+    let normal_proof = gen_normal_proof(prover, layer_id, previous_snark, None);
+    let verified = verify_normal_proof(prover, layer_id, normal_proof.clone());
+
+    (verified, normal_proof)
+}
+
 fn gen_evm_proof(
     prover: &mut common::Prover,
     layer_id: LayerId,
@@ -139,4 +150,27 @@ fn verify_normal_and_evm_proofs(
 
     verifier.evm_verify(evm_proof, output_dir);
     log::info!("Verified EVM proof: {id}");
+}
+
+fn verify_normal_proof(
+    prover: &mut common::Prover,
+    layer_id: LayerId,
+    normal_proof: Snark,
+) -> bool {
+    let id = layer_id.id();
+    let degree = layer_id.degree();
+    let config_path = layer_id.config_path();
+    env::set_var("COMPRESSION_CONFIG", config_path);
+
+    let pk = prover.pk(id).unwrap();
+    let vk = pk.get_vk().clone();
+
+    let params = prover.params(degree).clone();
+    let verifier = common::Verifier::<CompressionCircuit>::new(params, vk);
+    log::info!("Constructed common verifier");
+
+    let verified = verifier.verify_snark(normal_proof);
+    log::info!("Verified normal proof: {verified}");
+
+    verified
 }
