@@ -11,7 +11,7 @@ use std::env;
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_batch_prove_verify() {
-    env::set_var("KECCAK_ROW", 50);
+    env::set_var("KECCAK_ROW", "50");
 
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
