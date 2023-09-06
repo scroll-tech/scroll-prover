@@ -1,6 +1,10 @@
-use crate::zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity};
+use crate::{
+    types::{eth::BlockTrace, BlockTraceJsonRpcResult},
+    zkevm::circuit::{block_traces_to_witness_block, check_batch_capacity},
+};
 use anyhow::{bail, Result};
 use chrono::Utc;
+use eth_types::Address;
 use git_version::git_version;
 use halo2_proofs::{
     halo2curves::bn256::{Bn256, Fr},
@@ -24,7 +28,6 @@ use std::{
     str::FromStr,
     sync::Once,
 };
-use types::{eth::BlockTrace, BlockTraceJsonRpcResult};
 use zkevm_circuits::evm_circuit::witness::Block;
 
 pub static LOGGER: Once = Once::new();
@@ -88,7 +91,7 @@ pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
     let mut f = File::open(&path).unwrap();
     f.read_to_end(&mut buffer).unwrap();
 
-    serde_json::from_slice::<BlockTrace>(&buffer).unwrap_or_else(|e1| {
+    let mut trace = serde_json::from_slice::<BlockTrace>(&buffer).unwrap_or_else(|e1| {
         serde_json::from_slice::<BlockTraceJsonRpcResult>(&buffer)
             .map_err(|e2| {
                 panic!(
@@ -100,7 +103,34 @@ pub fn get_block_trace_from_file<P: AsRef<Path>>(path: P) -> BlockTrace {
             })
             .unwrap()
             .result
-    })
+    });
+    // fill intrinsicStorageProofs into tx storage proof
+    let addrs = vec![
+        Address::from_str("0x5300000000000000000000000000000000000000").unwrap(),
+        Address::from_str("0x5300000000000000000000000000000000000002").unwrap(),
+    ];
+    for tx_storage_trace in &mut trace.tx_storage_trace {
+        tx_storage_trace.proofs.as_mut().map(|p| {
+            for addr in &addrs {
+                p.insert(
+                    *addr,
+                    trace
+                        .storage_trace
+                        .proofs
+                        .as_ref()
+                        .map(|p| p[addr].clone())
+                        .unwrap(),
+                );
+            }
+        });
+        for addr in &addrs {
+            tx_storage_trace
+                .storage_proofs
+                .insert(*addr, trace.storage_trace.storage_proofs[addr].clone());
+        }
+    }
+
+    trace
 }
 
 pub fn read_env_var<T: Clone + FromStr>(var_name: &'static str, default: T) -> T {

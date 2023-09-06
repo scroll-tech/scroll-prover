@@ -2,13 +2,13 @@ use crate::{
     common,
     config::INNER_DEGREE,
     io::serialize_vk,
+    types::eth::BlockTrace,
     utils::{chunk_trace_to_witness_block, gen_rng},
     zkevm::circuit::TargetCircuit,
     Proof,
 };
 use anyhow::Result;
 use std::marker::PhantomData;
-use types::eth::BlockTrace;
 
 mod mock;
 

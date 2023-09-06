@@ -3,12 +3,12 @@ use crate::{
     config::{LayerId, ZKEVM_DEGREES},
     consts::CHUNK_VK_FILENAME,
     io::try_to_read,
+    types::eth::BlockTrace,
     utils::chunk_trace_to_witness_block,
     zkevm::circuit::normalize_withdraw_proof,
     ChunkHash, ChunkProof,
 };
 use anyhow::Result;
-use types::eth::BlockTrace;
 
 #[derive(Debug)]
 pub struct Prover {

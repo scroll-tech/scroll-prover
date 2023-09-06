@@ -7,6 +7,7 @@ use super::circuit::{
     block_traces_to_witness_block_with_updated_state, calculate_row_usage_of_witness_block,
     get_super_circuit_params,
 };
+use crate::types::eth::BlockTrace;
 use bus_mapping::{
     circuit_input_builder::{self, CircuitInputBuilder},
     state_db::{CodeDB, StateDB},
@@ -15,7 +16,6 @@ use eth_types::{ToWord, H256};
 use itertools::Itertools;
 use mpt_zktrie::state::ZktrieState;
 use serde_derive::{Deserialize, Serialize};
-use types::eth::BlockTrace;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubCircuitRowUsage {
@@ -49,22 +49,22 @@ impl RowUsage {
     // We treat 1M as 100%
     pub fn normalize(&self) -> Self {
         let real_available_rows = [
-            MAX_RWS,           // evm
-            MAX_RWS,           // state
-            MAX_BYTECODE,      // bytecode
-            MAX_RWS,           // copy
-            MAX_KECCAK_ROWS,   // keccak
-            MAX_VERTICLE_ROWS, // tx
-            MAX_CALLDATA,      // rlp
-            7 * MAX_EXP_STEPS, // exp
-            MAX_KECCAK_ROWS,   // modexp
-            MAX_RWS,           // pi
-            MAX_POSEIDON_ROWS, // poseidon
-            MAX_VERTICLE_ROWS, // sig
-            MAX_VERTICLE_ROWS, // ecc
-            MAX_MPT_ROWS,      // mpt
+            (MAX_RWS, 0.95),           // evm
+            (MAX_RWS, 0.95),           // state
+            (MAX_BYTECODE, 0.95),      // bytecode
+            (MAX_RWS, 0.95),           // copy
+            (MAX_KECCAK_ROWS, 0.95),   // keccak
+            (MAX_VERTICLE_ROWS, 0.95), // tx
+            (MAX_CALLDATA, 0.95),      // rlp
+            (7 * MAX_EXP_STEPS, 0.95), // exp
+            (MAX_KECCAK_ROWS, 0.95),   // modexp
+            (MAX_RWS, 0.95),           // pi
+            (MAX_POSEIDON_ROWS, 0.95), // poseidon
+            (MAX_VERTICLE_ROWS, 0.95), // sig
+            (MAX_VERTICLE_ROWS, 1.0),  // ecc
+            (MAX_MPT_ROWS, 0.95),      // mpt
         ]
-        .map(|x| (x as f32 * 0.95) as usize);
+        .map(|(limit, confidence)| (limit as f32 * confidence) as usize);
         let details = self
             .row_usage_details
             .iter()
@@ -113,7 +113,7 @@ impl RowUsage {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct CircuitCapacityChecker {
     /// When "light_mode" enabled, we skip zktrie subcircuit in row estimation to avoid the heavy
     /// poseidon cost.
@@ -148,10 +148,18 @@ impl CircuitCapacityChecker {
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
     }
+    pub fn get_acc_row_usage(&self, normalize: bool) -> RowUsage {
+        if normalize {
+            self.acc_row_usage.normalize()
+        } else {
+            self.acc_row_usage.clone()
+        }
+    }
     pub fn estimate_circuit_capacity(
         &mut self,
         txs: &[TxTrace],
     ) -> Result<RowUsage, anyhow::Error> {
+        log::debug!("estimate_circuit_capacity with txs num {}", txs.len());
         assert!(!txs.is_empty());
         let (mut estimate_builder, codedb_prev) =
             if let Some((code_db, sdb, mpt_state)) = self.builder_ctx.take() {
@@ -174,7 +182,7 @@ impl CircuitCapacityChecker {
                     mpt_state,
                     &builder_block,
                 );
-                builder.add_more_l2_trace(&txs[0], txs.len() > 1, true)?;
+                builder.add_more_l2_trace(&txs[0], txs.len() > 1, self.light_mode)?;
                 (builder, Some(code_db))
             } else {
                 (
@@ -182,7 +190,7 @@ impl CircuitCapacityChecker {
                         get_super_circuit_params(),
                         &txs[0],
                         txs.len() > 1,
-                        true,
+                        self.light_mode,
                     )?,
                     None,
                 )

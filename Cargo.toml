@@ -2,7 +2,6 @@
 members = [
     "bin",
     "prover",
-    "types",
 ]
 
 [patch.crates-io]
