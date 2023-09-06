@@ -9,7 +9,7 @@ use serde_derive::{Deserialize, Serialize};
 use snark_verifier::Protocol;
 use snark_verifier_sdk::Snark;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct ChunkProof {
     #[serde(with = "base64")]
     pub storage_trace: Vec<u8>,

@@ -30,7 +30,7 @@ pub use batch::BatchProof;
 pub use chunk::ChunkProof;
 pub use evm::EvmProof;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Proof {
     #[serde(with = "base64")]
     proof: Vec<u8>,
@@ -118,7 +118,7 @@ impl Proof {
 pub fn dump_as_json<P: serde::Serialize>(dir: &str, filename: &str, proof: &P) -> Result<()> {
     // Write full proof as json.
     let mut fd = File::create(dump_proof_path(dir, filename))?;
-    serde_json::to_writer_pretty(&mut fd, proof)?;
+    serde_json::to_writer(&mut fd, proof)?;
 
     Ok(())
 }
