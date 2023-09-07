@@ -1,6 +1,7 @@
 use crate::utils::read_env_var;
 use once_cell::sync::Lazy;
 
+pub static AGG_KECCAK_ROW: Lazy<usize> = Lazy::new(|| read_env_var("AGG_KECCAK_ROW", 50));
 pub static AGG_VK_FILENAME: Lazy<String> =
     Lazy::new(|| read_env_var("AGG_VK_FILENAME", "agg_vk.vkey".to_string()));
 pub static CHUNK_PROTOCOL_FILENAME: Lazy<String> =

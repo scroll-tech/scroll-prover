@@ -148,6 +148,9 @@ impl CircuitCapacityChecker {
         self.acc_row_usage = RowUsage::new();
         self.row_usages = Vec::new();
     }
+    pub fn get_tx_num(&self) -> usize {
+        self.row_usages.len()
+    }
     pub fn get_acc_row_usage(&self, normalize: bool) -> RowUsage {
         if normalize {
             self.acc_row_usage.normalize()
