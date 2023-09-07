@@ -90,7 +90,7 @@ impl RowUsage {
         Self {
             row_usage_details,
             row_number,
-            is_ok: row_number < NORMALIZED_ROW_LIMIT,
+            is_ok: row_number <= NORMALIZED_ROW_LIMIT,
         }
     }
     pub fn add(&mut self, other: &RowUsage) {
