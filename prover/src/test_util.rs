@@ -1,8 +1,8 @@
-use crate::{
-    types::eth::BlockTrace,
-    utils::{get_block_trace_from_file, read_env_var},
-};
 use glob::glob;
+use zkevm_prover::{
+    utils::{get_block_trace_from_file, read_env_var},
+    BlockTrace,
+};
 
 pub mod mock_plonk;
 mod proof;
@@ -54,7 +54,7 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     (paths, traces)
 }
 
-fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<crate::types::eth::BlockTrace>) {
+fn load_batch_traces(batch_dir: &str) -> (Vec<String>, Vec<BlockTrace>) {
     let file_names: Vec<String> = glob(&format!("{batch_dir}/**/*.json"))
         .unwrap()
         .map(|p| p.unwrap().to_str().unwrap().to_string())
