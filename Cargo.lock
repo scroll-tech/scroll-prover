@@ -3,12 +3,6 @@
 version = 3
 
 [[package]]
-name = "adler"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
-
-[[package]]
 name = "aes"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -23,7 +17,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "ark-std",
  "env_logger 0.10.0",
@@ -235,7 +229,7 @@ dependencies = [
  "itertools",
  "log",
  "log4rs",
- "prover",
+ "prover 0.8.1",
  "rand",
  "rand_xorshift",
  "reqwest",
@@ -418,7 +412,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -686,15 +680,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "280a9f2d8b3a38871a3c8a46fb80db65e5e5ed97da80c4d08bf27fb63e35e181"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "crc32fast"
-version = "1.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
-dependencies = [
- "cfg-if 1.0.0",
 ]
 
 [[package]]
@@ -1067,24 +1052,13 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f639046355ee4f37944e44f60642c6f3a7efa3cf6b78c78a0d989a8ce6c396a1"
-dependencies = [
- "errno-dragonfly",
- "libc",
- "winapi",
-]
-
-[[package]]
-name = "errno"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50d6a0976c999d473fe89ad888d5a284e55366d9dc9038b1ba2aa15128c4afa0"
 dependencies = [
  "errno-dragonfly",
  "libc",
- "windows-sys 0.45.0",
+ "windows-sys",
 ]
 
 [[package]]
@@ -1122,7 +1096,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "ethers-core 0.17.0",
  "ethers-signers",
@@ -1387,7 +1361,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1460,16 +1434,6 @@ dependencies = [
  "rand",
  "rustc-hex",
  "static_assertions",
-]
-
-[[package]]
-name = "flate2"
-version = "1.0.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8a2db397cb1c8772f31494cb8917e48cd1e64f0fa7efac59fbd741a0a8ce841"
-dependencies = [
- "crc32fast",
- "miniz_oxide",
 ]
 
 [[package]]
@@ -1600,7 +1564,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "digest 0.7.6",
  "eth-types",
@@ -1640,7 +1604,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "env_logger 0.9.3",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
@@ -2149,19 +2113,13 @@ dependencies = [
 
 [[package]]
 name = "io-lifetimes"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59ce5ef949d49ee85593fc4d3f3f95ad61657076395cbbce23e2121fc5542074"
-
-[[package]]
-name = "io-lifetimes"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09270fd4fa1111bc614ed2246c7ef56239a3063d5be0d1ec3b589c505d400aeb"
 dependencies = [
  "hermit-abi 0.3.1",
  "libc",
- "windows-sys 0.45.0",
+ "windows-sys",
 ]
 
 [[package]]
@@ -2171,30 +2129,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12b6ee2129af8d4fb011108c73d99a1b83a85977f23b82460c0ae2e25bb4b57f"
 
 [[package]]
-name = "is-even"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83d558b5cf9dbf1e6c224d9cea60821ad82e09092ade7aed6d83aef48ed382d0"
-dependencies = [
- "is-odd",
-]
-
-[[package]]
-name = "is-odd"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5741cc4ac9f6105f6bb067d09bb5685dc255e5bdec6f3bf6d86f4bda6187d17e"
-
-[[package]]
 name = "is-terminal"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "256017f749ab3117e93acb91063009e1f1bb56d03965b14c2c8df4eb02c524d8"
 dependencies = [
  "hermit-abi 0.3.1",
- "io-lifetimes 1.0.9",
- "rustix 0.37.7",
- "windows-sys 0.45.0",
+ "io-lifetimes",
+ "rustix",
+ "windows-sys",
 ]
 
 [[package]]
@@ -2246,7 +2189,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "env_logger 0.9.3",
  "eth-types",
@@ -2329,12 +2272,6 @@ checksum = "ecd207c9c713c34f95a097a5b029ac2ce6010530c7b49d7fea24d977dede04f5"
 dependencies = [
  "cc",
 ]
-
-[[package]]
-name = "linux-raw-sys"
-version = "0.0.46"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4d2456c373231a208ad294c33dc5bff30051eafd954cd4caae83a712b12854d"
 
 [[package]]
 name = "linux-raw-sys"
@@ -2423,15 +2360,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
-name = "miniz_oxide"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b275950c28b37e794e8c55d88aeb5e139d0ce23fdbbeda68f8d7174abdf9e8fa"
-dependencies = [
- "adler",
-]
-
-[[package]]
 name = "mio"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2440,7 +2368,7 @@ dependencies = [
  "libc",
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "windows-sys 0.45.0",
+ "windows-sys",
 ]
 
 [[package]]
@@ -2463,7 +2391,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
@@ -2479,7 +2407,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "eth-types",
  "halo2-mpt-circuits",
@@ -2720,7 +2648,7 @@ dependencies = [
  "libc",
  "redox_syscall",
  "smallvec",
- "windows-sys 0.45.0",
+ "windows-sys",
 ]
 
 [[package]]
@@ -2961,23 +2889,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "procfs"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b4030746dfb40582518bebdc6303faef2bedfe787bac3786458bcdcc923b4e8"
-dependencies = [
- "bitflags",
- "byteorder",
- "chrono",
- "flate2",
- "hex",
- "lazy_static",
- "rustix 0.35.13",
-]
-
-[[package]]
 name = "prover"
-version = "0.8.1"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -2989,18 +2903,14 @@ dependencies = [
  "eth-types",
  "ethers-core 0.17.0",
  "git-version",
- "glob",
  "halo2_proofs",
  "hex",
- "is-even",
  "itertools",
  "log",
  "log4rs",
- "mock",
  "mpt-zktrie",
  "num-bigint",
  "once_cell",
- "procfs",
  "rand",
  "rand_xorshift",
  "serde",
@@ -3010,8 +2920,23 @@ dependencies = [
  "sha2 0.10.6",
  "snark-verifier",
  "snark-verifier-sdk",
- "strum",
- "strum_macros",
+ "zkevm-circuits",
+]
+
+[[package]]
+name = "prover"
+version = "0.8.1"
+dependencies = [
+ "anyhow",
+ "glob",
+ "halo2_proofs",
+ "itertools",
+ "log",
+ "log4rs",
+ "prover 0.1.0",
+ "rand",
+ "serde",
+ "serde_derive",
  "zkevm-circuits",
 ]
 
@@ -3411,30 +3336,16 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.35.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "727a1a6d65f786ec22df8a81ca3121107f235970dc1705ed681d3e6e8b9cd5f9"
-dependencies = [
- "bitflags",
- "errno 0.2.8",
- "io-lifetimes 0.7.5",
- "libc",
- "linux-raw-sys 0.0.46",
- "windows-sys 0.42.0",
-]
-
-[[package]]
-name = "rustix"
 version = "0.37.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2aae838e49b3d63e9274e1c01833cc8139d3fec468c3b84688c628f44b1ae11d"
 dependencies = [
  "bitflags",
- "errno 0.3.0",
- "io-lifetimes 1.0.9",
+ "errno",
+ "io-lifetimes",
  "libc",
- "linux-raw-sys 0.3.1",
- "windows-sys 0.45.0",
+ "linux-raw-sys",
+ "windows-sys",
 ]
 
 [[package]]
@@ -4066,7 +3977,7 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
- "windows-sys 0.45.0",
+ "windows-sys",
 ]
 
 [[package]]
@@ -4492,21 +4403,6 @@ dependencies = [
 
 [[package]]
 name = "windows-sys"
-version = "0.42.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a3e1820f08b8513f676f7ab6c1f99ff312fb97b553d30ff4dd86f9f15728aa7"
-dependencies = [
- "windows_aarch64_gnullvm 0.42.2",
- "windows_aarch64_msvc 0.42.2",
- "windows_i686_gnu 0.42.2",
- "windows_i686_msvc 0.42.2",
- "windows_x86_64_gnu 0.42.2",
- "windows_x86_64_gnullvm 0.42.2",
- "windows_x86_64_msvc 0.42.2",
-]
-
-[[package]]
-name = "windows-sys"
 version = "0.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75283be5efb2831d37ea142365f009c02ec203cd29a3ebecbc093d52315b66d0"
@@ -4683,7 +4579,7 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.8.1#fd703cc269a07f28b1febc7ce021792e2733564b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#83b4d3b3e98a2cff6dc566179b47cf25fbc2837f"
 dependencies = [
  "array-init",
  "bus-mapping",

@@ -1,5 +1,4 @@
 //! A module for Mock Plonk circuit.
-use crate::zkevm::circuit::TargetCircuit;
 use halo2_proofs::{
     circuit::{Layouter, SimpleFloorPlanner, Value},
     halo2curves::bn256::Fr,
@@ -7,8 +6,7 @@ use halo2_proofs::{
     poly::Rotation,
 };
 use rand::RngCore;
-use snark_verifier_sdk::CircuitExt;
-use zkevm_circuits::witness;
+use zkevm_prover::{zkevm::circuit::TargetCircuit, CircuitExt, WitnessBlock};
 
 pub struct MockPlonkCircuit {
     pub circuit: StandardPlonk,
@@ -36,7 +34,7 @@ impl TargetCircuit for MockPlonkCircuit {
 
     /// Build the inner circuit and the instances from the witness block
     fn from_witness_block(
-        _witness_block: &witness::Block<Fr>,
+        _witness_block: &WitnessBlock,
     ) -> anyhow::Result<(Self::Inner, Vec<Vec<Fr>>)>
     where
         Self: Sized,

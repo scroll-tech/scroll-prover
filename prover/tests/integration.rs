@@ -1,5 +1,4 @@
 use halo2_proofs::{
-    dev::MockProver,
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
 };
@@ -9,12 +8,12 @@ use prover::{
     inner::{Prover, Verifier},
     io::serialize_vk,
     test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
-    types::eth::BlockTrace,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
         CircuitCapacityChecker,
     },
+    BlockTrace,
 };
 use zkevm_circuits::util::SubCircuit;
 
@@ -66,6 +65,7 @@ fn test_cs_same_for_vk_consistent() {
     assert!(pk.get_vk().cs() == vk.cs(), "Real super circuit");
 }
 
+// TODO: move to prover of zkevm-circuits.
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
