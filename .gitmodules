@@ -1,3 +1,0 @@
-[submodule "prover/tests/traces"]
-	path = prover/tests/traces
-	url = https://github.com/scroll-tech/test-traces

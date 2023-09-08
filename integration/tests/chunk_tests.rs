@@ -1,5 +1,7 @@
+use integration::test_util::{
+    gen_and_verify_chunk_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR,
+};
 use prover::{
-    test_util::{gen_and_verify_chunk_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR},
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm::Prover,
 };

@@ -5,8 +5,8 @@ use halo2_proofs::{
     plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Fixed, Instance},
     poly::Rotation,
 };
+use prover::{zkevm::circuit::TargetCircuit, CircuitExt, WitnessBlock};
 use rand::RngCore;
-use zkevm_prover::{zkevm::circuit::TargetCircuit, CircuitExt, WitnessBlock};
 
 pub struct MockPlonkCircuit {
     pub circuit: StandardPlonk,

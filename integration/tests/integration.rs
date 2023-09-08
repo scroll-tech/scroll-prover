@@ -2,12 +2,12 @@ use halo2_proofs::{
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
 };
+use integration::test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR};
 use itertools::Itertools;
 use prover::{
     config::INNER_DEGREE,
     inner::{Prover, Verifier},
     io::serialize_vk,
-    test_util::{load_block_traces_for_test, parse_trace_path_from_mode, PARAMS_DIR},
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::{
         circuit::{SuperCircuit, TargetCircuit},
