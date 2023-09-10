@@ -12,15 +12,16 @@ git submodule init
 git submodule update --checkout
 ```
 
-Download all setup params, degree `20` and `25` are used in [config.rs](https://github.com/scroll-tech/scroll-prover/tree/main/prover/src/config.rs).
-Could only download params of degree `25`, but it may affect performance (when dowsizing to `20`).
+Download all setup params, degree `20`, `24` and `26` are used in [config](https://github.com/scroll-tech/scroll-prover/tree/main/integration/configs).
+Could only download params of degree `26`, but it may affect performance (when dowsizing params).
 ```shell
 make download-setup -e degree=20
-make download-setup -e degree=25
+make download-setup -e degree=24
+make download-setup -e degree=26
 ```
 Or specify other degree and target directory to download.
 ```shell
-# As default `degree=25` and `params_dir=./prover/test_params`.
+# As default `degree=26` and `params_dir=./integration/test_params`.
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
 
@@ -40,7 +41,7 @@ cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
 To move the zktrielib into a path where your linker could locate it.
 
-Run zkevm prover to generate chunk proof (the word-dir is `./prover`)
+Run zkevm prover to generate chunk proof (the word-dir is `./integration`)
 ```shell
 cargo build --release --bin zkevm_prove
 
@@ -48,14 +49,14 @@ cargo build --release --bin zkevm_prove
 ```
 Could specify arguments as
 ```shell
-# Proof data will be saved to `./prover/proof_data`.
+# Proof data will be saved to `./integration/proof_data`.
 export OUTPUT_DIR="proof_data"
 
-# Params file should be located in `./prover/test_params`.
+# Params file should be located in `./integration/test_params`.
 cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/traces/erc20/10_transfer.json
 ```
 
-Run zkevm verifier to verify chunk proof (the word-dir is `./prover`)
+Run zkevm verifier to verify chunk proof (the word-dir is `./integration`)
 ```shell
 cargo build --release --bin zkevm_verify
 
