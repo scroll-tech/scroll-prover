@@ -55,7 +55,7 @@ fn gen_chunk_hashes_and_proofs(
             let chunk_hash = ChunkHash::from_witness_block(&witness_block, false);
 
             let proof = zkevm_prover
-                .gen_chunk_proof(chunk_trace, Some(&i.to_string()), Some(output_dir))
+                .gen_chunk_proof(chunk_trace, Some(&i.to_string()), None, Some(output_dir))
                 .unwrap();
 
             (chunk_hash, proof)
