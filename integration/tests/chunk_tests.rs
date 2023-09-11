@@ -27,7 +27,7 @@ fn test_chunk_prove_verify() {
     // Load or generate compression wide snark (layer-1).
     let layer1_snark = zkevm_prover
         .inner
-        .load_or_gen_last_chunk_snark("layer1", &witness_block, Some(&output_dir))
+        .load_or_gen_last_chunk_snark("layer1", &witness_block, None, Some(&output_dir))
         .unwrap();
 
     gen_and_verify_chunk_proofs(&mut zkevm_prover, layer1_snark, &output_dir);
