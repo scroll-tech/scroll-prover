@@ -1,5 +1,5 @@
 use glob::glob;
-use zkevm_prover::{
+use prover::{
     utils::{get_block_trace_from_file, read_env_var},
     BlockTrace,
 };

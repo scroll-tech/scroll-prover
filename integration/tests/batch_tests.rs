@@ -1,9 +1,6 @@
+use integration::test_util::{gen_and_verify_batch_proofs, PARAMS_DIR};
 use prover::{
-    aggregator::Prover,
-    proof::from_json_file,
-    test_util::{gen_and_verify_batch_proofs, PARAMS_DIR},
-    utils::init_env_and_log,
-    ChunkHash, ChunkProof,
+    aggregator::Prover, proof::from_json_file, utils::init_env_and_log, ChunkHash, ChunkProof,
 };
 use serde_derive::{Deserialize, Serialize};
 use std::env;

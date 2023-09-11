@@ -1,11 +1,11 @@
 use super::PARAMS_DIR;
-use std::env;
-use zkevm_prover::{
+use prover::{
     aggregator::{Prover, Verifier},
     common,
     config::LayerId,
     zkevm, BatchProof, ChunkProof, CompressionCircuit, EvmProof, Snark, StorageTrace,
 };
+use std::env;
 
 pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
     let evm_proof = gen_and_verify_normal_and_evm_proofs(

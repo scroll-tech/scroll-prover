@@ -24,8 +24,8 @@ struct Args {
 }
 
 fn main() {
-    // Layer config files are located in `./prover/configs`.
-    env::set_current_dir("./prover").unwrap();
+    // Layer config files are located in `./integration/configs`.
+    env::set_current_dir("./integration").unwrap();
     let output_dir = init_env_and_log("bin_zkevm_prove");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 

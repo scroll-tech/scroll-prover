@@ -229,7 +229,7 @@ dependencies = [
  "itertools",
  "log",
  "log4rs",
- "prover 0.8.1",
+ "prover",
  "rand",
  "rand_xorshift",
  "reqwest",
@@ -2112,6 +2112,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration"
+version = "0.8.1"
+dependencies = [
+ "anyhow",
+ "glob",
+ "halo2_proofs",
+ "itertools",
+ "log",
+ "log4rs",
+ "prover",
+ "rand",
+ "serde",
+ "serde_derive",
+ "zkevm-circuits",
+]
+
+[[package]]
 name = "io-lifetimes"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2920,23 +2937,6 @@ dependencies = [
  "sha2 0.10.6",
  "snark-verifier",
  "snark-verifier-sdk",
- "zkevm-circuits",
-]
-
-[[package]]
-name = "prover"
-version = "0.8.1"
-dependencies = [
- "anyhow",
- "glob",
- "halo2_proofs",
- "itertools",
- "log",
- "log4rs",
- "prover 0.1.0",
- "rand",
- "serde",
- "serde_derive",
  "zkevm-circuits",
 ]
 
