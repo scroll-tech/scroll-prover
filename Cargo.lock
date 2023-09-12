@@ -226,6 +226,7 @@ dependencies = [
  "clap",
  "dotenv",
  "ethers-providers 1.0.2",
+ "integration",
  "itertools",
  "log",
  "log4rs",
