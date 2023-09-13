@@ -4,9 +4,11 @@ use prover::{
     BlockTrace,
 };
 
+mod capacity_checker;
 pub mod mock_plonk;
 mod proof;
 
+pub use capacity_checker::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
 pub use proof::{
     gen_and_verify_batch_proofs, gen_and_verify_chunk_proofs, gen_and_verify_normal_and_evm_proofs,
     gen_and_verify_normal_proof,

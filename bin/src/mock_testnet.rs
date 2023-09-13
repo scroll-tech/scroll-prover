@@ -1,6 +1,6 @@
-#![allow(dead_code)]
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
+use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
 use prover::{
     inner::Prover,
     utils::init_env_and_log,
@@ -24,6 +24,9 @@ async fn main() {
 
     let setting = Setting::new();
     log::info!("mock-testnet: {setting:?}");
+
+    prepare_circuit_capacity_checker();
+    log::info!("mock-testnet: prepared ccc");
 
     let provider = Provider::<Http>::try_from(&setting.l2geth_api_url)
         .expect("mock-testnet: failed to initialize ethers Provider");
@@ -94,9 +97,12 @@ async fn main() {
 
 fn build_block(
     block_traces: &[BlockTrace],
-    _batch_id: i64,
+    batch_id: i64,
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
+    run_circuit_capacity_checker(block_traces);
+    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
+
     let gas_total: u64 = block_traces
         .iter()
         .map(|b| b.header.gas_used.as_u64())
@@ -149,6 +155,7 @@ struct RollupscanResponse {
     chunks: Option<Vec<ChunkInfo>>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct ChunkInfo {
     index: i64,
