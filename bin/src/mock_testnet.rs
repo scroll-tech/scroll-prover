@@ -1,11 +1,17 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
-use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
+use integration::test_util::{
+    prepare_circuit_capacity_checker, pretty_print_row_usage, run_circuit_capacity_checker,
+};
+use itertools::Itertools;
 use prover::{
     inner::Prover,
     utils::init_env_and_log,
-    zkevm::circuit::{
-        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+    zkevm::{
+        circuit::{
+            block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
+        },
+        RowUsage, SubCircuitRowUsage,
     },
     BlockTrace, WitnessBlock,
 };
@@ -48,6 +54,9 @@ async fn main() {
             Some(chunks) => {
                 for chunk in chunks {
                     let chunk_id = chunk.index;
+                    if chunk_id != 209208 {
+                        continue;
+                    }
                     log::info!("mock-testnet: handling chunk {:?}", chunk_id);
 
                     // fetch traces
@@ -72,6 +81,7 @@ async fn main() {
                             continue;
                         }
                     };
+                    continue;
 
                     let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
 
@@ -95,35 +105,34 @@ async fn main() {
     log::info!("mock-testnet: end");
 }
 
+fn ccc_old(
+    block_traces: &[BlockTrace],
+    batch_id: i64,
+    chunk_id: i64,
+    witness_block: &WitnessBlock,
+) {
+    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
+    let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
+    let row_usage_details: Vec<SubCircuitRowUsage> = rows
+        .into_iter()
+        .map(|x| SubCircuitRowUsage {
+            name: x.name,
+            row_number: x.row_num_real,
+        })
+        .collect_vec();
+    let row_usage = RowUsage::from_row_usage_details(row_usage_details);
+    pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk");
+}
+
 fn build_block(
     block_traces: &[BlockTrace],
     batch_id: i64,
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
-    run_circuit_capacity_checker(block_traces);
-    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
-
-    let gas_total: u64 = block_traces
-        .iter()
-        .map(|b| b.header.gas_used.as_u64())
-        .sum();
     let witness_block = block_traces_to_witness_block(block_traces)?;
-    let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-    log::info!(
-        "rows of chunk {chunk_id}(block range {:?} to {:?}):",
-        block_traces.first().and_then(|b| b.header.number),
-        block_traces.last().and_then(|b| b.header.number),
-    );
-    for r in &rows {
-        log::info!("rows of {}: {}", r.name, r.row_num_real);
-    }
-    let row_num = rows.iter().max_by_key(|x| x.row_num_real).unwrap();
-    log::info!(
-        "final rows of chunk {chunk_id}: row {}({}), gas {gas_total}, gas/row {:.2}",
-        row_num.row_num_real,
-        row_num.name,
-        gas_total as f64 / row_num.row_num_real as f64
-    );
+
+    ccc_old(block_traces, batch_id, chunk_id, &witness_block);
+    run_circuit_capacity_checker(chunk_id, block_traces, vec![]);
     Ok(witness_block)
 }
 

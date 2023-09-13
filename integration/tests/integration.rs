@@ -73,7 +73,7 @@ fn test_capacity_checker() {
     let blocks = vec![get_block_trace_from_file(trace_path)];
 
     prepare_circuit_capacity_checker();
-    let avg_each_tx_time = run_circuit_capacity_checker(&blocks);
+    let avg_each_tx_time = run_circuit_capacity_checker(0, &blocks, vec![true, false]);
     assert!(avg_each_tx_time < Duration::from_millis(100));
 }
 
