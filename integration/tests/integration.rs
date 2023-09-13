@@ -13,6 +13,7 @@ use prover::{
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::circuit::{SuperCircuit, TargetCircuit},
 };
+use std::time::Duration;
 use zkevm_circuits::util::SubCircuit;
 
 #[test]
@@ -72,7 +73,8 @@ fn test_capacity_checker() {
     let blocks = vec![get_block_trace_from_file(trace_path)];
 
     prepare_circuit_capacity_checker();
-    run_circuit_capacity_checker(&blocks);
+    let avg_each_tx_time = run_circuit_capacity_checker(&blocks);
+    assert!(avg_each_tx_time < Duration::from_millis(100));
 }
 
 #[test]

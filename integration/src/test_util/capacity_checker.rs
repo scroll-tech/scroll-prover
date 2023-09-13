@@ -3,6 +3,7 @@ use prover::{
     zkevm::{CircuitCapacityChecker, RowUsage},
     BlockTrace,
 };
+use std::time::Duration;
 use zkevm_circuits::evm_circuit::ExecutionState;
 
 pub fn prepare_circuit_capacity_checker() {
@@ -12,16 +13,20 @@ pub fn prepare_circuit_capacity_checker() {
     debug_assert_eq!(mulmod_height, 18);
 }
 
-pub fn run_circuit_capacity_checker(blocks: &[BlockTrace]) {
-    let each_tx_ccc_result = get_ccc_result_by_each_tx(blocks);
+// Return average ccc time for each tx.
+pub fn run_circuit_capacity_checker(blocks: &[BlockTrace]) -> Duration {
+    let (each_tx_ccc_result, avg_each_tx_time) = get_ccc_result_by_each_tx(blocks);
 
     for light_mode in [true, false] {
         let whole_block_ccc_result = get_ccc_result_by_whole_block(light_mode, blocks);
         check_each_tx_and_whole_block_ccc_results(&each_tx_ccc_result, &whole_block_ccc_result);
     }
+
+    avg_each_tx_time
 }
 
-fn get_ccc_result_by_each_tx(blocks: &[BlockTrace]) -> RowUsage {
+// Return row-usage and average ccc time for each tx.
+fn get_ccc_result_by_each_tx(blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     log::info!(
         "estimating circuit rows tx by tx, tx num {}",
         blocks
@@ -80,11 +85,10 @@ fn get_ccc_result_by_each_tx(blocks: &[BlockTrace]) -> RowUsage {
         ccc_result.normalize()
     );
 
-    let avg_ccc_time = start_time.elapsed().as_millis() as usize / tx_num;
+    let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
     log::info!("avg time each tx: {avg_ccc_time}ms",);
-    assert!(avg_ccc_time < 100);
 
-    ccc_result
+    (ccc_result, Duration::from_millis(avg_ccc_time as u64))
 }
 
 fn get_ccc_result_by_whole_block(light_mode: bool, blocks: &[BlockTrace]) -> RowUsage {
