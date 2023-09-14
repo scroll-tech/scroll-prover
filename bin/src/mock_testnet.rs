@@ -4,9 +4,7 @@ use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capac
 use prover::{
     inner::Prover,
     utils::init_env_and_log,
-    zkevm::circuit::{
-        block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-    },
+    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit},
     BlockTrace, WitnessBlock,
 };
 use reqwest::Url;
@@ -72,6 +70,9 @@ async fn main() {
                             continue;
                         }
                     };
+                    if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
+                        continue;
+                    }
 
                     let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
 
@@ -100,30 +101,8 @@ fn build_block(
     batch_id: i64,
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
-    run_circuit_capacity_checker(block_traces);
-    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
-
-    let gas_total: u64 = block_traces
-        .iter()
-        .map(|b| b.header.gas_used.as_u64())
-        .sum();
     let witness_block = block_traces_to_witness_block(block_traces)?;
-    let rows = calculate_row_usage_of_witness_block(&witness_block)?;
-    log::info!(
-        "rows of chunk {chunk_id}(block range {:?} to {:?}):",
-        block_traces.first().and_then(|b| b.header.number),
-        block_traces.last().and_then(|b| b.header.number),
-    );
-    for r in &rows {
-        log::info!("rows of {}: {}", r.name, r.row_num_real);
-    }
-    let row_num = rows.iter().max_by_key(|x| x.row_num_real).unwrap();
-    log::info!(
-        "final rows of chunk {chunk_id}: row {}({}), gas {gas_total}, gas/row {:.2}",
-        row_num.row_num_real,
-        row_num.name,
-        gas_total as f64 / row_num.row_num_real as f64
-    );
+    run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
     Ok(witness_block)
 }
 
