@@ -3,15 +3,15 @@ use halo2_proofs::{
     poly::commitment::Params,
 };
 use integration::test_util::{
-    load_block_traces_for_test, parse_trace_path_from_mode, prepare_circuit_capacity_checker,
-    run_circuit_capacity_checker, PARAMS_DIR, ccc_by_chunk,
+    ccc_by_chunk, load_block_traces_for_test, parse_trace_path_from_mode,
+    prepare_circuit_capacity_checker, run_circuit_capacity_checker, PARAMS_DIR,
 };
 use prover::{
     config::INNER_DEGREE,
     inner::{Prover, Verifier},
     io::serialize_vk,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
-    zkevm::circuit::{SuperCircuit, TargetCircuit, block_traces_to_witness_block},
+    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
 };
 use std::time::Duration;
 use zkevm_circuits::util::SubCircuit;
@@ -77,9 +77,8 @@ fn test_capacity_checker() {
     // method1
     let block_traces = vec![get_block_trace_from_file(trace_path)];
     let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
-    ccc_by_chunk(&block_traces, 0, 0, &witness_block);
 
-    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, &block_traces, vec![true, false], false);
+    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, &block_traces, &witness_block);
     assert!(avg_each_tx_time < Duration::from_millis(100));
 }
 

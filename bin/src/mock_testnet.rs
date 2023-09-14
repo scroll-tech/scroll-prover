@@ -1,7 +1,8 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use integration::test_util::{
-    prepare_circuit_capacity_checker, pretty_print_row_usage, run_circuit_capacity_checker, ccc_by_chunk,
+    ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
+    run_circuit_capacity_checker,
 };
 use itertools::Itertools;
 use prover::{
@@ -115,12 +116,11 @@ fn build_block(
     /*
     we can do 2 experiments here:
     1. compare the efficiency of tx-by-tx ccc(signer) vs block-wise ccc(follower)
-        metric: avg gas / chunk
+        metric: avg gas / chunk OR row num
     2. compare  block-wise ccc(follower) vs chunk wise ccc(optimal)
         metric: row num
      */
-    //ccc_by_chunk(block_traces, batch_id, chunk_id, &witness_block);
-    //run_circuit_capacity_checker(batch_id, chunk_id, block_traces, vec![true, false], true);
+    run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
     Ok(witness_block)
 }
 
