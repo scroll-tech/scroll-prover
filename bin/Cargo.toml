@@ -1,6 +1,6 @@
 [package]
 name = "bin"
-version = "0.8.1"
+version = "0.9.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -21,7 +21,7 @@ serde_derive = "1.0"
 serde_json = "1.0.66"
 tokio = { version = "1", features = ["full"] }
 integration = { path = "../integration" }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.9.0", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
 
 [[bin]]
 name = "zkevm_prove"
