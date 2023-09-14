@@ -102,14 +102,6 @@ fn build_block(
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
     let witness_block = block_traces_to_witness_block(block_traces)?;
-
-    /*
-    we can do 2 experiments here:
-    1. compare the efficiency of tx-by-tx ccc(signer) vs block-wise ccc(follower)
-        metric: avg gas / chunk OR row num
-    2. compare  block-wise ccc(follower) vs chunk wise ccc(optimal)
-        metric: row num
-     */
     run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
     Ok(witness_block)
 }

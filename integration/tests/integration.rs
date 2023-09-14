@@ -74,7 +74,6 @@ fn test_capacity_checker() {
 
     prepare_circuit_capacity_checker();
 
-    // method1
     let block_traces = vec![get_block_trace_from_file(trace_path)];
     let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
 
