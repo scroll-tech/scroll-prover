@@ -1,19 +1,10 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
-use integration::test_util::{
-    ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
-    run_circuit_capacity_checker,
-};
-use itertools::Itertools;
+use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
 use prover::{
     inner::Prover,
     utils::init_env_and_log,
-    zkevm::{
-        circuit::{
-            block_traces_to_witness_block, calculate_row_usage_of_witness_block, SuperCircuit,
-        },
-        RowUsage, SubCircuitRowUsage,
-    },
+    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit},
     BlockTrace, WitnessBlock,
 };
 use reqwest::Url;
@@ -55,9 +46,6 @@ async fn main() {
             Some(chunks) => {
                 for chunk in chunks {
                     let chunk_id = chunk.index;
-                    if chunk_id != 209208 {
-                        //continue;
-                    }
                     log::info!("mock-testnet: handling chunk {:?}", chunk_id);
 
                     // fetch traces
@@ -82,7 +70,9 @@ async fn main() {
                             continue;
                         }
                     };
-                    continue;
+                    if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
+                        continue;
+                    }
 
                     let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
 

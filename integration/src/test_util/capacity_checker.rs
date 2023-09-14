@@ -86,7 +86,7 @@ fn bottleneck(rows: &RowUsage) -> SubCircuitRowUsage {
 
 fn ccc_block_whole_block(
     checker: &mut CircuitCapacityChecker,
-    block_idx: usize,
+    _block_idx: usize,
     block: &BlockTrace,
 ) {
     checker
@@ -210,6 +210,7 @@ fn get_ccc_result_of_chunk(
     )
 }
 
+#[allow(dead_code)]
 fn get_ccc_result_by_whole_block(
     chunk_id: i64,
     light_mode: bool,
@@ -243,7 +244,7 @@ fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag:
         .chain(std::iter::once((&bottleneck(base), &bottleneck(estimate))))
     {
         log::info!(
-            "opt {} {} vs {tag} {} {}. over estimate ratio {}",
+            "chunk {chunk_id}: opt {} {} vs {tag} {} {}. over estimate ratio {}",
             b.name,
             b.row_number,
             e.name,
@@ -264,9 +265,7 @@ pub fn ccc_by_chunk(
 ) -> RowUsage {
     log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
-    let start_time = std::time::Instant::now();
-
-    let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
+    let rows = calculate_row_usage_of_witness_block(witness_block).unwrap();
     let row_usage_details: Vec<SubCircuitRowUsage> = rows
         .into_iter()
         .map(|x| SubCircuitRowUsage {
