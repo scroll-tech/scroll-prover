@@ -4,14 +4,14 @@ use halo2_proofs::{
 };
 use integration::test_util::{
     load_block_traces_for_test, parse_trace_path_from_mode, prepare_circuit_capacity_checker,
-    run_circuit_capacity_checker, PARAMS_DIR,
+    run_circuit_capacity_checker, PARAMS_DIR, ccc_by_chunk,
 };
 use prover::{
     config::INNER_DEGREE,
     inner::{Prover, Verifier},
     io::serialize_vk,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
-    zkevm::circuit::{SuperCircuit, TargetCircuit},
+    zkevm::circuit::{SuperCircuit, TargetCircuit, block_traces_to_witness_block},
 };
 use std::time::Duration;
 use zkevm_circuits::util::SubCircuit;
@@ -68,12 +68,18 @@ fn test_cs_same_for_vk_consistent() {
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
+
     let trace_path = parse_trace_path_from_mode("multiswap");
     // let trace_path = "./tests/extra_traces/new.json";
-    let blocks = vec![get_block_trace_from_file(trace_path)];
 
     prepare_circuit_capacity_checker();
-    let avg_each_tx_time = run_circuit_capacity_checker(0, &blocks, vec![true, false]);
+
+    // method1
+    let block_traces = vec![get_block_trace_from_file(trace_path)];
+    let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
+    ccc_by_chunk(&block_traces, 0, 0, &witness_block);
+
+    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, &block_traces, vec![true, false], false);
     assert!(avg_each_tx_time < Duration::from_millis(100));
 }
 

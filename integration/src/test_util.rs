@@ -10,6 +10,7 @@ mod proof;
 
 pub use capacity_checker::{
     prepare_circuit_capacity_checker, pretty_print_row_usage, run_circuit_capacity_checker,
+    ccc_by_chunk,
 };
 pub use proof::{
     gen_and_verify_batch_proofs, gen_and_verify_chunk_proofs, gen_and_verify_normal_and_evm_proofs,

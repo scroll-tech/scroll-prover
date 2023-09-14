@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use integration::test_util::{
-    prepare_circuit_capacity_checker, pretty_print_row_usage, run_circuit_capacity_checker,
+    prepare_circuit_capacity_checker, pretty_print_row_usage, run_circuit_capacity_checker, ccc_by_chunk,
 };
 use itertools::Itertools;
 use prover::{
@@ -55,7 +55,7 @@ async fn main() {
                 for chunk in chunks {
                     let chunk_id = chunk.index;
                     if chunk_id != 209208 {
-                        continue;
+                        //continue;
                     }
                     log::info!("mock-testnet: handling chunk {:?}", chunk_id);
 
@@ -105,25 +105,6 @@ async fn main() {
     log::info!("mock-testnet: end");
 }
 
-fn ccc_old(
-    block_traces: &[BlockTrace],
-    batch_id: i64,
-    chunk_id: i64,
-    witness_block: &WitnessBlock,
-) {
-    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
-    let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
-    let row_usage_details: Vec<SubCircuitRowUsage> = rows
-        .into_iter()
-        .map(|x| SubCircuitRowUsage {
-            name: x.name,
-            row_number: x.row_num_real,
-        })
-        .collect_vec();
-    let row_usage = RowUsage::from_row_usage_details(row_usage_details);
-    pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk");
-}
-
 fn build_block(
     block_traces: &[BlockTrace],
     batch_id: i64,
@@ -131,8 +112,15 @@ fn build_block(
 ) -> anyhow::Result<WitnessBlock> {
     let witness_block = block_traces_to_witness_block(block_traces)?;
 
-    ccc_old(block_traces, batch_id, chunk_id, &witness_block);
-    run_circuit_capacity_checker(chunk_id, block_traces, vec![]);
+    /*
+    we can do 2 experiments here:
+    1. compare the efficiency of tx-by-tx ccc(signer) vs block-wise ccc(follower)
+        metric: avg gas / chunk
+    2. compare  block-wise ccc(follower) vs chunk wise ccc(optimal)
+        metric: row num
+     */
+    //ccc_by_chunk(block_traces, batch_id, chunk_id, &witness_block);
+    //run_circuit_capacity_checker(batch_id, chunk_id, block_traces, vec![true, false], true);
     Ok(witness_block)
 }
 
