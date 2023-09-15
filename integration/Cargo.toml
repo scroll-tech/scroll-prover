@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2.git", tag = "v2023_02_02" }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "re-randomize-srs-test", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "re-randomize-srs-test", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
 
 anyhow = "1.0"
 glob = "0.3.0"

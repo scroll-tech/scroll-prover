@@ -21,7 +21,7 @@ serde_derive = "1.0"
 serde_json = "1.0.66"
 tokio = { version = "1", features = ["full"] }
 integration = { path = "../integration" }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "re-randomize-srs-test", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
 
 [[bin]]
 name = "zkevm_prove"
