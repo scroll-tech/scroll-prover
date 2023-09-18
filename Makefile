@@ -50,6 +50,9 @@ test-batch-prove:
 test-ccc:
 	@cargo test --release test_capacity_checker
 
+test-re-randomize:
+	@cargo run --bin rerandomize_srs --release
+
 rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows
 
