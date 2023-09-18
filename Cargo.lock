@@ -260,6 +260,7 @@ dependencies = [
  "dotenv",
  "env_logger 0.10.0",
  "ethers-providers 1.0.2",
+ "halo2_proofs",
  "integration",
  "itertools",
  "log",

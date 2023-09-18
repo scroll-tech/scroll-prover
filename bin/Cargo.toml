@@ -12,6 +12,7 @@ dotenv = "0.15.0"
 env_logger = "0.10.0"
 ethers-providers = "1.0"
 itertools = "0.10.5"
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "develop"}
 log = "0.4"
 log4rs = { version = "1.2.0", default_features = false, features = ["console_appender", "file_appender"] }
 rand = "0.8"
