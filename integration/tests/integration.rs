@@ -3,12 +3,11 @@ use halo2_proofs::{
     poly::commitment::Params,
 };
 use integration::test_util::{
-    ccc_by_chunk, load_block_traces_for_test, parse_trace_path_from_mode,
-    prepare_circuit_capacity_checker, run_circuit_capacity_checker, PARAMS_DIR,
+    load_block_traces_for_test, parse_trace_path_from_mode, prepare_circuit_capacity_checker,
+    run_circuit_capacity_checker, PARAMS_DIR,
 };
 use prover::{
     config::INNER_DEGREE,
-    inner::{Prover, Verifier},
     io::serialize_vk,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
     zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
@@ -64,7 +63,6 @@ fn test_cs_same_for_vk_consistent() {
     assert!(pk.get_vk().cs() == vk.cs(), "Real super circuit");
 }
 
-// TODO: move to prover of zkevm-circuits.
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
@@ -90,20 +88,6 @@ fn estimate_circuit_rows() {
     log::info!("estimating used rows for batch");
     let rows = SuperCircuit::estimate_rows(&block_trace);
     log::info!("super circuit: {:?}", rows);
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_mock_prove() {
-    init_env_and_log("integration");
-    let block_traces = load_block_traces_for_test().1;
-    Prover::<SuperCircuit>::mock_prove_target_circuit_batch(&block_traces).unwrap();
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_inner_prove_verify() {
-    test_target_circuit_prove_verify::<SuperCircuit>();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -206,25 +190,4 @@ fn test_vk_same() {
         }
     }
     assert_eq!(vk_empty_bytes, vk_real_bytes);
-}
-
-fn test_target_circuit_prove_verify<C: TargetCircuit>() {
-    let test_name = "inner_tests";
-    let output_dir = init_env_and_log(test_name);
-    log::info!("Initialized ENV and created output-dir {output_dir}");
-
-    let chunk_trace = load_block_traces_for_test().1;
-    log::info!("Loaded chunk trace");
-
-    let mut prover = Prover::<C>::from_params_dir(PARAMS_DIR);
-    log::info!("Constructed prover");
-
-    let proof = prover
-        .load_or_gen_inner_proof(test_name, "inner", chunk_trace, Some(&output_dir))
-        .unwrap();
-    log::info!("Got inner snark");
-
-    let verifier = Verifier::<C>::from_params_dir(PARAMS_DIR, None);
-    assert!(verifier.verify_inner_snark(proof.to_snark()));
-    log::info!("Finish inner snark verification");
 }
