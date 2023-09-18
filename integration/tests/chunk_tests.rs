@@ -13,7 +13,6 @@ fn test_chunk_prove_verify() {
     let output_dir = init_env_and_log("chunk_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    env::set_var("TRACE_PATH", "./tests/extra_traces/new.json");
     let chunk_trace = load_block_traces_for_test().1;
     log::info!("Loaded chunk trace");
 

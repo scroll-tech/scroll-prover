@@ -31,7 +31,7 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
         "dao" => "./tests/traces/dao/dao-propose.json",
         "nft" => "./tests/traces/nft/mint.json",
         "sushi" => "./tests/traces/sushi/chef-withdraw.json",
-        _ => "./tests/traces/erc20/10_transfer.json",
+        _ => "./tests/extra_traces/new.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
@@ -41,7 +41,7 @@ pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     let trace_path: String = read_env_var("TRACE_PATH", "".to_string());
     let paths: Vec<String> = if trace_path.is_empty() {
         // use mode
-        let mode = read_env_var("MODE", "multiple".to_string());
+        let mode = read_env_var("MODE", "default".to_string());
         if mode.to_lowercase() == "batch" || mode.to_lowercase() == "pack" {
             (1..=20)
                 .map(|i| format!("tests/traces/bridge/{i:02}.json"))
