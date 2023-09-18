@@ -1,18 +1,83 @@
 use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
+#[cfg(any(feature = "inner-prove", feature = "chunk-prove"))]
+use once_cell::sync::Lazy;
+#[cfg(any(feature = "inner-prove", not(feature = "chunk-prove")))]
+use prover::zkevm::circuit;
+#[cfg(any(feature = "inner-prove", feature = "chunk-prove"))]
 use prover::{
-    inner::Prover,
-    utils::init_env_and_log,
-    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit},
-    BlockTrace, WitnessBlock,
+    common::{Prover, Verifier},
+    config::LayerId,
+    config::{INNER_DEGREE, ZKEVM_DEGREES},
+    utils::read_env_var,
+};
+use prover::{
+    utils::init_env_and_log, zkevm::circuit::block_traces_to_witness_block, BlockTrace,
+    WitnessBlock,
 };
 use reqwest::Url;
 use serde::Deserialize;
-use std::env;
+use std::{
+    env,
+    panic::{self, AssertUnwindSafe},
+};
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
+
+#[cfg(any(feature = "inner-prove", feature = "chunk-prove"))]
+static mut REAL_PROVER: Lazy<Prover> = Lazy::new(|| {
+    let params_dir = read_env_var("SCROLL_PROVER_PARAMS_DIR", "./test_params".to_string());
+
+    let degrees: Vec<u32> = if cfg!(feature = "inner-prove") {
+        vec![*INNER_DEGREE]
+    } else {
+        // for chunk-prove
+        (*ZKEVM_DEGREES).clone()
+    };
+
+    let prover = Prover::from_params_dir(&params_dir, &degrees);
+    log::info!("Constructed real-prover");
+
+    prover
+});
+
+#[cfg(feature = "inner-prove")]
+static mut INNER_VERIFIER: Lazy<
+    Verifier<<circuit::SuperCircuit as circuit::TargetCircuit>::Inner>,
+> = Lazy::new(|| {
+    let prover = unsafe { &mut REAL_PROVER };
+    let params = prover.params(*INNER_DEGREE).clone();
+
+    let pk = prover
+        .pk(LayerId::Inner.id())
+        .expect("Failed to get inner-prove PK");
+    let vk = pk.get_vk().clone();
+
+    let verifier = Verifier::new(params, vk);
+    log::info!("Constructed inner-verifier");
+
+    verifier
+});
+
+#[cfg(feature = "chunk-prove")]
+static mut CHUNK_VERIFIER: Lazy<Verifier<prover::CompressionCircuit>> = Lazy::new(|| {
+    env::set_var("COMPRESSION_CONFIG", LayerId::Layer2.config_path());
+
+    let prover = unsafe { &mut REAL_PROVER };
+    let params = prover.params(LayerId::Layer2.degree()).clone();
+
+    let pk = prover
+        .pk(LayerId::Layer2.id())
+        .expect("Failed to get chunk-prove PK");
+    let vk = pk.get_vk().clone();
+
+    let verifier = Verifier::new(params, vk);
+    log::info!("Constructed chunk-verifier");
+
+    verifier
+});
 
 #[tokio::main]
 async fn main() {
@@ -74,7 +139,15 @@ async fn main() {
                         continue;
                     }
 
-                    let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
+                    let result = panic::catch_unwind(AssertUnwindSafe(|| {
+                        let test_id = format!("batch-{batch_id}-chunk-{chunk_id}");
+                        #[cfg(feature = "inner-prove")]
+                        inner_prove(&test_id, &witness_block);
+                        #[cfg(feature = "chunk-prove")]
+                        chunk_prove(&test_id, &witness_block);
+                        #[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
+                        mock_prove(&test_id, &witness_block);
+                    }));
 
                     match result {
                         Ok(_) => {
@@ -83,8 +156,15 @@ async fn main() {
                             )
                         }
                         Err(err) => {
+                            let panic_err = if let Some(s) = err.downcast_ref::<String>() {
+                                s.to_string()
+                            } else if let Some(s) = err.downcast_ref::<&str>() {
+                                s.to_string()
+                            } else {
+                                format!("unable to get panic info {err:?}")
+                            };
                             log::error!(
-                                "mock-testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{err:?}"
+                                "mock-testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{panic_err:?}"
                             );
                         }
                     }
@@ -176,4 +256,52 @@ impl Setting {
             rollupscan_api_url,
         }
     }
+}
+
+#[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
+fn mock_prove(test_id: &str, witness_block: &WitnessBlock) {
+    log::info!("{test_id}: mock-prove BEGIN");
+
+    prover::inner::Prover::<circuit::SuperCircuit>::mock_prove_witness_block(witness_block)
+        .unwrap_or_else(|err| panic!("{test_id}: failed to mock-prove: {err}"));
+
+    log::info!("{test_id}: mock-prove END");
+}
+
+#[cfg(feature = "inner-prove")]
+fn inner_prove(test_id: &str, witness_block: &WitnessBlock) {
+    log::info!("{test_id}: inner-prove BEGIN");
+
+    let prover = unsafe { &mut REAL_PROVER };
+
+    let rng = prover::utils::gen_rng();
+    let snark = prover
+        .gen_inner_snark::<circuit::SuperCircuit>(LayerId::Inner.id(), rng, witness_block)
+        .unwrap_or_else(|err| panic!("{test_id}: failed to generate inner snark: {err}"));
+    log::info!("{test_id}: generated inner snark");
+
+    let verifier = unsafe { &mut INNER_VERIFIER };
+
+    let verified = verifier.verify_snark(snark);
+    assert!(verified, "{test_id}: failed to verify inner snark");
+
+    log::info!("{test_id}: inner-prove END");
+}
+
+#[cfg(feature = "chunk-prove")]
+fn chunk_prove(test_id: &str, witness_block: &WitnessBlock) {
+    log::info!("{test_id}: chunk-prove BEGIN");
+
+    let prover = unsafe { &mut REAL_PROVER };
+
+    let snark = prover
+        .load_or_gen_final_chunk_snark(test_id, witness_block, None, None)
+        .unwrap_or_else(|err| panic!("{test_id}: failed to generate chunk snark: {err}"));
+    log::info!("{test_id}: generated chunk snark");
+
+    let verifier = unsafe { &mut CHUNK_VERIFIER };
+    let verified = verifier.verify_snark(snark);
+    assert!(verified, "{test_id}: failed to verify chunk snark");
+
+    log::info!("{test_id}: chunk-prove END");
 }

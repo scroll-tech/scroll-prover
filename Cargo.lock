@@ -232,6 +232,7 @@ dependencies = [
  "itertools",
  "log",
  "log4rs",
+ "once_cell",
  "prover",
  "rand",
  "rand_xorshift",

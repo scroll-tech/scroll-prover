@@ -13,6 +13,7 @@ ethers-providers = "1.0"
 itertools = "0.10.5"
 log = "0.4"
 log4rs = { version = "1.2.0", default_features = false, features = ["console_appender", "file_appender"] }
+once_cell = "1.10"
 rand = "0.8"
 rand_xorshift = "0.3"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "rustls-tls" ] }
@@ -34,3 +35,8 @@ path = "src/zkevm_verify.rs"
 [[bin]]
 name = "mock_testnet"
 path = "src/mock_testnet.rs"
+
+[features]
+default = []
+inner-prove = []
+chunk-prove = []
