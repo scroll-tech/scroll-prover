@@ -2,14 +2,15 @@ use anyhow::Result;
 use ethers_providers::{Http, Provider};
 use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
 use prover::{
-    inner::Prover,
-    utils::init_env_and_log,
-    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit},
-    BlockTrace, WitnessBlock,
+    utils::init_env_and_log, zkevm::circuit::block_traces_to_witness_block, BlockTrace,
+    WitnessBlock,
 };
 use reqwest::Url;
 use serde::Deserialize;
-use std::env;
+use std::{
+    env,
+    panic::{catch_unwind, AssertUnwindSafe},
+};
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
@@ -74,7 +75,15 @@ async fn main() {
                         continue;
                     }
 
-                    let result = Prover::<SuperCircuit>::mock_prove_witness_block(&witness_block);
+                    let result = catch_unwind(AssertUnwindSafe(|| {
+                        let test_id = format!("batch-{batch_id} chunk-{chunk_id}");
+                        #[cfg(feature = "inner-prove")]
+                        prover::test::inner_prove(&test_id, &witness_block);
+                        #[cfg(feature = "chunk-prove")]
+                        prover::test::chunk_prove(&test_id, &witness_block);
+                        #[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
+                        mock_prove(&test_id, &witness_block);
+                    }));
 
                     match result {
                         Ok(_) => {
@@ -83,8 +92,15 @@ async fn main() {
                             )
                         }
                         Err(err) => {
+                            let panic_err = if let Some(s) = err.downcast_ref::<String>() {
+                                s.to_string()
+                            } else if let Some(s) = err.downcast_ref::<&str>() {
+                                s.to_string()
+                            } else {
+                                format!("unable to get panic info {err:?}")
+                            };
                             log::error!(
-                                "mock-testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{err:?}"
+                                "mock-testnet: failed to prove chunk {chunk_id} inside batch {batch_id}:\n{panic_err:?}"
                             );
                         }
                     }
@@ -176,4 +192,16 @@ impl Setting {
             rollupscan_api_url,
         }
     }
+}
+
+#[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
+fn mock_prove(test_id: &str, witness_block: &WitnessBlock) {
+    use prover::{inner::Prover, zkevm::circuit::SuperCircuit};
+
+    log::info!("{test_id}: mock-prove BEGIN");
+
+    Prover::<SuperCircuit>::mock_prove_witness_block(witness_block)
+        .unwrap_or_else(|err| panic!("{test_id}: failed to mock-prove: {err}"));
+
+    log::info!("{test_id}: mock-prove END");
 }
