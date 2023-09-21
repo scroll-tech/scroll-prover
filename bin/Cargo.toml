@@ -39,3 +39,4 @@ path = "src/mock_testnet.rs"
 default = []
 inner-prove = ["prover/test"]
 chunk-prove = ["prover/test"]
+batch-prove = ["chunk-prove"]
