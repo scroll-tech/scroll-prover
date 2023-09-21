@@ -64,7 +64,7 @@ async fn main() {
                         block_traces.push(trace);
                     }
 
-                    let witness_block = match build_block(&block_traces, batch_id, chunk_id) {
+                    let witness_block = match build_block(block_traces, batch_id, chunk_id) {
                         Ok(block) => block,
                         Err(e) => {
                             log::error!("mock-testnet: building block failed {e:?}");
@@ -113,11 +113,11 @@ async fn main() {
 }
 
 fn build_block(
-    block_traces: &[BlockTrace],
+    block_traces: Vec<BlockTrace>,
     batch_id: i64,
     chunk_id: i64,
 ) -> anyhow::Result<WitnessBlock> {
-    let witness_block = block_traces_to_witness_block(block_traces)?;
+    let witness_block = block_traces_to_witness_block(block_traces.clone())?;
     run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
     Ok(witness_block)
 }

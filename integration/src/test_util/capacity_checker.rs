@@ -20,12 +20,12 @@ pub fn prepare_circuit_capacity_checker() {
 pub fn run_circuit_capacity_checker(
     batch_id: i64,
     chunk_id: i64,
-    block_traces: &[BlockTrace],
+    block_traces: Vec<BlockTrace>,
     witness_block: &WitnessBlock,
 ) -> Duration {
-    let optimal = ccc_by_chunk(batch_id, chunk_id, block_traces, witness_block);
-    let signer = ccc_as_signer(chunk_id, block_traces);
-    let follower_light = ccc_as_follower_light(chunk_id, block_traces);
+    let optimal = ccc_by_chunk(batch_id, chunk_id, block_traces.clone(), witness_block);
+    let signer = ccc_as_signer(chunk_id, block_traces.clone());
+    let follower_light = ccc_as_follower_light(chunk_id, block_traces.clone());
     let follower_full = ccc_as_follower_full(chunk_id, block_traces);
 
     for (tag, r) in [
@@ -40,29 +40,24 @@ pub fn run_circuit_capacity_checker(
 }
 
 /// print analyze results
+/// TODO: do not use BlockTrace, use it fields
 pub fn pretty_print_row_usage(
     rows: &RowUsage,
-    block_traces: &[BlockTrace],
+    gas_total: u64,
+    first_block_number: Option<u64>,
+    last_block_number: Option<u64>,
     chunk_id: i64,
     mode: &str,
 ) {
-    let gas_total: u64 = block_traces
-        .iter()
-        .map(|b| b.header.gas_used.as_u64())
-        .sum();
     log::info!(
-        "rows of chunk {chunk_id}(block range {:?} to {:?}):",
-        block_traces.first().and_then(|b| b.header.number),
-        block_traces.last().and_then(|b| b.header.number),
+        "rows of chunk {chunk_id}(block range {first_block_number:?} to {last_block_number:?}):"
     );
     for r in &rows.row_usage_details {
         log::info!("rows of {} : {}", r.name, r.row_number);
     }
     let row_num = bottleneck(rows);
     log::info!(
-        "final rows of chunk {chunk_id}(block range {:?} to {:?}): row {}({},mode:{mode}), gas {gas_total}, gas/row {:.2}",
-        block_traces.first().and_then(|b| b.header.number),
-        block_traces.last().and_then(|b| b.header.number),
+        "final rows of chunk {chunk_id}(block range {first_block_number:?} to {last_block_number:?}): row {}({},mode:{mode}), gas {gas_total}, gas/row {:.2}",
         row_num.row_number,
         row_num.name,
         gas_total as f64 / row_num.row_number as f64
@@ -87,15 +82,19 @@ fn bottleneck(rows: &RowUsage) -> SubCircuitRowUsage {
 fn ccc_block_whole_block(
     checker: &mut CircuitCapacityChecker,
     _block_idx: usize,
-    block: &BlockTrace,
+    block: BlockTrace,
 ) {
-    checker
-        .estimate_circuit_capacity(slice::from_ref(block))
-        .unwrap();
+    checker.estimate_circuit_capacity(block).unwrap();
 }
 
-fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, block: &BlockTrace) {
-    for tx_idx in 0..block.transactions.len() {
+fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, block: BlockTrace) {
+    for (tx_idx, ((transaction, execution_result), tx_storage_trace)) in block
+        .transactions
+        .into_iter()
+        .zip(block.execution_results.into_iter())
+        .zip(block.tx_storage_trace.into_iter())
+        .enumerate()
+    {
         log::info!("processing {}th block {}th tx", block_idx, tx_idx);
         #[rustfmt::skip]
         /*  
@@ -110,9 +109,9 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
         */
 
         let tx_trace = BlockTrace {
-            transactions: vec![block.transactions[tx_idx].clone()],
-            execution_results: vec![block.execution_results[tx_idx].clone()],
-            storage_trace: block.tx_storage_trace[tx_idx].clone(),
+            transactions: vec![transaction],
+            execution_results: vec![execution_result],
+            storage_trace: tx_storage_trace,
             chain_id: block.chain_id,
             coinbase: block.coinbase.clone(),
             header: block.header.clone(),
@@ -120,7 +119,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             tx_storage_trace: vec![], // not used
         };
         log::debug!("calling estimate_circuit_capacity");
-        let results = checker.estimate_circuit_capacity(&[tx_trace]).unwrap();
+        let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
         log::info!(
             "after {}th block {}th tx: {:#?}",
             block_idx,
@@ -133,7 +132,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
 // Return row-usage and average ccc time for each tx.
 fn get_ccc_result_of_chunk(
     chunk_id: i64,
-    blocks: &[BlockTrace],
+    blocks: Vec<BlockTrace>,
     by_block: bool,
     norm: bool,
     light_mode: bool,
@@ -162,7 +161,21 @@ fn get_ccc_result_of_chunk(
     let mut tx_num = 0;
     let mut acc_row_usage_normalized = RowUsage::default();
     let mut acc_row_usage_raw = RowUsage::default();
-    for (block_idx, block) in blocks.iter().enumerate() {
+    let blocks_len = blocks.len();
+
+    let gas_total: u64 = blocks.iter().map(|b| b.header.gas_used.as_u64()).sum();
+    let first_block_number = blocks
+        .first()
+        .and_then(|b| b.header.number)
+        .map(|x| x.as_u64());
+    let last_block_number = blocks
+        .last()
+        .and_then(|b| b.header.number)
+        .map(|x| x.as_u64());
+    for (block_idx, block) in blocks.into_iter().enumerate() {
+        let gas_total = block.header.gas_used.as_u64();
+        let block_number = block.header.number.map(|x| x.as_u64());
+        let block_transactions_len = block.transactions.len();
         if disable_chunk_opt {
             checker.reset();
         }
@@ -171,13 +184,13 @@ fn get_ccc_result_of_chunk(
         } else {
             ccc_block_tx_by_tx(&mut checker, block_idx, block);
         }
-        let is_last = block_idx == blocks.len() - 1;
+        let is_last = block_idx == blocks_len - 1;
         if disable_chunk_opt || is_last {
             let block_result_raw = checker.get_acc_row_usage(false);
             if disable_chunk_opt {
                 log::info!(
                     "block ccc result(block {}): {:?}",
-                    block.header.number.unwrap().as_u64(),
+                    block_number.unwrap(),
                     if norm {
                         block_result_raw.normalize()
                     } else {
@@ -186,7 +199,9 @@ fn get_ccc_result_of_chunk(
                 );
                 pretty_print_row_usage(
                     &block_result_raw,
-                    std::slice::from_ref(block),
+                    gas_total,
+                    block_number,
+                    block_number,
                     chunk_id,
                     "inner",
                 );
@@ -197,10 +212,17 @@ fn get_ccc_result_of_chunk(
             acc_row_usage_raw.add(&block_result_raw);
             acc_row_usage_normalized.add(&block_result_raw.normalize());
         }
-        tx_num += block.transactions.len();
+        tx_num += block_transactions_len;
     }
     log::info!("capacity_checker test done");
-    pretty_print_row_usage(&acc_row_usage_raw, blocks, chunk_id, tag);
+    pretty_print_row_usage(
+        &acc_row_usage_raw,
+        gas_total,
+        first_block_number,
+        last_block_number,
+        chunk_id,
+        tag,
+    );
     let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
     log::info!("avg time each tx: {avg_ccc_time}ms, mode {tag}");
 
@@ -211,20 +233,20 @@ fn get_ccc_result_of_chunk(
 }
 
 #[allow(dead_code)]
-fn get_ccc_result_by_whole_block(
-    chunk_id: i64,
-    light_mode: bool,
-    blocks: &[BlockTrace],
-) -> RowUsage {
+fn get_ccc_result_by_whole_block(chunk_id: i64, light_mode: bool, block: BlockTrace) -> RowUsage {
     log::info!("estimating circuit rows whole block, light_mode {light_mode}");
     let mut checker = CircuitCapacityChecker::new();
     checker.light_mode = light_mode;
 
-    checker.estimate_circuit_capacity(blocks).unwrap();
+    let gas_total = block.header.gas_used.as_u64();
+    let block_number = block.header.number.map(|x| x.as_u64());
+    checker.estimate_circuit_capacity(block).unwrap();
     let ccc_result = checker.get_acc_row_usage(false);
     pretty_print_row_usage(
         &ccc_result,
-        blocks,
+        gas_total,
+        block_number,
+        block_number,
         chunk_id,
         if light_mode {
             "block-light"
@@ -260,7 +282,7 @@ fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag:
 pub fn ccc_by_chunk(
     batch_id: i64,
     chunk_id: i64,
-    block_traces: &[BlockTrace],
+    block_traces: Vec<BlockTrace>,
     witness_block: &WitnessBlock,
 ) -> RowUsage {
     log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
@@ -274,19 +296,38 @@ pub fn ccc_by_chunk(
         })
         .collect_vec();
     let row_usage = RowUsage::from_row_usage_details(row_usage_details);
-    pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
+    let gas_total: u64 = block_traces
+        .iter()
+        .map(|b| b.header.gas_used.as_u64())
+        .sum();
+    let first_block_number = block_traces
+        .first()
+        .and_then(|b| b.header.number)
+        .map(|x| x.as_u64());
+    let last_block_number = block_traces
+        .last()
+        .and_then(|b| b.header.number)
+        .map(|x| x.as_u64());
+    pretty_print_row_usage(
+        &row_usage,
+        gas_total,
+        first_block_number,
+        last_block_number,
+        chunk_id,
+        "chunk-opt",
+    );
     row_usage
 }
 
-pub fn ccc_as_signer(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_signer(chunk_id: i64, blocks: Vec<BlockTrace>) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, false, false, true, "chunk-signer")
 }
 
 /// current stats inside db
-pub fn ccc_as_follower_light(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_follower_light(chunk_id: i64, blocks: Vec<BlockTrace>) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, true, "chunk-f-l")
 }
 
-pub fn ccc_as_follower_full(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_follower_full(chunk_id: i64, blocks: Vec<BlockTrace>) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, false, "chunk-f-f")
 }
