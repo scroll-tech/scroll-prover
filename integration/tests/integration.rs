@@ -10,7 +10,7 @@ use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
     utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
-    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
+    zkevm::circuit::{block_trace_to_witness_block, SuperCircuit, TargetCircuit},
 };
 use std::time::Duration;
 use zkevm_circuits::util::SubCircuit;
@@ -72,10 +72,10 @@ fn test_capacity_checker() {
 
     prepare_circuit_capacity_checker();
 
-    let block_traces = vec![get_block_trace_from_file(trace_path)];
-    let witness_block = block_traces_to_witness_block(block_traces.clone()).unwrap();
+    let block_trace = get_block_trace_from_file(trace_path);
+    let witness_block = block_trace_to_witness_block(block_trace.clone()).unwrap();
 
-    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, block_traces, &witness_block);
+    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, vec![block_trace], &witness_block);
     log::info!("avg_each_tx_time {avg_each_tx_time:?}");
     assert!(avg_each_tx_time < Duration::from_millis(100));
 }
@@ -85,10 +85,11 @@ fn estimate_circuit_rows() {
     init_env_and_log("integration");
     prepare_circuit_capacity_checker();
 
-    let (_, block_trace) = load_block_traces_for_test();
+    let (_, block_traces) = load_block_traces_for_test();
+    let block_trace = block_traces.into_iter().next().unwrap();
 
     log::info!("estimating used rows for batch");
-    let rows = SuperCircuit::estimate_rows(block_trace);
+    let rows = SuperCircuit::estimate_block_rows(block_trace);
     log::info!("super circuit: {:?}", rows);
 }
 

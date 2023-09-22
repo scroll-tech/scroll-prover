@@ -6,7 +6,7 @@ use prover::{
     },
     BlockTrace, WitnessBlock,
 };
-use std::{slice, time::Duration};
+use std::time::Duration;
 use zkevm_circuits::evm_circuit::ExecutionState;
 
 pub fn prepare_circuit_capacity_checker() {
