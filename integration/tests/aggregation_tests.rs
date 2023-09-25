@@ -18,13 +18,13 @@ fn test_agg_prove_verify() {
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
 
     let mut batch_prover = new_batch_prover(&output_dir);
-    batch_prove_and_verify(&output_dir, &mut batch_prover, chunk_hashes_proofs);
+    prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_recursive_prove_verify() {
-    let output_dir = init_env_and_log("recursive_tests");
+fn test_batches_with_iter_chunk_num_prove_verify() {
+    let output_dir = init_env_and_log("batches_with_iter_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
     // Get chunk paths in a batch dir.
@@ -46,25 +46,12 @@ fn test_recursive_prove_verify() {
         output_dir.push(format!("batch_{}", i + 1));
         fs::create_dir_all(&output_dir).unwrap();
 
-        batch_prove_and_verify(
+        prove_and_verify_batch(
             &output_dir.to_string_lossy().to_string(),
             &mut batch_prover,
             chunk_hashes_proofs[..=i].to_vec(),
         );
     }
-}
-
-fn batch_prove_and_verify(
-    output_dir: &str,
-    batch_prover: &mut Prover,
-    chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
-) {
-    // Load or generate aggregation snark (layer-3).
-    let layer3_snark = batch_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
-        .unwrap();
-
-    gen_and_verify_batch_proofs(batch_prover, layer3_snark, &output_dir);
 }
 
 fn gen_chunk_hashes_and_proofs(
@@ -108,4 +95,17 @@ fn new_batch_prover(assets_dir: &str) -> Prover {
     log::info!("Constructed batch prover");
 
     prover
+}
+
+fn prove_and_verify_batch(
+    output_dir: &str,
+    batch_prover: &mut Prover,
+    chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
+) {
+    // Load or generate aggregation snark (layer-3).
+    let layer3_snark = batch_prover
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
+        .unwrap();
+
+    gen_and_verify_batch_proofs(batch_prover, layer3_snark, &output_dir);
 }
