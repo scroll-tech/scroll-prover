@@ -23,7 +23,7 @@ fn test_agg_prove_verify() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_batches_with_iter_chunk_num_prove_verify() {
+fn test_batches_with_each_chunk_num_prove_verify() {
     let output_dir = init_env_and_log("batches_with_iter_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
