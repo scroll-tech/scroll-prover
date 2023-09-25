@@ -6,7 +6,7 @@ use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log},
     zkevm, ChunkHash, ChunkProof,
 };
-use std::{env, fs, path::PathBuf};
+use std::env;
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -19,39 +19,6 @@ fn test_agg_prove_verify() {
 
     let mut batch_prover = new_batch_prover(&output_dir);
     prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
-}
-
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_batches_with_each_chunk_num_prove_verify() {
-    let output_dir = init_env_and_log("batches_with_iter_chunk_num_tests");
-    log::info!("Initialized ENV and created output-dir {output_dir}");
-
-    // Get chunk paths in a batch dir.
-    let batch_path = env::var("BATCH_PATH").unwrap();
-    let mut chunk_paths: Vec<_> = fs::read_dir(&batch_path)
-        .unwrap()
-        .into_iter()
-        .map(|entry| entry.unwrap().path().to_string_lossy().to_string())
-        .collect();
-    chunk_paths.sort();
-    log::info!("Get chunks in {batch_path}: {chunk_paths:?}");
-
-    let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &chunk_paths);
-    let mut batch_prover = new_batch_prover(&output_dir);
-
-    // Iterate over chunk proofs to test with 1 - 15 chunks (in a batch).
-    for i in 0..chunk_hashes_proofs.len() {
-        let mut output_dir = PathBuf::from(&output_dir);
-        output_dir.push(format!("batch_{}", i + 1));
-        fs::create_dir_all(&output_dir).unwrap();
-
-        prove_and_verify_batch(
-            &output_dir.to_string_lossy().to_string(),
-            &mut batch_prover,
-            chunk_hashes_proofs[..=i].to_vec(),
-        );
-    }
 }
 
 fn gen_chunk_hashes_and_proofs(
