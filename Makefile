@@ -47,6 +47,9 @@ test-agg-prove:
 test-batch-prove:
 	@cargo test --features prove_verify --release test_batch_prove_verify
 
+test-recursive-prove:
+	@cargo test --features prove_verify --release test_recursive_prove_verify
+
 test-ccc:
 	@cargo test --release test_capacity_checker
 
