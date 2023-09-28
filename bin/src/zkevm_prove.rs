@@ -26,8 +26,8 @@ struct Args {
 fn main() {
     // Layer config files are located in `./integration/configs`.
     env::set_current_dir("./integration").unwrap();
-    let output_dir = init_env_and_log("bin_zkevm_prove");
-    log::info!("Initialized ENV and created output-dir {output_dir}");
+    init_env_and_log("bin_zkevm_prove");
+    log::info!("Initialized ENV");
 
     let args = Args::parse();
     let mut prover = Prover::from_dirs(&args.params_path, &args.assets_path);
@@ -49,7 +49,7 @@ fn main() {
 
     let now = Instant::now();
     prover
-        .gen_chunk_proof(traces, Some("zkevm"), None, Some(&output_dir))
+        .gen_chunk_proof(traces, Some("zkevm"), None, None)
         .expect("cannot generate chunk snark");
     log::info!(
         "finish generating chunk snark, elapsed: {:?}",
