@@ -15,21 +15,10 @@ fn test_agg_prove_verify() {
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
     let trace_paths = vec!["./tests/extra_traces/new.json".to_string()];
-
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
-    log::info!("Generated chunk hashes and proofs");
 
-    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let mut agg_prover = Prover::from_dirs(PARAMS_DIR, &output_dir);
-    log::info!("Constructed aggregation prover");
-
-    // Load or generate aggregation snark (layer-3).
-    let layer3_snark = agg_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
-        .unwrap();
-
-    gen_and_verify_batch_proofs(&mut agg_prover, layer3_snark, &output_dir);
+    let mut batch_prover = new_batch_prover(&output_dir);
+    prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
 }
 
 fn gen_chunk_hashes_and_proofs(
@@ -47,7 +36,7 @@ fn gen_chunk_hashes_and_proofs(
         })
         .collect();
 
-    chunk_traces
+    let chunk_hashes_proofs = chunk_traces
         .into_iter()
         .enumerate()
         .map(|(i, chunk_trace)| {
@@ -60,5 +49,30 @@ fn gen_chunk_hashes_and_proofs(
 
             (chunk_hash, proof)
         })
-        .collect()
+        .collect();
+
+    log::info!("Generated chunk hashes and proofs");
+    chunk_hashes_proofs
+}
+
+fn new_batch_prover(assets_dir: &str) -> Prover {
+    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
+    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
+    let prover = Prover::from_dirs(PARAMS_DIR, &assets_dir);
+    log::info!("Constructed batch prover");
+
+    prover
+}
+
+fn prove_and_verify_batch(
+    output_dir: &str,
+    batch_prover: &mut Prover,
+    chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
+) {
+    // Load or generate aggregation snark (layer-3).
+    let layer3_snark = batch_prover
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
+        .unwrap();
+
+    gen_and_verify_batch_proofs(batch_prover, layer3_snark, &output_dir);
 }
