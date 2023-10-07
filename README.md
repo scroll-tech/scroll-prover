@@ -29,19 +29,22 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 `make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
 
-Besides it, `make test-inner-prove` could be used to test the first-level circuit, and `make test-batch-prove` could be used to test the final two levels.
+And there are other tests:
+- `make test-inner-prove` could be used to test the first-level circuit.
+- `make test-batch-prove` could be used to test the final two levels.
+- `make test-batches-with-each-chunk-num-prove` could be used to test batch proving with different chunk numbers.
 
 ### Binaries
 
-This repository is designed to be used as a Rust crate, rather than a standalone running process. However, you can still use the following command to run binaries locally.
+Could use the following command to run binaries locally.
 
-If you run into linking issues you may need to run
+If run into linking issues you may need to run
 ```shell
 cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
 ```
 To move the zktrielib into a path where your linker could locate it.
 
-Run zkevm prover to generate chunk proof (the word-dir is `./integration`)
+Run zkevm prover to generate chunk proof (work directory is `./integration`)
 ```shell
 cargo build --release --bin zkevm_prove
 
@@ -53,10 +56,10 @@ Could specify arguments as
 export OUTPUT_DIR="proof_data"
 
 # Params file should be located in `./integration/test_params`.
-cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/traces/erc20/10_transfer.json
+cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/extra_traces/new.json
 ```
 
-Run zkevm verifier to verify chunk proof (the word-dir is `./integration`)
+Run zkevm verifier to verify chunk proof (work directory is `./integration`)
 ```shell
 cargo build --release --bin zkevm_verify
 

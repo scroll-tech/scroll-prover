@@ -58,7 +58,7 @@ fn gen_chunk_hashes_and_proofs(
 fn new_batch_prover(assets_dir: &str) -> Prover {
     env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
     env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let prover = Prover::from_dirs(PARAMS_DIR, &assets_dir);
+    let prover = Prover::from_dirs(PARAMS_DIR, assets_dir);
     log::info!("Constructed batch prover");
 
     prover
@@ -71,8 +71,8 @@ fn prove_and_verify_batch(
 ) {
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = batch_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(output_dir))
         .unwrap();
 
-    gen_and_verify_batch_proofs(batch_prover, layer3_snark, &output_dir);
+    gen_and_verify_batch_proofs(batch_prover, layer3_snark, output_dir);
 }
