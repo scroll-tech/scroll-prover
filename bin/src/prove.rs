@@ -29,6 +29,7 @@ pub fn prove_batch(id: &str, chunk_proofs: Vec<ChunkProof>) {
 
 pub fn prove_chunk(id: &str, witness_block: &WitnessBlock) -> Option<ChunkProof> {
     let result = catch_unwind(AssertUnwindSafe(|| {
+        #[cfg(not(feature = "chunk-prove"))]
         let proof = None::<ChunkProof>;
 
         #[cfg(feature = "inner-prove")]

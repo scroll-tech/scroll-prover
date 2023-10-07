@@ -32,7 +32,7 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         fs::create_dir_all(&output_dir).unwrap();
 
         prove_and_verify_batch(
-            &output_dir.to_string_lossy().to_string(),
+            &output_dir.to_string_lossy(),
             &mut batch_prover,
             chunk_hashes_proofs[..=i].to_vec(),
         );
@@ -54,9 +54,9 @@ fn load_chunk_hashes_and_proofs(
     let chunk_proofs = batch_task_detail.chunk_proofs;
 
     let chunk_hashes_proofs: Vec<_> = chunk_hashes[..]
-        .to_vec()
-        .into_iter()
-        .zip(chunk_proofs[..].to_vec().into_iter())
+        .iter()
+        .copied()
+        .zip(chunk_proofs[..].iter().cloned())
         .collect();
 
     // Dump chunk-procotol for further batch-proving.
@@ -64,7 +64,7 @@ fn load_chunk_hashes_and_proofs(
         .first()
         .unwrap()
         .1
-        .dump(&output_dir, "0")
+        .dump(output_dir, "0")
         .unwrap();
 
     log::info!(
@@ -77,7 +77,7 @@ fn load_chunk_hashes_and_proofs(
 fn new_batch_prover(assets_dir: &str) -> Prover {
     env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
     env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let prover = Prover::from_dirs(PARAMS_DIR, &assets_dir);
+    let prover = Prover::from_dirs(PARAMS_DIR, assets_dir);
     log::info!("Constructed batch prover");
 
     prover
@@ -93,10 +93,10 @@ fn prove_and_verify_batch(
 
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = batch_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(output_dir))
         .unwrap();
 
-    gen_and_verify_batch_proofs(batch_prover, layer3_snark, &output_dir);
+    gen_and_verify_batch_proofs(batch_prover, layer3_snark, output_dir);
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
 }
