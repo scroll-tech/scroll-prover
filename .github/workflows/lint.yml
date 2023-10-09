@@ -10,9 +10,8 @@ on:
       - main
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  CARGO_INCREMENTAL: false
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: git
 
 jobs:
   skip_check:
@@ -32,39 +31,37 @@ jobs:
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action == 'ready_for_review' || needs.skip_check.outputs.should_skip != 'true')
-    name: fmt
+    name: Rustfmt
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: nightly-2022-12-10
-          override: true
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: Run cargo fmt
-        run: |
-          cargo build --release
-          cargo fmt --all -- --check
+          components: rustfmt
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+      - name: Cargo check
+        run: cargo check --all-features
+      - name: Cargo fmt
+        run: cargo fmt --all -- --check
 
   clippy:
     needs: [skip_check]
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action == 'ready_for_review' || needs.skip_check.outputs.should_skip != 'true')
-    name: clippy
+    name: Clippy
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: nightly-2022-12-10
-          override: true
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: Run cargo clippy
-        run: |
-          cargo build --release
-          cargo clippy --release --features prove_verify -- -D warnings
+          components: clippy
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
+      - name: Run clippy
+        run: cargo clippy --all-features --all-targets -- -D warnings

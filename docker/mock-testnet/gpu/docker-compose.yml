@@ -1,0 +1,16 @@
+version: '3'
+services:
+  prover:
+    image: {DOCKER_IMAGE}
+    runtime: nvidia
+    container_name: mock-testnet-gpu
+    environment:
+      - CHAIN_ID={CHAIN_ID}
+      - PROVE_BEGIN_BATCH=${PROVE_BEGIN_BATCH}
+      - PROVE_END_BATCH=${PROVE_END_BATCH}
+      - L2GETH_API_URL={L2GETH_API_URL}
+      - ROLLUPSCAN_API_URL={ROLLUPSCAN_API_URL}
+    volumes:
+      - {PARAMS_DIR}:/opt/test_params
+      - {LOGS_DIR}:/opt/test_logs
+    command: sh ./run.sh
