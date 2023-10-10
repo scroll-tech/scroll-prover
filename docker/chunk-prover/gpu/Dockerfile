@@ -8,8 +8,8 @@ RUN cargo build --bin zkevm_prove --release
 Run cd ./target/release && find -name libzktrie.so | xargs -I {} cp {} ./
 RUN apt update && apt install -y curl
 RUN mkdir test_assets
-RUN curl -o ./test_assets/layer1.config https://circuit-release.s3.us-west-2.amazonaws.com/release-v0.9.1/layer1.config
-RUN curl -o ./test_assets/layer2.config https://circuit-release.s3.us-west-2.amazonaws.com/release-v0.9.1/layer2.config
+RUN curl -o ./test_assets/layer1.config https://circuit-release.s3.us-west-2.amazonaws.com/release-v0.9.5/layer1.config
+RUN curl -o ./test_assets/layer2.config https://circuit-release.s3.us-west-2.amazonaws.com/release-v0.9.5/layer2.config
 
 FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04
 
