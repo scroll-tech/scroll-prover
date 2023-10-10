@@ -70,6 +70,22 @@ Could specify arguments as
 cargo run --release --bin zkevm_verify -- --params=test_params --proof=proof_data
 ```
 
+### Scripts
+
+- If you have read access for DB, could run command to generate full-proof for batch tests:
+```
+export DB_HOST=
+export DB_USER=
+export DB_NAME=
+
+sh scripts/gen_full_chunk_proofs.sh BATCH_INDEX
+```
+
+### Dockers
+
+- `docker/chunk-prover` is used to build and run GPU chunk-prover.
+- `docker/mock-testnet` is used to build and run GPU mock-testnet (inner-prove or chunk-prove).
+
 ## License
 
 Licensed under either of
