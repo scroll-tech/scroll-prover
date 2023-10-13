@@ -16,18 +16,20 @@ fn test_chunk_prove_verify() {
     let chunk_trace = load_block_traces_for_test().1;
     log::info!("Loaded chunk trace");
 
-    let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
-    log::info!("Got witness block");
+    loop {
+        let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
+        log::info!("Got witness block");
 
-    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
-    let mut zkevm_prover = Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
-    log::info!("Constructed zkevm prover");
+        env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
+        let mut zkevm_prover = Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
+        log::info!("Constructed zkevm prover");
 
-    // Load or generate compression wide snark (layer-1).
-    let layer1_snark = zkevm_prover
-        .inner
-        .load_or_gen_last_chunk_snark("layer1", &witness_block, None, Some(&output_dir))
-        .unwrap();
+        // Load or generate compression wide snark (layer-1).
+        let layer1_snark = zkevm_prover
+            .inner
+            .load_or_gen_last_chunk_snark("layer1", &witness_block, None, Some(&output_dir))
+            .unwrap();
 
-    gen_and_verify_chunk_proofs(&mut zkevm_prover, layer1_snark, &output_dir);
+        gen_and_verify_chunk_proofs(&mut zkevm_prover, layer1_snark, &output_dir);
+    }
 }
