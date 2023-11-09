@@ -12,9 +12,9 @@ license = "MIT OR Apache-2.0"
 [workspace.dependencies]
 anyhow = "1.0"
 clap = { version = "3.1", features = ["derive"] }
-ethers-providers = "1.0"
+ethers-providers = "2.0.7"
 glob = "0.3"
-itertools = "0.10"
+itertools = "0.11"
 log = "0.4"
 log4rs = { version = "1.2", default_features = false, features = ["console_appender", "file_appender"] }
 rand = "0.8"
