@@ -24,15 +24,15 @@ function simple_tests() {
 }
 
 function replace_zkevm_circuits_branch() {
-	TO='tag = "v0.8.1"'
-	FROM='branch = "feat/max_snark=16"'
+	TO='tag = "v0.9.7"'
+	FROM='branch = "develop"'
 	#FROM='branch = "refactor/partial-db"'
-	sed -i "s#zkevm-circuits.git\", $FROM#zkevm-circuits.git\", $TO#" */Cargo.toml
+	sed -i "s#zkevm-circuits.git\", $FROM#zkevm-circuits.git\", $TO#" Cargo.toml
 	cargo update -p zkevm-circuits
 	cargo update -p eth-types
 	#git diff */Cargo.toml Cargo.lock
 }
 
-fetch_trace $1 $2
-#replace_zkevm_circuits_branch
+#fetch_trace $1 $2
+replace_zkevm_circuits_branch
 #simple_tests
