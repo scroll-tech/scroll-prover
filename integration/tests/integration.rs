@@ -56,7 +56,7 @@ fn test_cs_same_for_vk_consistent() {
     assert!(pk.get_vk().cs() == vk.cs(), "Dummy super cicuit");
 
     let block_trace = load_block_traces_for_test().1;
-    let real_circuit = SuperCircuit::from_block_traces(&block_trace).unwrap().0;
+    let real_circuit = SuperCircuit::from_block_traces(block_trace).unwrap().0;
 
     let pk = keygen_pk2(&params, &real_circuit).unwrap();
     let vk = keygen_vk(&params, &real_circuit).unwrap();
@@ -73,7 +73,7 @@ fn test_capacity_checker() {
     prepare_circuit_capacity_checker();
 
     let block_traces = vec![get_block_trace_from_file(trace_path)];
-    let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
+    let witness_block = block_traces_to_witness_block(block_traces.clone()).unwrap();
 
     let avg_each_tx_time = run_circuit_capacity_checker(0, 0, &block_traces, &witness_block);
     assert!(avg_each_tx_time < Duration::from_millis(100));
@@ -86,7 +86,7 @@ fn estimate_circuit_rows() {
     let (_, block_trace) = load_block_traces_for_test();
 
     log::info!("estimating used rows for batch");
-    let rows = SuperCircuit::estimate_rows(&block_trace);
+    let rows = SuperCircuit::estimate_rows(block_trace);
     log::info!("super circuit: {:?}", rows);
 }
 
@@ -98,10 +98,10 @@ fn test_deterministic() {
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
 
-    let circuit1 = C::from_block_traces(&block_trace).unwrap().0;
+    let circuit1 = C::from_block_traces(block_trace.clone()).unwrap().0;
     let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
 
-    let circuit2 = C::from_block_traces(&block_trace).unwrap().0;
+    let circuit2 = C::from_block_traces(block_trace).unwrap().0;
     let prover2 = MockProver::<_>::run(*INNER_DEGREE, &circuit2, circuit2.instance()).unwrap();
 
     let advice1 = prover1.advices();
@@ -133,7 +133,7 @@ fn test_vk_same() {
     let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
 
     let dummy_circuit = C::dummy_inner_circuit();
-    let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
+    let real_circuit = C::from_block_traces(block_trace).unwrap().0;
     let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
     let vk_real = keygen_vk(&params, &real_circuit).unwrap();
     let vk_empty_bytes = serialize_vk(&vk_empty);

@@ -12,9 +12,9 @@ license = "MIT OR Apache-2.0"
 [workspace.dependencies]
 anyhow = "1.0"
 clap = { version = "3.1", features = ["derive"] }
-ethers-providers = "1.0"
+ethers-providers = "2.0.7"
 glob = "0.3"
-itertools = "0.10"
+itertools = "0.11"
 log = "0.4"
 log4rs = { version = "1.2", default_features = false, features = ["console_appender", "file_appender"] }
 rand = "0.8"
@@ -26,8 +26,8 @@ serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
 
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "develop"  }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.9.7", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.9.7", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", features = ["parallel_syn", "scroll", "shanghai"] }
 
 integration = { path = "integration" }
 
