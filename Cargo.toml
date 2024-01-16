@@ -25,18 +25,18 @@ serde_derive = "1.0"
 serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
 
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "develop"  }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.9.7", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
-zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.9.7", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.0"  }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", rev = "703a16432998c8690e8cc5421b16883a812290f0", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
+zkevm-circuits = { git = "https://github.com/scroll-tech/zkevm-circuits.git", rev = "703a16432998c8690e8cc5421b16883a812290f0", default-features = false, features = ["parallel_syn", "scroll", "shanghai"] }
 
 integration = { path = "integration" }
 
 [patch.crates-io]
 ethers-core = { git = "https://github.com/scroll-tech/ethers-rs.git", branch = "v2.0.7" }
 [patch."https://github.com/privacy-scaling-explorations/halo2.git"]
-halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "develop"  }
+halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.0"  }
 [patch."https://github.com/privacy-scaling-explorations/poseidon.git"]
-poseidon = { git = "https://github.com/scroll-tech/poseidon.git", branch = "scroll-dev-0220" }
+poseidon = { git = "https://github.com/scroll-tech/poseidon.git", branch = "main" }
 [patch."https://github.com/privacy-scaling-explorations/halo2wrong.git"]
 halo2wrong = { git = "https://github.com/scroll-tech/halo2wrong.git", branch = "halo2-ecc-snark-verifier-0323" }
 maingate = { git = "https://github.com/scroll-tech/halo2wrong", branch = "halo2-ecc-snark-verifier-0323" }
