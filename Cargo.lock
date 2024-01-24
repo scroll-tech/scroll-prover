@@ -31,10 +31,10 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "ark-std",
- "env_logger",
+ "env_logger 0.10.0",
  "eth-types",
  "ethers-core 2.0.7",
  "halo2_proofs",
@@ -338,7 +338,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "eth-types",
  "ethers-core 2.0.7",
@@ -465,6 +465,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmake"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81fb25b677f8bf1eb325017cb6bb8452f87969db0fedb4f757b297bee78a7c62"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -524,6 +533,16 @@ dependencies = [
  "sha2",
  "sha3 0.10.6",
  "thiserror",
+]
+
+[[package]]
+name = "colored"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf2150cce219b664a8a70df7a1f933836724b503f8a413af9365b4dcc4d90b8"
+dependencies = [
+ "lazy_static",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -673,6 +692,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
 dependencies = [
  "cipher",
+]
+
+[[package]]
+name = "cuda-config"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ee74643f7430213a1a78320f88649de309b20b80818325575e393f848f79f5d"
+dependencies = [
+ "glob",
+]
+
+[[package]]
+name = "cuda-driver-sys"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d4c552cc0de854877d80bcd1f11db75d42be32962d72a6799b88dcca88fffbd"
+dependencies = [
+ "cuda-config",
 ]
 
 [[package]]
@@ -832,6 +869,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
+name = "dunce"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
+
+[[package]]
 name = "ecdsa"
 version = "0.14.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -941,11 +984,24 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
+dependencies = [
+ "atty",
+ "humantime 1.3.0",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
+name = "env_logger"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
 dependencies = [
- "humantime",
+ "humantime 2.1.0",
  "is-terminal",
  "log",
  "regex",
@@ -998,7 +1054,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "ethers-core 2.0.7",
  "ethers-signers",
@@ -1216,7 +1272,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1262,6 +1318,15 @@ dependencies = [
  "rand",
  "rustc-hex",
  "static_assertions",
+]
+
+[[package]]
+name = "flume"
+version = "0.10.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1657b4441c3403d9f7b3409e47575237dac27b1b5726df654a6ecbf92f0f7577"
+dependencies = [
+ "spin 0.9.8",
 ]
 
 [[package]]
@@ -1396,7 +1461,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1418,9 +1483,9 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
- "env_logger",
+ "env_logger 0.10.0",
  "gobuild 0.1.0-alpha.2 (git+https://github.com/scroll-tech/gobuild.git)",
  "log",
 ]
@@ -1597,7 +1662,7 @@ name = "halo2-mpt-circuits"
 version = "0.1.0"
 source = "git+https://github.com/scroll-tech/mpt-circuit.git?branch=v0.7#32ab964ff065ee6a0ccc63590b9db73238c70b81"
 dependencies = [
- "env_logger",
+ "env_logger 0.10.0",
  "ethers-core 2.0.7",
  "halo2_proofs",
  "hex",
@@ -1637,22 +1702,37 @@ dependencies = [
 name = "halo2_proofs"
 version = "0.2.0"
 dependencies = [
+ "anyhow",
  "ark-std",
  "blake2b_simd",
  "cfg-if 0.1.10",
+ "cmake",
+ "colored",
  "crossbeam",
+ "cuda-driver-sys",
+ "dunce",
+ "env_logger 0.7.1",
  "ff 0.13.0",
+ "git-version",
  "group 0.13.0",
  "halo2curves",
+ "itertools 0.10.5",
+ "lazy_static",
+ "libc",
  "log",
+ "maybe-rayon",
  "num-bigint",
  "num-integer",
+ "once_cell",
  "poseidon",
+ "rand",
+ "rand_chacha",
  "rand_core",
- "rayon",
+ "rustacuda",
  "sha3 0.9.1",
  "subtle",
  "tracing",
+ "yastl",
 ]
 
 [[package]]
@@ -1785,6 +1865,15 @@ name = "httpdate"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4a1e36c821dbe04574f602848a19f742f4fb3c98d40449f11bcad18d6b17421"
+
+[[package]]
+name = "humantime"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
+dependencies = [
+ "quick-error",
+]
 
 [[package]]
 name = "humantime"
@@ -2066,9 +2155,9 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
- "env_logger",
+ "env_logger 0.10.0",
  "eth-types",
  "halo2_proofs",
  "itertools 0.11.0",
@@ -2083,7 +2172,7 @@ version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 dependencies = [
- "spin",
+ "spin 0.5.2",
 ]
 
 [[package]]
@@ -2159,6 +2248,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "maybe-rayon"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ea1f30cedd69f0a2954655f7188c6a834246d2bcf1e315e2ac40c4b24dc9519"
+dependencies = [
+ "cfg-if 1.0.0",
+ "rayon",
+]
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2219,7 +2318,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "eth-types",
  "ethers-core 2.0.7",
@@ -2234,7 +2333,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "eth-types",
  "halo2-mpt-circuits",
@@ -2705,7 +2804,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -2744,6 +2843,12 @@ checksum = "5787f7cda34e3033a72192c018bc5883100330f362ef279a8cbccfce8bb4e874"
 dependencies = [
  "cc",
 ]
+
+[[package]]
+name = "quick-error"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
 name = "quote"
@@ -2994,7 +3099,7 @@ dependencies = [
  "cc",
  "libc",
  "once_cell",
- "spin",
+ "spin 0.5.2",
  "untrusted",
  "web-sys",
  "winapi",
@@ -3050,6 +3155,35 @@ name = "ruint-macro"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62cc5760263ea229d367e7dff3c0cbf09e4797a125bd87059a6c095804f3b2d1"
+
+[[package]]
+name = "rustacuda"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47208516ab5338b592d63560e90eaef405d0ec880347eaf7742d893b0a31e228"
+dependencies = [
+ "bitflags 1.3.2",
+ "cuda-driver-sys",
+ "rustacuda_core",
+ "rustacuda_derive",
+]
+
+[[package]]
+name = "rustacuda_core"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3858b08976dc2f860c5efbbb48cdcb0d4fafca92a6ac0898465af16c0dbe848"
+
+[[package]]
+name = "rustacuda_derive"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43ce8670a1a1d0fc2514a3b846dacdb65646f9bd494b6674cfacbb4ce430bd7e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "rustc-demangle"
@@ -3505,7 +3639,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#8085ab39dd8386b804083951d85e609b79af87c9"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#114cea6cd025f7daf66b8f0038126a796653e207"
 dependencies = [
  "bytes",
  "ethereum-types",
@@ -3528,7 +3662,7 @@ dependencies = [
 [[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#8085ab39dd8386b804083951d85e609b79af87c9"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#114cea6cd025f7daf66b8f0038126a796653e207"
 dependencies = [
  "bincode",
  "ethereum-types",
@@ -3572,6 +3706,15 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "spin"
+version = "0.9.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "spki"
@@ -4466,6 +4609,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "yastl"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ca6c5a4d66c1a9ea261811cf4773c27343de7e5033e1b75ea3f297dc7db3c1a"
+dependencies = [
+ "flume",
+ "scopeguard",
+]
+
+[[package]]
 name = "zeroize"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4474,12 +4627,12 @@ checksum = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9"
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#80fda944600ab2b38ffc4fb02c7511cfa6713c7b"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test240108#889e91cb1b2513c4c5eb16b7c9b75ae9d81fc4e8"
 dependencies = [
  "array-init",
  "bus-mapping",
  "either",
- "env_logger",
+ "env_logger 0.10.0",
  "eth-types",
  "ethers-core 2.0.7",
  "ethers-signers",
@@ -4522,11 +4675,6 @@ dependencies = [
 ]
 
 [[patch.unused]]
-name = "halo2curves"
-version = "0.3.1"
-source = "git+https://github.com/scroll-tech/halo2curves.git?branch=0.3.1-derive-serde#969f1e44d9713ee4cd552563bd0c762c5d53b56e"
-
-[[patch.unused]]
 name = "halo2wrong"
 version = "0.1.0"
 source = "git+https://github.com/scroll-tech/halo2wrong.git?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
@@ -4535,3 +4683,8 @@ source = "git+https://github.com/scroll-tech/halo2wrong.git?branch=halo2-ecc-sna
 name = "maingate"
 version = "0.1.0"
 source = "git+https://github.com/scroll-tech/halo2wrong.git?branch=halo2-ecc-snark-verifier-0323#939d679cb16abf0e820bd606248661e400328afa"
+
+[[patch.unused]]
+name = "halo2curves"
+version = "0.3.1"
+source = "git+https://github.com/scroll-tech/halo2curves.git?branch=0.3.1-derive-serde#969f1e44d9713ee4cd552563bd0c762c5d53b56e"
