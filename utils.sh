@@ -24,8 +24,8 @@ function simple_tests() {
 }
 
 function replace_zkevm_circuits_branch() {
-	TO='tag = "v0.9.7"'
-	FROM='branch = "develop"'
+	FROM='tag = "v0.9.7"'
+	TO='branch = "develop"'
 	#FROM='branch = "refactor/partial-db"'
 	sed -i "s#zkevm-circuits.git\", $FROM#zkevm-circuits.git\", $TO#" Cargo.toml
 	cargo update -p zkevm-circuits
