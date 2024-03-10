@@ -1,4 +1,6 @@
-CURRENTDATE=`date +"%Y-%m-%d"`
+CURRENTDATE := $(shell date +"%Y-%m-%d")
+
+.PHONY: help test-ci test-all build-release fmt clippy test bridge-test mock mock-debug mock-testnet test-inner-prove test-chunk-prove test-agg-prove test-batch-prove test-batches-with-each-chunk-num-prove test-ccc rows download-setup
 
 help: ## Display this help screen
 	@grep -h \
@@ -26,39 +28,38 @@ bridge-test:
 	cargo build --release
 	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
 
-mock:
+mock: ## Run mock test
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
 
-mock-debug:
+mock-debug: ## Run mock test with debug
 	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
 
-mock-testnet:
+mock-testnet: ## Run mock testnet
 	@cargo run --bin mock_testnet --release
 
-test-inner-prove:
+test-inner-prove: ## Run inner prove verification test
 	@cargo test --features prove_verify --release test_inner_prove_verify
 
-test-chunk-prove:
+test-chunk-prove: ## Run chunk prove verification test
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
-test-agg-prove:
+test-agg-prove: ## Run aggregate prove verification test
 	@cargo test --features prove_verify --release test_agg_prove_verify
 
-test-batch-prove:
+test-batch-prove: ## Run batch prove verification test
 	@cargo test --features prove_verify --release test_batch_prove_verify
 
-test-batches-with-each-chunk-num-prove:
+test-batches-with-each-chunk-num-prove: ## Run batches with each chunk num prove verification test
 	@cargo test --features prove_verify --release test_batches_with_each_chunk_num_prove_verify
 
-test-ccc:
+test-ccc: ## Run capacity checker test
 	@cargo test --release test_capacity_checker
 
-rows:
+rows: ## Estimate circuit rows
 	@cargo test --features prove_verify --release estimate_circuit_rows
 
-# Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
-# As default `degree=25` and `params_dir=./prover/test_params`.
-download-setup:
+download-setup: ## Download setup
 	sh download_setup.sh ${degree} ${params_dir}
 
 .PHONY: help fmt clippy test test-ci test-all
+	
