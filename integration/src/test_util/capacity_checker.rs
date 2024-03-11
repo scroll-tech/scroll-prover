@@ -90,7 +90,7 @@ fn ccc_block_whole_block(
     block: &BlockTrace,
 ) {
     checker
-        .estimate_circuit_capacity(slice::from_ref(block))
+        .estimate_circuit_capacity(block.clone())
         .unwrap();
 }
 
@@ -120,7 +120,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             tx_storage_trace: vec![], // not used
         };
         log::debug!("calling estimate_circuit_capacity");
-        let results = checker.estimate_circuit_capacity(&[tx_trace]).unwrap();
+        let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
         log::info!(
             "after {}th block {}th tx: {:#?}",
             block_idx,
@@ -220,7 +220,9 @@ fn get_ccc_result_by_whole_block(
     let mut checker = CircuitCapacityChecker::new();
     checker.light_mode = light_mode;
 
-    checker.estimate_circuit_capacity(blocks).unwrap();
+    for block in blocks {
+       checker.estimate_circuit_capacity(block.clone()).unwrap();
+    }
     let ccc_result = checker.get_acc_row_usage(false);
     pretty_print_row_usage(
         &ccc_result,

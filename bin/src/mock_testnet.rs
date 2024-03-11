@@ -88,7 +88,7 @@ async fn main() {
 }
 
 fn build_block(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> Result<WitnessBlock> {
-    let witness_block = block_traces_to_witness_block(block_traces)?;
+    let witness_block = block_traces_to_witness_block(Vec::from(block_traces))?;
     run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
     Ok(witness_block)
 }
