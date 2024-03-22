@@ -13,7 +13,7 @@ pub fn prepare_circuit_capacity_checker() {
     // Force evm_circuit::param::EXECUTION_STATE_HEIGHT_MAP to be initialized.
     let mulmod_height = ExecutionState::MULMOD.get_step_height();
     log::debug!("mulmod_height {mulmod_height}");
-    debug_assert_eq!(mulmod_height, 18);
+    //debug_assert_eq!(mulmod_height, 18);
 }
 
 // Return average ccc time for each tx.

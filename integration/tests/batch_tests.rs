@@ -55,7 +55,7 @@ fn load_chunk_hashes_and_proofs(
 
     let chunk_hashes_proofs: Vec<_> = chunk_hashes[..]
         .iter()
-        .copied()
+        .cloned()
         .zip(chunk_proofs[..].iter().cloned())
         .collect();
 
