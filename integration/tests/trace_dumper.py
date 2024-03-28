@@ -33,7 +33,7 @@ for chunk in chunks_data['chunks']:
     # Process each block in the chunk
     for block_number in range(start_block, end_block + 1):
         # Convert the block number to hex
-        hex_block_number = hex(block_number)[2:]
+        hex_block_number = hex(block_number)
 
         # Make the request to get the block trace
         payload = {
