@@ -14,7 +14,9 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let trace_paths = vec![read_env_var("TRACE_PATH", "./tests/extra_traces/new.json".to_string())];
+    //let trace_paths = vec![read_env_var("TRACE_PATH", "./tests/extra_traces/new.json".to_string())];
+    let trace_paths = ["./tests/extra_traces/batch_25_lite/chunk_112".to_string(), "./tests/extra_traces/batch_25_lite/chunk_113".to_string()];
+    //let trace_paths = ["./tests/extra_traces/batch_25/chunk_113".to_string()];
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
 
     let mut batch_prover = new_batch_prover(&output_dir);

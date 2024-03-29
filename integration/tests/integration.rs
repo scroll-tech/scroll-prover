@@ -130,15 +130,16 @@ fn test_vk_same() {
     use halo2_proofs::dev::MockProver;
     init_env_and_log("integration");
     type C = SuperCircuit;
-    let block_trace = load_block_traces_for_test().1;
-    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
+    let [p1, p2] = ["./tests/extra_traces/batch_25/chunk_112".to_string(), "./tests/extra_traces/batch_25/chunk_113".to_string()];
+    std::env::set_var("TRACE_PATH", p1);
+    let block_trace1 = load_block_traces_for_test().1;
+    std::env::set_var("TRACE_PATH", p2);
+    let block_trace2 = load_block_traces_for_test().1;
 
+    //// Mock Part
+    //let dummy_circuit = C::from_block_traces(block_trace1).unwrap().0;
     let dummy_circuit = C::dummy_inner_circuit();
-    let real_circuit = C::from_block_traces(block_trace).unwrap().0;
-    let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
-    let vk_real = keygen_vk(&params, &real_circuit).unwrap();
-    let vk_empty_bytes = serialize_vk(&vk_empty);
-    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
+    let real_circuit = C::from_block_traces(block_trace2).unwrap().0;
 
     let prover1 =
         MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();
@@ -162,6 +163,13 @@ fn test_vk_same() {
         }
     }
 
+    //// Real Part
+    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
+
+    let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
+    let vk_real = keygen_vk(&params, &real_circuit).unwrap();
+    let vk_empty_bytes = serialize_vk(&vk_empty);
+    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
     assert_eq!(
         vk_empty.fixed_commitments().len(),
         vk_real.fixed_commitments().len()
