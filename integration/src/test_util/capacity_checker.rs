@@ -89,9 +89,7 @@ fn ccc_block_whole_block(
     _block_idx: usize,
     block: &BlockTrace,
 ) {
-    checker
-        .estimate_circuit_capacity(block.clone())
-        .unwrap();
+    checker.estimate_circuit_capacity(block.clone()).unwrap();
 }
 
 fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, block: &BlockTrace) {
@@ -221,7 +219,7 @@ fn get_ccc_result_by_whole_block(
     checker.light_mode = light_mode;
 
     for block in blocks {
-       checker.estimate_circuit_capacity(block.clone()).unwrap();
+        checker.estimate_circuit_capacity(block.clone()).unwrap();
     }
     let ccc_result = checker.get_acc_row_usage(false);
     pretty_print_row_usage(
