@@ -42,7 +42,7 @@ for chunk in chunks_data['chunks']:
             'params': [hex_block_number],
             'id': 99
         }
-        response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json'})
+        response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'})
         block_data = response.json()
 
         # Save the block JSON to a file
@@ -51,4 +51,3 @@ for chunk in chunks_data['chunks']:
             json.dump(block_data, f, indent=2)
 
         print('Saved block {} to {}'.format(block_number, block_file))
-
