@@ -1,5 +1,5 @@
-IN=integration/agg_tests_output_multi_20240327_094840
-OUT=release-v0.10.0
+IN=integration/agg_tests_output_multi_20240330_085248
+OUT=release-v0.10.0i
 
 mkdir -p $OUT
 cp $IN/chunk_chunk_0.protocol $OUT/chunk.protocol
