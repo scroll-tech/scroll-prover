@@ -1,12 +1,23 @@
 use integration::test_util::{
     gen_and_verify_batch_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR,
 };
+use itertools::Itertools;
 use prover::{
     aggregator::Prover,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
-    zkevm, ChunkHash, ChunkProof,
+    zkevm, BatchHash, ChunkHash, ChunkProof,
 };
 use std::env;
+
+#[test]
+fn test_batch_pi_consistency() {
+    let trace_paths = ["./batch_24/chunk_115", "./batch_24/chunk_116"]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+    log_batch_pi(&trace_paths);
+}
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -59,6 +70,47 @@ fn gen_chunk_hashes_and_proofs(
 
     log::info!("Generated chunk hashes and proofs");
     chunk_hashes_proofs
+}
+
+fn log_batch_pi(trace_paths: &[String]) {
+    let max_num_snarks = 15;
+    let chunk_traces: Vec<_> = trace_paths
+        .iter()
+        .map(|trace_path| {
+            env::set_var("TRACE_PATH", trace_path);
+            load_block_traces_for_test().1
+        })
+        .collect();
+
+    let mut chunk_hashes: Vec<ChunkHash> = chunk_traces
+        .into_iter()
+        .enumerate()
+        .map(|(i, chunk_trace)| {
+            let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
+            ChunkHash::from_witness_block(&witness_block, false)
+        })
+        .collect();
+
+    let real_chunk_count = chunk_hashes.len();
+    if real_chunk_count < max_num_snarks {
+        let mut padding_chunk_hash = chunk_hashes.last().unwrap().clone();
+        padding_chunk_hash.is_padding = true;
+
+        // Extend to MAX_AGG_SNARKS for both chunk hashes and layer-2 snarks.
+        chunk_hashes
+            .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
+    }
+
+    let batch_hash = BatchHash::construct(&chunk_hashes);
+    let blob = batch_hash.blob_assignments();
+
+    let challenge = blob.challenge.clone();
+    let evaluation = blob.evaluation.clone();
+    println!("blob.challenge: {challenge:x}");
+    println!("blob.evaluation: {evaluation:x}");
+    for (i, elem) in blob.coefficients.iter().enumerate() {
+        println!("blob.coeffs[{}]: {elem:x}", i);
+    }
 }
 
 fn new_batch_prover(assets_dir: &str) -> Prover {
