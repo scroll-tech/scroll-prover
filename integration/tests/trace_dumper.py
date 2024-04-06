@@ -11,21 +11,13 @@ args = parser.parse_args()
 # Define the URLs for the RPC calls
 chunks_url = 'http://34.222.160.221:8560/api/chunks?batch_index={}'.format(args.batch_id)
 block_trace_url = 'http://35.93.54.141:8545'
-
-# Make the request to get the chunk information
-response = requests.get(chunks_url)
-chunks_data = response.json()
+block_trace_url = 'http://18.236.206.203:9999'
 
 # Create the directory for the batch
 batch_dir = os.path.join(os.getcwd(), 'batch_{}'.format(args.batch_id))
 os.makedirs(batch_dir, exist_ok=True)
 
-# Process each chunk
-for chunk in chunks_data['chunks']:
-    chunk_id = chunk['index']
-    start_block = chunk['start_block_number']
-    end_block = chunk['end_block_number']
-
+def download_chunk(chunk_id, start_block, end_block):
     # Create the directory for the chunk
     chunk_dir = os.path.join(batch_dir, 'chunk_{}'.format(chunk_id))
     os.makedirs(chunk_dir, exist_ok=True)
@@ -51,3 +43,19 @@ for chunk in chunks_data['chunks']:
             json.dump(block_data, f, indent=2)
 
         print('Saved block {} to {}'.format(block_number, block_file))
+
+def download_batch():
+    # Make the request to get the chunk information
+    response = requests.get(chunks_url)
+    chunks_data = response.json()
+
+    # Process each chunk
+    for chunk in chunks_data['chunks']:
+        chunk_id = chunk['index']
+        start_block = chunk['start_block_number']
+        end_block = chunk['end_block_number']
+        download_chunk(chunk_id, start_block, end_block)
+
+if __name__ == "__main__":
+    #download_batch()
+    download_chunk(1, 1, 4)
