@@ -70,4 +70,4 @@ jobs:
         env:
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: 5
       - name: Run tests
-        run: cargo test --verbose
+        run: make test
