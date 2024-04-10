@@ -21,5 +21,5 @@ serde.workspace = true
 serde_derive.workspace = true
 
 [features]
-default = ["prove_verify"]
+default = []
 prove_verify = []
