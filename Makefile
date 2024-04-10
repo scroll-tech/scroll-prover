@@ -1,5 +1,8 @@
 CURRENTDATE=`date +"%Y-%m-%d"`
 
+CHAIN_ID ?= 534352
+export CHAIN_ID
+
 help: ## Display this help screen
 	@grep -h \
 		-E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \

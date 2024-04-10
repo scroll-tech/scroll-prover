@@ -25,13 +25,13 @@ pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
         "empty" => "./tests/traces/bridge/01.json",
         "greeter" => "./tests/traces/greeter/setValue.json",
         "single" => "./tests/traces/erc20/1_transfer.json",
-        "multiple" => "./tests/traces/erc20/10_transfer.json",
+        "multiple" => "./tests/extra_traces/batch_495/chunk_495/block_8802.json",
         "multiswap" => "./tests/traces/multi_uniswapv2/router-swapExactTokensForTokens_34.json",
         "native" => "./tests/traces/native/transfer.json",
         "dao" => "./tests/traces/dao/dao-propose.json",
         "nft" => "./tests/traces/nft/mint.json",
         "sushi" => "./tests/traces/sushi/chef-withdraw.json",
-        _ => "./tests/extra_traces/new.json",
+        _ => "./tests/extra_traces/batch_495/chunk_495/block_8802.json",
     };
     log::info!("using mode {:?}, testing with {:?}", mode, trace_path);
     trace_path
