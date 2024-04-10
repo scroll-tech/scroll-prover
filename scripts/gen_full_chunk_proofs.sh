@@ -1,4 +1,5 @@
 set -e
+set -u
 
 # The first command argument is batch-index.
 batch_index=$1
