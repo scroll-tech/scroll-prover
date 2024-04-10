@@ -3,10 +3,31 @@ use integration::test_util::{
 };
 use prover::{
     aggregator::Prover,
-    utils::{chunk_trace_to_witness_block, init_env_and_log},
-    zkevm, ChunkHash, ChunkProof,
+    utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
+    zkevm, BatchHash, ChunkHash, ChunkProof,
 };
 use std::env;
+
+fn load_batch() -> anyhow::Result<Vec<String>> {
+    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_24".to_string());
+    let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect::<Vec<String>>();
+    sorted_dirs.sort();
+    log::info!("batch content: {:?}", sorted_dirs);
+    Ok(sorted_dirs)
+}
+
+#[test]
+fn test_batch_pi_consistency() {
+    let output_dir = init_env_and_log("batch_pi");
+    log::info!("Initialized ENV and created output-dir {output_dir}");
+    let trace_paths = load_batch().unwrap();
+    log_batch_pi(&trace_paths);
+}
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -14,7 +35,7 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let trace_paths = vec!["./tests/extra_traces/new.json".to_string()];
+    let trace_paths = load_batch().unwrap();
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
 
     let mut batch_prover = new_batch_prover(&output_dir);
@@ -53,6 +74,47 @@ fn gen_chunk_hashes_and_proofs(
 
     log::info!("Generated chunk hashes and proofs");
     chunk_hashes_proofs
+}
+
+fn log_batch_pi(trace_paths: &[String]) {
+    let max_num_snarks = 15;
+    let chunk_traces: Vec<_> = trace_paths
+        .iter()
+        .map(|trace_path| {
+            env::set_var("TRACE_PATH", trace_path);
+            load_block_traces_for_test().1
+        })
+        .collect();
+
+    let mut chunk_hashes: Vec<ChunkHash> = chunk_traces
+        .into_iter()
+        .enumerate()
+        .map(|(_i, chunk_trace)| {
+            let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
+            ChunkHash::from_witness_block(&witness_block, false)
+        })
+        .collect();
+
+    let real_chunk_count = chunk_hashes.len();
+    if real_chunk_count < max_num_snarks {
+        let mut padding_chunk_hash = chunk_hashes.last().unwrap().clone();
+        padding_chunk_hash.is_padding = true;
+
+        // Extend to MAX_AGG_SNARKS for both chunk hashes and layer-2 snarks.
+        chunk_hashes
+            .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
+    }
+
+    let batch_hash = BatchHash::construct(&chunk_hashes);
+    let blob = batch_hash.blob_assignments();
+
+    let challenge = blob.challenge;
+    let evaluation = blob.evaluation;
+    println!("blob.challenge: {challenge:x}");
+    println!("blob.evaluation: {evaluation:x}");
+    for (i, elem) in blob.coefficients.iter().enumerate() {
+        println!("blob.coeffs[{}]: {elem:x}", i);
+    }
 }
 
 fn new_batch_prover(assets_dir: &str) -> Prover {

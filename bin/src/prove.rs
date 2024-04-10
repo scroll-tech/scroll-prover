@@ -5,7 +5,7 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 pub fn prove_batch(id: &str, chunk_proofs: Vec<ChunkProof>) {
     let chunk_hashes_proofs = chunk_proofs
         .into_iter()
-        .map(|proof| (proof.chunk_hash.unwrap(), proof))
+        .map(|proof| (proof.chunk_hash.clone().unwrap(), proof))
         .collect();
 
     let result = catch_unwind(AssertUnwindSafe(|| {

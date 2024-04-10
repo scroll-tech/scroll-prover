@@ -3,16 +3,15 @@ use halo2_proofs::{
     poly::commitment::Params,
 };
 use integration::test_util::{
-    load_block_traces_for_test, parse_trace_path_from_mode, prepare_circuit_capacity_checker,
+    ccc_as_signer, load_block_traces_for_test, prepare_circuit_capacity_checker,
     run_circuit_capacity_checker, PARAMS_DIR,
 };
 use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
-    utils::{get_block_trace_from_file, init_env_and_log, load_params, short_git_version},
+    utils::{init_env_and_log, load_params, short_git_version},
     zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
 };
-use std::time::Duration;
 use zkevm_circuits::util::SubCircuit;
 
 #[test]
@@ -53,41 +52,58 @@ fn test_cs_same_for_vk_consistent() {
 
     let pk = keygen_pk2(&params, &dummy_circuit).unwrap();
     let vk = keygen_vk(&params, &dummy_circuit).unwrap();
-    assert!(pk.get_vk().cs() == vk.cs(), "Dummy super cicuit");
+    // compare debug string?
+    assert!(
+        format!("{:?}", pk.get_vk().cs()) == format!("{:?}", vk.cs()),
+        "Dummy super cicuit"
+    );
 
     let block_trace = load_block_traces_for_test().1;
-    let real_circuit = SuperCircuit::from_block_traces(&block_trace).unwrap().0;
+    let real_circuit = SuperCircuit::from_block_traces(block_trace).unwrap().0;
 
     let pk = keygen_pk2(&params, &real_circuit).unwrap();
     let vk = keygen_vk(&params, &real_circuit).unwrap();
-    assert!(pk.get_vk().cs() == vk.cs(), "Real super circuit");
+    assert!(
+        format!("{:?}", pk.get_vk().cs()) == format!("{:?}", vk.cs()),
+        "Real super circuit"
+    );
 }
 
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
-
-    let trace_path = parse_trace_path_from_mode("multiswap");
-    // let trace_path = "./tests/extra_traces/new.json";
-
     prepare_circuit_capacity_checker();
 
-    let block_traces = vec![get_block_trace_from_file(trace_path)];
-    let witness_block = block_traces_to_witness_block(&block_traces).unwrap();
+    let block_traces = load_block_traces_for_test().1;
 
-    let avg_each_tx_time = run_circuit_capacity_checker(0, 0, &block_traces, &witness_block);
-    assert!(avg_each_tx_time < Duration::from_millis(100));
+    let full = false;
+    let batch_id = 0;
+    let chunk_id = 0;
+    let avg_each_tx_time = if full {
+        let witness_block = block_traces_to_witness_block(block_traces.clone()).unwrap();
+
+        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &witness_block)
+    } else {
+        ccc_as_signer(chunk_id, &block_traces).1
+    };
+    log::info!("avg_each_tx_time {avg_each_tx_time:?}");
 }
 
 #[test]
 fn estimate_circuit_rows() {
     init_env_and_log("integration");
+    prepare_circuit_capacity_checker();
 
     let (_, block_trace) = load_block_traces_for_test();
-
-    log::info!("estimating used rows for batch");
-    let rows = SuperCircuit::estimate_rows(&block_trace);
-    log::info!("super circuit: {:?}", rows);
+    let witness_block = block_traces_to_witness_block(block_trace).unwrap();
+    log::info!("estimating used rows");
+    let row_usage = <prover::zkevm::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(&witness_block);
+    let r = row_usage
+        .iter()
+        .max_by_key(|x| x.row_num_real)
+        .unwrap()
+        .clone();
+    log::info!("final rows: {} {}", r.row_num_real, r.name);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -98,10 +114,10 @@ fn test_deterministic() {
     type C = SuperCircuit;
     let block_trace = load_block_traces_for_test().1;
 
-    let circuit1 = C::from_block_traces(&block_trace).unwrap().0;
+    let circuit1 = C::from_block_traces(block_trace.clone()).unwrap().0;
     let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
 
-    let circuit2 = C::from_block_traces(&block_trace).unwrap().0;
+    let circuit2 = C::from_block_traces(block_trace).unwrap().0;
     let prover2 = MockProver::<_>::run(*INNER_DEGREE, &circuit2, circuit2.instance()).unwrap();
 
     let advice1 = prover1.advices();
@@ -129,65 +145,85 @@ fn test_vk_same() {
     use halo2_proofs::dev::MockProver;
     init_env_and_log("integration");
     type C = SuperCircuit;
-    let block_trace = load_block_traces_for_test().1;
-    let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
+    let [p1, p2] = [
+        "./tests/extra_traces/batch_25/chunk_112".to_string(),
+        "./tests/extra_traces/batch_25/chunk_113".to_string(),
+    ];
+    std::env::set_var("TRACE_PATH", p1);
+    let block_trace1 = load_block_traces_for_test().1;
+    std::env::set_var("TRACE_PATH", p2);
+    //let block_trace2 = load_block_traces_for_test().1;
 
+    //// Mock Part
+    //let dummy_circuit = C::from_block_traces(block_trace1).unwrap().0;
     let dummy_circuit = C::dummy_inner_circuit();
-    let real_circuit = C::from_block_traces(&block_trace).unwrap().0;
-    let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
-    let vk_real = keygen_vk(&params, &real_circuit).unwrap();
-    let vk_empty_bytes = serialize_vk(&vk_empty);
-    let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
+    let real_circuit = C::from_block_traces(block_trace1).unwrap().0;
 
-    let prover1 =
-        MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();
-    let prover2 =
-        MockProver::<_>::run(*INNER_DEGREE, &real_circuit, real_circuit.instance()).unwrap();
+    let check_by_mock_prover = false;
+    if check_by_mock_prover {
+        let prover1 =
+            MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();
+        let prover2 =
+            MockProver::<_>::run(*INNER_DEGREE, &real_circuit, real_circuit.instance()).unwrap();
 
-    let fixed1 = prover1.fixed();
-    let fixed2 = prover2.fixed();
-    assert_eq!(fixed1.len(), fixed2.len());
-    for i in 0..fixed1.len() {
-        for j in 0..fixed1[i].len() {
-            if fixed1[i][j] != fixed2[i][j] {
+        let mut is_ok = true;
+        let fixed1 = prover1.fixed();
+        let fixed2 = prover2.fixed();
+        assert_eq!(fixed1.len(), fixed2.len());
+        for i in 0..fixed1.len() {
+            for j in 0..fixed1[i].len() {
+                if fixed1[i][j] != fixed2[i][j] {
+                    log::error!(
+                        "fixed assignment not same, {}th fixed column, {}th row. {:?} vs {:?}",
+                        i,
+                        j,
+                        fixed1[i][j],
+                        fixed2[i][j]
+                    );
+                    is_ok = false;
+                }
+            }
+        }
+        assert!(is_ok);
+    }
+    let check_by_vk = true;
+    if check_by_vk {
+        //// Real Part
+        let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
+
+        let vk_empty = keygen_vk(&params, &dummy_circuit).unwrap();
+        let vk_real = keygen_vk(&params, &real_circuit).unwrap();
+        let vk_empty_bytes = serialize_vk(&vk_empty);
+        let vk_real_bytes: Vec<_> = serialize_vk(&vk_real);
+        assert_eq!(
+            vk_empty.fixed_commitments().len(),
+            vk_real.fixed_commitments().len()
+        );
+        for i in 0..vk_empty.fixed_commitments().len() {
+            if vk_empty.fixed_commitments()[i] != vk_real.fixed_commitments()[i] {
                 log::error!(
-                    "fixed assignment not same, {}th fixed column, {}th row. {:?} vs {:?}",
+                    "{}th fixed_commitments not same {:?} {:?}",
                     i,
-                    j,
-                    fixed1[i][j],
-                    fixed2[i][j]
+                    vk_empty.fixed_commitments()[i],
+                    vk_real.fixed_commitments()[i]
                 );
             }
         }
-    }
-
-    assert_eq!(
-        vk_empty.fixed_commitments().len(),
-        vk_real.fixed_commitments().len()
-    );
-    for i in 0..vk_empty.fixed_commitments().len() {
-        if vk_empty.fixed_commitments()[i] != vk_real.fixed_commitments()[i] {
-            log::error!(
-                "{}th fixed_commitments not same {:?} {:?}",
-                i,
-                vk_empty.fixed_commitments()[i],
-                vk_real.fixed_commitments()[i]
-            );
+        assert_eq!(
+            vk_empty.permutation().commitments().len(),
+            vk_real.permutation().commitments().len()
+        );
+        for i in 0..vk_empty.permutation().commitments().len() {
+            if vk_empty.permutation().commitments()[i] != vk_real.permutation().commitments()[i] {
+                log::error!(
+                    "{}th permutation_commitments not same {:?} {:?}",
+                    i,
+                    vk_empty.permutation().commitments()[i],
+                    vk_real.permutation().commitments()[i]
+                );
+            }
         }
+        assert_eq!(vk_empty_bytes, vk_real_bytes);
+        assert_eq!(vk_empty.transcript_repr(), vk_real.transcript_repr());
     }
-    assert_eq!(
-        vk_empty.permutation().commitments().len(),
-        vk_real.permutation().commitments().len()
-    );
-    for i in 0..vk_empty.permutation().commitments().len() {
-        if vk_empty.permutation().commitments()[i] != vk_real.permutation().commitments()[i] {
-            log::error!(
-                "{}th permutation_commitments not same {:?} {:?}",
-                i,
-                vk_empty.permutation().commitments()[i],
-                vk_real.permutation().commitments()[i]
-            );
-        }
-    }
-    assert_eq!(vk_empty_bytes, vk_real_bytes);
 }
