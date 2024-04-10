@@ -1,7 +1,6 @@
 use integration::test_util::{
     gen_and_verify_batch_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR,
 };
-use itertools::Itertools;
 use prover::{
     aggregator::Prover,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
@@ -9,13 +8,24 @@ use prover::{
 };
 use std::env;
 
+fn load_batch() -> anyhow::Result<Vec<String>> {
+    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_24".to_string());
+    let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect::<Vec<String>>();
+    sorted_dirs.sort();
+    log::info!("batch content: {:?}", sorted_dirs);
+    Ok(sorted_dirs)
+}
+
 #[test]
 fn test_batch_pi_consistency() {
-    let trace_paths = ["./batch_24/chunk_115", "./batch_24/chunk_116"]
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect::<Vec<_>>();
-
+    let output_dir = init_env_and_log("batch_pi");
+    log::info!("Initialized ENV and created output-dir {output_dir}");
+    let trace_paths = load_batch().unwrap();
     log_batch_pi(&trace_paths);
 }
 
@@ -25,13 +35,7 @@ fn test_agg_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    //let trace_paths = vec![read_env_var("TRACE_PATH",
-    // "./tests/extra_traces/new.json".to_string())];
-    let trace_paths = [
-        "./tests/extra_traces/batch_25_lite/chunk_112".to_string(),
-        "./tests/extra_traces/batch_25_lite/chunk_113".to_string(),
-    ];
-    //let trace_paths = ["./tests/extra_traces/batch_25/chunk_113".to_string()];
+    let trace_paths = load_batch().unwrap();
     let chunk_hashes_proofs = gen_chunk_hashes_and_proofs(&output_dir, &trace_paths);
 
     let mut batch_prover = new_batch_prover(&output_dir);
@@ -85,7 +89,7 @@ fn log_batch_pi(trace_paths: &[String]) {
     let mut chunk_hashes: Vec<ChunkHash> = chunk_traces
         .into_iter()
         .enumerate()
-        .map(|(i, chunk_trace)| {
+        .map(|(_i, chunk_trace)| {
             let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
             ChunkHash::from_witness_block(&witness_block, false)
         })
@@ -104,8 +108,8 @@ fn log_batch_pi(trace_paths: &[String]) {
     let batch_hash = BatchHash::construct(&chunk_hashes);
     let blob = batch_hash.blob_assignments();
 
-    let challenge = blob.challenge.clone();
-    let evaluation = blob.evaluation.clone();
+    let challenge = blob.challenge;
+    let evaluation = blob.evaluation;
     println!("blob.challenge: {challenge:x}");
     println!("blob.evaluation: {evaluation:x}");
     for (i, elem) in blob.coefficients.iter().enumerate() {

@@ -9,7 +9,7 @@ pub mod mock_plonk;
 mod proof;
 
 pub use capacity_checker::{
-    ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
+    ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
     run_circuit_capacity_checker,
 };
 pub use proof::{
