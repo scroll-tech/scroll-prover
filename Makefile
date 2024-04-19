@@ -2,6 +2,8 @@ CURRENTDATE=`date +"%Y-%m-%d"`
 
 CHAIN_ID ?= 534352
 export CHAIN_ID
+RUST_MIN_STACK ?= 100000000
+export RUST_MIN_STACK
 
 help: ## Display this help screen
 	@grep -h \
@@ -44,8 +46,8 @@ test-inner-prove:
 test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
-test-agg-prove:
-	@cargo test --features prove_verify --release test_agg_prove_verify
+test-e2e-prove:
+	@cargo test --features prove_verify --release test_e2e_prove_verify
 
 test-batch-prove:
 	@cargo test --features prove_verify --release test_batch_prove_verify

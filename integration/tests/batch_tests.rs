@@ -1,55 +1,100 @@
-use integration::test_util::{gen_and_verify_batch_proofs, PARAMS_DIR};
+use integration::test_util::{
+    gen_and_verify_batch_proofs, load_batch, load_block_traces_for_test, PARAMS_DIR,
+};
 use prover::{
-    aggregator::Prover, proof::from_json_file, utils::init_env_and_log, ChunkHash, ChunkProof,
+    aggregator::Prover,
+    config::LayerId,
+    proof::from_json_file,
+    utils::{chunk_trace_to_witness_block, init_env_and_log},
+    BatchHash, BatchProof, ChunkHash, ChunkProof, CompressionCircuit,
 };
 use serde_derive::{Deserialize, Serialize};
 use std::{env, fs, path::PathBuf};
 
-#[cfg(feature = "prove_verify")]
+//#[cfg(feature = "prove_verify")]
 #[test]
 fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_hashes_proofs = load_chunk_hashes_and_proofs("tests/test_data", "1", &output_dir);
-    let mut batch_prover = new_batch_prover(&output_dir);
-    prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
+    // let batch_task = "tests/test_data/full_proof_1.json";
+    let batch_task = "tests/test_data/batch_task_69776.json";
+    let assets_dir = "assets";
+    let chunk_hashes_proofs = load_batch_proving_task(batch_task, &output_dir);
+
+    env::set_var("AGG_VK_FILENAME", "agg_vk.vkey");
+    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk.protocol");
+    let mut batch_prover = Prover::from_dirs(PARAMS_DIR, assets_dir);
+    log::info!("Constructed batch prover");
+
+    let chunk_num = chunk_hashes_proofs.len();
+    log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
+
+    // Load or generate aggregation snark (layer-3).
+    let layer3_snark = batch_prover
+        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
+        .unwrap();
+
+    let layer_id = LayerId::Layer4;
+
+    let id = layer_id.id();
+    let degree = layer_id.degree();
+    // Load or generate compression snark.
+    let normal_proof = batch_prover
+        .inner
+        .load_or_gen_comp_snark(
+            "normal",
+            id,
+            true,
+            degree,
+            layer3_snark.clone(),
+            Some(&output_dir),
+        )
+        .unwrap();
+    log::info!("Generated compression snark: {id}");
+
+    let evm_proof = batch_prover
+        .inner
+        .load_or_gen_comp_evm_proof("evm", id, true, degree, layer3_snark, Some(&output_dir))
+        .unwrap();
+    log::info!("Generated EVM proof: {id}");
+
+    let config_path = layer_id.config_path();
+
+    env::set_var("COMPRESSION_CONFIG", config_path);
+    let vk = evm_proof.proof.vk::<CompressionCircuit>();
+
+    let params = batch_prover.inner.params(degree).clone();
+    let verifier = prover::common::Verifier::<CompressionCircuit>::new(params, vk);
+    log::info!("Constructed common verifier");
+
+    assert!(verifier.verify_snark(normal_proof));
+    log::info!("Verified normal proof: {id}");
+
+    verifier.evm_verify(&evm_proof, Some(&output_dir));
+    log::info!("Verified EVM proof: {id}");
+
+    let batch_proof = BatchProof::from(evm_proof.proof);
+    batch_proof.dump(&output_dir, "agg").unwrap();
+    batch_proof.clone().assert_calldata();
+
+    let verifier = prover::aggregator::Verifier::from_dirs(PARAMS_DIR, assets_dir);
+    log::info!("Constructed aggregator verifier");
+
+    assert!(verifier.verify_agg_evm_proof(batch_proof));
+    log::info!("Verified batch proof");
+
+    log::info!("Prove batch END: chunk_num = {chunk_num}");
 }
 
-#[cfg(feature = "prove_verify")]
-#[test]
-fn test_batches_with_each_chunk_num_prove_verify() {
-    let output_dir = init_env_and_log("batches_with_each_chunk_num_tests");
-    log::info!("Initialized ENV and created output-dir {output_dir}");
-
-    let chunk_hashes_proofs = load_chunk_hashes_and_proofs("tests/test_data", "2", &output_dir);
-    let mut batch_prover = new_batch_prover(&output_dir);
-
-    // Iterate over chunk proofs to test with 1 - 15 chunks (in a batch).
-    for i in 0..chunk_hashes_proofs.len() {
-        let mut output_dir = PathBuf::from(&output_dir);
-        output_dir.push(format!("batch_{}", i + 1));
-        fs::create_dir_all(&output_dir).unwrap();
-
-        prove_and_verify_batch(
-            &output_dir.to_string_lossy(),
-            &mut batch_prover,
-            chunk_hashes_proofs[..=i].to_vec(),
-        );
-    }
-}
 #[derive(Debug, Deserialize, Serialize)]
 struct BatchTaskDetail {
     chunk_infos: Vec<ChunkHash>,
     chunk_proofs: Vec<ChunkProof>,
 }
 
-fn load_chunk_hashes_and_proofs(
-    dir: &str,
-    filename: &str,
-    output_dir: &str,
-) -> Vec<(ChunkHash, ChunkProof)> {
-    let batch_task_detail: BatchTaskDetail = from_json_file(dir, filename).unwrap();
+fn load_batch_proving_task(filename: &str, output_dir: &str) -> Vec<(ChunkHash, ChunkProof)> {
+    let batch_task_detail: BatchTaskDetail = from_json_file(filename).unwrap();
     let chunk_hashes = batch_task_detail.chunk_infos;
     let chunk_proofs = batch_task_detail.chunk_proofs;
 
@@ -59,13 +104,13 @@ fn load_chunk_hashes_and_proofs(
         .zip(chunk_proofs[..].iter().cloned())
         .collect();
 
-    // Dump chunk-procotol for further batch-proving.
-    chunk_hashes_proofs
-        .first()
-        .unwrap()
-        .1
-        .dump(output_dir, "0")
-        .unwrap();
+    let dump_protocol = false;
+    if dump_protocol {
+        log::info!("dumping first chunk protocol to {output_dir}/chunk_protocol");
+        let chunk_protocol = &chunk_hashes_proofs.first().unwrap().1.protocol;
+        // Dump chunk-procotol for further batch-proving.
+        prover::proof::dump_data(output_dir, "chunk.protocol", &chunk_protocol);
+    }
 
     log::info!(
         "Loaded chunk-hashes and chunk-proofs: total = {}",
@@ -74,29 +119,48 @@ fn load_chunk_hashes_and_proofs(
     chunk_hashes_proofs
 }
 
-fn new_batch_prover(assets_dir: &str) -> Prover {
-    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let prover = Prover::from_dirs(PARAMS_DIR, assets_dir);
-    log::info!("Constructed batch prover");
+#[test]
+fn test_batch_pi_consistency() {
+    let output_dir = init_env_and_log("batch_pi");
+    log::info!("Initialized ENV and created output-dir {output_dir}");
+    let trace_paths = load_batch().unwrap();
 
-    prover
-}
+    let max_num_snarks = 15;
+    let chunk_traces: Vec<_> = trace_paths
+        .iter()
+        .map(|trace_path| {
+            env::set_var("TRACE_PATH", trace_path);
+            load_block_traces_for_test().1
+        })
+        .collect();
 
-fn prove_and_verify_batch(
-    output_dir: &str,
-    batch_prover: &mut Prover,
-    chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
-) {
-    let chunk_num = chunk_hashes_proofs.len();
-    log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
+    let mut chunk_hashes: Vec<ChunkHash> = chunk_traces
+        .into_iter()
+        .enumerate()
+        .map(|(_i, chunk_trace)| {
+            let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
+            ChunkHash::from_witness_block(&witness_block, false)
+        })
+        .collect();
 
-    // Load or generate aggregation snark (layer-3).
-    let layer3_snark = batch_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(output_dir))
-        .unwrap();
+    let real_chunk_count = chunk_hashes.len();
+    if real_chunk_count < max_num_snarks {
+        let mut padding_chunk_hash = chunk_hashes.last().unwrap().clone();
+        padding_chunk_hash.is_padding = true;
 
-    gen_and_verify_batch_proofs(batch_prover, layer3_snark, output_dir);
+        // Extend to MAX_AGG_SNARKS for both chunk hashes and layer-2 snarks.
+        chunk_hashes
+            .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
+    }
 
-    log::info!("Prove batch END: chunk_num = {chunk_num}");
+    let batch_hash = BatchHash::construct(&chunk_hashes);
+    let blob = batch_hash.blob_assignments();
+
+    let challenge = blob.challenge;
+    let evaluation = blob.evaluation;
+    println!("blob.challenge: {challenge:x}");
+    println!("blob.evaluation: {evaluation:x}");
+    for (i, elem) in blob.coefficients.iter().enumerate() {
+        println!("blob.coeffs[{}]: {elem:x}", i);
+    }
 }

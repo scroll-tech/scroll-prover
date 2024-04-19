@@ -7,29 +7,34 @@ use prover::{
 };
 use std::env;
 
-pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
-    let evm_proof = gen_and_verify_normal_and_evm_proofs(
+pub fn gen_and_verify_batch_proofs(
+    agg_prover: &mut Prover,
+    layer3_snark: Snark,
+    output_dir: &str,
+    assets_dir: &str,
+) {
+    let (_normal_proof, evm_proof) = gen_and_verify_normal_and_evm_proofs(
         &mut agg_prover.inner,
         LayerId::Layer4,
         layer3_snark,
         Some(output_dir),
-    )
-    .1;
-    verify_batch_proof(evm_proof, output_dir);
+    );
+    verify_batch_proof(evm_proof, output_dir, assets_dir);
 }
 
+// So here even for chunk, we generate and verify a evm proof
+// TODO: remove this?
 pub fn gen_and_verify_chunk_proofs(
     zkevm_prover: &mut zkevm::Prover,
     layer1_snark: Snark,
     output_dir: &str,
 ) {
-    let normal_proof = gen_and_verify_normal_and_evm_proofs(
+    let (normal_proof, _evm_proof) = gen_and_verify_normal_and_evm_proofs(
         &mut zkevm_prover.inner,
         LayerId::Layer2,
         layer1_snark,
         Some(output_dir),
-    )
-    .0;
+    );
     verify_chunk_proof(&zkevm_prover.inner, normal_proof, output_dir);
 }
 
@@ -99,12 +104,12 @@ fn gen_normal_proof(
     snark
 }
 
-fn verify_batch_proof(evm_proof: EvmProof, output_dir: &str) {
+fn verify_batch_proof(evm_proof: EvmProof, output_dir: &str, assets_dir: &str) {
     let batch_proof = BatchProof::from(evm_proof.proof);
     batch_proof.dump(output_dir, "agg").unwrap();
     batch_proof.clone().assert_calldata();
 
-    let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
+    let verifier = Verifier::from_dirs(PARAMS_DIR, assets_dir);
     log::info!("Constructed aggregator verifier");
 
     assert!(verifier.verify_agg_evm_proof(batch_proof));
