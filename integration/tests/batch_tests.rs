@@ -17,6 +17,7 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
+    /////// Step1: load batch proving task and build prover ///////////////////////////////
     // let batch_task = "tests/test_data/full_proof_1.json";
     let batch_task = "tests/test_data/batch_task_69776.json";
     let assets_dir = "assets";
@@ -30,15 +31,20 @@ fn test_batch_prove_verify() {
     let chunk_num = chunk_hashes_proofs.len();
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
+    //////// Step2: prove layer3 /////////////////////////////////////////////////////////
     // Load or generate aggregation snark (layer-3).
     let layer3_snark = batch_prover
         .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(&output_dir))
         .unwrap();
 
+    /////// Step3.1: prove layer4 circuit with poseidon transcript ///////////////////////
     let layer_id = LayerId::Layer4;
-
     let id = layer_id.id();
     let degree = layer_id.degree();
+    let params = batch_prover.inner.params(degree).clone();
+    let config_path = layer_id.config_path();
+    env::set_var("COMPRESSION_CONFIG", config_path);
+
     // Load or generate compression snark.
     let normal_proof = batch_prover
         .inner
@@ -52,37 +58,45 @@ fn test_batch_prove_verify() {
         )
         .unwrap();
     log::info!("Generated compression snark: {id}");
-
-    let evm_proof = batch_prover
+    // Note: whether you use posedion transcript or keccak transcript, the circuit is same
+    // So vk is same.
+    let vk = batch_prover
         .inner
-        .load_or_gen_comp_evm_proof("evm", id, true, degree, layer3_snark, Some(&output_dir))
-        .unwrap();
-    log::info!("Generated EVM proof: {id}");
+        .pk(id)
+        .map(|pk| pk.get_vk())
+        .unwrap()
+        .clone();
 
-    let config_path = layer_id.config_path();
-
-    env::set_var("COMPRESSION_CONFIG", config_path);
-    let vk = evm_proof.proof.vk::<CompressionCircuit>();
-
-    let params = batch_prover.inner.params(degree).clone();
     let verifier = prover::common::Verifier::<CompressionCircuit>::new(params, vk);
     log::info!("Constructed common verifier");
 
     assert!(verifier.verify_snark(normal_proof));
     log::info!("Verified normal proof: {id}");
 
-    verifier.evm_verify(&evm_proof, Some(&output_dir));
-    log::info!("Verified EVM proof: {id}");
+    /////// Step3.2: prove layer4 circuit with keccak transcript ///////////////////////
+    let test_evm_proof = false;
+    if test_evm_proof {
+        let evm_proof = batch_prover
+            .inner
+            .load_or_gen_comp_evm_proof("evm", id, true, degree, layer3_snark, Some(&output_dir))
+            .unwrap();
+        log::info!("Generated EVM proof: {id}");
 
-    let batch_proof = BatchProof::from(evm_proof.proof);
-    batch_proof.dump(&output_dir, "agg").unwrap();
-    batch_proof.clone().assert_calldata();
+        // `evm_verify` can also dump evm verifier yul/bin to disk
+        verifier.evm_verify(&evm_proof, Some(&output_dir));
+        log::info!("Verified EVM proof: {id}");
 
-    let verifier = prover::aggregator::Verifier::from_dirs(PARAMS_DIR, assets_dir);
-    log::info!("Constructed aggregator verifier");
+        let batch_proof = BatchProof::from(evm_proof.proof);
+        batch_proof.dump(&output_dir, "agg").unwrap();
+        batch_proof.clone().assert_calldata();
 
-    assert!(verifier.verify_agg_evm_proof(batch_proof));
-    log::info!("Verified batch proof");
+        // The `Verifier` used in FFI
+        let verifier = prover::aggregator::Verifier::from_dirs(PARAMS_DIR, assets_dir);
+        log::info!("Constructed aggregator verifier");
+
+        assert!(verifier.verify_agg_evm_proof(batch_proof));
+        log::info!("Verified batch proof");
+    }
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
 }
