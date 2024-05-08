@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "ark-std 0.3.0",
  "c-kzg",
@@ -537,7 +537,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -551,7 +551,7 @@ dependencies = [
  "mock",
  "mpt-zktrie",
  "num",
- "poseidon-circuit",
+ "poseidon-circuit 0.1.0 (git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main)",
  "rand",
  "revm-precompile",
  "serde",
@@ -1229,7 +1229,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1240,7 +1240,7 @@ dependencies = [
  "itertools 0.11.0",
  "num",
  "num-bigint",
- "poseidon-circuit",
+ "poseidon-circuit 0.1.0 (git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main)",
  "regex",
  "serde",
  "serde_json",
@@ -1383,7 +1383,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1575,7 +1575,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1597,7 +1597,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -1774,7 +1774,7 @@ dependencies = [
  "log",
  "num-bigint",
  "num-traits",
- "poseidon-circuit",
+ "poseidon-circuit 0.1.0 (git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-1201)",
  "rand",
  "rand_chacha",
  "serde",
@@ -2261,7 +2261,7 @@ dependencies = [
 [[package]]
 name = "keccak256"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "env_logger",
  "eth-types",
@@ -2430,7 +2430,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2445,7 +2445,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "eth-types",
  "halo2-mpt-circuits",
@@ -2453,7 +2453,7 @@ dependencies = [
  "hex",
  "log",
  "num-bigint",
- "poseidon-circuit",
+ "poseidon-circuit 0.1.0 (git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main)",
  "zktrie",
 ]
 
@@ -2816,6 +2816,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "poseidon-base"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
+dependencies = [
+ "bitvec",
+ "halo2curves",
+ "lazy_static",
+]
+
+[[package]]
+name = "poseidon-circuit"
+version = "0.1.0"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
+dependencies = [
+ "ff 0.13.0",
+ "halo2_proofs",
+ "log",
+ "poseidon-base",
+ "rand",
+ "rand_xorshift",
+ "thiserror",
+]
+
+[[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
 source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=scroll-dev-1201#c6f058bcf3bb0c7933d1979563c414f5cc480f25"
@@ -2922,7 +2946,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4747,7 +4771,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.0rc3#632a7906bad9f24f254fec85fd25a4b180b8b4d7"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.10.3#5776400eca902bf9a69306a07ea62ca6300dff76"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -4771,7 +4795,7 @@ dependencies = [
  "mpt-zktrie",
  "num",
  "num-bigint",
- "poseidon-circuit",
+ "poseidon-circuit 0.1.0 (git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main)",
  "rand",
  "rand_chacha",
  "rand_xorshift",
