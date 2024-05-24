@@ -159,7 +159,7 @@ fn test_vk_same() {
     let dummy_circuit = C::dummy_inner_circuit();
     let real_circuit = C::from_block_traces(block_trace1).unwrap().0;
 
-    let check_by_mock_prover = false;
+    let check_by_mock_prover = true;
     if check_by_mock_prover {
         let prover1 =
             MockProver::<_>::run(*INNER_DEGREE, &dummy_circuit, dummy_circuit.instance()).unwrap();

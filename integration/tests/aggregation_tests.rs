@@ -17,6 +17,10 @@ fn load_batch() -> anyhow::Result<Vec<String>> {
         .map(|path| path.to_string_lossy().into_owned())
         .collect::<Vec<String>>();
     sorted_dirs.sort();
+    let fast = true;
+    if fast {
+        sorted_dirs.truncate(1);
+    }
     log::info!("batch content: {:?}", sorted_dirs);
     Ok(sorted_dirs)
 }
@@ -106,7 +110,7 @@ fn log_batch_pi(trace_paths: &[String]) {
     }
 
     let batch_hash = BatchHash::<15>::construct(&chunk_hashes);
-    let blob = batch_hash.blob_assignments();
+    let blob = batch_hash.point_evaluation_assignments();
 
     let challenge = blob.challenge;
     let evaluation = blob.evaluation;

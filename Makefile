@@ -2,6 +2,8 @@ CURRENTDATE=`date +"%Y-%m-%d"`
 
 CHAIN_ID ?= 534352
 export CHAIN_ID
+RUST_MIN_STACK ?= 16777216
+export RUST_MIN_STACK
 
 help: ## Display this help screen
 	@grep -h \

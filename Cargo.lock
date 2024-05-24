@@ -31,13 +31,15 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "ark-std 0.3.0",
+ "bitstream-io",
  "c-kzg",
  "env_logger",
  "eth-types",
  "ethers-core",
+ "gadgets",
  "halo2-base",
  "halo2-ecc",
  "halo2_proofs",
@@ -53,7 +55,10 @@ dependencies = [
  "serde_json",
  "snark-verifier",
  "snark-verifier-sdk",
+ "strum 0.25.0",
+ "strum_macros 0.25.3",
  "zkevm-circuits",
+ "zstd",
 ]
 
 [[package]]
@@ -441,6 +446,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 
 [[package]]
+name = "bitstream-io"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c12d1856e42f0d817a835fe55853957c85c8c8a470114029143d3f12671446e"
+
+[[package]]
 name = "bitvec"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -541,7 +552,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -605,6 +616,10 @@ name = "cc"
 version = "1.0.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8cd6604a82acf3039f1144f54b8eb34e91ffba622051189e71b781822d5ee1f5"
+dependencies = [
+ "jobserver",
+ "libc",
+]
 
 [[package]]
 name = "cfg-if"
@@ -1182,7 +1197,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1338,7 +1353,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1520,7 +1535,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1542,7 +1557,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2131,6 +2146,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 
 [[package]]
+name = "jobserver"
+version = "0.1.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2b099aaa34a9751c5bf0878add70444e1ed2dd73f347be99003d4577277de6e"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2330,7 +2354,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2345,7 +2369,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -2717,6 +2741,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "pkg-config"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+
+[[package]]
 name = "poseidon"
 version = "0.2.0"
 source = "git+https://github.com/scroll-tech/poseidon.git?branch=main#5787dd3d2ce7a9e9601a035c396ac0c03449b54d"
@@ -2841,7 +2871,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3659,7 +3689,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#114cea6cd025f7daf66b8f0038126a796653e207"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#18715050bfd0fc55b51daa87a0ff1d5c692727b3"
 dependencies = [
  "bytes",
  "ethereum-types",
@@ -3682,7 +3712,7 @@ dependencies = [
 [[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#114cea6cd025f7daf66b8f0038126a796653e207"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#18715050bfd0fc55b51daa87a0ff1d5c692727b3"
 dependencies = [
  "bincode",
  "ethereum-types",
@@ -3818,9 +3848,9 @@ dependencies = [
 
 [[package]]
 name = "subtle"
-version = "2.4.1"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
+checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
 
 [[package]]
 name = "syn"
@@ -4616,7 +4646,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#46bbe2ebed2c36c1e7b3f3c8e6d37bcc6efd64cd"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/da-compression#7b0f87e7b68720abcc080a829aefb8c325109908"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -4676,4 +4706,29 @@ dependencies = [
  "num-traits",
  "strum 0.24.1",
  "strum_macros 0.24.3",
+]
+
+[[package]]
+name = "zstd"
+version = "0.13.0"
+source = "git+https://github.com/scroll-tech/zstd-rs?branch=hack/mul-block#5c0892b6567dab31394d701477183ce9d6a32aca"
+dependencies = [
+ "zstd-safe",
+]
+
+[[package]]
+name = "zstd-safe"
+version = "7.0.0"
+source = "git+https://github.com/scroll-tech/zstd-rs?branch=hack/mul-block#5c0892b6567dab31394d701477183ce9d6a32aca"
+dependencies = [
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.0.9+zstd.1.5.5"
+source = "git+https://github.com/scroll-tech/zstd-rs?branch=hack/mul-block#5c0892b6567dab31394d701477183ce9d6a32aca"
+dependencies = [
+ "cc",
+ "pkg-config",
 ]
