@@ -9,9 +9,8 @@ parser.add_argument('batch_id', type=int, help='The batch ID to process')
 args = parser.parse_args()
 
 # Define the URLs for the RPC calls
-chunks_url = 'http://34.222.160.221:8560/api/chunks?batch_index={}'.format(args.batch_id)
-block_trace_url = 'http://35.93.54.141:8545'
-block_trace_url = 'http://18.236.206.203:9999'
+chunks_url = 'http://10.6.13.141:8560/api/chunks?batch_index={}'.format(args.batch_id)
+block_trace_url = 'http://10.6.13.145:8545'
 
 # Create the directory for the batch
 batch_dir = os.path.join(os.getcwd(), 'batch_{}'.format(args.batch_id))
@@ -57,5 +56,5 @@ def download_batch():
         download_chunk(chunk_id, start_block, end_block)
 
 if __name__ == "__main__":
-    #download_batch()
-    download_chunk(1, 1, 4)
+    download_batch()
+    #download_chunk(1, 1, 4)
