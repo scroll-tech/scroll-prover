@@ -9,7 +9,7 @@ use prover::{
 use std::env;
 
 fn load_batch() -> anyhow::Result<Vec<String>> {
-    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_24".to_string());
+    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
     let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
         .filter_map(|entry| entry.ok())
         .map(|entry| entry.path())
