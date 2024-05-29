@@ -4,6 +4,10 @@
 
 ## Usage
 
+### Latest Release
+
+v0.10.3 is used in Scroll Mainnet currently. Branch `main` HEAD is used for development.
+
 ### Prerequisite
 
 Install Solidity compiler `solc` of version `0.8.19` via [svm-rs](https://github.com/alloy-rs/svm-rs):
