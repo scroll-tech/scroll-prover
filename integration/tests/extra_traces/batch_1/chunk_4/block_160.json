@@ -1,0 +1,1141 @@
+{
+  "jsonrpc": "2.0",
+  "id": 99,
+  "result": {
+    "chainID": 222222,
+    "version": "5.3.24-mainnet-ec744d6f",
+    "coinbase": {
+      "address": "0x5300000000000000000000000000000000000005",
+      "nonce": 0,
+      "balance": "0x272cddf48398180",
+      "keccakCodeHash": "0x3733510decd4cdde078e264666d17cac208f9f9e93fc0a43b02921be5cf5726f",
+      "poseidonCodeHash": "0x1c0bc998c1d4a23089705ffaa44e274d41dec1eb01993b5f65202cf9c80d31bb",
+      "codeSize": 1956
+    },
+    "header": {
+      "parentHash": "0xcc04bf7296f86a33472182297f6a8c138a53147b18aa8d02e356bcaf6780e7a2",
+      "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+      "miner": "0x0000000000000000000000000000000000000000",
+      "stateRoot": "0x0170c617bab25f54a4b85296d5adee467a9aec1f8fb11c5575d0e0b1de0c4f84",
+      "transactionsRoot": "0x15c4b338bcdcbff2b0e9d3f80f66120c0af470aba1f43ddb1f86d1a47c61a334",
+      "receiptsRoot": "0x0a4c1733db74dfe47532a4c5c82c0113ee79f0390e2d1edc8f02b1b6d491dc25",
+      "logsBloom": "0x00008000000080000000000000000000020000000000000000000002000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000",
+      "difficulty": "0x2",
+      "number": "0xa0",
+      "gasLimit": "0x989680",
+      "gasUsed": "0x78af",
+      "timestamp": "0x6656d547",
+      "extraData": "0xd883050318846765746888676f312e32302e31856c696e7578000000000000002d011adabfcc44b35f7a9abc51b4e86e5088eb545d00193b48776391655700eb663a99a0e2e76f5291358791becfec2b4a4127f793e431e548a1d9b89ddd0e6400",
+      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "nonce": "0x0000000000000000",
+      "baseFeePerGas": "0x8f0d180",
+      "withdrawalsRoot": null,
+      "hash": "0x68c34265f921e4cc440d9770708826d863cada0f9b861df9ee7c5703b4ee86f4",
+      "blobGasUsed": null,
+      "excessBlobGas": null,
+      "parentBeaconBlockRoot": null
+    },
+    "transactions": [
+      {
+        "type": 1,
+        "nonce": 181,
+        "txHash": "0x5f00619ce550dbe8468f1a04aded437f4b9faa32f3819c284f8a4474afe8a0c1",
+        "gas": 300000,
+        "gasPrice": "0x3b9aca00",
+        "gasTipCap": "0x3b9aca00",
+        "gasFeeCap": "0x3b9aca00",
+        "from": "0x6f4c950442e1af093bcff730381e63ae9171b87a",
+        "to": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+        "chainId": "0x3640e",
+        "value": "0x0",
+        "data": "0xeae5caca000000000000000000000000000000000000000000000000000000024cb016ea",
+        "isCreate": false,
+        "accessList": [
+          {
+            "address": "0x0000000000000000000000000000000000000000",
+            "storageKeys": [
+              "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ]
+          }
+        ],
+        "v": "0x0",
+        "r": "0xa5981635d03ebb51962d30e01c05b89610f640518bb25786dd03f5f80a189d99",
+        "s": "0x170cde4ed08ccd53be04417efb59315009c485ac2c358b88e78773cdae477633"
+      }
+    ],
+    "storageTrace": {
+      "rootBefore": "0x188937f0a2ab18b941521f1c76bced65472f7726bb5fe65fcf65ba216e4fc19d",
+      "rootAfter": "0x0170c617bab25f54a4b85296d5adee467a9aec1f8fb11c5575d0e0b1de0c4f84",
+      "proofs": {
+        "0x5300000000000000000000000000000000000000": [
+          "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+          "0x090dba920ca703b7ec908efeca59a83e35dad706367ffb07b096860dc19288b2100b677844c8a169ec7120887d1d5b7f1d36aef48c558072ba4f5ddf8346864d48",
+          "0x09116fb958caef7a20668980df209c970fd327543eb3c534e4cf06f05796c370040680422d2d6fdc8284bd30320caf6b4da430338bd23b9e4e8c0aea16f7378198",
+          "0x0900ca5183ae3eb88c4ba534ee3d12a4c00a0f3882d68cd490d875ea1e9073d58000df82129fdc6bcfd7174df30622d2c4e41e76af3c22ff2e2ce1bbce3f605da1",
+          "0x0923c5e904b1e645f039085906d2b32439a7aa0ff8ec073ae428ac81d45fe869af0a2499026c0eb67a3b57e6c12a7fb2d37d39fe58f43c562f3eac7676c9ea490e",
+          "0x08116870a7ab6797405db51d5b029c7cd9f4c8662d8b03484907a8b89ab395a5a01a4dc7dec89dfb3154dc5684eddeb4c384130e7952d522be0c653907b1fb10f2",
+          "0x0603adfb2b915f3c257e45d8f0ce03afc4c84a70ee72d3753e345e4685510be3c811aacbe2dddad18ed1856a735434a95456fcd13ed241cb68e9d2d17be5ee3ed9",
+          "0x0408389bdcf35fead34d26ac16f4638b31e82714ffb6d7c083a1afda53ed6d240e05080000000000000000000000000000000000000000000000000680000000000000000000000000000000000000000000000000000000000000000000000000000000000f51452cc630c215b6328712a6b8f1304269b014dd07672e515a72ebb2f5a2687f6f0daf66a63b4d504fabde8e9fa491ff678bf22082d8fee03ac3064fcf7de9083c136cb0e27c3434a6f2b4839eac2167e39fd4c47a0a83923668e3abcf3b08205300000000000000000000000000000000000000000000000000000000000000",
+          "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+        ],
+        "0x5300000000000000000000000000000000000002": [
+          "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+          "0x092d05b2b743515b0fba911bac6b08a853f51f22ea0ca38cebe4922fb8ec6c969a2afa83ac15ece62a5c2bb9167d6c2d2d9452c742e988d7f92b3ae37afef1339d",
+          "0x092f3e5088e939c15129b52dc549bd2a5de435f431095d1214d13cd24ef2ac2f972d798260632b13b50e7f923a55a4683950ddacfb95af6539ce05e8ca0a1f7a43",
+          "0x092d0648c3a3013dfe7bb7ae8231f598cfc9d363e6fed69fddb98b7ddc9ad49f780c5f27070c4802c0fb0846d27b3af96bbea0705da7945e36c79325f9cbfa93d6",
+          "0x0812fc6fb481bcda7665556a81519643ba05f75dbfd7e822434b5c21ef2024089d1db220f127c12c71c5865c05f8df6e01b7a9a75fa4b7a4efa891e8608874ac2d",
+          "0x060d1634b0a1290536448a45b1794be3b378c79ebe1d8b2df54ec0945dfdd3582308b962d860bc16e2576958755fb4905992a35e14857b569a06e0c389a371caa1",
+          "0x04139a6815e4d1fb05c969e6a8036aa5cc06b88751d713326d681bd90448ea64c9050800000000000000000000000000000000000000000000000008750000000000000000000000000000000000000000000000000000000000000000000000000000000011c1c5ba135f9eda4f1f13ff2772d3a0033c5de06c98dc2d0693ba328473aedb38e66819fc6ce53c2e63f85399df2b2923de67d65d7111243d96d72598dfc7b40b6636ddc9b66ff9d1b34b9eed57f652be4f18f3469c686fb80c513c99b31269205300000000000000000000000000000000000002000000000000000000000000",
+          "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+        ],
+        "0x5300000000000000000000000000000000000005": [
+          "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+          "0x092d05b2b743515b0fba911bac6b08a853f51f22ea0ca38cebe4922fb8ec6c969a2afa83ac15ece62a5c2bb9167d6c2d2d9452c742e988d7f92b3ae37afef1339d",
+          "0x092f3e5088e939c15129b52dc549bd2a5de435f431095d1214d13cd24ef2ac2f972d798260632b13b50e7f923a55a4683950ddacfb95af6539ce05e8ca0a1f7a43",
+          "0x092d0648c3a3013dfe7bb7ae8231f598cfc9d363e6fed69fddb98b7ddc9ad49f780c5f27070c4802c0fb0846d27b3af96bbea0705da7945e36c79325f9cbfa93d6",
+          "0x060c20f749dbfca48185b645950d3b8efd6c52705e997a7751f45ba33c1f2ea05b06d72f8893b6e2dd9b0fbf68b033b6bb11579f90083c31deded6d5c04acba825",
+          "0x04287b801ba8950befe82147f88e71eff6b85eb921845d754c9c2a165a4ec86791050800000000000000000000000000000000000000000000000007a400000000000000000000000000000000000000000000000000000000000000000272b1c5fab96b80115580ad2939ba6fc167ac1446d9edb371ed767e0830666d3c3311d43e335b893733510decd4cdde078e264666d17cac208f9f9e93fc0a43b02921be5cf5726f1c0bc998c1d4a23089705ffaa44e274d41dec1eb01993b5f65202cf9c80d31bb205300000000000000000000000000000000000005000000000000000000000000",
+          "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+        ],
+        "0x6f4c950442e1Af093BcfF730381E63Ae9171b87a": [
+          "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+          "0x090dba920ca703b7ec908efeca59a83e35dad706367ffb07b096860dc19288b2100b677844c8a169ec7120887d1d5b7f1d36aef48c558072ba4f5ddf8346864d48",
+          "0x09116fb958caef7a20668980df209c970fd327543eb3c534e4cf06f05796c370040680422d2d6fdc8284bd30320caf6b4da430338bd23b9e4e8c0aea16f7378198",
+          "0x0900ca5183ae3eb88c4ba534ee3d12a4c00a0f3882d68cd490d875ea1e9073d58000df82129fdc6bcfd7174df30622d2c4e41e76af3c22ff2e2ce1bbce3f605da1",
+          "0x0923c5e904b1e645f039085906d2b32439a7aa0ff8ec073ae428ac81d45fe869af0a2499026c0eb67a3b57e6c12a7fb2d37d39fe58f43c562f3eac7676c9ea490e",
+          "0x08116870a7ab6797405db51d5b029c7cd9f4c8662d8b03484907a8b89ab395a5a01a4dc7dec89dfb3154dc5684eddeb4c384130e7952d522be0c653907b1fb10f2",
+          "0x04301f15bc8e20aaff13d28665677737a7eef1627b6f0ed8ccd70c7c41b1e0e02e0508000000000000000000000000000000000000000000000000000000000000000000b50000000000000000000000000000000000000000000000005e0dd5c67d5dba800000000000000000000000000000000000000000000000000000000000000000c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a4702098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864206f4c950442e1af093bcff730381e63ae9171b87a000000000000000000000000",
+          "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+        ],
+        "0xcee6D51e5cb8f47A815F9A3aBE0Ea8C44029B2c8": [
+          "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+          "0x090dba920ca703b7ec908efeca59a83e35dad706367ffb07b096860dc19288b2100b677844c8a169ec7120887d1d5b7f1d36aef48c558072ba4f5ddf8346864d48",
+          "0x09116fb958caef7a20668980df209c970fd327543eb3c534e4cf06f05796c370040680422d2d6fdc8284bd30320caf6b4da430338bd23b9e4e8c0aea16f7378198",
+          "0x0900ca5183ae3eb88c4ba534ee3d12a4c00a0f3882d68cd490d875ea1e9073d58000df82129fdc6bcfd7174df30622d2c4e41e76af3c22ff2e2ce1bbce3f605da1",
+          "0x0923c5e904b1e645f039085906d2b32439a7aa0ff8ec073ae428ac81d45fe869af0a2499026c0eb67a3b57e6c12a7fb2d37d39fe58f43c562f3eac7676c9ea490e",
+          "0x08188fae83d00689f08976f8e1cc9256d3d3597284e63c990e6d8ea554272d7d320f07609bbb699bc282f5d000d8ccf0efc1e0cfc124ad538b93c30bd3a49a4c7c",
+          "0x071d770f3c0fc87e12ae3cbbf756656b42bffb62e210433c0ca2d8690b683e0404177cd305915898e62959fd0428a526249aa0879be44a22bbb8effa274c53684b",
+          "0x060f433156b4155b0c7ad22753b2a982ea078c0847127c0676f602a1ce1729e38715761af563951dc490940f7b8d38c727f0a8c379b7db3200054b39742ab46374",
+          "0x042acb32bd89432dfa77b6fe63049bbf085e4c3851c0dbbade09032f5eb6d707de050800000000000000000000000000000000000000000000000001ce00000000000000010000000000000000000000000000000000000000000000000000000000000000033d644b2ea8530b1386cae3da8d1d7510eeaea3b0eba6337ebf35137fda38e3599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf20cee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8000000000000000000000000",
+          "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+        ]
+      },
+      "storageProofs": {
+        "0x5300000000000000000000000000000000000000": {
+          "0x0000000000000000000000000000000000000000000000000000000000000000": [
+            "0x0915b4eca8840a1fbb1b9adc4d30ae99cbe343f00d4b7019f553b1b7191578d4c816a24967f8db0d392eb41133f6f5d34ee839093c58783bc570e86fce9c555a24",
+            "0x091ae9b688d0538af1a766885a246bf7ca58bbfccb9fc25536f1b19d913e38b94c0a11ecb7b6f34f17ac283138bfa589ab86d58d5d5657d0d27371880119c720c0",
+            "0x0806a6bb7e5cba0dd4960c2fa1aeae27dbf1bf73d4761408743f2c94835926a530282d9bd09e18acbcfff94ee8f14925dbb021862337e88b430da891256c5b0196",
+            "0x09205768105dbcbb7b95dfa4c60bbe22e8c67212bf7330eaf874a4f1e4a0c1105c06d8c47c51d33148006643e11d0154aab6a34445a21ec63554987052cac95e2d",
+            "0x0700000000000000000000000000000000000000000000000000000000000000002c6b9a917f116fbfa14932bd463d0259dc38927f1716ad3a56d8eaf51b2d9d1f",
+            "0x05",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ]
+        },
+        "0x5300000000000000000000000000000000000002": {
+          "0x0000000000000000000000000000000000000000000000000000000000000001": [
+            "0x0807362f3d273737280233651ae27029bfdbc0d9e04b9459cca9fec43c0a0392cb19c4b6fecc8df35dbeb90e48cc838e8df15c05c37230403e144af7dfd0ad7e6e",
+            "0x0820b3776afc880e18d964bd65c05ff039d2b05a38693293cff3a3bd2e36dbaa1911804c13b7dd74fd1fc8b03a912348ec7eda8603d7a0db97475b468d4dec2f13",
+            "0x0615914a13b341cda11357b40e82430e9fd9b52bd7c53357fd2c4545ecfe03952f2c60e31a75eefcdc66dad994396a7e42327a2fd04d5f2628a7efd06bfe288b1b",
+            "0x042f24f164fb4df482acaa0f1e28c2c15a204fa0fcb918189c55700d2ccb8d0650010100000000000000000000000000005300000000000000000000000000000000000003200000000000000000000000000000000000000000000000000000000000000004",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ],
+          "0x0000000000000000000000000000000000000000000000000000000000000002": [
+            "0x0807362f3d273737280233651ae27029bfdbc0d9e04b9459cca9fec43c0a0392cb19c4b6fecc8df35dbeb90e48cc838e8df15c05c37230403e144af7dfd0ad7e6e",
+            "0x0820b3776afc880e18d964bd65c05ff039d2b05a38693293cff3a3bd2e36dbaa1911804c13b7dd74fd1fc8b03a912348ec7eda8603d7a0db97475b468d4dec2f13",
+            "0x0615914a13b341cda11357b40e82430e9fd9b52bd7c53357fd2c4545ecfe03952f2c60e31a75eefcdc66dad994396a7e42327a2fd04d5f2628a7efd06bfe288b1b",
+            "0x04020953ad52de135367a1ba2629636216ed5174cce5629d11b5d97fe733f07dcc0101000000000000000000000000000000000000000000000000000000000000000017d4200000000000000000000000000000000000000000000000000000000000000002",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ],
+          "0x0000000000000000000000000000000000000000000000000000000000000003": [
+            "0x0807362f3d273737280233651ae27029bfdbc0d9e04b9459cca9fec43c0a0392cb19c4b6fecc8df35dbeb90e48cc838e8df15c05c37230403e144af7dfd0ad7e6e",
+            "0x0406c50541f08911ad149aa545dd3d606f86ee63c751a795c7d57f0d3f85e6bdeb01010000000000000000000000000000000000000000000000000000000000004a42fc80200000000000000000000000000000000000000000000000000000000000000003",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ]
+        },
+        "0xcee6D51e5cb8f47A815F9A3aBE0Ea8C44029B2c8": {
+          "0x00000000000000000000000000000000000000000000000000000000499602d2": [
+            "0x04163a912aedbded36519af7d10af21a7747ef17891a18bc931a48033db2479ce001010000000000000000000000000000000000000000000000000000000000024cb016ea2000000000000000000000000000000000000000000000000000000000499602d2",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ]
+        }
+      }
+    },
+    "txStorageTraces": [
+      {
+        "rootBefore": "0x188937f0a2ab18b941521f1c76bced65472f7726bb5fe65fcf65ba216e4fc19d",
+        "rootAfter": "0x0170c617bab25f54a4b85296d5adee467a9aec1f8fb11c5575d0e0b1de0c4f84",
+        "proofs": {
+          "0x5300000000000000000000000000000000000005": [
+            "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+            "0x092d05b2b743515b0fba911bac6b08a853f51f22ea0ca38cebe4922fb8ec6c969a2afa83ac15ece62a5c2bb9167d6c2d2d9452c742e988d7f92b3ae37afef1339d",
+            "0x092f3e5088e939c15129b52dc549bd2a5de435f431095d1214d13cd24ef2ac2f972d798260632b13b50e7f923a55a4683950ddacfb95af6539ce05e8ca0a1f7a43",
+            "0x092d0648c3a3013dfe7bb7ae8231f598cfc9d363e6fed69fddb98b7ddc9ad49f780c5f27070c4802c0fb0846d27b3af96bbea0705da7945e36c79325f9cbfa93d6",
+            "0x060c20f749dbfca48185b645950d3b8efd6c52705e997a7751f45ba33c1f2ea05b06d72f8893b6e2dd9b0fbf68b033b6bb11579f90083c31deded6d5c04acba825",
+            "0x04287b801ba8950befe82147f88e71eff6b85eb921845d754c9c2a165a4ec86791050800000000000000000000000000000000000000000000000007a400000000000000000000000000000000000000000000000000000000000000000272b1c5fab96b80115580ad2939ba6fc167ac1446d9edb371ed767e0830666d3c3311d43e335b893733510decd4cdde078e264666d17cac208f9f9e93fc0a43b02921be5cf5726f1c0bc998c1d4a23089705ffaa44e274d41dec1eb01993b5f65202cf9c80d31bb205300000000000000000000000000000000000005000000000000000000000000",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ],
+          "0x6f4c950442e1Af093BcfF730381E63Ae9171b87a": [
+            "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+            "0x090dba920ca703b7ec908efeca59a83e35dad706367ffb07b096860dc19288b2100b677844c8a169ec7120887d1d5b7f1d36aef48c558072ba4f5ddf8346864d48",
+            "0x09116fb958caef7a20668980df209c970fd327543eb3c534e4cf06f05796c370040680422d2d6fdc8284bd30320caf6b4da430338bd23b9e4e8c0aea16f7378198",
+            "0x0900ca5183ae3eb88c4ba534ee3d12a4c00a0f3882d68cd490d875ea1e9073d58000df82129fdc6bcfd7174df30622d2c4e41e76af3c22ff2e2ce1bbce3f605da1",
+            "0x0923c5e904b1e645f039085906d2b32439a7aa0ff8ec073ae428ac81d45fe869af0a2499026c0eb67a3b57e6c12a7fb2d37d39fe58f43c562f3eac7676c9ea490e",
+            "0x08116870a7ab6797405db51d5b029c7cd9f4c8662d8b03484907a8b89ab395a5a01a4dc7dec89dfb3154dc5684eddeb4c384130e7952d522be0c653907b1fb10f2",
+            "0x04301f15bc8e20aaff13d28665677737a7eef1627b6f0ed8ccd70c7c41b1e0e02e0508000000000000000000000000000000000000000000000000000000000000000000b50000000000000000000000000000000000000000000000005e0dd5c67d5dba800000000000000000000000000000000000000000000000000000000000000000c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a4702098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864206f4c950442e1af093bcff730381e63ae9171b87a000000000000000000000000",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ],
+          "0xcee6D51e5cb8f47A815F9A3aBE0Ea8C44029B2c8": [
+            "0x091e54cdfd7d383e7622fb6b353ef228b5a896229b1649c108658498cfc07e9c191b44e68e37f0f5aeb56665c40cbbf41bc2548856acd80ae42135503e876a67a7",
+            "0x090dba920ca703b7ec908efeca59a83e35dad706367ffb07b096860dc19288b2100b677844c8a169ec7120887d1d5b7f1d36aef48c558072ba4f5ddf8346864d48",
+            "0x09116fb958caef7a20668980df209c970fd327543eb3c534e4cf06f05796c370040680422d2d6fdc8284bd30320caf6b4da430338bd23b9e4e8c0aea16f7378198",
+            "0x0900ca5183ae3eb88c4ba534ee3d12a4c00a0f3882d68cd490d875ea1e9073d58000df82129fdc6bcfd7174df30622d2c4e41e76af3c22ff2e2ce1bbce3f605da1",
+            "0x0923c5e904b1e645f039085906d2b32439a7aa0ff8ec073ae428ac81d45fe869af0a2499026c0eb67a3b57e6c12a7fb2d37d39fe58f43c562f3eac7676c9ea490e",
+            "0x08188fae83d00689f08976f8e1cc9256d3d3597284e63c990e6d8ea554272d7d320f07609bbb699bc282f5d000d8ccf0efc1e0cfc124ad538b93c30bd3a49a4c7c",
+            "0x071d770f3c0fc87e12ae3cbbf756656b42bffb62e210433c0ca2d8690b683e0404177cd305915898e62959fd0428a526249aa0879be44a22bbb8effa274c53684b",
+            "0x060f433156b4155b0c7ad22753b2a982ea078c0847127c0676f602a1ce1729e38715761af563951dc490940f7b8d38c727f0a8c379b7db3200054b39742ab46374",
+            "0x042acb32bd89432dfa77b6fe63049bbf085e4c3851c0dbbade09032f5eb6d707de050800000000000000000000000000000000000000000000000001ce00000000000000010000000000000000000000000000000000000000000000000000000000000000033d644b2ea8530b1386cae3da8d1d7510eeaea3b0eba6337ebf35137fda38e3599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf20cee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8000000000000000000000000",
+            "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+          ]
+        },
+        "storageProofs": {
+          "0xcee6D51e5cb8f47A815F9A3aBE0Ea8C44029B2c8": {
+            "0x00000000000000000000000000000000000000000000000000000000499602d2": [
+              "0x04163a912aedbded36519af7d10af21a7747ef17891a18bc931a48033db2479ce001010000000000000000000000000000000000000000000000000000000000024cb016ea2000000000000000000000000000000000000000000000000000000000499602d2",
+              "0x5448495320495320534f4d45204d4147494320425954455320464f5220534d54206d3172525867503278704449"
+            ]
+          }
+        }
+      }
+    ],
+    "executionResults": [
+      {
+        "l1DataFee": "0x0",
+        "gas": 30895,
+        "failed": false,
+        "returnValue": "",
+        "from": {
+          "address": "0x6f4c950442e1af093bcff730381e63ae9171b87a",
+          "nonce": 181,
+          "balance": "0x5e0dd5c67d5dba80",
+          "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+          "codeSize": 0
+        },
+        "to": {
+          "address": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+          "nonce": 1,
+          "balance": "0x0",
+          "keccakCodeHash": "0x599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d",
+          "poseidonCodeHash": "0x2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf",
+          "codeSize": 462
+        },
+        "accountAfter": [
+          {
+            "address": "0x6f4c950442e1af093bcff730381e63ae9171b87a",
+            "nonce": 182,
+            "balance": "0x5e0db9ad2fdda480",
+            "keccakCodeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+            "poseidonCodeHash": "0x2098f5fb9e239eab3ceac3f27b81e481dc3124d55ffed523a839ee8446b64864",
+            "codeSize": 0
+          },
+          {
+            "address": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+            "nonce": 1,
+            "balance": "0x0",
+            "keccakCodeHash": "0x599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d",
+            "poseidonCodeHash": "0x2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf",
+            "codeSize": 462
+          },
+          {
+            "address": "0x5300000000000000000000000000000000000005",
+            "nonce": 0,
+            "balance": "0x272cddf48398180",
+            "keccakCodeHash": "0x3733510decd4cdde078e264666d17cac208f9f9e93fc0a43b02921be5cf5726f",
+            "poseidonCodeHash": "0x1c0bc998c1d4a23089705ffaa44e274d41dec1eb01993b5f65202cf9c80d31bb",
+            "codeSize": 1956
+          }
+        ],
+        "poseidonCodeHash": "0x2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf",
+        "byteCode": "0x608060405234801561000f575f80fd5b506004361061003f575f3560e01c80636abae12f146100435780636d12f0931461004d578063eae5caca14610055575b5f80fd5b61004b610068565b005b61004b6100ac565b61004b610063366004610181565b6100e1565b5f60506020526020805f5e505f516040518181527f5a044fb7ed73bf56f5e0940b4c7134425f7b42a324ed08949aad60f0a2dc412c9060200160405180910390a150565b6040514881527fd70d64ca70167e426a65a525bd608baff4b144b8d7a4596a8407a82102e48a859060200160405180910390a1565b63499602d280549082905560405181815282907f95ca29f4ee0ab2b186d7eabd551096d51e82012ed86f0c87ea33441bb4c195009060200160405180910390a16040517f89d77eac73360eb52f26da570307d5c9514c16b550f1d46467be3dddc800b9a2905f90a16040518181527f95ca29f4ee0ab2b186d7eabd551096d51e82012ed86f0c87ea33441bb4c195009060200160405180910390a1505050565b5f60208284031215610191575f80fd5b503591905056fea2646970667358221220a46c26c56a0fa86e432018a2cd757ad6dc97ac1854fe900227642c888cab8f3364736f6c63430008180033",
+        "structLogs": [
+          {
+            "pc": 0,
+            "op": "PUSH1",
+            "gas": 274448,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 2,
+            "op": "PUSH1",
+            "gas": 274445,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 4,
+            "op": "MSTORE",
+            "gas": 274442,
+            "gasCost": 12,
+            "depth": 1
+          },
+          {
+            "pc": 5,
+            "op": "CALLVALUE",
+            "gas": 274430,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 6,
+            "op": "DUP1",
+            "gas": 274428,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 7,
+            "op": "ISZERO",
+            "gas": 274425,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 8,
+            "op": "PUSH2",
+            "gas": 274422,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 11,
+            "op": "JUMPI",
+            "gas": 274419,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 15,
+            "op": "JUMPDEST",
+            "gas": 274409,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 16,
+            "op": "POP",
+            "gas": 274408,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 17,
+            "op": "PUSH1",
+            "gas": 274406,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 19,
+            "op": "CALLDATASIZE",
+            "gas": 274403,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 20,
+            "op": "LT",
+            "gas": 274401,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 21,
+            "op": "PUSH2",
+            "gas": 274398,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 24,
+            "op": "JUMPI",
+            "gas": 274395,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 25,
+            "op": "PUSH0",
+            "gas": 274385,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 26,
+            "op": "CALLDATALOAD",
+            "gas": 274383,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 27,
+            "op": "PUSH1",
+            "gas": 274380,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 29,
+            "op": "SHR",
+            "gas": 274377,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 30,
+            "op": "DUP1",
+            "gas": 274374,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 31,
+            "op": "PUSH4",
+            "gas": 274371,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 36,
+            "op": "EQ",
+            "gas": 274368,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 37,
+            "op": "PUSH2",
+            "gas": 274365,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 40,
+            "op": "JUMPI",
+            "gas": 274362,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 41,
+            "op": "DUP1",
+            "gas": 274352,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 42,
+            "op": "PUSH4",
+            "gas": 274349,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 47,
+            "op": "EQ",
+            "gas": 274346,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 48,
+            "op": "PUSH2",
+            "gas": 274343,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 51,
+            "op": "JUMPI",
+            "gas": 274340,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 52,
+            "op": "DUP1",
+            "gas": 274330,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 53,
+            "op": "PUSH4",
+            "gas": 274327,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 58,
+            "op": "EQ",
+            "gas": 274324,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 59,
+            "op": "PUSH2",
+            "gas": 274321,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 62,
+            "op": "JUMPI",
+            "gas": 274318,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 85,
+            "op": "JUMPDEST",
+            "gas": 274308,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 86,
+            "op": "PUSH2",
+            "gas": 274307,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 89,
+            "op": "PUSH2",
+            "gas": 274304,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 92,
+            "op": "CALLDATASIZE",
+            "gas": 274301,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 93,
+            "op": "PUSH1",
+            "gas": 274299,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 95,
+            "op": "PUSH2",
+            "gas": 274296,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 98,
+            "op": "JUMP",
+            "gas": 274293,
+            "gasCost": 8,
+            "depth": 1
+          },
+          {
+            "pc": 385,
+            "op": "JUMPDEST",
+            "gas": 274285,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 386,
+            "op": "PUSH0",
+            "gas": 274284,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 387,
+            "op": "PUSH1",
+            "gas": 274282,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 389,
+            "op": "DUP3",
+            "gas": 274279,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 390,
+            "op": "DUP5",
+            "gas": 274276,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 391,
+            "op": "SUB",
+            "gas": 274273,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 392,
+            "op": "SLT",
+            "gas": 274270,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 393,
+            "op": "ISZERO",
+            "gas": 274267,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 394,
+            "op": "PUSH2",
+            "gas": 274264,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 397,
+            "op": "JUMPI",
+            "gas": 274261,
+            "gasCost": 10,
+            "depth": 1
+          },
+          {
+            "pc": 401,
+            "op": "JUMPDEST",
+            "gas": 274251,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 402,
+            "op": "POP",
+            "gas": 274250,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 403,
+            "op": "CALLDATALOAD",
+            "gas": 274248,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 404,
+            "op": "SWAP2",
+            "gas": 274245,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 405,
+            "op": "SWAP1",
+            "gas": 274242,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 406,
+            "op": "POP",
+            "gas": 274239,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 407,
+            "op": "JUMP",
+            "gas": 274237,
+            "gasCost": 8,
+            "depth": 1
+          },
+          {
+            "pc": 99,
+            "op": "JUMPDEST",
+            "gas": 274229,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 100,
+            "op": "PUSH2",
+            "gas": 274228,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 103,
+            "op": "JUMP",
+            "gas": 274225,
+            "gasCost": 8,
+            "depth": 1
+          },
+          {
+            "pc": 225,
+            "op": "JUMPDEST",
+            "gas": 274217,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 226,
+            "op": "PUSH4",
+            "gas": 274216,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 231,
+            "op": "DUP1",
+            "gas": 274213,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 232,
+            "op": "SLOAD",
+            "gas": 274210,
+            "gasCost": 2100,
+            "depth": 1,
+            "extraData": {
+              "proofList": [
+                {
+                  "address": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+                  "nonce": 1,
+                  "balance": "0x0",
+                  "keccakCodeHash": "0x599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d",
+                  "poseidonCodeHash": "0x2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf",
+                  "codeSize": 462,
+                  "storage": {
+                    "key": "0x00000000000000000000000000000000000000000000000000000000499602d2",
+                    "value": "0x000000000000000000000000000000000000000000000000000000024cb016ea"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "pc": 233,
+            "op": "SWAP1",
+            "gas": 272110,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 234,
+            "op": "DUP3",
+            "gas": 272107,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 235,
+            "op": "SWAP1",
+            "gas": 272104,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 236,
+            "op": "SSTORE",
+            "gas": 272101,
+            "gasCost": 100,
+            "depth": 1,
+            "extraData": {
+              "proofList": [
+                {
+                  "address": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+                  "nonce": 1,
+                  "balance": "0x0",
+                  "keccakCodeHash": "0x599395e5a7d07f31b2ab5bf7dee8361215ea73dd525bc83bd424ddfa9825ee5d",
+                  "poseidonCodeHash": "0x2c843eeac521ba723d596b7d86953f1b4001936003afbd10211638f6153302bf",
+                  "codeSize": 462,
+                  "storage": {
+                    "key": "0x00000000000000000000000000000000000000000000000000000000499602d2",
+                    "value": "0x000000000000000000000000000000000000000000000000000000024cb016ea"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "pc": 237,
+            "op": "PUSH1",
+            "gas": 272001,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 239,
+            "op": "MLOAD",
+            "gas": 271998,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 240,
+            "op": "DUP2",
+            "gas": 271995,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 241,
+            "op": "DUP2",
+            "gas": 271992,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 242,
+            "op": "MSTORE",
+            "gas": 271989,
+            "gasCost": 9,
+            "depth": 1
+          },
+          {
+            "pc": 243,
+            "op": "DUP3",
+            "gas": 271980,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 244,
+            "op": "SWAP1",
+            "gas": 271977,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 245,
+            "op": "PUSH32",
+            "gas": 271974,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 278,
+            "op": "SWAP1",
+            "gas": 271971,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 279,
+            "op": "PUSH1",
+            "gas": 271968,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 281,
+            "op": "ADD",
+            "gas": 271965,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 282,
+            "op": "PUSH1",
+            "gas": 271962,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 284,
+            "op": "MLOAD",
+            "gas": 271959,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 285,
+            "op": "DUP1",
+            "gas": 271956,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 286,
+            "op": "SWAP2",
+            "gas": 271953,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 287,
+            "op": "SUB",
+            "gas": 271950,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 288,
+            "op": "SWAP1",
+            "gas": 271947,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 289,
+            "op": "LOG1",
+            "gas": 271944,
+            "gasCost": 1006,
+            "depth": 1
+          },
+          {
+            "pc": 290,
+            "op": "PUSH1",
+            "gas": 270938,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 292,
+            "op": "MLOAD",
+            "gas": 270935,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 293,
+            "op": "PUSH32",
+            "gas": 270932,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 326,
+            "op": "SWAP1",
+            "gas": 270929,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 327,
+            "op": "PUSH0",
+            "gas": 270926,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 328,
+            "op": "SWAP1",
+            "gas": 270924,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 329,
+            "op": "LOG1",
+            "gas": 270921,
+            "gasCost": 750,
+            "depth": 1
+          },
+          {
+            "pc": 330,
+            "op": "PUSH1",
+            "gas": 270171,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 332,
+            "op": "MLOAD",
+            "gas": 270168,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 333,
+            "op": "DUP2",
+            "gas": 270165,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 334,
+            "op": "DUP2",
+            "gas": 270162,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 335,
+            "op": "MSTORE",
+            "gas": 270159,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 336,
+            "op": "PUSH32",
+            "gas": 270156,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 369,
+            "op": "SWAP1",
+            "gas": 270153,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 370,
+            "op": "PUSH1",
+            "gas": 270150,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 372,
+            "op": "ADD",
+            "gas": 270147,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 373,
+            "op": "PUSH1",
+            "gas": 270144,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 375,
+            "op": "MLOAD",
+            "gas": 270141,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 376,
+            "op": "DUP1",
+            "gas": 270138,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 377,
+            "op": "SWAP2",
+            "gas": 270135,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 378,
+            "op": "SUB",
+            "gas": 270132,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 379,
+            "op": "SWAP1",
+            "gas": 270129,
+            "gasCost": 3,
+            "depth": 1
+          },
+          {
+            "pc": 380,
+            "op": "LOG1",
+            "gas": 270126,
+            "gasCost": 1006,
+            "depth": 1
+          },
+          {
+            "pc": 381,
+            "op": "POP",
+            "gas": 269120,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 382,
+            "op": "POP",
+            "gas": 269118,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 383,
+            "op": "POP",
+            "gas": 269116,
+            "gasCost": 2,
+            "depth": 1
+          },
+          {
+            "pc": 384,
+            "op": "JUMP",
+            "gas": 269114,
+            "gasCost": 8,
+            "depth": 1
+          },
+          {
+            "pc": 75,
+            "op": "JUMPDEST",
+            "gas": 269106,
+            "gasCost": 1,
+            "depth": 1
+          },
+          {
+            "pc": 76,
+            "op": "STOP",
+            "gas": 269105,
+            "gasCost": 0,
+            "depth": 1
+          }
+        ],
+        "callTrace": {
+          "type": "CALL",
+          "from": "0x6f4c950442e1af093bcff730381e63ae9171b87a",
+          "to": "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8",
+          "value": "0x0",
+          "gas": "0x43010",
+          "gasUsed": "0x14df",
+          "input": "0xeae5caca000000000000000000000000000000000000000000000000000000024cb016ea",
+          "output": "0x"
+        },
+        "prestate": {
+          "0x5300000000000000000000000000000000000005": {
+            "balance": "0x272b1c5fab96b80",
+            "code": "0x6080604052600436106100ab5760003560e01c806384411d651161006457806384411d65146101845780638da5cb5b1461019a5780639e7adc79146101ba578063f2fde38b146101da578063feec756c146101fa578063ff4f35461461021a57600080fd5b80632e1a7d4d146100b75780633cb747bf146100d95780633ccfd60b14610116578063457e1a491461012b57806366d003ac1461014f578063715018a61461016f57600080fd5b366100b257005b600080fd5b3480156100c357600080fd5b506100d76100d2366004610682565b61023a565b005b3480156100e557600080fd5b506002546100f9906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561012257600080fd5b506100d76103ff565b34801561013757600080fd5b5061014160015481565b60405190815260200161010d565b34801561015b57600080fd5b506003546100f9906001600160a01b031681565b34801561017b57600080fd5b506100d761040c565b34801561019057600080fd5b5061014160045481565b3480156101a657600080fd5b506000546100f9906001600160a01b031681565b3480156101c657600080fd5b506100d76101d536600461069b565b610442565b3480156101e657600080fd5b506100d76101f536600461069b565b6104be565b34801561020657600080fd5b506100d761021536600461069b565b610547565b34801561022657600080fd5b506100d7610235366004610682565b6105c3565b6001548110156102ca5760405162461bcd60e51b815260206004820152604a60248201527f4665655661756c743a207769746864726177616c20616d6f756e74206d75737460448201527f2062652067726561746572207468616e206d696e696d756d20776974686472616064820152691dd85b08185b5bdd5b9d60b21b608482015260a4015b60405180910390fd5b478082111561032e5760405162461bcd60e51b815260206004820152602a60248201527f4665655661756c743a20696e73756666696369656e742062616c616e636520746044820152696f20776974686472617760b01b60648201526084016102c1565b6004805483019055600354604080518481526001600160a01b0390921660208301523382820152517fc8a211cc64b6ed1b50595a9fcb1932b6d1e5a6e8ef15b60e5b1f988ea9086bba9181900360600190a1600254600354604080516020810182526000808252915163b2267a7b60e01b81526001600160a01b039485169463b2267a7b9488946103c99491909216928592906004016106cb565b6000604051808303818588803b1580156103e257600080fd5b505af11580156103f6573d6000803e3d6000fd5b50505050505050565b476104098161023a565b50565b6000546001600160a01b031633146104365760405162461bcd60e51b81526004016102c190610737565b6104406000610632565b565b6000546001600160a01b0316331461046c5760405162461bcd60e51b81526004016102c190610737565b600280546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f1c928c417a10a21c3cddad148c5dba5d710e4b1442d6d8a36de345935ad8461290600090a35050565b6000546001600160a01b031633146104e85760405162461bcd60e51b81526004016102c190610737565b6001600160a01b03811661053e5760405162461bcd60e51b815260206004820152601d60248201527f6e6577206f776e657220697320746865207a65726f206164647265737300000060448201526064016102c1565b61040981610632565b6000546001600160a01b031633146105715760405162461bcd60e51b81526004016102c190610737565b600380546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f7e1e96961a397c8aa26162fe259cc837afc95e33aad4945ddc61c18dabb7a6ad90600090a35050565b6000546001600160a01b031633146105ed5760405162461bcd60e51b81526004016102c190610737565b600180549082905560408051828152602081018490527f0d3c80219fe57713b9f9c83d1e51426792d0c14d8e330e65b102571816140965910160405180910390a15050565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60006020828403121561069457600080fd5b5035919050565b6000602082840312156106ad57600080fd5b81356001600160a01b03811681146106c457600080fd5b9392505050565b60018060a01b038516815260006020858184015260806040840152845180608085015260005b8181101561070d5786810183015185820160a0015282016106f1565b50600060a0828601015260a0601f19601f8301168501019250505082606083015295945050505050565b60208082526017908201527f63616c6c6572206973206e6f7420746865206f776e657200000000000000000060408201526060019056fea2646970667358221220063c6c384f745ebcacfdd13320e5b9a50687aae43ff14566761f56273111b97e64736f6c63430008100033"
+          },
+          "0x6f4c950442e1af093bcff730381e63ae9171b87a": {
+            "balance": "0x5e0cc4ed4beefa80",
+            "code": "0x",
+            "nonce": 181
+          },
+          "0xcee6d51e5cb8f47a815f9a3abe0ea8c44029b2c8": {
+            "balance": "0x0",
+            "code": "0x608060405234801561000f575f80fd5b506004361061003f575f3560e01c80636abae12f146100435780636d12f0931461004d578063eae5caca14610055575b5f80fd5b61004b610068565b005b61004b6100ac565b61004b610063366004610181565b6100e1565b5f60506020526020805f5e505f516040518181527f5a044fb7ed73bf56f5e0940b4c7134425f7b42a324ed08949aad60f0a2dc412c9060200160405180910390a150565b6040514881527fd70d64ca70167e426a65a525bd608baff4b144b8d7a4596a8407a82102e48a859060200160405180910390a1565b63499602d280549082905560405181815282907f95ca29f4ee0ab2b186d7eabd551096d51e82012ed86f0c87ea33441bb4c195009060200160405180910390a16040517f89d77eac73360eb52f26da570307d5c9514c16b550f1d46467be3dddc800b9a2905f90a16040518181527f95ca29f4ee0ab2b186d7eabd551096d51e82012ed86f0c87ea33441bb4c195009060200160405180910390a1505050565b5f60208284031215610191575f80fd5b503591905056fea2646970667358221220a46c26c56a0fa86e432018a2cd757ad6dc97ac1854fe900227642c888cab8f3364736f6c63430008180033",
+            "nonce": 1,
+            "storage": {
+              "0x00000000000000000000000000000000000000000000000000000000499602d2": "0x000000000000000000000000000000000000000000000000000000024cb016ea"
+            }
+          }
+        }
+      }
+    ],
+    "withdraw_trie_root": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "startL1QueueIndex": 0
+  }
+}
