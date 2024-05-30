@@ -1,3 +1,0 @@
-[submodule "integration/tests/traces"]
-	path = integration/tests/traces
-	url = https://github.com/scroll-tech/test-traces

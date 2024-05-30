@@ -18,7 +18,7 @@ pub use proof::{
 };
 
 pub const ASSETS_DIR: &str = "./test_assets";
-pub const PARAMS_DIR: &str = "./test_params";
+pub const PARAMS_DIR: &str = "./params";
 
 pub fn parse_trace_path_from_mode(mode: &str) -> &'static str {
     let trace_path = match mode {

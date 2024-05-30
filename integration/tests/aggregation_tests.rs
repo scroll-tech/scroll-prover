@@ -9,7 +9,7 @@ use prover::{
 use std::env;
 
 fn load_batch() -> anyhow::Result<Vec<String>> {
-    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_24".to_string());
+    let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
     let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
         .filter_map(|entry| entry.ok())
         .map(|entry| entry.path())
@@ -17,6 +17,10 @@ fn load_batch() -> anyhow::Result<Vec<String>> {
         .map(|path| path.to_string_lossy().into_owned())
         .collect::<Vec<String>>();
     sorted_dirs.sort();
+    let fast = false;
+    if fast {
+        sorted_dirs.truncate(1);
+    }
     log::info!("batch content: {:?}", sorted_dirs);
     Ok(sorted_dirs)
 }
@@ -77,7 +81,7 @@ fn gen_chunk_hashes_and_proofs(
 }
 
 fn log_batch_pi(trace_paths: &[String]) {
-    let max_num_snarks = 15;
+    let max_num_snarks = prover::MAX_AGG_SNARKS;
     let chunk_traces: Vec<_> = trace_paths
         .iter()
         .map(|trace_path| {
@@ -105,8 +109,8 @@ fn log_batch_pi(trace_paths: &[String]) {
             .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
     }
 
-    let batch_hash = BatchHash::construct(&chunk_hashes);
-    let blob = batch_hash.blob_assignments();
+    let batch_hash = BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(&chunk_hashes);
+    let blob = batch_hash.point_evaluation_assignments();
 
     let challenge = blob.challenge;
     let evaluation = blob.evaluation;
