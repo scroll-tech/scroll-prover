@@ -25,11 +25,7 @@ clippy: ## Run clippy checks over all workspace members
 	@cargo clippy --all-features --all-targets -- -D warnings
 
 test: ## Run tests for all the workspace members
-	@cargo test --release --all
-
-bridge-test:
-	cargo build --release
-	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
+	@cargo test --release -p integration --test unit_tests
 
 mock:
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
@@ -65,7 +61,7 @@ rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
-# As default `degree=25` and `params_dir=./prover/test_params`.
+# As default `degree=25` and `params_dir=./integration/params`.
 download-setup:
 	sh download_setup.sh ${degree} ${params_dir}
 
