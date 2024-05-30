@@ -37,7 +37,7 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 ### Testing
 
-`make test-chunk-prove` and `make test-agg-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
+`make test-chunk-prove` and `make test-e2e-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.
 
 And there are other tests:
 - `make test-inner-prove` could be used to test the first-level circuit.
@@ -98,7 +98,7 @@ sh scripts/gen_full_chunk_proofs.sh BATCH_INDEX
 
 ### Verifier Contract
 
-Both YUL and bytecode of verifier contract could be generated when running aggregation tests (`make test-agg-prove`). After running aggregation tests, a new folder is created in `integration` folder of scroll-prover and named as `agg_tests_output_multi_DATE_TIME`. It contains below files:
+Both YUL and bytecode of verifier contract could be generated when running aggregation tests (`make test-e2e-prove`). After running aggregation tests, a new folder is created in `integration` folder of scroll-prover and named like `integration/outputs/agg_tests_*`. It contains below files:
 
 - Chunk protocol: `chunk_chunk_0.protocol`
 - Chunk VK: `vk_chunk_0.vkey`
