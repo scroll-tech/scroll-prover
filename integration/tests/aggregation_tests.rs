@@ -109,7 +109,7 @@ fn log_batch_pi(trace_paths: &[String]) {
             .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
     }
 
-    let batch_hash = BatchHash::<{prover::MAX_AGG_SNARKS}>::construct(&chunk_hashes);
+    let batch_hash = BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(&chunk_hashes);
     let blob = batch_hash.point_evaluation_assignments();
 
     let challenge = blob.challenge;
