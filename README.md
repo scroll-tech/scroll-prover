@@ -4,6 +4,10 @@
 
 ## Usage
 
+### Latest Release
+
+v0.10.3 is used in Scroll Mainnet currently. Branch `main` HEAD is used for development.
+
 ### Prerequisite
 
 Install Solidity compiler `solc` of version `0.8.19` via [svm-rs](https://github.com/alloy-rs/svm-rs):
@@ -27,7 +31,7 @@ make download-setup -e degree=26
 ```
 Or specify other degree and target directory to download.
 ```shell
-# As default `degree=26` and `params_dir=./integration/test_params`.
+# As default `degree=26` and `params_dir=./integration/params`.
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
 
@@ -61,8 +65,8 @@ Could specify arguments as
 # Proof data will be saved to `./integration/proof_data`.
 export OUTPUT_DIR="proof_data"
 
-# Params file should be located in `./integration/test_params`.
-cargo run --release --bin zkevm_prove -- --params=test_params --trace=tests/extra_traces/new.json
+# Params file should be located in `./integration/params`.
+cargo run --release --bin zkevm_prove -- --params=params --trace=tests/extra_traces/new.json
 ```
 
 Run zkevm verifier to verify chunk proof (work directory is `./integration`)
@@ -73,7 +77,7 @@ cargo build --release --bin zkevm_verify
 ```
 Could specify arguments as
 ```shell
-cargo run --release --bin zkevm_verify -- --params=test_params --proof=proof_data
+cargo run --release --bin zkevm_verify -- --params=params --proof=proof_data
 ```
 
 ### Scripts
