@@ -2,15 +2,12 @@ use halo2_proofs::{
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
 };
-use integration::test_util::{
-    ccc_as_signer, load_block_traces_for_test, prepare_circuit_capacity_checker,
-    run_circuit_capacity_checker, PARAMS_DIR,
-};
+use integration::test_util::{load_block_traces_for_test, PARAMS_DIR};
 use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
-    utils::{init_env_and_log, load_params, short_git_version},
-    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
+    utils::{init_env_and_log, load_params},
+    zkevm::circuit::{SuperCircuit, TargetCircuit},
 };
 use zkevm_circuits::util::SubCircuit;
 
