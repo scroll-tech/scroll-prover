@@ -30,9 +30,6 @@ test: ## Run tests for all the workspace members
 mock:
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
 
-mock-debug:
-	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
-
 mock-testnet:
 	@cargo run --bin mock_testnet --release
 
@@ -42,14 +39,14 @@ test-inner-prove:
 test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
-test-agg-prove:
-	@cargo test --features prove_verify --release test_agg_prove_verify
+test-e2e-prove:
+	@cargo test --features prove_verify --release test_e2e_prove_verify
 
 test-pi:
 	@cargo test --features prove_verify --release test_batch_pi
 
 test-batch-prove:
-	@cargo test --features prove_verify --release test_batch_prove_verify
+	@cargo test --release -p integration --test batch_tests test_batch_prove_verify
 
 test-batches-with-each-chunk-num-prove:
 	@cargo test --features prove_verify --release test_batches_with_each_chunk_num_prove_verify
