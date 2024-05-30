@@ -26,7 +26,6 @@ fn test_short_git_version() {
     assert_eq!(git_version.len(), 7);
 }
 
-
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");

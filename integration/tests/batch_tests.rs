@@ -52,10 +52,13 @@ fn load_chunk_hashes_and_proofs(
     let chunk_hashes_proofs: Vec<_> = batch_task_detail.chunk_proofs[..]
         .iter()
         .cloned()
-        .map(|p| {
-            (p.chunk_hash.clone().unwrap(), p)
-        })
+        .map(|p| (p.chunk_hash.clone().unwrap(), p))
         .collect();
+    let tx_bytes_total_len: usize = chunk_hashes_proofs
+        .iter()
+        .map(|(c, _p)| c.tx_bytes.len())
+        .sum();
+    log::info!("tx_bytes_total_len {tx_bytes_total_len}");
 
     // Dump chunk-procotol for further batch-proving.
     chunk_hashes_proofs
