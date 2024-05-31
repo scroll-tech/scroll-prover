@@ -40,7 +40,6 @@ fn test_batches_with_each_chunk_num_prove_verify() {
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct BatchTaskDetail {
-    chunk_infos: Vec<ChunkHash>,
     chunk_proofs: Vec<ChunkProof>,
 }
 
@@ -50,14 +49,16 @@ fn load_chunk_hashes_and_proofs(
     output_dir: &str,
 ) -> Vec<(ChunkHash, ChunkProof)> {
     let batch_task_detail: BatchTaskDetail = from_json_file(dir, filename).unwrap();
-    let chunk_hashes = batch_task_detail.chunk_infos;
-    let chunk_proofs = batch_task_detail.chunk_proofs;
-
-    let chunk_hashes_proofs: Vec<_> = chunk_hashes[..]
+    let chunk_hashes_proofs: Vec<_> = batch_task_detail.chunk_proofs[..]
         .iter()
         .cloned()
-        .zip(chunk_proofs[..].iter().cloned())
+        .map(|p| (p.chunk_hash.clone().unwrap(), p))
         .collect();
+    let tx_bytes_total_len: usize = chunk_hashes_proofs
+        .iter()
+        .map(|(c, _p)| c.tx_bytes.len())
+        .sum();
+    log::info!("tx_bytes_total_len {tx_bytes_total_len}");
 
     // Dump chunk-procotol for further batch-proving.
     chunk_hashes_proofs

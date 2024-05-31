@@ -35,7 +35,7 @@ fn test_batch_pi_consistency() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
-fn test_agg_prove_verify() {
+fn test_e2e_prove_verify() {
     let output_dir = init_env_and_log("agg_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 

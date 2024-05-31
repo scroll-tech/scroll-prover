@@ -25,17 +25,10 @@ clippy: ## Run clippy checks over all workspace members
 	@cargo clippy --all-features --all-targets -- -D warnings
 
 test: ## Run tests for all the workspace members
-	@cargo test --release --all
-
-bridge-test:
-	cargo build --release
-	./target/release/prove --params=./test_params --trace=prover/tests/traces/bridge
+	@cargo test --release -p integration --test unit_tests
 
 mock:
 	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
-
-mock-debug:
-	@cargo test --features prove_verify test_mock_prove -- --exact --nocapture
 
 mock-testnet:
 	@cargo run --bin mock_testnet --release
@@ -46,14 +39,14 @@ test-inner-prove:
 test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
-test-agg-prove:
-	@cargo test --features prove_verify --release test_agg_prove_verify
+test-e2e-prove:
+	@cargo test --features prove_verify --release test_e2e_prove_verify
 
 test-pi:
 	@cargo test --features prove_verify --release test_batch_pi
 
 test-batch-prove:
-	@cargo test --features prove_verify --release test_batch_prove_verify
+	@cargo test --release -p integration --test batch_tests test_batch_prove_verify
 
 test-batches-with-each-chunk-num-prove:
 	@cargo test --features prove_verify --release test_batches_with_each_chunk_num_prove_verify
@@ -65,7 +58,7 @@ rows:
 	@cargo test --features prove_verify --release estimate_circuit_rows
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
-# As default `degree=25` and `params_dir=./prover/test_params`.
+# As default `degree=25` and `params_dir=./integration/params`.
 download-setup:
 	sh download_setup.sh ${degree} ${params_dir}
 
