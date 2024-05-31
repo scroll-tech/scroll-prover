@@ -1,4 +1,4 @@
-use integration::test_util::{load_block_traces_for_test, PARAMS_DIR};
+use integration::test_util::{load_chunk_for_test, PARAMS_DIR};
 use prover::{
     inner::{Prover, Verifier},
     utils::init_env_and_log,
@@ -12,7 +12,7 @@ fn test_inner_prove_verify() {
     let output_dir = init_env_and_log(test_name);
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_trace = load_block_traces_for_test().1;
+    let chunk_trace = load_chunk_for_test().1;
     log::info!("Loaded chunk trace");
 
     let mut prover = Prover::<SuperCircuit>::from_params_dir(PARAMS_DIR);

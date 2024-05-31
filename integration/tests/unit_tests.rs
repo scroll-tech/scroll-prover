@@ -1,7 +1,7 @@
 // Fast tests which can be finished within minutes
 
 use integration::test_util::{
-    ccc_as_signer, load_block_traces_for_test, prepare_circuit_capacity_checker,
+    ccc_as_signer, load_chunk_for_test, prepare_circuit_capacity_checker,
     run_circuit_capacity_checker,
 };
 use prover::{
@@ -24,7 +24,7 @@ fn test_capacity_checker() {
     init_env_and_log("integration");
     prepare_circuit_capacity_checker();
 
-    let block_traces = load_block_traces_for_test().1;
+    let block_traces = load_chunk_for_test().1;
 
     let full = false;
     let batch_id = 0;
@@ -44,7 +44,7 @@ fn estimate_circuit_rows() {
     init_env_and_log("integration");
     prepare_circuit_capacity_checker();
 
-    let (_, block_trace) = load_block_traces_for_test();
+    let (_, block_trace) = load_chunk_for_test();
     let witness_block = block_traces_to_witness_block(block_trace).unwrap();
     log::info!("estimating used rows");
     let row_usage = <prover::zkevm::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(&witness_block);

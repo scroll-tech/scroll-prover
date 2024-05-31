@@ -11,14 +11,12 @@ itertools.workspace = true
 log.workspace = true
 log4rs.workspace = true
 rand.workspace = true
+serde.workspace = true
+serde_derive.workspace = true
 
 halo2_proofs.workspace = true
 prover.workspace = true
 zkevm-circuits.workspace = true
-
-[dev-dependencies]
-serde.workspace = true
-serde_derive.workspace = true
 
 [features]
 default = ["prove_verify"]
