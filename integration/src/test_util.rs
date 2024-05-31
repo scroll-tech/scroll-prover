@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use glob::glob;
 use prover::{
     utils::{get_block_trace_from_file, read_env_var},
@@ -6,7 +8,6 @@ use prover::{
 
 mod capacity_checker;
 mod proof;
-mod types;
 
 pub use prover::types::BatchProvingTask;
 
@@ -40,12 +41,32 @@ pub fn load_chunk(trace_path: &str) -> (Vec<String>, Vec<BlockTrace>) {
             .map(|p| p.unwrap().to_str().unwrap().to_string())
             .collect();
         file_names.sort_by_key(|s| {
-            // Remove the ".json" suffix and parse the remaining part as an integer
-            s.trim_end_matches(".json").parse::<u32>().unwrap()
+            let path = Path::new(s);
+            let basename = path.file_stem().unwrap().to_str().unwrap();
+            basename
+                .trim_start_matches("block_")
+                .parse::<u32>()
+                .unwrap()
         });
         file_names
     };
     log::info!("test cases traces: {:?}", paths);
     let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
     (paths, traces)
+}
+
+pub fn load_batch(batch_dir: &str) -> anyhow::Result<Vec<String>> {
+    let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect::<Vec<String>>();
+    sorted_dirs.sort_by_key(|s| s.trim_start_matches("chunk_").parse::<u32>().unwrap());
+    let fast = false;
+    if fast {
+        sorted_dirs.truncate(1);
+    }
+    log::info!("batch content: {:?}", sorted_dirs);
+    Ok(sorted_dirs)
 }

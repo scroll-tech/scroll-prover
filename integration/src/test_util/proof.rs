@@ -113,7 +113,7 @@ fn verify_batch_proof(evm_proof: EvmProof, output_dir: &str) {
 
 fn verify_chunk_proof(prover: &common::Prover, normal_proof: Snark, output_dir: &str) {
     let pk = prover.pk(LayerId::Layer2.id()).unwrap();
-    let chunk_proof = ChunkProof::new(normal_proof, Some(pk), None).unwrap();
+    let chunk_proof = ChunkProof::new(normal_proof, Some(pk), None, Vec::new()).unwrap();
     chunk_proof.dump(output_dir, "0").unwrap();
 
     let verifier = zkevm::Verifier::from_dirs(PARAMS_DIR, output_dir);

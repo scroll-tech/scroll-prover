@@ -1,6 +1,6 @@
 use integration::test_util::{
-    gen_and_verify_batch_proofs, load_chunk, load_chunk_for_test, BatchProvingTask, ASSETS_DIR,
-    PARAMS_DIR,
+    gen_and_verify_batch_proofs, load_batch, load_chunk, load_chunk_for_test, BatchProvingTask,
+    ASSETS_DIR, PARAMS_DIR,
 };
 use prover::{
     aggregator::Prover,
@@ -12,25 +12,6 @@ use std::env;
 fn load_test_batch() -> anyhow::Result<Vec<String>> {
     let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
     load_batch(&batch_dir)
-}
-
-fn load_batch(batch_dir: &str) -> anyhow::Result<Vec<String>> {
-    let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
-        .filter_map(|entry| entry.ok())
-        .map(|entry| entry.path())
-        .filter(|path| path.is_dir())
-        .map(|path| path.to_string_lossy().into_owned())
-        .collect::<Vec<String>>();
-    sorted_dirs.sort_by_key(|s| {
-        // Remove the "chunk_" prefix and parse the remaining part as an integer
-        s.trim_start_matches("chunk_").parse::<u32>().unwrap()
-    });
-    let fast = false;
-    if fast {
-        sorted_dirs.truncate(1);
-    }
-    log::info!("batch content: {:?}", sorted_dirs);
-    Ok(sorted_dirs)
 }
 
 #[test]
