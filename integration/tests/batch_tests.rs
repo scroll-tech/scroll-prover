@@ -60,7 +60,7 @@ fn load_chunk_hashes_and_proofs(
         .sum();
     log::info!("tx_bytes_total_len {tx_bytes_total_len}");
 
-    // Dump chunk-procotol for further batch-proving.
+    // Dump chunk-protocol for further batch-proving.
     chunk_hashes_proofs
         .first()
         .unwrap()
