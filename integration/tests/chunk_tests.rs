@@ -1,5 +1,5 @@
 use integration::test_util::{
-    gen_and_verify_chunk_proofs, load_block_traces_for_test, ASSETS_DIR, PARAMS_DIR,
+    gen_and_verify_chunk_proofs, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR,
 };
 use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log},
@@ -13,7 +13,7 @@ fn test_chunk_prove_verify() {
     let output_dir = init_env_and_log("chunk_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_trace = load_block_traces_for_test().1;
+    let chunk_trace = load_chunk_for_test().1;
     log::info!("Loaded chunk trace");
 
     let witness_block = chunk_trace_to_witness_block(chunk_trace).unwrap();
@@ -25,7 +25,7 @@ fn test_chunk_prove_verify() {
 
     // Load or generate compression wide snark (layer-1).
     let layer1_snark = zkevm_prover
-        .inner
+        .prover_impl
         .load_or_gen_last_chunk_snark("layer1", &witness_block, None, Some(&output_dir))
         .unwrap();
 

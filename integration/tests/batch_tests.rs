@@ -1,8 +1,7 @@
-use integration::test_util::{gen_and_verify_batch_proofs, PARAMS_DIR};
+use integration::test_util::{gen_and_verify_batch_proofs, BatchProvingTask, PARAMS_DIR};
 use prover::{
-    aggregator::Prover, proof::from_json_file, utils::init_env_and_log, ChunkHash, ChunkProof,
+    aggregator::Prover, io::from_json_file, utils::init_env_and_log, ChunkHash, ChunkProof,
 };
-use serde_derive::{Deserialize, Serialize};
 use std::{env, fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
@@ -11,7 +10,8 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_hashes_proofs = load_chunk_hashes_and_proofs("tests/test_data", "1", &output_dir);
+    let chunk_hashes_proofs =
+        load_chunk_hashes_and_proofs("tests/test_data/full_proof_1.json", &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
     prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
 }
@@ -22,7 +22,8 @@ fn test_batches_with_each_chunk_num_prove_verify() {
     let output_dir = init_env_and_log("batches_with_each_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_hashes_proofs = load_chunk_hashes_and_proofs("tests/test_data", "2", &output_dir);
+    let chunk_hashes_proofs =
+        load_chunk_hashes_and_proofs("tests/test_data/full_proof_1.json", &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
 
     // Iterate over chunk proofs to test with 1 - 15 chunks (in a batch).
@@ -38,18 +39,13 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         );
     }
 }
-#[derive(Debug, Deserialize, Serialize)]
-struct BatchTaskDetail {
-    chunk_proofs: Vec<ChunkProof>,
-}
 
 fn load_chunk_hashes_and_proofs(
-    dir: &str,
-    filename: &str,
+    batch_task_file: &str,
     output_dir: &str,
 ) -> Vec<(ChunkHash, ChunkProof)> {
-    let batch_task_detail: BatchTaskDetail = from_json_file(dir, filename).unwrap();
-    let chunk_hashes_proofs: Vec<_> = batch_task_detail.chunk_proofs[..]
+    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
+    let chunk_hashes_proofs: Vec<_> = batch.chunk_proofs[..]
         .iter()
         .cloned()
         .map(|p| (p.chunk_hash.clone().unwrap(), p))
