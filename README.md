@@ -16,6 +16,12 @@ cargo install svm-rs
 svm install 0.8.19
 ```
 
+Fetch git-submodule of test traces
+```shell
+git submodule init
+git submodule update --checkout
+```
+
 Download all setup params, degree `20`, `24` and `26` are used in [config](https://github.com/scroll-tech/scroll-prover/tree/main/integration/configs).
 Could only download params of degree `26`, but it may affect performance (when downsizing params).
 ```shell
@@ -42,6 +48,12 @@ And there are other tests:
 
 Could use the following command to run binaries locally.
 
+If run into linking issues you may need to run
+```shell
+cp `find ./target/release/ | grep libzktrie.so` /usr/local/lib/
+```
+To move the zktrielib into a path where your linker could locate it.
+
 Run zkevm prover to generate chunk proof (work directory is `./integration`)
 ```shell
 cargo build --release --bin zkevm_prove
@@ -66,6 +78,17 @@ cargo build --release --bin zkevm_verify
 Could specify arguments as
 ```shell
 cargo run --release --bin zkevm_verify -- --params=params --proof=proof_data
+```
+
+### Scripts
+
+- If you have read access for DB, could run command to generate full-proof for batch tests:
+```
+export DB_HOST=
+export DB_USER=
+export DB_NAME=
+
+sh scripts/gen_full_chunk_proofs.sh BATCH_INDEX
 ```
 
 ### Dockers

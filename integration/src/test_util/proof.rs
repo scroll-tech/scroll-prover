@@ -9,7 +9,7 @@ use std::env;
 
 pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
     let evm_proof = gen_and_verify_normal_and_evm_proofs(
-        &mut agg_prover.prover_impl,
+        &mut agg_prover.inner,
         LayerId::Layer4,
         layer3_snark,
         Some(output_dir),
@@ -24,13 +24,13 @@ pub fn gen_and_verify_chunk_proofs(
     output_dir: &str,
 ) {
     let normal_proof = gen_and_verify_normal_and_evm_proofs(
-        &mut zkevm_prover.prover_impl,
+        &mut zkevm_prover.inner,
         LayerId::Layer2,
         layer1_snark,
         Some(output_dir),
     )
     .0;
-    verify_chunk_proof(&zkevm_prover.prover_impl, normal_proof, output_dir);
+    verify_chunk_proof(&zkevm_prover.inner, normal_proof, output_dir);
 }
 
 pub fn gen_and_verify_normal_and_evm_proofs(

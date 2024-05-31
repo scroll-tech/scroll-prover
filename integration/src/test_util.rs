@@ -5,10 +5,8 @@ use prover::{
 };
 
 mod capacity_checker;
+pub mod mock_plonk;
 mod proof;
-mod types;
-
-pub use prover::types::BatchProvingTask;
 
 pub use capacity_checker::{
     ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
@@ -22,30 +20,46 @@ pub use proof::{
 pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
 
-pub fn load_chunk_for_test() -> (Vec<String>, Vec<BlockTrace>) {
+pub fn load_block_traces_for_test() -> (Vec<String>, Vec<BlockTrace>) {
     let trace_path: String = read_env_var(
         "TRACE_PATH",
         "./tests/extra_traces/batch_495/chunk_495/block_8802.json".to_string(),
     );
-    load_chunk(&trace_path)
-}
-
-pub fn load_chunk(trace_path: &str) -> (Vec<String>, Vec<BlockTrace>) {
     let paths: Vec<String> = if !std::fs::metadata(&trace_path).unwrap().is_dir() {
-        vec![trace_path.to_string()]
+        vec![trace_path]
     } else {
-        // Nested dirs are not allowed
-        let mut file_names: Vec<String> = glob(&format!("{trace_path}/*.json"))
-            .unwrap()
-            .map(|p| p.unwrap().to_str().unwrap().to_string())
-            .collect();
-        file_names.sort_by_key(|s| {
-            // Remove the ".json" suffix and parse the remaining part as an integer
-            s.trim_end_matches(".json").parse::<u32>().unwrap()
-        });
-        file_names
+        load_chunk_traces(&trace_path).0
     };
     log::info!("test cases traces: {:?}", paths);
     let traces: Vec<_> = paths.iter().map(get_block_trace_from_file).collect();
     (paths, traces)
+}
+
+fn load_chunk_traces(chunk_dir: &str) -> (Vec<String>, Vec<BlockTrace>) {
+    // Nested dirs are not allowed
+    let file_names: Vec<String> = glob(&format!("{chunk_dir}/*.json"))
+        .unwrap()
+        .map(|p| p.unwrap().to_str().unwrap().to_string())
+        .collect();
+    log::info!("test chunk with {:?}", file_names);
+    let mut names_and_traces = file_names
+        .into_iter()
+        .map(|trace_path| {
+            let trace: BlockTrace = get_block_trace_from_file(trace_path.clone());
+            (
+                trace_path,
+                trace.clone(),
+                trace.header.number.unwrap().as_u64(),
+            )
+        })
+        .collect::<Vec<_>>();
+    names_and_traces.sort_by(|a, b| a.2.cmp(&b.2));
+    log::info!(
+        "sorted: {:?}",
+        names_and_traces
+            .iter()
+            .map(|(f, _, _)| f.clone())
+            .collect::<Vec<String>>()
+    );
+    names_and_traces.into_iter().map(|(f, t, _)| (f, t)).unzip()
 }
