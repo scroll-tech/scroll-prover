@@ -13,10 +13,7 @@ pub use capacity_checker::{
     ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
     run_circuit_capacity_checker,
 };
-pub use prove::{
-    gen_and_verify_normal_and_evm_proofs, gen_and_verify_normal_proof, new_batch_prover,
-    prove_and_verify_batch,
-};
+pub use prove::{new_batch_prover, prove_and_verify_batch};
 
 pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
