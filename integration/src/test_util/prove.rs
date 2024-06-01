@@ -3,34 +3,39 @@ use prover::{
     aggregator::{Prover, Verifier},
     common,
     config::LayerId,
-    zkevm, BatchProof, ChunkProof, CompressionCircuit, EvmProof, Snark,
+    BatchProvingTask, CompressionCircuit, EvmProof, Snark,
 };
 use std::env;
 
-pub fn gen_and_verify_batch_proofs(agg_prover: &mut Prover, layer3_snark: Snark, output_dir: &str) {
-    let evm_proof = gen_and_verify_normal_and_evm_proofs(
-        &mut agg_prover.prover_impl,
-        LayerId::Layer4,
-        layer3_snark,
-        Some(output_dir),
-    )
-    .1;
-    verify_batch_proof(evm_proof, output_dir);
+/// The `output_dir` is assumed to output_dir of chunk proving.
+pub fn new_batch_prover(output_dir: &str) -> Prover {
+    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
+    let prover = Prover::from_dirs(PARAMS_DIR, output_dir);
+    log::info!("Constructed batch prover");
+
+    prover
 }
 
-pub fn gen_and_verify_chunk_proofs(
-    zkevm_prover: &mut zkevm::Prover,
-    layer1_snark: Snark,
+pub fn prove_and_verify_batch(
     output_dir: &str,
+    batch_prover: &mut Prover,
+    batch: BatchProvingTask,
 ) {
-    let normal_proof = gen_and_verify_normal_and_evm_proofs(
-        &mut zkevm_prover.prover_impl,
-        LayerId::Layer2,
-        layer1_snark,
-        Some(output_dir),
-    )
-    .0;
-    verify_chunk_proof(&zkevm_prover.prover_impl, normal_proof, output_dir);
+    let chunk_num = batch.chunk_proofs.len();
+    log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
+
+    let batch_proof = batch_prover
+        .gen_agg_evm_proof(batch, None, Some(output_dir))
+        .unwrap();
+
+    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
+    let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
+    log::info!("Constructed aggregator verifier");
+
+    assert!(verifier.verify_agg_evm_proof(batch_proof));
+    log::info!("Verified batch proof");
+
+    log::info!("Prove batch END: chunk_num = {chunk_num}");
 }
 
 pub fn gen_and_verify_normal_and_evm_proofs(
@@ -97,30 +102,6 @@ fn gen_normal_proof(
     log::info!("Generated compression snark: {id}");
 
     snark
-}
-
-fn verify_batch_proof(evm_proof: EvmProof, output_dir: &str) {
-    let batch_proof = BatchProof::from(evm_proof.proof);
-    batch_proof.dump(output_dir, "agg").unwrap();
-    batch_proof.clone().assert_calldata();
-
-    let verifier = Verifier::from_dirs(PARAMS_DIR, output_dir);
-    log::info!("Constructed aggregator verifier");
-
-    assert!(verifier.verify_agg_evm_proof(batch_proof));
-    log::info!("Verified batch proof");
-}
-
-fn verify_chunk_proof(prover: &common::Prover, normal_proof: Snark, output_dir: &str) {
-    let pk = prover.pk(LayerId::Layer2.id()).unwrap();
-    let chunk_proof = ChunkProof::new(normal_proof, Some(pk), None, Vec::new()).unwrap();
-    chunk_proof.dump(output_dir, "0").unwrap();
-
-    let verifier = zkevm::Verifier::from_dirs(PARAMS_DIR, output_dir);
-    log::info!("Constructed zkevm verifier");
-
-    assert!(verifier.verify_chunk_proof(chunk_proof));
-    log::info!("Verified chunk proof");
 }
 
 fn verify_normal_and_evm_proofs(

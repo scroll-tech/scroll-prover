@@ -18,12 +18,10 @@ fn test_inner_prove_verify() {
     let mut prover = Prover::<SuperCircuit>::from_params_dir(PARAMS_DIR);
     log::info!("Constructed prover");
 
-    let proof = prover
-        .load_or_gen_inner_proof(test_name, "inner", chunk_trace, Some(&output_dir))
-        .unwrap();
+    let snark = prover.gen_inner_snark("inner", chunk_trace).unwrap();
     log::info!("Got inner snark");
 
     let verifier = Verifier::<SuperCircuit>::from_params_dir(PARAMS_DIR, None);
-    assert!(verifier.verify_inner_snark(proof.to_snark()));
+    assert!(verifier.verify_inner_snark(snark));
     log::info!("Finish inner snark verification");
 }

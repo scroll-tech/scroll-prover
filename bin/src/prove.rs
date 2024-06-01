@@ -3,14 +3,10 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 
 #[cfg(feature = "batch-prove")]
 pub fn prove_batch(id: &str, chunk_proofs: Vec<ChunkProof>) {
-    let chunk_hashes_proofs = chunk_proofs
-        .into_iter()
-        .map(|proof| (proof.chunk_hash.clone().unwrap(), proof))
-        .collect();
+    use prover::BatchProvingTask;
 
-    let result = catch_unwind(AssertUnwindSafe(|| {
-        prover::test::batch_prove(id, chunk_hashes_proofs)
-    }));
+    let batch = BatchProvingTask { chunk_proofs };
+    let result = catch_unwind(AssertUnwindSafe(|| prover::test::batch_prove(id, batch)));
 
     match result {
         Ok(_) => log::info!("{id}: succeeded to prove batch"),

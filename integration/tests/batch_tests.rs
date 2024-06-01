@@ -1,8 +1,6 @@
-use integration::test_util::{gen_and_verify_batch_proofs, BatchProvingTask, PARAMS_DIR};
-use prover::{
-    aggregator::Prover, io::from_json_file, utils::init_env_and_log, ChunkHash, ChunkProof,
-};
-use std::{env, fs, path::PathBuf};
+use integration::test_util::{new_batch_prover, prove_and_verify_batch};
+use prover::{io::from_json_file, utils::init_env_and_log, BatchProvingTask};
+use std::{fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
 #[test]
@@ -10,10 +8,31 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_hashes_proofs =
-        load_chunk_hashes_and_proofs("tests/test_data/full_proof_1.json", &output_dir);
+    let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
+    dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
-    prove_and_verify_batch(&output_dir, &mut batch_prover, chunk_hashes_proofs);
+    prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
+}
+
+fn load_batch_proving_task(batch_task_file: &str) -> BatchProvingTask {
+    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
+    let tx_bytes_total_len: usize = batch
+        .chunk_proofs
+        .iter()
+        .map(|c| c.chunk_info.tx_bytes.len())
+        .sum();
+    log::info!("Loaded chunk-hashes and chunk-proofs, batch info: chunk num {}, tx_bytes_total_len {tx_bytes_total_len}", batch.chunk_proofs.len());
+    batch
+}
+
+fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
+    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
+    batch
+        .chunk_proofs
+        .first()
+        .unwrap()
+        .dump(output_dir, "0")
+        .unwrap();
 }
 
 #[cfg(feature = "prove_verify")]
@@ -22,78 +41,18 @@ fn test_batches_with_each_chunk_num_prove_verify() {
     let output_dir = init_env_and_log("batches_with_each_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_hashes_proofs =
-        load_chunk_hashes_and_proofs("tests/test_data/full_proof_1.json", &output_dir);
+    let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
+    dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
 
-    // Iterate over chunk proofs to test with 1 - 15 chunks (in a batch).
-    for i in 0..chunk_hashes_proofs.len() {
+    // Iterate over chunk proofs to test with 1 to max chunks (in a batch).
+    for len in 1..batch.chunk_proofs.len() {
         let mut output_dir = PathBuf::from(&output_dir);
-        output_dir.push(format!("batch_{}", i + 1));
+        output_dir.push(format!("batch_{}", len));
         fs::create_dir_all(&output_dir).unwrap();
-
-        prove_and_verify_batch(
-            &output_dir.to_string_lossy(),
-            &mut batch_prover,
-            chunk_hashes_proofs[..=i].to_vec(),
-        );
+        let batch = BatchProvingTask {
+            chunk_proofs: batch.chunk_proofs[..len].to_vec(),
+        };
+        prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
     }
-}
-
-fn load_chunk_hashes_and_proofs(
-    batch_task_file: &str,
-    output_dir: &str,
-) -> Vec<(ChunkHash, ChunkProof)> {
-    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
-    let chunk_hashes_proofs: Vec<_> = batch.chunk_proofs[..]
-        .iter()
-        .cloned()
-        .map(|p| (p.chunk_hash.clone().unwrap(), p))
-        .collect();
-    let tx_bytes_total_len: usize = chunk_hashes_proofs
-        .iter()
-        .map(|(c, _p)| c.tx_bytes.len())
-        .sum();
-    log::info!("tx_bytes_total_len {tx_bytes_total_len}");
-
-    // Dump chunk-procotol for further batch-proving.
-    chunk_hashes_proofs
-        .first()
-        .unwrap()
-        .1
-        .dump(output_dir, "0")
-        .unwrap();
-
-    log::info!(
-        "Loaded chunk-hashes and chunk-proofs: total = {}",
-        chunk_hashes_proofs.len()
-    );
-    chunk_hashes_proofs
-}
-
-fn new_batch_prover(assets_dir: &str) -> Prover {
-    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let prover = Prover::from_dirs(PARAMS_DIR, assets_dir);
-    log::info!("Constructed batch prover");
-
-    prover
-}
-
-fn prove_and_verify_batch(
-    output_dir: &str,
-    batch_prover: &mut Prover,
-    chunk_hashes_proofs: Vec<(ChunkHash, ChunkProof)>,
-) {
-    let chunk_num = chunk_hashes_proofs.len();
-    log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
-
-    // Load or generate aggregation snark (layer-3).
-    let layer3_snark = batch_prover
-        .load_or_gen_last_agg_snark("agg", chunk_hashes_proofs, Some(output_dir))
-        .unwrap();
-
-    gen_and_verify_batch_proofs(batch_prover, layer3_snark, output_dir);
-
-    log::info!("Prove batch END: chunk_num = {chunk_num}");
 }

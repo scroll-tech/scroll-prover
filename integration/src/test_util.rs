@@ -7,17 +7,15 @@ use prover::{
 };
 
 mod capacity_checker;
-mod proof;
-
-pub use prover::types::BatchProvingTask;
+mod prove;
 
 pub use capacity_checker::{
     ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
     run_circuit_capacity_checker,
 };
-pub use proof::{
-    gen_and_verify_batch_proofs, gen_and_verify_chunk_proofs, gen_and_verify_normal_and_evm_proofs,
-    gen_and_verify_normal_proof,
+pub use prove::{
+    gen_and_verify_normal_and_evm_proofs, gen_and_verify_normal_proof, new_batch_prover,
+    prove_and_verify_batch,
 };
 
 pub const ASSETS_DIR: &str = "./test_assets";
@@ -32,7 +30,7 @@ pub fn load_chunk_for_test() -> (Vec<String>, Vec<BlockTrace>) {
 }
 
 pub fn load_chunk(trace_path: &str) -> (Vec<String>, Vec<BlockTrace>) {
-    let paths: Vec<String> = if !std::fs::metadata(&trace_path).unwrap().is_dir() {
+    let paths: Vec<String> = if !std::fs::metadata(trace_path).unwrap().is_dir() {
         vec![trace_path.to_string()]
     } else {
         // Nested dirs are not allowed

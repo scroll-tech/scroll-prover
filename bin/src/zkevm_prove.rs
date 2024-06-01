@@ -51,7 +51,7 @@ fn main() {
     let now = Instant::now();
     prover
         .gen_chunk_proof(
-            ChunkProvingTask { block_traces },
+            ChunkProvingTask::from(block_traces),
             Some("zkevm"),
             None,
             Some(&output_dir),
