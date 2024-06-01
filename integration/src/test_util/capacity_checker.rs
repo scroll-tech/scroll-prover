@@ -266,14 +266,7 @@ pub fn ccc_by_chunk(
     log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
     let rows = calculate_row_usage_of_witness_block(witness_block).unwrap();
-    let row_usage_details: Vec<SubCircuitRowUsage> = rows
-        .into_iter()
-        .map(|x| SubCircuitRowUsage {
-            name: x.name,
-            row_number: x.row_num_real,
-        })
-        .collect_vec();
-    let row_usage = RowUsage::from_row_usage_details(row_usage_details);
+    let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
     row_usage
 }

@@ -40,7 +40,7 @@ test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
 test-e2e-prove:
-	@cargo test --features prove_verify --release test_e2e_prove_verify
+	@cargo test --release -p integration --test e2e_tests test_e2e_prove_verify
 
 test-pi:
 	@cargo test --features prove_verify --release test_batch_pi

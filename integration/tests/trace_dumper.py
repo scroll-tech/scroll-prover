@@ -10,6 +10,7 @@ MAX_PARALLEL_DOWNLOADS = 4
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Dump block JSONs for a given batch.')
 parser.add_argument('batch_id', type=int, help='The batch ID to process')
+parser.add_argument('chunk_id', type=int, default=0, help='The chunk ID to process')
 args = parser.parse_args()
 
 # Define the URLs for the RPC calls
@@ -65,6 +66,9 @@ def download_batch():
         # Submit each chunk download task to the thread pool
         for chunk in chunks_data['chunks']:
             chunk_id = chunk['index']
+            if args.chunk_id != 0 and chunk_id != args.chunk_id:
+                print("skip chunk", chunk_id)
+                continue
             start_block = chunk['start_block_number']
             end_block = chunk['end_block_number']
             futures.append(executor.submit(download_chunk, chunk_id, start_block, end_block))

@@ -2,7 +2,7 @@ use halo2_proofs::{
     plonk::{keygen_pk2, keygen_vk},
     poly::commitment::Params,
 };
-use integration::test_util::{load_block_traces_for_test, PARAMS_DIR};
+use integration::test_util::{load_chunk_for_test, PARAMS_DIR};
 use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
@@ -45,7 +45,7 @@ fn test_cs_same_for_vk_consistent() {
         "Dummy super cicuit"
     );
 
-    let block_trace = load_block_traces_for_test().1;
+    let block_trace = load_chunk_for_test().1;
     let real_circuit = SuperCircuit::from_block_traces(block_trace).unwrap().0;
 
     let pk = keygen_pk2(&params, &real_circuit).unwrap();
@@ -62,7 +62,7 @@ fn test_deterministic() {
     use halo2_proofs::dev::MockProver;
     init_env_and_log("integration");
     type C = SuperCircuit;
-    let block_trace = load_block_traces_for_test().1;
+    let block_trace = load_chunk_for_test().1;
 
     let circuit1 = C::from_block_traces(block_trace.clone()).unwrap().0;
     let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
@@ -100,7 +100,7 @@ fn test_vk_same() {
         "./tests/extra_traces/batch_25/chunk_113".to_string(),
     ];
     std::env::set_var("TRACE_PATH", p1);
-    let block_trace1 = load_block_traces_for_test().1;
+    let block_trace1 = load_chunk_for_test().1;
     std::env::set_var("TRACE_PATH", p2);
     //let block_trace2 = load_block_traces_for_test().1;
 
