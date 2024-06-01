@@ -14,27 +14,6 @@ fn test_batch_prove_verify() {
     prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
 }
 
-fn load_batch_proving_task(batch_task_file: &str) -> BatchProvingTask {
-    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
-    let tx_bytes_total_len: usize = batch
-        .chunk_proofs
-        .iter()
-        .map(|c| c.chunk_info.tx_bytes.len())
-        .sum();
-    log::info!("Loaded chunk-hashes and chunk-proofs, batch info: chunk num {}, tx_bytes_total_len {tx_bytes_total_len}", batch.chunk_proofs.len());
-    batch
-}
-
-fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
-    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
-    batch
-        .chunk_proofs
-        .first()
-        .unwrap()
-        .dump(output_dir, "0")
-        .unwrap();
-}
-
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_batches_with_each_chunk_num_prove_verify() {
@@ -55,4 +34,25 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         };
         prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
     }
+}
+
+fn load_batch_proving_task(batch_task_file: &str) -> BatchProvingTask {
+    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
+    let tx_bytes_total_len: usize = batch
+        .chunk_proofs
+        .iter()
+        .map(|c| c.chunk_info.tx_bytes.len())
+        .sum();
+    log::info!("Loaded chunk-hashes and chunk-proofs, batch info: chunk num {}, tx_bytes_total_len {tx_bytes_total_len}", batch.chunk_proofs.len());
+    batch
+}
+
+fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
+    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
+    batch
+        .chunk_proofs
+        .first()
+        .unwrap()
+        .dump(output_dir, "0")
+        .unwrap();
 }
