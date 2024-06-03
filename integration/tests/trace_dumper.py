@@ -17,6 +17,11 @@ args = parser.parse_args()
 chunks_url = 'http://10.6.13.141:8560/api/chunks?batch_index={}'.format(args.batch_id)
 block_trace_url = 'http://10.6.13.145:8545'
 
+# env2
+chunks_url = 'http://10.6.11.134:8560/api/chunks?batch_index={}'.format(args.batch_id)
+block_trace_url = 'http://10.6.11.134:8545'
+
+
 # Create the directory for the batch
 batch_dir = os.path.join(os.getcwd(), 'extra_traces', 'batch_{}'.format(args.batch_id))
 os.makedirs(batch_dir, exist_ok=True)
