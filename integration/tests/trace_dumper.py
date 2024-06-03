@@ -52,7 +52,7 @@ def download_chunk(chunk_id, start_block, end_block):
             'id': 99
         }
         response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'})
-        block_data = response.json()
+        block_data = response.json()["result"]
 
         # Save the block JSON to a file
         with open(block_file, 'w') as f:
