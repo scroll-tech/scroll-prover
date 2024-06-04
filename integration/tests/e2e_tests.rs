@@ -26,7 +26,7 @@ fn test_e2e_prove_verify() {
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_dirs = load_batch("./tests/extra_traces/batch_5").unwrap();
+    let chunk_dirs = load_batch("./tests/extra_traces/batch_3").unwrap();
     let batch = gen_batch_proving_task(&output_dir, &chunk_dirs);
 
     let mut batch_prover = new_batch_prover(&output_dir);

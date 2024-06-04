@@ -17,6 +17,11 @@ args = parser.parse_args()
 chunks_url = 'http://10.6.13.141:8560/api/chunks?batch_index={}'.format(args.batch_id)
 block_trace_url = 'http://10.6.13.145:8545'
 
+# env2
+chunks_url = 'http://10.6.11.134:8560/api/chunks?batch_index={}'.format(args.batch_id)
+block_trace_url = 'http://10.6.11.134:8545'
+
+
 # Create the directory for the batch
 batch_dir = os.path.join(os.getcwd(), 'extra_traces', 'batch_{}'.format(args.batch_id))
 os.makedirs(batch_dir, exist_ok=True)
@@ -47,7 +52,7 @@ def download_chunk(chunk_id, start_block, end_block):
             'id': 99
         }
         response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'})
-        block_data = response.json()
+        block_data = response.json()["result"]
 
         # Save the block JSON to a file
         with open(block_file, 'w') as f:
