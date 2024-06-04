@@ -57,7 +57,14 @@ pub fn load_batch(batch_dir: &str) -> anyhow::Result<Vec<String>> {
         .filter(|path| path.is_dir())
         .map(|path| path.to_string_lossy().into_owned())
         .collect::<Vec<String>>();
-    sorted_dirs.sort_by_key(|s| s.trim_start_matches("chunk_").parse::<u32>().unwrap());
+    sorted_dirs.sort_by_key(|s| {
+        let path = Path::new(s);
+        let dir_name = path.file_name().unwrap().to_string_lossy();
+        dir_name
+            .trim_start_matches("chunk_")
+            .parse::<u32>()
+            .unwrap()
+    });
     let fast = false;
     if fast {
         sorted_dirs.truncate(1);
