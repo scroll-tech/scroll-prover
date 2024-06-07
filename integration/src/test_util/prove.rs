@@ -1,5 +1,3 @@
-use crate::test_util::load_chunk;
-
 use super::PARAMS_DIR;
 use prover::{
     aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
@@ -18,13 +16,12 @@ pub fn new_batch_prover(output_dir: &str) -> BatchProver {
 }
 
 pub fn prove_and_verify_chunk(
-    trace_path: &str,
+    chunk: ChunkProvingTask,
     chunk_identifier: Option<&str>,
     params_path: &str,
     assets_path: &str,
     output_dir: &str,
 ) {
-    let traces = load_chunk(trace_path).1;
 
     let mut prover = ChunkProver::from_dirs(params_path, assets_path);
     log::info!("Constructed chunk prover");
@@ -32,7 +29,7 @@ pub fn prove_and_verify_chunk(
     let now = Instant::now();
     let chunk_proof = prover
         .gen_chunk_proof(
-            ChunkProvingTask::from(traces),
+            chunk,
             chunk_identifier,
             None,
             Some(output_dir),
