@@ -47,6 +47,7 @@ fn main() {
     for path in trace_paths.into_iter() {
         let block_trace = get_block_trace_from_file(path.to_str().unwrap());
         env::set_var("CHAIN_ID", block_trace.chain_id.to_string());
+        env::set_var("COINBASE", format!("{:?}", block_trace.coinbase.address.unwrap()));
         log::info!("PROVE START {path:?}");
         match prover
             .gen_chunk_proof(
