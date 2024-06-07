@@ -396,6 +396,7 @@ dependencies = [
  "anyhow",
  "clap",
  "ethers-providers",
+ "glob",
  "integration",
  "itertools 0.10.5",
  "log",

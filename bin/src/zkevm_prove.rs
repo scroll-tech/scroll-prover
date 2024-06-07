@@ -4,7 +4,7 @@ use prover::{
     zkevm::Prover,
     ChunkProvingTask,
 };
-use std::{env, fs, path::PathBuf, time::Instant};
+use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -33,32 +33,28 @@ fn main() {
     let args = Args::parse();
     let mut prover = Prover::from_dirs(&args.params_path, &args.assets_path);
 
-    let mut block_traces = Vec::new();
     let trace_path = PathBuf::from(&args.trace_path);
-    if trace_path.is_dir() {
-        for entry in fs::read_dir(trace_path).unwrap() {
-            let path = entry.unwrap().path();
-            if path.is_file() && path.to_str().unwrap().ends_with(".json") {
-                let block_trace = get_block_trace_from_file(path.to_str().unwrap());
-                block_traces.push(block_trace);
-            }
-        }
-    } else {
-        let block_trace = get_block_trace_from_file(trace_path.to_str().unwrap());
-        block_traces.push(block_trace);
-    }
 
-    let now = Instant::now();
-    prover
-        .gen_chunk_proof(
-            ChunkProvingTask::from(block_traces),
-            Some("zkevm"),
-            None,
-            Some(&output_dir),
-        )
-        .expect("cannot generate chunk snark");
-    log::info!(
-        "finish generating chunk snark, elapsed: {:?}",
-        now.elapsed()
-    );
+    let trace_paths = if trace_path.is_dir() {
+        glob::glob(&format!("{}/**/*.json", args.trace_path))
+            .unwrap()
+            .collect::<Result<Vec<PathBuf>, _>>()
+            .unwrap()
+    } else {
+        vec![trace_path]
+    };
+
+    for path in trace_paths.into_iter() {
+        let block_trace = get_block_trace_from_file(path.to_str().unwrap());
+        match prover
+            .gen_chunk_proof(
+                ChunkProvingTask::from(vec![block_trace]),
+                Some("zkevm"),
+                None,
+                Some(&output_dir),
+            ) {
+            Ok(_) => log::info!("PROVE SUCCESS {path:?}"),
+            Err(e) => log::error!("PROVE ERROR {path:?}, err: {e:?}"),
+        }
+    }
 }
