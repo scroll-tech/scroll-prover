@@ -26,7 +26,7 @@ fn test_capacity_checker() {
 
     let block_traces = load_chunk_for_test().1;
 
-    let full = false;
+    let full = true;
     let batch_id = 0;
     let chunk_id = 0;
     let avg_each_tx_time = if full {

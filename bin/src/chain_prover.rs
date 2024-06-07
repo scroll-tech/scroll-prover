@@ -15,37 +15,37 @@ const DEFAULT_END_BATCH: i64 = i64::MAX;
 
 #[tokio::main]
 async fn main() {
-    init_env_and_log("mock_testnet");
+    init_env_and_log("chain_prover");
 
-    log::info!("mock-testnet: BEGIN");
+    log::info!("chain_prover: BEGIN");
 
     let setting = Setting::new();
-    log::info!("mock-testnet: setting = {setting:?}");
+    log::info!("chain_prover: setting = {setting:?}");
 
     prepare_circuit_capacity_checker();
-    log::info!("mock-testnet: prepared ccc");
+    log::info!("chain_prover: prepared ccc");
 
-    let l2geth = l2geth_client::Client::new("mock-testnet", &setting.l2geth_api_url)
-        .unwrap_or_else(|e| panic!("mock-testnet: failed to initialize ethers Provider: {e}"));
-    let rollupscan = rollupscan_client::Client::new("mock-testnet", &setting.rollupscan_api_url);
+    let l2geth = l2geth_client::Client::new("chain_prover", &setting.l2geth_api_url)
+        .unwrap_or_else(|e| panic!("chain_prover: failed to initialize ethers Provider: {e}"));
+    let rollupscan = rollupscan_client::Client::new("chain_prover", &setting.rollupscan_api_url);
 
     for batch_id in setting.begin_batch..=setting.end_batch {
         let chunks = rollupscan
             .get_chunk_info_by_batch_index(batch_id)
             .await
             .unwrap_or_else(|e| {
-                panic!("mock-testnet: failed to request rollupscan chunks API for batch-{batch_id}: {e}")
+                panic!("chain_prover: failed to request rollupscan chunks API for batch-{batch_id}: {e}")
             });
 
         if chunks.is_none() {
-            log::warn!("mock-testnet: no chunks in batch-{batch_id}");
+            log::warn!("chain_prover: no chunks in batch-{batch_id}");
             continue;
         }
 
         let mut chunk_proofs = vec![];
         for chunk in chunks.unwrap() {
             let chunk_id = chunk.index;
-            log::info!("mock-testnet: handling chunk {:?}", chunk_id);
+            log::info!("chain_prover: handling chunk {:?}", chunk_id);
 
             let mut block_traces: Vec<BlockTrace> = vec![];
             for block_num in chunk.start_block_number..=chunk.end_block_number {
@@ -53,7 +53,7 @@ async fn main() {
                     .get_block_trace_by_num(block_num)
                     .await
                     .unwrap_or_else(|e| {
-                        panic!("mock-testnet: failed to request l2geth block-trace API for batch-{batch_id} chunk-{chunk_id} block-{block_num}: {e}")
+                        panic!("chain_prover: failed to request l2geth block-trace API for batch-{batch_id} chunk-{chunk_id} block-{block_num}: {e}")
                     });
 
                 block_traces.push(trace);
@@ -62,7 +62,7 @@ async fn main() {
             let witness_block = match build_block(&block_traces, batch_id, chunk_id) {
                 Ok(block) => block,
                 Err(e) => {
-                    log::error!("mock-testnet: building block failed {e:?}");
+                    log::error!("chain_prover: building block failed {e:?}");
                     continue;
                 }
             };
@@ -71,7 +71,7 @@ async fn main() {
             }
 
             let chunk_proof = prove_utils::prove_chunk(
-                &format!("mock-testnet: batch-{batch_id} chunk-{chunk_id}"),
+                &format!("chain_prover: batch-{batch_id} chunk-{chunk_id}"),
                 &witness_block,
             );
 
@@ -81,10 +81,10 @@ async fn main() {
         }
 
         #[cfg(feature = "batch-prove")]
-        prove_utils::prove_batch(&format!("mock-testnet: batch-{batch_id}"), chunk_proofs);
+        prove_utils::prove_batch(&format!("chain_prover: batch-{batch_id}"), chunk_proofs);
     }
 
-    log::info!("mock-testnet: END");
+    log::info!("chain_prover: END");
 }
 
 fn build_block(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> Result<WitnessBlock> {
@@ -104,7 +104,7 @@ struct Setting {
 impl Setting {
     pub fn new() -> Self {
         let l2geth_api_url =
-            env::var("L2GETH_API_URL").expect("mock-testnet: Must set env L2GETH_API_URL");
+            env::var("L2GETH_API_URL").expect("chain_prover: Must set env L2GETH_API_URL");
         let rollupscan_api_url = env::var("ROLLUPSCAN_API_URL");
         let rollupscan_api_url =
             rollupscan_api_url.unwrap_or_else(|_| "http://10.0.3.119:8560/api/chunks".to_string());

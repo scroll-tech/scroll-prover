@@ -3,7 +3,7 @@ services:
   chunk_prover:
     image: {DOCKER_IMAGE}
     runtime: nvidia
-    container_name: chunk-prover-gpu
+    container_name: trace-prover-gpu
     environment:
       - CHAIN_ID={CHAIN_ID}
     volumes:
