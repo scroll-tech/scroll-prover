@@ -9,4 +9,4 @@ services:
     volumes:
       - {PARAMS_DIR}:/opt/test_params
       - {CHUNK_DIR}:/opt/integration/test_chunk
-    command: zkevm_prove -t test_chunk
+    command: trace_prover -t test_chunk

@@ -6,9 +6,9 @@ use prover::{
 };
 use std::env;
 
-mod l2geth;
-mod prove;
-mod rollupscan;
+mod l2geth_client;
+mod prove_utils;
+mod rollupscan_client;
 
 const DEFAULT_BEGIN_BATCH: i64 = 1;
 const DEFAULT_END_BATCH: i64 = i64::MAX;
@@ -25,9 +25,9 @@ async fn main() {
     prepare_circuit_capacity_checker();
     log::info!("mock-testnet: prepared ccc");
 
-    let l2geth = l2geth::Client::new("mock-testnet", &setting.l2geth_api_url)
+    let l2geth = l2geth_client::Client::new("mock-testnet", &setting.l2geth_api_url)
         .unwrap_or_else(|e| panic!("mock-testnet: failed to initialize ethers Provider: {e}"));
-    let rollupscan = rollupscan::Client::new("mock-testnet", &setting.rollupscan_api_url);
+    let rollupscan = rollupscan_client::Client::new("mock-testnet", &setting.rollupscan_api_url);
 
     for batch_id in setting.begin_batch..=setting.end_batch {
         let chunks = rollupscan
@@ -70,7 +70,7 @@ async fn main() {
                 continue;
             }
 
-            let chunk_proof = prove::prove_chunk(
+            let chunk_proof = prove_utils::prove_chunk(
                 &format!("mock-testnet: batch-{batch_id} chunk-{chunk_id}"),
                 &witness_block,
             );
@@ -81,7 +81,7 @@ async fn main() {
         }
 
         #[cfg(feature = "batch-prove")]
-        prove::prove_batch(&format!("mock-testnet: batch-{batch_id}"), chunk_proofs);
+        prove_utils::prove_batch(&format!("mock-testnet: batch-{batch_id}"), chunk_proofs);
     }
 
     log::info!("mock-testnet: END");

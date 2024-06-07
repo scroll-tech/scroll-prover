@@ -44,28 +44,8 @@ Could use the following command to run binaries locally.
 
 Run zkevm prover to generate chunk proof (work directory is `./integration`)
 ```shell
-cargo build --release --bin zkevm_prove
-
-./target/release/zkevm_prove --help
-```
-Could specify arguments as
-```shell
-# Proof data will be saved to `./integration/proof_data`.
-export OUTPUT_DIR="proof_data"
-
 # Params file should be located in `./integration/params`.
-cargo run --release --bin zkevm_prove -- --params=params --trace=tests/extra_traces/new.json
-```
-
-Run zkevm verifier to verify chunk proof (work directory is `./integration`)
-```shell
-cargo build --release --bin zkevm_verify
-
-./target/release/zkevm_verify --help
-```
-Could specify arguments as
-```shell
-cargo run --release --bin zkevm_verify -- --params=params --proof=proof_data
+cargo run --release --bin chain_prover -- --params=params --trace=tests/extra_traces/batch_34700/chunk_1236462/block_4176564.json
 ```
 
 ### Dockers

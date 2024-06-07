@@ -28,7 +28,7 @@ test: ## Run tests for all the workspace members
 	@cargo test --release -p integration --test unit_tests
 
 mock:
-	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
+	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
 
 mock-testnet:
 	@cargo run --bin mock_testnet --release

@@ -4,10 +4,10 @@ use prover::{
         circuit::calculate_row_usage_of_witness_block, CircuitCapacityChecker, RowUsage,
         SubCircuitRowUsage,
     },
+    zkevm_circuits::evm_circuit::ExecutionState,
     BlockTrace, WitnessBlock,
 };
 use std::time::Duration;
-use zkevm_circuits::evm_circuit::ExecutionState;
 
 pub fn prepare_circuit_capacity_checker() {
     // Force evm_circuit::param::EXECUTION_STATE_HEIGHT_MAP to be initialized.

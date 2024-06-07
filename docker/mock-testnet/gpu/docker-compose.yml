@@ -3,7 +3,7 @@ services:
   mock_testnet:
     image: {DOCKER_IMAGE}
     runtime: nvidia
-    container_name: mock-testnet-gpu
+    container_name: chain-prover-gpu
     environment:
       - CHAIN_ID={CHAIN_ID}
       - PROVE_BEGIN_BATCH=${PROVE_BEGIN_BATCH}
