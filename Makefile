@@ -18,7 +18,7 @@ build-release: ## Check build in release mode
 	@cargo build --release
 
 fmt: ## Check whether the code is formatted correctly
-	@cargo check --all-features
+	@cargo fmt --all -- --check
 
 clippy: ## Run clippy checks over all workspace members
 	@cargo check --all-features

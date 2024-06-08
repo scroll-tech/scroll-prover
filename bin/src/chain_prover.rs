@@ -1,9 +1,5 @@
-use anyhow::Result;
 use integration::test_util::{prepare_circuit_capacity_checker, run_circuit_capacity_checker};
-use prover::{
-    utils::init_env_and_log, zkevm::circuit::block_traces_to_witness_block, BlockTrace,
-    WitnessBlock,
-};
+use prover::{utils::init_env_and_log, BlockTrace};
 use std::env;
 
 mod l2geth_client;
@@ -59,20 +55,14 @@ async fn main() {
                 block_traces.push(trace);
             }
 
-            let witness_block = match build_block(&block_traces, batch_id, chunk_id) {
-                Ok(block) => block,
-                Err(e) => {
-                    log::error!("chain_prover: building block failed {e:?}");
-                    continue;
-                }
-            };
             if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
+                run_circuit_capacity_checker(batch_id, chunk_id, &block_traces);
                 continue;
             }
 
             let chunk_proof = prove_utils::prove_chunk(
                 &format!("chain_prover: batch-{batch_id} chunk-{chunk_id}"),
-                &witness_block,
+                block_traces,
             );
 
             if let Some(chunk_proof) = chunk_proof {
@@ -85,12 +75,6 @@ async fn main() {
     }
 
     log::info!("chain_prover: END");
-}
-
-fn build_block(block_traces: &[BlockTrace], batch_id: i64, chunk_id: i64) -> Result<WitnessBlock> {
-    let witness_block = block_traces_to_witness_block(Vec::from(block_traces))?;
-    run_circuit_capacity_checker(batch_id, chunk_id, block_traces, &witness_block);
-    Ok(witness_block)
 }
 
 #[derive(Debug)]
