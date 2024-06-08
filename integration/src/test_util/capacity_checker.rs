@@ -1,13 +1,13 @@
 use itertools::Itertools;
 use prover::{
     zkevm::{
-        circuit::calculate_row_usage_of_witness_block, CircuitCapacityChecker, RowUsage,
-        SubCircuitRowUsage,
+        circuit::{block_traces_to_witness_block, calculate_row_usage_of_witness_block},
+        CircuitCapacityChecker, RowUsage, SubCircuitRowUsage,
     },
-    BlockTrace, WitnessBlock,
+    zkevm_circuits::evm_circuit::ExecutionState,
+    BlockTrace,
 };
 use std::time::Duration;
-use zkevm_circuits::evm_circuit::ExecutionState;
 
 pub fn prepare_circuit_capacity_checker() {
     // Force evm_circuit::param::EXECUTION_STATE_HEIGHT_MAP to be initialized.
@@ -21,9 +21,8 @@ pub fn run_circuit_capacity_checker(
     batch_id: i64,
     chunk_id: i64,
     block_traces: &[BlockTrace],
-    witness_block: &WitnessBlock,
 ) -> Duration {
-    let optimal = ccc_by_chunk(batch_id, chunk_id, block_traces, witness_block);
+    let optimal = ccc_by_chunk(batch_id, chunk_id, block_traces);
     let signer = ccc_as_signer(chunk_id, block_traces);
     let follower_light = ccc_as_follower_light(chunk_id, block_traces);
     let follower_full = ccc_as_follower_full(chunk_id, block_traces);
@@ -257,15 +256,11 @@ fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag:
 }
 
 /// most accurate, optimal
-pub fn ccc_by_chunk(
-    batch_id: i64,
-    chunk_id: i64,
-    block_traces: &[BlockTrace],
-    witness_block: &WitnessBlock,
-) -> RowUsage {
+pub fn ccc_by_chunk(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> RowUsage {
     log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
-    let rows = calculate_row_usage_of_witness_block(witness_block).unwrap();
+    let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
+    let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
     let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
     row_usage

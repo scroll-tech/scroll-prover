@@ -18,7 +18,7 @@ build-release: ## Check build in release mode
 	@cargo build --release
 
 fmt: ## Check whether the code is formatted correctly
-	@cargo check --all-features
+	@cargo fmt --all -- --check
 
 clippy: ## Run clippy checks over all workspace members
 	@cargo check --all-features
@@ -28,7 +28,7 @@ test: ## Run tests for all the workspace members
 	@cargo test --release -p integration --test unit_tests
 
 mock:
-	@cargo test --features prove_verify --release test_mock_prove -- --exact --nocapture
+	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
 
 mock-testnet:
 	@cargo run --bin mock_testnet --release
@@ -40,7 +40,7 @@ test-chunk-prove:
 	@cargo test --features prove_verify --release test_chunk_prove_verify
 
 test-e2e-prove:
-	@cargo test --release -p integration --test e2e_tests test_e2e_prove_verify
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify
 
 test-pi:
 	@cargo test --features prove_verify --release test_batch_pi

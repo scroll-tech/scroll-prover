@@ -7,9 +7,9 @@ use prover::{
     config::INNER_DEGREE,
     io::serialize_vk,
     utils::{init_env_and_log, load_params},
-    zkevm::circuit::{SuperCircuit, TargetCircuit},
+    zkevm::circuit::{block_traces_to_witness_block, SuperCircuit, TargetCircuit},
+    zkevm_circuits::util::SubCircuit,
 };
-use zkevm_circuits::util::SubCircuit;
 
 #[ignore]
 #[test]
@@ -35,7 +35,7 @@ fn test_load_params() {
 #[test]
 fn test_cs_same_for_vk_consistent() {
     let params = load_params(PARAMS_DIR, *INNER_DEGREE, None).unwrap();
-    let dummy_circuit = SuperCircuit::dummy_inner_circuit();
+    let dummy_circuit = SuperCircuit::dummy_inner_circuit().unwrap();
 
     let pk = keygen_pk2(&params, &dummy_circuit).unwrap();
     let vk = keygen_vk(&params, &dummy_circuit).unwrap();
@@ -45,8 +45,9 @@ fn test_cs_same_for_vk_consistent() {
         "Dummy super cicuit"
     );
 
-    let block_trace = load_chunk_for_test().1;
-    let real_circuit = SuperCircuit::from_block_traces(block_trace).unwrap().0;
+    let block_traces = load_chunk_for_test().1;
+    let witness_block = block_traces_to_witness_block(block_traces).unwrap();
+    let real_circuit = SuperCircuit::from_witness_block(&witness_block).unwrap();
 
     let pk = keygen_pk2(&params, &real_circuit).unwrap();
     let vk = keygen_vk(&params, &real_circuit).unwrap();
@@ -62,12 +63,13 @@ fn test_deterministic() {
     use halo2_proofs::dev::MockProver;
     init_env_and_log("integration");
     type C = SuperCircuit;
-    let block_trace = load_chunk_for_test().1;
+    let block_traces = load_chunk_for_test().1;
+    let witness_block = block_traces_to_witness_block(block_traces).unwrap();
 
-    let circuit1 = C::from_block_traces(block_trace.clone()).unwrap().0;
+    let circuit1 = C::from_witness_block(&witness_block).unwrap();
     let prover1 = MockProver::<_>::run(*INNER_DEGREE, &circuit1, circuit1.instance()).unwrap();
 
-    let circuit2 = C::from_block_traces(block_trace).unwrap().0;
+    let circuit2 = C::from_witness_block(&witness_block).unwrap();
     let prover2 = MockProver::<_>::run(*INNER_DEGREE, &circuit2, circuit2.instance()).unwrap();
 
     let advice1 = prover1.advices();
@@ -100,14 +102,16 @@ fn test_vk_same() {
         "./tests/extra_traces/batch_25/chunk_113".to_string(),
     ];
     std::env::set_var("TRACE_PATH", p1);
-    let block_trace1 = load_chunk_for_test().1;
+    let block_traces1 = load_chunk_for_test().1;
+    let witness_block = block_traces_to_witness_block(block_traces1).unwrap();
+
     std::env::set_var("TRACE_PATH", p2);
-    //let block_trace2 = load_block_traces_for_test().1;
+    //let block_traces2 = load_chunk_for_test().1;
 
     //// Mock Part
     //let dummy_circuit = C::from_block_traces(block_trace1).unwrap().0;
-    let dummy_circuit = C::dummy_inner_circuit();
-    let real_circuit = C::from_block_traces(block_trace1).unwrap().0;
+    let dummy_circuit = C::dummy_inner_circuit().unwrap();
+    let real_circuit = C::from_witness_block(&witness_block).unwrap();
 
     let check_by_mock_prover = true;
     if check_by_mock_prover {

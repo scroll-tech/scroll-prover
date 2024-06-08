@@ -36,7 +36,6 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 And there are other tests:
 - `make test-inner-prove` could be used to test the first-level circuit.
 - `make test-batch-prove` could be used to test the final two levels.
-- `make test-batches-with-each-chunk-num-prove` could be used to test batch proving with different chunk numbers.
 
 ### Binaries
 
@@ -44,38 +43,13 @@ Could use the following command to run binaries locally.
 
 Run zkevm prover to generate chunk proof (work directory is `./integration`)
 ```shell
-cargo build --release --bin zkevm_prove
-
-./target/release/zkevm_prove --help
-```
-Could specify arguments as
-```shell
-# Proof data will be saved to `./integration/proof_data`.
-export OUTPUT_DIR="proof_data"
-
 # Params file should be located in `./integration/params`.
-cargo run --release --bin zkevm_prove -- --params=params --trace=tests/extra_traces/new.json
+cargo run --release --bin trace_prover -- --params=params --trace=tests/extra_traces/batch_34700/chunk_1236462/block_4176564.json
 ```
-
-Run zkevm verifier to verify chunk proof (work directory is `./integration`)
-```shell
-cargo build --release --bin zkevm_verify
-
-./target/release/zkevm_verify --help
-```
-Could specify arguments as
-```shell
-cargo run --release --bin zkevm_verify -- --params=params --proof=proof_data
-```
-
-### Dockers
-
-- `docker/chunk-prover` is used to build and run GPU chunk-prover.
-- `docker/mock-testnet` is used to build and run GPU mock-testnet (inner-prove or chunk-prove).
 
 ### Verifier Contract
 
-Both YUL and bytecode of verifier contract could be generated when running aggregation tests (`make test-e2e-prove`). After running aggregation tests, a new folder is created in `integration` folder of scroll-prover and named like `integration/outputs/agg_tests_*`. It contains below files:
+Both YUL and bytecode of verifier contract could be generated when running aggregation tests (`make test-e2e-prove`). After running aggregation tests, a new folder is created in `integration` folder of scroll-prover and named like `integration/outputs/e2e_tests_*`. It contains below files:
 
 - Chunk protocol: `chunk_chunk_0.protocol`
 - Chunk VK: `vk_chunk_0.vkey`
