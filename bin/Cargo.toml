@@ -24,16 +24,12 @@ prover.workspace = true
 integration.workspace = true
 
 [[bin]]
-name = "zkevm_prove"
-path = "src/zkevm_prove.rs"
+name = "trace_prover"
+path = "src/trace_prover.rs"
 
 [[bin]]
-name = "zkevm_verify"
-path = "src/zkevm_verify.rs"
-
-[[bin]]
-name = "mock_testnet"
-path = "src/mock_testnet.rs"
+name = "chain_prover"
+path = "src/chain_prover.rs"
 
 [features]
 default = []

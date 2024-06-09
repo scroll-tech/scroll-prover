@@ -13,17 +13,20 @@ pub use capacity_checker::{
     ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
     run_circuit_capacity_checker,
 };
-pub use prove::{new_batch_prover, prove_and_verify_batch};
+pub use prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_chunk};
 
 pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
 
-pub fn load_chunk_for_test() -> (Vec<String>, Vec<BlockTrace>) {
-    let trace_path: String = read_env_var(
+pub fn trace_path_for_test() -> String {
+    read_env_var(
         "TRACE_PATH",
-        "./tests/extra_traces/batch_495/chunk_495/block_8802.json".to_string(),
-    );
-    load_chunk(&trace_path)
+        "tests/extra_traces/batch_34700/chunk_1236462/block_4176564.json".to_string(),
+    )
+}
+
+pub fn load_chunk_for_test() -> (Vec<String>, Vec<BlockTrace>) {
+    load_chunk(&trace_path_for_test())
 }
 
 pub fn load_chunk(trace_path: &str) -> (Vec<String>, Vec<BlockTrace>) {

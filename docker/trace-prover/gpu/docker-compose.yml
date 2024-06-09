@@ -1,0 +1,12 @@
+version: '3'
+services:
+  chunk_prover:
+    image: {DOCKER_IMAGE}
+    runtime: nvidia
+    container_name: trace-prover-gpu
+    environment:
+      - CHAIN_ID={CHAIN_ID}
+    volumes:
+      - {PARAMS_DIR}:/opt/test_params
+      - {CHUNK_DIR}:/opt/integration/test_chunk
+    command: trace_prover -t test_chunk

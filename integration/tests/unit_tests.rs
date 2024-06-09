@@ -26,13 +26,11 @@ fn test_capacity_checker() {
 
     let block_traces = load_chunk_for_test().1;
 
-    let full = false;
+    let full = true;
     let batch_id = 0;
     let chunk_id = 0;
     let avg_each_tx_time = if full {
-        let witness_block = block_traces_to_witness_block(block_traces.clone()).unwrap();
-
-        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &witness_block)
+        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces)
     } else {
         ccc_as_signer(chunk_id, &block_traces).1
     };
