@@ -31,6 +31,10 @@ path = "src/trace_prover.rs"
 name = "chain_prover"
 path = "src/chain_prover.rs"
 
+[[bin]]
+name = "zkevm_prove"
+path = "src/zkevm_prove.rs"
+
 [features]
 default = []
 inner-prove = ["prover/test"]
