@@ -114,7 +114,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             coinbase: block.coinbase.clone(),
             header: block.header.clone(),
             start_l1_queue_index: block.start_l1_queue_index,
-            tx_storage_trace: vec![], // not used
+            ..Default::default()
         };
         log::debug!("calling estimate_circuit_capacity");
         let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
