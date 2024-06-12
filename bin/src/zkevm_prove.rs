@@ -52,9 +52,9 @@ fn main() {
         match prover
             .gen_chunk_proof(
                 ChunkProvingTask::from(vec![block_trace]),
-                Some("zkevm"),
                 None,
-                Some(&output_dir),
+                None,
+                None,
             ) {
             Ok(_) => log::info!("PROVE SUCCESS {path:?}"),
             Err(e) => log::error!("PROVE ERROR {path:?}, err: {e:?}"),
