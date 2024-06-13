@@ -1,5 +1,5 @@
-IN=integration/outputs/e2e_tests_20240611_124434/
-OUT=release-v0.11.0
+IN=integration/outputs/e2e_tests_20240613_004538
+OUT=release-v0.11.1
 
 mkdir -p $OUT
 cp $IN/chunk_chunk_0.protocol $OUT/chunk.protocol
