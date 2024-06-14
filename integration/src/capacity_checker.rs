@@ -118,12 +118,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
         };
         log::debug!("calling estimate_circuit_capacity");
         let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
-        log::info!(
-            "after {}th block {}th tx: {:#?}",
-            block_idx,
-            tx_idx,
-            results
-        );
+        log::info!("after {}th block {}th tx: {:?}", block_idx, tx_idx, results);
     }
 }
 

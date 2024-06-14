@@ -26,6 +26,13 @@ fn warmup() {
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
     let mut traces = Vec::new();
     let mut acc_row_usage_normalized = RowUsage::default();
+    let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
+        log::info!("use latest 1000 blocks");
+        let latest_block = l2geth.get_block_number().await.unwrap();
+        (latest_block as i64 - 1000, latest_block as i64)
+    } else {
+        (begin_block, end_block)
+    };
     for block_num in begin_block..=end_block {
         let trace = l2geth
         .get_block_trace_by_num(block_num)
@@ -50,7 +57,19 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
 }
 
 fn prove_chunk(batch_id: i64, chunk_id: i64, block_traces: Vec<BlockTrace>) -> Option<ChunkProof> {
-    log::info!("proving chunk with {} blocks", block_traces.len());
+    let total_gas: u64 = block_traces
+        .iter()
+        .map(|b| b.header.gas_used.as_u64())
+        .sum();
+    log::info!(
+        "proving chunk with {} blocks, total gas {}",
+        block_traces.len(),
+        total_gas
+    );
+
+    if env::var("CIRCUIT").unwrap_or_default() == "none" {
+        return None;
+    }
     if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
         run_circuit_capacity_checker(batch_id, chunk_id, &block_traces);
         return None;
@@ -151,7 +170,7 @@ struct Setting {
 impl Setting {
     pub fn new() -> Self {
         let l2geth_api_url =
-            env::var("L2GETH_API_URL").expect("chain_prover: Must set env L2GETH_API_URL");
+            env::var("L2GETH_API_URL").unwrap_or("http://127.0.0.1:8545".to_string());
         let rollupscan_api_url = env::var("ROLLUPSCAN_API_URL");
         let rollupscan_api_url = rollupscan_api_url.unwrap_or_default();
         let begin_batch = env::var("PROVE_BEGIN_BATCH")

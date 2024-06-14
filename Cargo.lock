@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1303,7 +1303,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1460,7 +1460,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1642,7 +1642,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1665,7 +1665,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2343,7 +2343,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if 1.0.0",
- "windows-targets 0.48.0",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]
@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2510,7 +2510,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3038,7 +3038,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4975,7 +4975,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.11.1#512996f1bac1218c93d9d3de49d7b86f52726c27"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=refactor/trace#834067ef90e7882f9385984a884d915b9779e4e0"
 dependencies = [
  "array-init",
  "bus-mapping",
