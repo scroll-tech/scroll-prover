@@ -59,5 +59,5 @@ pub fn prove_and_verify_batch(
     assert!(verifier.verify_agg_evm_proof(batch_proof));
     log::info!("Verified batch proof");
 
-    log::info!("Prove batch END: chunk_num = {chunk_num}");
+    log::info!("Prove batch BEGIN: chunk_num = {}", chunk_num);
 }
