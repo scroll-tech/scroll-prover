@@ -1,5 +1,5 @@
 use clap::Parser;
-use integration::test_util::{load_chunk, prove_and_verify_chunk};
+use integration::{prove::prove_and_verify_chunk, test_util::load_chunk};
 use prover::{utils::init_env_and_log, ChunkProvingTask};
 use std::env;
 
