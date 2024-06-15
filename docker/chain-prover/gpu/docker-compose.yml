@@ -1,6 +1,6 @@
 version: '3'
 services:
-  mock_testnet:
+  chain_prover:
     image: {DOCKER_IMAGE}
     runtime: nvidia
     container_name: chain-prover-gpu
