@@ -78,10 +78,11 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
     let mut chunk_builder = SimpleChunkBuilder::new();
     let mut batch_builder = ConstantNumBatchBuilder::default();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
-        // Blocks within last hour
-        log::info!("use latest 1200 blocks");
+        // Blocks within last 24 hours
+        let block_num = 24 * 1200; 
+        log::info!("use latest {block_num} blocks");
         let latest_block = l2geth.get_block_number().await.unwrap();
-        (latest_block as i64 - 1200, latest_block as i64)
+        (latest_block as i64 - block_num, latest_block as i64)
     } else {
         (begin_block, end_block)
     };
