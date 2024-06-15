@@ -85,6 +85,7 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
     } else {
         (begin_block, end_block)
     };
+    let mut batch_begin_block = begin_block;
     for block_num in begin_block..=end_block {
         let trace = l2geth
         .get_block_trace_by_num(block_num)
@@ -92,6 +93,13 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
         .unwrap_or_else(|e| {
             panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
         });
+        log::info!(
+            "fetch trace done. begin {} end {} cur {}, progress {:.1}%",
+            begin_block,
+            end_block,
+            block_num,
+            100.0 * (block_num - begin_block + 1) as f32 / (end_block - begin_block + 1) as f32
+        );
         if let Some(chunk) = chunk_builder.add(trace) {
             prove_chunk(0, 0, chunk.clone());
             let witness_block = block_traces_to_witness_block(chunk).unwrap();
@@ -99,6 +107,13 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
             if let Some(batch) = batch_builder.add(chunk_info) {
                 let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(MAX_AGG_SNARKS, &batch);
                 let _ = batch_data.get_encoded_batch_data_bytes();
+                log::info!(
+                    "batch data: batch block range {} to {}, block num {}",
+                    batch_begin_block,
+                    block_num,
+                    block_num - batch_begin_block + 1
+                );
+                batch_begin_block = block_num + 1;
             }
         }
     }
