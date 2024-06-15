@@ -243,7 +243,7 @@ fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag:
 
 /// most accurate, optimal
 pub fn ccc_by_chunk(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> RowUsage {
-    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
+    log::info!("ccc_by_chunk: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
     let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
     let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();

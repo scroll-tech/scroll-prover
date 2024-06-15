@@ -8,8 +8,8 @@ use integration::capacity_checker::{
 };
 use prover::{
     utils::init_env_and_log,
-    zkevm::{CircuitCapacityChecker, RowUsage},
-    BlockTrace, ChunkProof,
+    zkevm::{circuit::block_traces_to_witness_block, CircuitCapacityChecker, RowUsage},
+    BatchData, BlockTrace, ChunkInfo, ChunkProof, MAX_AGG_SNARKS,
 };
 use std::env;
 
@@ -22,14 +22,66 @@ fn warmup() {
     log::info!("chain_prover: prepared ccc");
 }
 
+#[derive(Default)]
+struct ConstantNumBatchBuilder {
+    chunks: Vec<ChunkInfo>,
+}
+
+impl ConstantNumBatchBuilder {
+    pub fn add(&mut self, chunk: ChunkInfo) -> Option<Vec<ChunkInfo>> {
+        self.chunks.push(chunk);
+        log::debug!("ConstantNumBatchBuilder chunks len {}", self.chunks.len());
+        if self.chunks.len() == MAX_AGG_SNARKS {
+            let batch = self.chunks.clone();
+            self.chunks.clear();
+            return Some(batch);
+        } else {
+            return None;
+        }
+    }
+}
+
+struct SimpleChunkBuilder {
+    traces: Vec<BlockTrace>,
+    acc_row_usage_normalized: RowUsage,
+}
+
+/// Same with production "chunk proposer"
+impl SimpleChunkBuilder {
+    pub fn new() -> Self {
+        Self {
+            traces: Vec::new(),
+            acc_row_usage_normalized: RowUsage::default(),
+        }
+    }
+    pub fn add(&mut self, trace: BlockTrace) -> Option<Vec<BlockTrace>> {
+        let mut checker = CircuitCapacityChecker::new();
+        checker.set_light_mode(false);
+        let ccc_result = checker.estimate_circuit_capacity(trace.clone()).unwrap();
+        self.acc_row_usage_normalized.add(&ccc_result);
+        if !self.acc_row_usage_normalized.is_ok {
+            // build a chunk with PREV traces
+            let chunk = self.traces.clone();
+            self.traces.clear();
+            self.traces.push(trace);
+            self.acc_row_usage_normalized = ccc_result;
+            return Some(chunk);
+        } else {
+            self.traces.push(trace);
+            return None;
+        }
+    }
+}
+
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
-    let mut traces = Vec::new();
-    let mut acc_row_usage_normalized = RowUsage::default();
+    let mut chunk_builder = SimpleChunkBuilder::new();
+    let mut batch_builder = ConstantNumBatchBuilder::default();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
-        log::info!("use latest 1000 blocks");
+        // Blocks within last hour
+        log::info!("use latest 1200 blocks");
         let latest_block = l2geth.get_block_number().await.unwrap();
-        (latest_block as i64 - 1000, latest_block as i64)
+        (latest_block as i64 - 1200, latest_block as i64)
     } else {
         (begin_block, end_block)
     };
@@ -40,18 +92,14 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
         .unwrap_or_else(|e| {
             panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
         });
-        let mut checker = CircuitCapacityChecker::new();
-        checker.set_light_mode(false);
-        let ccc_result = checker.estimate_circuit_capacity(trace.clone()).unwrap();
-        acc_row_usage_normalized.add(&ccc_result);
-        if !acc_row_usage_normalized.is_ok {
-            // prove prev traces
-            prove_chunk(0, 0, traces.clone());
-            traces.clear();
-            traces.push(trace);
-            acc_row_usage_normalized = ccc_result;
-        } else {
-            traces.push(trace);
+        if let Some(chunk) = chunk_builder.add(trace) {
+            prove_chunk(0, 0, chunk.clone());
+            let witness_block = block_traces_to_witness_block(chunk).unwrap();
+            let chunk_info = ChunkInfo::from_witness_block(&witness_block, false);
+            if let Some(batch) = batch_builder.add(chunk_info) {
+                let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(MAX_AGG_SNARKS, &batch);
+                let _ = batch_data.get_encoded_batch_data_bytes();
+            }
         }
     }
 }
