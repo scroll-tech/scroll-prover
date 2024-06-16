@@ -55,9 +55,11 @@ impl SimpleChunkBuilder {
         }
     }
     pub fn add(&mut self, trace: BlockTrace) -> Option<Vec<BlockTrace>> {
-        let mut checker = CircuitCapacityChecker::new();
-        checker.set_light_mode(false);
-        let ccc_result = checker.estimate_circuit_capacity(trace.clone()).unwrap();
+        let ccc_result = {
+            let mut checker = CircuitCapacityChecker::new();
+            checker.set_light_mode(false);
+            checker.estimate_circuit_capacity(trace.clone()).unwrap()
+        };
         self.acc_row_usage_normalized.add(&ccc_result);
         if !self.acc_row_usage_normalized.is_ok {
             // build a chunk with PREV traces
@@ -103,8 +105,14 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
         );
         if let Some(chunk) = chunk_builder.add(trace) {
             prove_chunk(0, 0, chunk.clone());
-            let witness_block = block_traces_to_witness_block(chunk).unwrap();
-            let chunk_info = ChunkInfo::from_witness_block(&witness_block, false);
+            let chunk_info = ChunkInfo::from_block_traces(&chunk);
+            if false {
+                let witness_block = block_traces_to_witness_block(chunk).unwrap();
+                assert_eq!(
+                    chunk_info,
+                    ChunkInfo::from_witness_block(&witness_block, false)
+                );
+            }
             if let Some(batch) = batch_builder.add(chunk_info) {
                 let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(MAX_AGG_SNARKS, &batch);
                 let _ = batch_data.get_encoded_batch_data_bytes();
