@@ -10,13 +10,13 @@ MAX_PARALLEL_DOWNLOADS = 4
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Dump block JSONs for a given batch.')
-parser.add_argument('batch_id', type=int, help='The batch ID to process')
+parser.add_argument('batch_id', type=int, default=0, help='The batch ID to process')
 parser.add_argument('chunk_id', type=int, default=0, help='The chunk ID to process')
 args = parser.parse_args()
 
 # Define the URLs for the RPC calls
 chunks_url = 'http://10.6.13.141:8560/api/chunks?batch_index={}'.format(args.batch_id)
-block_trace_url = "http://54.187.159.189:8545"
+block_trace_url = "http://10.5.10.102:8545"
 
 # env2
 # chunks_url = 'http://10.6.11.134:8560/api/chunks?batch_index={}'.format(args.batch_id)
@@ -96,5 +96,5 @@ def download_batch():
 
 
 if __name__ == "__main__":
-    download_batch()
-    #download_chunk(1, 1, 4)
+    #download_batch()
+    download_chunk(562585, 4740248, 4740254)
