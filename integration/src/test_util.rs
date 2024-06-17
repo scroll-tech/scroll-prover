@@ -6,15 +6,6 @@ use prover::{
     BlockTrace,
 };
 
-mod capacity_checker;
-mod prove;
-
-pub use capacity_checker::{
-    ccc_as_signer, ccc_by_chunk, prepare_circuit_capacity_checker, pretty_print_row_usage,
-    run_circuit_capacity_checker,
-};
-pub use prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_chunk};
-
 pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
 

@@ -1,8 +1,10 @@
 // Fast tests which can be finished within minutes
 
-use integration::test_util::{
-    ccc_as_signer, load_chunk_for_test, prepare_circuit_capacity_checker,
-    run_circuit_capacity_checker,
+use integration::{
+    capacity_checker::{
+        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker,
+    },
+    test_util::load_chunk_for_test,
 };
 use prover::{
     io::read_all,

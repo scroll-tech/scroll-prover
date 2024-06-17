@@ -1,4 +1,4 @@
-use super::PARAMS_DIR;
+use crate::test_util::PARAMS_DIR;
 use prover::{
     aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
     zkevm::{Prover as ChunkProver, Verifier as ChunkVerifier},

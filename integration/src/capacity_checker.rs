@@ -118,12 +118,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
         };
         log::debug!("calling estimate_circuit_capacity");
         let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
-        log::info!(
-            "after {}th block {}th tx: {:#?}",
-            block_idx,
-            tx_idx,
-            results
-        );
+        log::info!("after {}th block {}th tx: {:?}", block_idx, tx_idx, results);
     }
 }
 
@@ -131,7 +126,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
 fn get_ccc_result_of_chunk(
     chunk_id: i64,
     blocks: &[BlockTrace],
-    by_block: bool,
+    by_block: bool, // by block instead of by tx
     norm: bool,
     light_mode: bool,
     tag: &str,
@@ -153,47 +148,38 @@ fn get_ccc_result_of_chunk(
 
     let start_time = std::time::Instant::now();
 
-    // like l2geth. To see chunk-wise results, see `ccc_by_chunk`
-    let disable_chunk_opt = true;
-
     let mut tx_num = 0;
     let mut acc_row_usage_normalized = RowUsage::default();
     let mut acc_row_usage_raw = RowUsage::default();
     for (block_idx, block) in blocks.iter().enumerate() {
-        if disable_chunk_opt {
-            checker.reset();
-        }
+        checker.reset();
+
         if by_block {
             ccc_block_whole_block(&mut checker, block_idx, block);
         } else {
             ccc_block_tx_by_tx(&mut checker, block_idx, block);
         }
-        let is_last = block_idx == blocks.len() - 1;
-        if disable_chunk_opt || is_last {
-            let block_result_raw = checker.get_acc_row_usage(false);
-            if disable_chunk_opt {
-                log::info!(
-                    "block ccc result(block {}): {:?}",
-                    block.header.number.unwrap().as_u64(),
-                    if norm {
-                        block_result_raw.normalize()
-                    } else {
-                        block_result_raw.clone()
-                    }
-                );
-                pretty_print_row_usage(
-                    &block_result_raw,
-                    std::slice::from_ref(block),
-                    chunk_id,
-                    "inner",
-                );
+
+        let block_result_raw = checker.get_acc_row_usage(false);
+
+        log::info!(
+            "block ccc result(block {}): {:?}",
+            block.header.number.unwrap().as_u64(),
+            if norm {
+                block_result_raw.normalize()
             } else {
-                //pretty_print_row_usage(&block_result_raw, std::slice::from_ref(block), chunk_id,
-                // "inner");
+                block_result_raw.clone()
             }
-            acc_row_usage_raw.add(&block_result_raw);
-            acc_row_usage_normalized.add(&block_result_raw.normalize());
-        }
+        );
+        pretty_print_row_usage(
+            &block_result_raw,
+            std::slice::from_ref(block),
+            chunk_id,
+            "inner",
+        );
+        acc_row_usage_raw.add(&block_result_raw);
+        acc_row_usage_normalized.add(&block_result_raw.normalize());
+
         tx_num += block.transactions.len();
     }
     log::info!("capacity_checker test done");
@@ -257,7 +243,7 @@ fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag:
 
 /// most accurate, optimal
 pub fn ccc_by_chunk(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> RowUsage {
-    log::info!("mock-testnet: run ccc for batch-{batch_id} chunk-{chunk_id}");
+    log::info!("ccc_by_chunk: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
     let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
     let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();

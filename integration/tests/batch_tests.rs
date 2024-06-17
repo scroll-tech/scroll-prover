@@ -1,4 +1,4 @@
-use integration::test_util::{new_batch_prover, prove_and_verify_batch};
+use integration::prove::{new_batch_prover, prove_and_verify_batch};
 use prover::{eth_types::utils::from_json_file, utils::init_env_and_log, BatchProvingTask};
 use std::{fs, path::PathBuf};
 

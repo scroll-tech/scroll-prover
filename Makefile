@@ -30,8 +30,8 @@ test: ## Run tests for all the workspace members
 mock:
 	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
 
-mock-testnet:
-	@cargo run --bin mock_testnet --release
+chain-prover:
+	@cargo run --bin chain_prover --release
 
 test-inner-prove:
 	@cargo test --features prove_verify --release test_inner_prove_verify

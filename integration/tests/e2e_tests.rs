@@ -21,7 +21,7 @@ fn test_batch_pi_consistency() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_e2e_prove_verify() {
-    use integration::test_util::{new_batch_prover, prove_and_verify_batch};
+    use integration::prove::{new_batch_prover, prove_and_verify_batch};
 
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
