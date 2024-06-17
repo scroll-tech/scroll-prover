@@ -93,11 +93,6 @@ impl BatchBuilder {
             self.reset();
             self.add_chunk(chunk);
 
-            log::info!(
-                "batch built: blob usage {:.3}, chunk num {}",
-                compressed_da_size as f32 / constants::N_BLOB_BYTES as f32,
-                batch.len()
-            );
             Some(batch)
         } else {
             None
@@ -178,17 +173,38 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
                 );
             }
             if let Some(batch) = batch_builder.add(chunk_info) {
-                let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(MAX_AGG_SNARKS, &batch);
-                let _ = batch_data.get_encoded_batch_data_bytes();
+                let mut padded_batch = batch.clone();
+                padding_chunk(&mut padded_batch);
+                let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(batch.len(), &padded_batch);
+                let compressed_da_size = batch_data.get_encoded_batch_data_bytes().len();
                 log::info!(
-                    "batch built:: batch block range {} to {}, block num {}",
+                    "batch built: blob usage {:.3}, chunk num {}, block num {}, block range {} to {}",
+                    compressed_da_size as f32 / constants::N_BLOB_BYTES as f32,
+                    batch.len(),
+                    block_num - batch_begin_block + 1,
                     batch_begin_block,
                     block_num,
-                    block_num - batch_begin_block + 1
                 );
                 batch_begin_block = block_num + 1;
             }
         }
+    }
+}
+
+fn padding_chunk(chunks: &mut Vec<ChunkInfo>) {
+    assert_ne!(chunks.len(), 0);
+    assert!(chunks.len() <= MAX_AGG_SNARKS);
+    if chunks.len() < MAX_AGG_SNARKS {
+        log::warn!(
+            "chunk len({}) < MAX_AGG_SNARKS({}), padding...",
+            chunks.len(),
+            MAX_AGG_SNARKS
+        );
+        let last_chunk = chunks.last().unwrap();
+        let mut chunk_to_pad = last_chunk.clone();
+        chunk_to_pad.is_padding = true;
+        let take_num = MAX_AGG_SNARKS - chunks.len();
+        chunks.extend(std::iter::repeat(chunk_to_pad).take(take_num));
     }
 }
 
