@@ -13,6 +13,7 @@ use prover::{
 };
 use std::env;
 
+mod constants;
 mod l2geth_client;
 mod prove_utils;
 mod rollupscan_client;
@@ -22,18 +23,81 @@ fn warmup() {
     log::info!("chain_prover: prepared ccc");
 }
 
-#[derive(Default)]
-struct ConstantNumBatchBuilder {
+struct BatchBuilder {
     chunks: Vec<ChunkInfo>,
+    batch_data: BatchData<{ MAX_AGG_SNARKS }>,
 }
 
-impl ConstantNumBatchBuilder {
-    pub fn add(&mut self, chunk: ChunkInfo) -> Option<Vec<ChunkInfo>> {
+impl BatchBuilder {
+    pub fn new() -> Self {
+        Self {
+            chunks: Vec::new(),
+            batch_data: BatchData {
+                num_valid_chunks: 0,
+                chunk_sizes: [0u32; MAX_AGG_SNARKS],
+                chunk_data: std::iter::repeat_with(Vec::new)
+                    .take(MAX_AGG_SNARKS)
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap(),
+            },
+        }
+    }
+    fn reset(&mut self) {
+        self.chunks.clear();
+        self.batch_data = BatchData {
+            num_valid_chunks: 0,
+            chunk_sizes: [0u32; MAX_AGG_SNARKS],
+            chunk_data: std::iter::repeat_with(Vec::new)
+                .take(MAX_AGG_SNARKS)
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
+        };
+    }
+    fn add_chunk(&mut self, chunk: ChunkInfo) {
+        let idx = self.batch_data.num_valid_chunks as usize;
+        self.batch_data.chunk_sizes[idx] = chunk.tx_bytes.len() as u32;
+        self.batch_data.chunk_data[idx] = chunk.tx_bytes.clone();
+        self.batch_data.num_valid_chunks += 1;
         self.chunks.push(chunk);
-        log::debug!("ConstantNumBatchBuilder chunks len {}", self.chunks.len());
-        if self.chunks.len() == MAX_AGG_SNARKS {
+    }
+    pub fn add(&mut self, chunk: ChunkInfo) -> Option<Vec<ChunkInfo>> {
+        self.add_chunk(chunk.clone());
+        log::debug!(
+            "BatchBuilder: checking chunk with len {}",
+            self.chunks.len()
+        );
+
+        let compressed_da_size = self.batch_data.get_encoded_batch_data_bytes().len();
+        let uncompressed_da_size = self
+            .batch_data
+            .chunk_sizes
+            .iter()
+            .map(|s| *s as u64)
+            .sum::<u64>();
+        let uncompressed_da_size_limit = BatchData::<{ MAX_AGG_SNARKS }>::n_rows_data() as u64;
+        // Condition1: compressed bytes size
+        let condition1 = compressed_da_size >= constants::N_BLOB_BYTES;
+        // Condition2: uncompressed bytes size
+        let condition2 = uncompressed_da_size > uncompressed_da_size_limit;
+        // Condition3: chunk num
+        let condition3 = self.chunks.len() > MAX_AGG_SNARKS;
+
+        let overflow = condition1 || condition2 || condition3;
+        if overflow {
+            // pop the last chunk and emit prev chunks
+            self.chunks.truncate(self.chunks.len() - 1);
             let batch = self.chunks.clone();
-            self.chunks.clear();
+
+            self.reset();
+            self.add_chunk(chunk);
+
+            log::info!(
+                "batch built: blob usage {:.3}, chunk num {}",
+                compressed_da_size as f32 / constants::N_BLOB_BYTES as f32,
+                batch.len()
+            );
             Some(batch)
         } else {
             None
@@ -41,13 +105,13 @@ impl ConstantNumBatchBuilder {
     }
 }
 
-struct SimpleChunkBuilder {
+struct ChunkBuilder {
     traces: Vec<BlockTrace>,
     acc_row_usage_normalized: RowUsage,
 }
 
 /// Same with production "chunk proposer"
-impl SimpleChunkBuilder {
+impl ChunkBuilder {
     pub fn new() -> Self {
         Self {
             traces: Vec::new(),
@@ -77,8 +141,8 @@ impl SimpleChunkBuilder {
 
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
-    let mut chunk_builder = SimpleChunkBuilder::new();
-    let mut batch_builder = ConstantNumBatchBuilder::default();
+    let mut chunk_builder = ChunkBuilder::new();
+    let mut batch_builder = BatchBuilder::new();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
         let block_num = 24 * 1200;
@@ -117,7 +181,7 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
                 let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(MAX_AGG_SNARKS, &batch);
                 let _ = batch_data.get_encoded_batch_data_bytes();
                 log::info!(
-                    "batch data: batch block range {} to {}, block num {}",
+                    "batch built:: batch block range {} to {}, block num {}",
                     batch_begin_block,
                     block_num,
                     block_num - batch_begin_block + 1
