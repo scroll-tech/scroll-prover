@@ -164,14 +164,14 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
         );
         if let Some(chunk) = chunk_builder.add(trace) {
             prove_chunk(0, 0, chunk.clone());
-            let chunk_info = ChunkInfo::from_block_traces(&chunk);
-            if false {
+            let fast = false;
+            let chunk_info = if fast {
+                unimplemented!("uncomment below");
+                //ChunkInfo::from_block_traces(&chunk)
+            } else {
                 let witness_block = block_traces_to_witness_block(chunk).unwrap();
-                assert_eq!(
-                    chunk_info,
-                    ChunkInfo::from_witness_block(&witness_block, false)
-                );
-            }
+                ChunkInfo::from_witness_block(&witness_block, false)
+            };
             if let Some(batch) = batch_builder.add(chunk_info) {
                 let mut padded_batch = batch.clone();
                 padding_chunk(&mut padded_batch);
