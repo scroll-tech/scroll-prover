@@ -4,6 +4,8 @@ CHAIN_ID ?= 534352
 export CHAIN_ID
 RUST_MIN_STACK ?= 16777216
 export RUST_MIN_STACK
+RUST_BACKTRACE=1
+export RUST_BACKTRACE
 
 help: ## Display this help screen
 	@grep -h \
