@@ -103,6 +103,7 @@ impl BatchBuilder {
 struct ChunkBuilder {
     traces: Vec<BlockTrace>,
     acc_row_usage_normalized: RowUsage,
+    block_limit: Option<usize>,
 }
 
 /// Same with production "chunk proposer"
@@ -111,9 +112,22 @@ impl ChunkBuilder {
         Self {
             traces: Vec::new(),
             acc_row_usage_normalized: RowUsage::default(),
+            block_limit: None,
         }
     }
     pub fn add(&mut self, trace: BlockTrace) -> Option<Vec<BlockTrace>> {
+        // Condition1: block num
+        if let Some(block_limit) = self.block_limit {
+            if self.traces.len() + 1 == block_limit {
+                // build chunk
+                let mut chunk = self.traces.clone();
+                chunk.push(trace.clone());
+                self.traces.clear();
+                return Some(chunk);
+            }
+        }
+
+        // Condition2: ccc
         let ccc_result = {
             let mut checker = CircuitCapacityChecker::new();
             checker.set_light_mode(false);
@@ -137,6 +151,10 @@ impl ChunkBuilder {
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
     let mut chunk_builder = ChunkBuilder::new();
+    let force_curie = true;
+    if force_curie {
+        chunk_builder.block_limit = Some(1);
+    }
     let mut batch_builder = BatchBuilder::new();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
@@ -150,7 +168,7 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
     let mut batch_begin_block = begin_block;
     for block_num in begin_block..=end_block {
         let trace = l2geth
-        .get_block_trace_by_num(block_num)
+        .get_block_trace_by_num(block_num, force_curie)
         .await
         .unwrap_or_else(|e| {
             panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
@@ -263,7 +281,7 @@ async fn prove_by_batch(
             let mut block_traces: Vec<BlockTrace> = vec![];
             for block_num in chunk.start_block_number..=chunk.end_block_number {
                 let trace = l2geth
-                        .get_block_trace_by_num(block_num)
+                        .get_block_trace_by_num(block_num, false)
                         .await
                         .unwrap_or_else(|e| {
                             panic!("chain_prover: failed to request l2geth block-trace API for batch-{batch_id} chunk-{chunk_id} block-{block_num}: {e}")
