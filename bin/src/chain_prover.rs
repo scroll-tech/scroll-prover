@@ -69,6 +69,14 @@ impl BatchBuilder {
             self.chunks.len()
         );
 
+        // Condition0: chunk num
+        let condition0 = self.chunks.len() >= MAX_AGG_SNARKS;
+        if condition0 {
+            let batch = self.chunks.clone();
+            self.reset();
+            return Some(batch);
+        }
+
         let compressed_da_size = self.batch_data.get_encoded_batch_data_bytes().len();
         let uncompressed_da_size = self
             .batch_data
@@ -81,10 +89,8 @@ impl BatchBuilder {
         let condition1 = compressed_da_size >= constants::N_BLOB_BYTES;
         // Condition2: uncompressed bytes size
         let condition2 = uncompressed_da_size > uncompressed_da_size_limit;
-        // Condition3: chunk num
-        let condition3 = self.chunks.len() > MAX_AGG_SNARKS;
 
-        let overflow = condition1 || condition2 || condition3;
+        let overflow = condition1 || condition2;
         if overflow {
             // pop the last chunk and emit prev chunks
             self.chunks.truncate(self.chunks.len() - 1);

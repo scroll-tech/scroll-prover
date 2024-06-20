@@ -38,6 +38,7 @@ pub fn prove_and_verify_chunk(
     env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
     let verifier = ChunkVerifier::from_dirs(params_path, output_dir);
     assert!(verifier.verify_chunk_proof(chunk_proof));
+    log::info!("Verified chunk proof");
 }
 
 pub fn prove_and_verify_batch(
