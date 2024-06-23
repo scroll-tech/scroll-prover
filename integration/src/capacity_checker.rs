@@ -60,8 +60,7 @@ pub fn run_circuit_capacity_checker(
 
     results
         .into_iter()
-        .filter(|(mode, _)| *mode == CCCMode::Siger)
-        .next()
+        .find(|(mode, _)| *mode == CCCMode::Siger)
         .map(|(_, (_, t))| t)
 }
 
