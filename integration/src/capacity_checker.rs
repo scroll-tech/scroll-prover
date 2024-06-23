@@ -9,6 +9,14 @@ use prover::{
 };
 use std::time::Duration;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CCCMode {
+    Optimal,
+    Siger,
+    FollowerLight,
+    FollowerFull,
+}
+
 pub fn prepare_circuit_capacity_checker() {
     // Force evm_circuit::param::EXECUTION_STATE_HEIGHT_MAP to be initialized.
     let mulmod_height = ExecutionState::MULMOD.get_step_height();
@@ -18,31 +26,50 @@ pub fn prepare_circuit_capacity_checker() {
 
 // Return average ccc time for each tx.
 pub fn run_circuit_capacity_checker(
-    batch_id: i64,
-    chunk_id: i64,
+    batch_id: u64,
+    chunk_id: u64,
     block_traces: &[BlockTrace],
-) -> Duration {
-    let optimal = ccc_by_chunk(batch_id, chunk_id, block_traces);
-    let signer = ccc_as_signer(chunk_id, block_traces);
-    let follower_light = ccc_as_follower_light(chunk_id, block_traces);
-    let follower_full = ccc_as_follower_full(chunk_id, block_traces);
+    modes: &[CCCMode],
+) -> Option<Duration> {
+    let results = modes
+        .iter()
+        .map(|mode| {
+            (
+                *mode,
+                match mode {
+                    CCCMode::Optimal => ccc_by_chunk(batch_id, chunk_id, block_traces),
+                    CCCMode::Siger => ccc_as_signer(chunk_id, block_traces),
+                    CCCMode::FollowerLight => ccc_as_follower_light(chunk_id, block_traces),
+                    CCCMode::FollowerFull => ccc_as_follower_full(chunk_id, block_traces),
+                },
+            )
+        })
+        .collect_vec();
 
-    for (tag, r) in [
-        ("signer", signer.0),
-        ("follower_light", follower_light.0),
-        ("follower_full", follower_full.0),
-    ] {
-        compare_ccc_results(chunk_id, &optimal, &r, tag);
+    if results.len() > 1 {
+        for idx in 1..results.len() {
+            compare_ccc_results(
+                chunk_id,
+                &results[0].1 .0,
+                results[0].0,
+                &results[idx].1 .0,
+                results[idx].0,
+            );
+        }
     }
 
-    signer.1
+    results
+        .into_iter()
+        .filter(|(mode, _)| *mode == CCCMode::Siger)
+        .next()
+        .map(|(_, (_, t))| t)
 }
 
 /// print analyze results
 pub fn pretty_print_row_usage(
     rows: &RowUsage,
     block_traces: &[BlockTrace],
-    chunk_id: i64,
+    chunk_id: u64,
     mode: &str,
 ) {
     let gas_total: u64 = block_traces
@@ -112,6 +139,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             storage_trace: block.tx_storage_trace[tx_idx].clone(),
             chain_id: block.chain_id,
             coinbase: block.coinbase.clone(),
+            codes: block.codes.clone(),
             header: block.header.clone(),
             start_l1_queue_index: block.start_l1_queue_index,
             ..Default::default()
@@ -124,7 +152,7 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
 
 // Return row-usage and average ccc time for each tx.
 fn get_ccc_result_of_chunk(
-    chunk_id: i64,
+    chunk_id: u64,
     blocks: &[BlockTrace],
     by_block: bool, // by block instead of by tx
     norm: bool,
@@ -195,7 +223,7 @@ fn get_ccc_result_of_chunk(
 
 #[allow(dead_code)]
 fn get_ccc_result_by_whole_block(
-    chunk_id: i64,
+    chunk_id: u64,
     light_mode: bool,
     blocks: &[BlockTrace],
 ) -> RowUsage {
@@ -221,46 +249,62 @@ fn get_ccc_result_by_whole_block(
     ccc_result
 }
 
-fn compare_ccc_results(chunk_id: i64, base: &RowUsage, estimate: &RowUsage, tag: &str) {
-    for (b, e) in base
+fn compare_ccc_results(
+    chunk_id: u64,
+    lhs: &RowUsage,
+    lhs_mode: CCCMode,
+    rhs: &RowUsage,
+    rhs_mode: CCCMode,
+) {
+    for (l, r) in lhs
         .row_usage_details
         .iter()
-        .zip_eq(estimate.row_usage_details.iter())
-        .chain(std::iter::once((&bottleneck(base), &bottleneck(estimate))))
+        .zip_eq(rhs.row_usage_details.iter())
+        .chain(std::iter::once((&bottleneck(lhs), &bottleneck(rhs))))
     {
         log::info!(
-            "chunk {chunk_id}: opt {} {} vs {tag} {} {}. over estimate ratio {}",
-            b.name,
-            b.row_number,
-            e.name,
-            e.row_number,
-            e.row_number as f64 / b.row_number as f64
+            "chunk {chunk_id}: {lhs_mode:?} {} {} vs {rhs_mode:?} {} {}. r/l: {}",
+            l.name,
+            l.row_number,
+            r.name,
+            r.row_number,
+            r.row_number as f64 / l.row_number as f64
         );
-        // FIXME the "+1", bytecode
-        assert!(e.row_number + 1 >= b.row_number);
+        if lhs_mode == CCCMode::Optimal {
+            // FIXME the "+1", bytecode
+            assert!(r.row_number + 1 >= l.row_number);
+        }
     }
 }
 
 /// most accurate, optimal
-pub fn ccc_by_chunk(batch_id: i64, chunk_id: i64, block_traces: &[BlockTrace]) -> RowUsage {
+pub fn ccc_by_chunk(
+    batch_id: u64,
+    chunk_id: u64,
+    block_traces: &[BlockTrace],
+) -> (RowUsage, Duration) {
     log::info!("ccc_by_chunk: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
     let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
     let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
     let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
-    row_usage
+
+    // TODO: finish this
+    let avg_ccc_time_per_tx = Default::default();
+
+    (row_usage, avg_ccc_time_per_tx)
 }
 
-pub fn ccc_as_signer(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_signer(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, false, false, true, "chunk-signer")
 }
 
 /// current stats inside db
-pub fn ccc_as_follower_light(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_follower_light(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, true, "chunk-f-l")
 }
 
-pub fn ccc_as_follower_full(chunk_id: i64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+pub fn ccc_as_follower_full(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, false, "chunk-f-f")
 }
