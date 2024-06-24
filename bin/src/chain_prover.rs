@@ -4,7 +4,7 @@
 // For production prover, see https://github.com/scroll-tech/scroll/tree/develop/prover
 
 use integration::capacity_checker::{
-    prepare_circuit_capacity_checker, run_circuit_capacity_checker,
+    prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
 };
 use prover::{
     utils::init_env_and_log,
@@ -157,10 +157,7 @@ impl ChunkBuilder {
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
     let mut chunk_builder = ChunkBuilder::new();
-    let force_curie = true;
-    if force_curie {
-        chunk_builder.block_limit = Some(1);
-    }
+    chunk_builder.block_limit = Some(1);
     let mut batch_builder = BatchBuilder::new();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
@@ -174,7 +171,7 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
     let mut batch_begin_block = begin_block;
     for block_num in begin_block..=end_block {
         let trace = l2geth
-        .get_block_trace_by_num(block_num, force_curie)
+        .get_block_trace_by_num(block_num, false)
         .await
         .unwrap_or_else(|e| {
             panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
@@ -187,7 +184,7 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
             100.0 * (block_num - begin_block + 1) as f32 / (end_block - begin_block + 1) as f32
         );
         if let Some(chunk) = chunk_builder.add(trace) {
-            prove_chunk(0, 0, chunk.clone());
+            prove_chunk(0, chunk[0].header.number.unwrap().as_u64(), chunk.clone());
             let fast = false;
             let chunk_info = if fast {
                 unimplemented!("uncomment below");
@@ -232,7 +229,7 @@ fn padding_chunk(chunks: &mut Vec<ChunkInfo>) {
     }
 }
 
-fn prove_chunk(batch_id: i64, chunk_id: i64, block_traces: Vec<BlockTrace>) -> Option<ChunkProof> {
+fn prove_chunk(batch_id: u64, chunk_id: u64, block_traces: Vec<BlockTrace>) -> Option<ChunkProof> {
     let total_gas: u64 = block_traces
         .iter()
         .map(|b| b.header.gas_used.as_u64())
@@ -247,7 +244,8 @@ fn prove_chunk(batch_id: i64, chunk_id: i64, block_traces: Vec<BlockTrace>) -> O
         return None;
     }
     if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
-        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces);
+        let ccc_modes = [CCCMode::Optimal];
+        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes);
         return None;
     }
 
@@ -281,7 +279,7 @@ async fn prove_by_batch(
 
         let mut chunk_proofs = vec![];
         for chunk in chunks.unwrap() {
-            let chunk_id = chunk.index;
+            let chunk_id = chunk.index as u64;
             log::info!("chain_prover: handling chunk {:?}", chunk_id);
 
             let mut block_traces: Vec<BlockTrace> = vec![];
@@ -296,7 +294,7 @@ async fn prove_by_batch(
                 block_traces.push(trace);
             }
 
-            let chunk_proof = prove_chunk(batch_id, chunk_id, block_traces);
+            let chunk_proof = prove_chunk(batch_id as u64, chunk_id, block_traces);
 
             if let Some(chunk_proof) = chunk_proof {
                 chunk_proofs.push(chunk_proof);

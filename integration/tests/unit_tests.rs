@@ -2,7 +2,7 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker,
+        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
     },
     test_util::load_chunk_for_test,
 };
@@ -78,7 +78,13 @@ fn test_capacity_checker() {
     let batch_id = 0;
     let chunk_id = 0;
     let avg_each_tx_time = if full {
-        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces)
+        let ccc_modes = [
+            CCCMode::Optimal,
+            CCCMode::Siger,
+            CCCMode::FollowerLight,
+            CCCMode::FollowerFull,
+        ];
+        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes).unwrap()
     } else {
         ccc_as_signer(chunk_id, &block_traces).1
     };
