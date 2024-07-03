@@ -1,5 +1,5 @@
 use integration::prove::{new_batch_prover, prove_and_verify_batch};
-use prover::{eth_types::utils::from_json_file, utils::init_env_and_log, BatchProvingTask};
+use prover::{io::from_json_file, utils::init_env_and_log, BatchProvingTask};
 use std::{fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
@@ -31,6 +31,9 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         fs::create_dir_all(&output_dir).unwrap();
         let batch = BatchProvingTask {
             chunk_proofs: batch.chunk_proofs[..len].to_vec(),
+            parent_batch_hash: batch.parent_batch_hash,
+            parent_state_root: batch.parent_state_root,
+            batch_header: batch.batch_header,
         };
         prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
     }

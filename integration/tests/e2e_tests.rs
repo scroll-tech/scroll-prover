@@ -1,7 +1,8 @@
 use integration::test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR};
 use prover::{
+    eth_types::H256,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
-    zkevm, BatchHash, BatchProvingTask, ChunkInfo, ChunkProvingTask,
+    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask,
 };
 use std::env;
 
@@ -38,6 +39,16 @@ fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvi
         .iter()
         .map(|chunk_dir| load_chunk(chunk_dir).1)
         .collect();
+    let l1_message_popped = chunks
+        .iter()
+        .flatten()
+        .map(|chunk| chunk.num_l1_txs())
+        .sum();
+    let last_block_timestamp = chunks.last().map_or(0, |block_traces| {
+        block_traces
+            .last()
+            .map_or(0, |block_trace| block_trace.header.timestamp.as_u64())
+    });
 
     let mut zkevm_prover = zkevm::Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
     log::info!("Constructed zkevm prover");
@@ -57,7 +68,29 @@ fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvi
         .collect();
 
     log::info!("Generated chunk proofs");
-    BatchProvingTask { chunk_proofs }
+    // dummy parent batch hash
+    let parent_batch_hash = H256([
+        0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+    ]);
+    let parent_state_root = chunk_proofs.first().map_or(H256::zero(), |chunk_proof| {
+        chunk_proof.chunk_info.prev_state_root
+    });
+    let batch_header = BatchHeader {
+        version: 3,
+        batch_index: 123,
+        l1_message_popped,
+        total_l1_message_popped: l1_message_popped,
+        parent_batch_hash,
+        last_block_timestamp,
+        ..Default::default() // these will be populated later.
+    };
+    BatchProvingTask {
+        chunk_proofs,
+        parent_state_root,
+        parent_batch_hash,
+        batch_header,
+    }
 }
 
 fn log_batch_pi(trace_paths: &[String]) {
@@ -69,6 +102,16 @@ fn log_batch_pi(trace_paths: &[String]) {
             load_chunk_for_test().1
         })
         .collect();
+    let l1_message_popped = chunk_traces
+        .iter()
+        .flatten()
+        .map(|chunk| chunk.num_l1_txs())
+        .sum();
+    let last_block_timestamp = chunk_traces.last().map_or(0, |block_traces| {
+        block_traces
+            .last()
+            .map_or(0, |block_trace| block_trace.header.timestamp.as_u64())
+    });
 
     let mut chunk_hashes: Vec<ChunkInfo> = chunk_traces
         .into_iter()
@@ -89,7 +132,22 @@ fn log_batch_pi(trace_paths: &[String]) {
             .extend(std::iter::repeat(padding_chunk_hash).take(max_num_snarks - real_chunk_count));
     }
 
-    let batch_hash = BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(&chunk_hashes, batch_header);
+    // dummy parent batch hash
+    let parent_batch_hash = H256([
+        0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+    ]);
+    let batch_header = BatchHeader {
+        version: 3,
+        batch_index: 123,
+        l1_message_popped,
+        total_l1_message_popped: l1_message_popped,
+        parent_batch_hash,
+        last_block_timestamp,
+        ..Default::default() // these will be populated later.
+    };
+    let batch_hash =
+        BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(&chunk_hashes, batch_header);
     let blob = batch_hash.point_evaluation_assignments();
 
     let challenge = blob.challenge;

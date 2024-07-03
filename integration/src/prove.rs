@@ -2,7 +2,7 @@ use crate::test_util::PARAMS_DIR;
 use prover::{
     aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
     zkevm::{Prover as ChunkProver, Verifier as ChunkVerifier},
-    BatchProvingTask, ChunkProvingTask, BundleProvingTask,
+    BatchProvingTask, BundleProvingTask, ChunkProvingTask,
 };
 use std::{env, time::Instant};
 
@@ -70,7 +70,8 @@ pub fn prove_and_verify_bundle(
 ) {
     log::info!("Prove bundle BEGIN");
 
-    let bundle_proof = prover.gen_bundle_proof(bundle, None, Some(output_dir))
+    let bundle_proof = prover
+        .gen_bundle_proof(bundle, None, Some(output_dir))
         .unwrap();
 
     env::set_var("BUNDLE_VK_FILENAME", "bundle_vk.vkey");
