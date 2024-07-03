@@ -2,7 +2,7 @@ use crate::test_util::PARAMS_DIR;
 use prover::{
     aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
     zkevm::{Prover as ChunkProver, Verifier as ChunkVerifier},
-    BatchProvingTask, ChunkProvingTask,
+    BatchProvingTask, ChunkProvingTask, BundleProvingTask,
 };
 use std::{env, time::Instant};
 
@@ -35,7 +35,7 @@ pub fn prove_and_verify_chunk(
     );
 
     // output_dir is used to load chunk vk
-    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
+    env::set_var("CHUNK_VK_FILENAME", "chunk_vk.vkey");
     let verifier = ChunkVerifier::from_dirs(params_path, output_dir);
     assert!(verifier.verify_chunk_proof(chunk_proof));
     log::info!("Verified chunk proof");
@@ -50,15 +50,35 @@ pub fn prove_and_verify_batch(
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
     let batch_proof = batch_prover
-        .gen_agg_evm_proof(batch, None, Some(output_dir))
+        .gen_batch_proof(batch, None, Some(output_dir))
         .unwrap();
 
-    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
+    env::set_var("AGG_VK_FILENAME", "batch_vk.vkey");
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    assert!(verifier.verify_agg_evm_proof(batch_proof));
+    assert!(verifier.verify_batch_proof(batch_proof));
     log::info!("Verified batch proof");
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
+}
+
+pub fn prove_and_verify_bundle(
+    output_dir: &str,
+    prover: &mut BatchProver,
+    bundle: BundleProvingTask,
+) {
+    log::info!("Prove bundle BEGIN");
+
+    let bundle_proof = prover.gen_bundle_proof(bundle, None, Some(output_dir))
+        .unwrap();
+
+    env::set_var("BUNDLE_VK_FILENAME", "bundle_vk.vkey");
+    let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
+    log::info!("Constructed bundle verifier");
+
+    assert!(verifier.verify_bundle_proof(bundle_proof));
+    log::info!("Verifier bundle proof");
+
+    log::info!("Prove bundle END");
 }
