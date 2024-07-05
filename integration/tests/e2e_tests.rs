@@ -84,9 +84,6 @@ fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvi
         0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
     ]);
-    let parent_state_root = chunk_proofs.first().map_or(H256::zero(), |chunk_proof| {
-        chunk_proof.chunk_info.prev_state_root
-    });
     let batch_header = BatchHeader {
         version: 3,
         batch_index: 123,
@@ -98,8 +95,6 @@ fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvi
     };
     BatchProvingTask {
         chunk_proofs,
-        parent_state_root,
-        parent_batch_hash,
         batch_header,
     }
 }
