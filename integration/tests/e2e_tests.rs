@@ -27,15 +27,17 @@ fn test_e2e_prove_verify() {
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let mut batch_prover = new_batch_prover(&output_dir);
+    let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
+    let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
 
-    let chunks = load_batch("./tests/extra_traces/batch_73224").unwrap();
-    let batch1 = gen_batch_proving_task(&output_dir, &chunks);
+    let batch1 = gen_batch_proving_task(&output_dir, &chunks1);
+    let batch2 = gen_batch_proving_task(&output_dir, &chunks2);
+    dump_chunk_protocol(&batch1, &output_dir);
+
+    let mut batch_prover = new_batch_prover(&output_dir);
     let batch1_proof =
         prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch1);
 
-    let chunks = load_batch("./tests/extra_traces/batch_73225").unwrap();
-    let batch2 = gen_batch_proving_task(&output_dir, &chunks);
     let batch2_proof =
         prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch2);
 
@@ -163,4 +165,14 @@ fn log_batch_pi(trace_paths: &[String]) {
     for (i, elem) in blob.coefficients.iter().enumerate() {
         println!("blob.coeffs[{}]: {elem:x}", i);
     }
+}
+
+fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
+    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
+    batch
+        .chunk_proofs
+        .first()
+        .unwrap()
+        .dump(output_dir, "0")
+        .unwrap();
 }
