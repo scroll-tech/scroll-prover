@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1662,7 +1662,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2492,7 +2492,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2507,7 +2507,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3035,7 +3035,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4972,7 +4972,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#eaee598a7b476f2eff1a6e7e8083630dd1fb5a13"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#5a406b0be1e4a3979f917b3b385455ac8ef05dbb"
 dependencies = [
  "array-init",
  "bus-mapping",

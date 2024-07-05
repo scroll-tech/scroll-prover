@@ -22,7 +22,7 @@ fn test_batch_pi_consistency() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_e2e_prove_verify() {
-    use integration::prove::{new_batch_prover, prove_and_verify_batch};
+    use integration::prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle};
 
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
@@ -39,7 +39,10 @@ fn test_e2e_prove_verify() {
     let batch2_proof =
         prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch2);
 
-    // TODO: bundle proving.
+    let bundle = prover::BundleProvingTask {
+        batch_proofs: vec![batch1_proof, batch2_proof],
+    };
+    prove_and_verify_bundle(&output_dir, &mut batch_prover, bundle);
 }
 
 fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvingTask {
