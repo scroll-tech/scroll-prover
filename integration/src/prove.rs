@@ -2,7 +2,7 @@ use crate::test_util::PARAMS_DIR;
 use prover::{
     aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
     zkevm::{Prover as ChunkProver, Verifier as ChunkVerifier},
-    BatchProvingTask, BundleProvingTask, ChunkProvingTask,
+    BatchProof, BatchProvingTask, BundleProvingTask, ChunkProvingTask,
 };
 use std::{env, time::Instant};
 
@@ -41,26 +41,28 @@ pub fn prove_and_verify_chunk(
     log::info!("Verified chunk proof");
 }
 
-pub fn prove_and_verify_batch(
+pub fn prove_and_verify_batch<const N_SNARKS: usize>(
     output_dir: &str,
     batch_prover: &mut BatchProver,
     batch: BatchProvingTask,
-) {
+) -> BatchProof {
     let chunk_num = batch.chunk_proofs.len();
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
     let batch_proof = batch_prover
-        .gen_batch_proof(batch, None, Some(output_dir))
+        .gen_batch_proof::<N_SNARKS>(batch, None, Some(output_dir))
         .unwrap();
 
     env::set_var("AGG_VK_FILENAME", "batch_vk.vkey");
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    assert!(verifier.verify_batch_proof(batch_proof));
+    assert!(verifier.verify_batch_proof(batch_proof.clone()));
     log::info!("Verified batch proof");
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
+
+    batch_proof
 }
 
 pub fn prove_and_verify_bundle(

@@ -2,7 +2,7 @@ use integration::test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS
 use prover::{
     eth_types::H256,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
-    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask,
+    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
 use std::env;
 
@@ -27,11 +27,19 @@ fn test_e2e_prove_verify() {
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_dirs = load_batch("./tests/extra_traces/batch_73224").unwrap();
-    let batch = gen_batch_proving_task(&output_dir, &chunk_dirs);
-
     let mut batch_prover = new_batch_prover(&output_dir);
-    prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
+
+    let chunks = load_batch("./tests/extra_traces/batch_73224").unwrap();
+    let batch1 = gen_batch_proving_task(&output_dir, &chunks);
+    let batch1_proof =
+        prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch1);
+
+    let chunks = load_batch("./tests/extra_traces/batch_73225").unwrap();
+    let batch2 = gen_batch_proving_task(&output_dir, &chunks);
+    let batch2_proof =
+        prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch2);
+
+    // TODO: bundle proving.
 }
 
 fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvingTask {
