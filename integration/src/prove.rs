@@ -53,7 +53,7 @@ pub fn prove_and_verify_batch<const N_SNARKS: usize>(
         .gen_batch_proof::<N_SNARKS>(batch, None, Some(output_dir))
         .unwrap();
 
-    env::set_var("AGG_VK_FILENAME", "batch_vk.vkey");
+    env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
@@ -76,7 +76,7 @@ pub fn prove_and_verify_bundle(
         .gen_bundle_proof(bundle, None, Some(output_dir))
         .unwrap();
 
-    env::set_var("BUNDLE_VK_FILENAME", "bundle_vk.vkey");
+    env::set_var("BUNDLE_VK_FILENAME", "vk_bundle_recursion.vkey");
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed bundle verifier");
 
