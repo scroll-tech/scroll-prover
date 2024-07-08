@@ -1,9 +1,9 @@
 use integration::test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR};
 use prover::{
     eth_types::H256,
-    utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
     proof::dump_as_json,
-    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
+    utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
+    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask,
 };
 use std::env;
 
@@ -34,15 +34,14 @@ fn test_e2e_prove_verify() {
     let batch1 = gen_batch_proving_task(&output_dir, &chunks1);
     let batch2 = gen_batch_proving_task(&output_dir, &chunks2);
 
+    dump_chunk_protocol(&batch1, &output_dir);
     dump_as_json(&output_dir, "batch_prove_1", &batch1).unwrap();
     dump_as_json(&output_dir, "batch_prove_2", &batch2).unwrap();
 
     let mut batch_prover = new_batch_prover(&output_dir);
-    let batch1_proof =
-        prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch1);
+    let batch1_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch1);
 
-    let batch2_proof =
-        prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch2);
+    let batch2_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch2);
 
     let bundle = prover::BundleProvingTask {
         batch_proofs: vec![batch1_proof, batch2_proof],
@@ -170,12 +169,12 @@ fn log_batch_pi(trace_paths: &[String]) {
     }
 }
 
-// fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
-//     // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
-//     batch
-//         .chunk_proofs
-//         .first()
-//         .unwrap()
-//         .dump(output_dir, "0")
-//         .unwrap();
-// }
+fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
+    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
+    batch
+        .chunk_proofs
+        .first()
+        .unwrap()
+        .dump(output_dir, "0")
+        .unwrap();
+}

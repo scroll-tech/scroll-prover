@@ -1,5 +1,5 @@
 use integration::prove::{new_batch_prover, prove_and_verify_batch};
-use prover::{io::from_json_file, utils::init_env_and_log, BatchProvingTask, MAX_AGG_SNARKS};
+use prover::{io::from_json_file, utils::init_env_and_log, BatchProvingTask};
 use std::{fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
@@ -11,7 +11,7 @@ fn test_batch_prove_verify() {
     let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
     dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
-    prove_and_verify_batch::<MAX_AGG_SNARKS>(&output_dir, &mut batch_prover, batch);
+    prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
 }
 
 #[cfg(feature = "prove_verify")]
@@ -33,11 +33,7 @@ fn test_batches_with_each_chunk_num_prove_verify() {
             chunk_proofs: batch.chunk_proofs[..len].to_vec(),
             batch_header: batch.batch_header,
         };
-        prove_and_verify_batch::<MAX_AGG_SNARKS>(
-            &output_dir.to_string_lossy(),
-            &mut batch_prover,
-            batch,
-        );
+        prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
     }
 }
 

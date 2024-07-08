@@ -41,7 +41,7 @@ pub fn prove_and_verify_chunk(
     log::info!("Verified chunk proof");
 }
 
-pub fn prove_and_verify_batch<const N_SNARKS: usize>(
+pub fn prove_and_verify_batch(
     output_dir: &str,
     batch_prover: &mut BatchProver,
     batch: BatchProvingTask,
@@ -50,7 +50,7 @@ pub fn prove_and_verify_batch<const N_SNARKS: usize>(
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
     let batch_proof = batch_prover
-        .gen_batch_proof::<N_SNARKS>(batch, None, Some(output_dir))
+        .gen_batch_proof(batch, None, Some(output_dir))
         .unwrap();
 
     env::set_var("AGG_VK_FILENAME", "vk_batch_agg.vkey");
