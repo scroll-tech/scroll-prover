@@ -40,7 +40,6 @@ fn test_e2e_prove_verify() {
 
     let mut batch_prover = new_batch_prover(&output_dir);
     let batch1_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch1);
-
     let batch2_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch2);
 
     let bundle = prover::BundleProvingTask {

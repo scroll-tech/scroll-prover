@@ -35,7 +35,7 @@ pub fn prove_and_verify_chunk(
     );
 
     // output_dir is used to load chunk vk
-    env::set_var("CHUNK_VK_FILENAME", "vk_chunk.vkey");
+    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
     let verifier = ChunkVerifier::from_dirs(params_path, output_dir);
     assert!(verifier.verify_chunk_proof(chunk_proof));
     log::info!("Verified chunk proof");
@@ -53,7 +53,7 @@ pub fn prove_and_verify_batch(
         .gen_batch_proof(batch, None, Some(output_dir))
         .unwrap();
 
-    env::set_var("BATCH_VK_FILENAME", "vk_batch.vkey");
+    env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
