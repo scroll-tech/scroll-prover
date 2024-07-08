@@ -4,11 +4,11 @@ OUT=release-v0.12.0
 mkdir -p $OUT
 
 # copy snark protocol and verification keys
-cp $IN/chunk.protocol $OUT/chunk.protocol
+cp $IN/chunk_chunk_0.protocol $OUT/chunk.protocol
 cp $IN/batch.protocol $OUT/batch.protocol
-cp $IN/vk_chunk.vkey $OUT/chunk_vk.vkey
-cp $IN/vk_batch.vkey $OUT/batch_vk.vkey
-cp $IN/vk_bundle.vkey $OUT/bundle_vk.key
+cp $IN/vk_chunk.vkey $OUT/vk_chunk.vkey
+cp $IN/vk_batch.vkey $OUT/vk_batch.vkey
+cp $IN/vk_bundle.vkey $OUT/vk_bundle.key
 
 # copy verifier contract binary
 cp $IN/evm_verifier.bin $OUT/evm_verifier.bin
