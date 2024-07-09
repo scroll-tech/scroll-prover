@@ -11,6 +11,7 @@ fn test_bundle_prove_verify() {
     let bundle_task = gen_bundle_proving_task(
         &[
             "tests/test_data/full_proof_batch_agg_1.json",
+            "tests/test_data/full_proof_batch_agg_2.json",
         ]);
     // dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover("tests/test_data");
