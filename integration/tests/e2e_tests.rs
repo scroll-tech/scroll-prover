@@ -84,7 +84,7 @@ fn gen_batch_proving_task(
             zkevm_prover
                 .gen_chunk_proof(
                     ChunkProvingTask::from(block_traces),
-                    Some(&i.to_string()),
+                    None,
                     None,
                     Some(output_dir),
                 )
