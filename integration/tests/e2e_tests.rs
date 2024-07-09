@@ -31,8 +31,8 @@ fn test_e2e_prove_verify() {
     let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
     let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
 
-    let batch1 = gen_batch_proving_task(&output_dir, &chunks1);
-    let batch2 = gen_batch_proving_task(&output_dir, &chunks2);
+    let batch1 = gen_batch_proving_task(&output_dir, &chunks1, None);
+    let batch2 = gen_batch_proving_task(&output_dir, &chunks2, Some(batch1.batch_header));
 
     dump_chunk_protocol(&batch1, &output_dir);
     dump_as_json(&output_dir, "batch_prove_1", &batch1).unwrap();
@@ -55,7 +55,11 @@ fn test_e2e_prove_verify() {
     prove_and_verify_bundle(&output_dir, &mut batch_prover, bundle);
 }
 
-fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvingTask {
+fn gen_batch_proving_task(
+    output_dir: &str,
+    chunk_dirs: &[String],
+    batch_header: Option<BatchHeader>,
+) -> BatchProvingTask {
     let chunks: Vec<_> = chunk_dirs
         .iter()
         .map(|chunk_dir| load_chunk(chunk_dir).1)
@@ -89,17 +93,21 @@ fn gen_batch_proving_task(output_dir: &str, chunk_dirs: &[String]) -> BatchProvi
         .collect();
 
     log::info!("Generated chunk proofs");
+
     // dummy parent batch hash
-    let parent_batch_hash = H256([
+    let dummy_parent_batch_hash = H256([
         0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
     ]);
     let batch_header = BatchHeader {
-        version: 3,
-        batch_index: 123,
+        version: batch_header.map_or(4, |header| header.version),
+        batch_index: batch_header.map_or(123, |header| header.batch_index + 1),
         l1_message_popped,
-        total_l1_message_popped: l1_message_popped,
-        parent_batch_hash,
+        total_l1_message_popped: batch_header.map_or(l1_message_popped, |header| {
+            header.total_l1_message_popped + l1_message_popped
+        }),
+        parent_batch_hash: batch_header
+            .map_or(dummy_parent_batch_hash, |header| header.batch_hash()),
         last_block_timestamp,
         ..Default::default() // these will be populated later.
     };
