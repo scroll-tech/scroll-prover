@@ -5,7 +5,7 @@ use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
     zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask,
 };
-use std::env;
+use std::{env, fs, path::Path};
 
 fn load_test_batch() -> anyhow::Result<Vec<String>> {
     let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
@@ -36,10 +36,19 @@ fn test_e2e_prove_verify() {
 
     dump_chunk_protocol(&batch1, &output_dir);
     dump_as_json(&output_dir, "batch_prove_1", &batch1).unwrap();
+    let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
+    let proof_path_to = Path::new(&output_dir).join("full_proof_batch_agg_1.json");
+    fs::rename(proof_path, proof_path_to).unwrap();
+
     dump_as_json(&output_dir, "batch_prove_2", &batch2).unwrap();
+    let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
+    let proof_path_to = Path::new(&output_dir).join("full_proof_batch_agg_2.json");
+    fs::rename(proof_path, proof_path_to).unwrap();
 
     let mut batch_prover = new_batch_prover(&output_dir);
     let batch1_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch1);
+
+
     let batch2_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch2);
 
     let bundle = prover::BundleProvingTask {
