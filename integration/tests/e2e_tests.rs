@@ -31,26 +31,33 @@ fn test_e2e_prove_verify() {
     let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
     let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
 
-    let batch1 = gen_batch_proving_task(&output_dir, &chunks1, None);
-    let batch2 = gen_batch_proving_task(&output_dir, &chunks2, Some(batch1.batch_header));
-
-    dump_chunk_protocol(&batch1, &output_dir);
-    dump_as_json(&output_dir, "batch_prove_1", &batch1).unwrap();
-    dump_as_json(&output_dir, "batch_prove_2", &batch2).unwrap();
-
     let mut batch_prover = new_batch_prover(&output_dir);
-    let batch1_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch1);
-    let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
-    let proof_path_to = Path::new(&output_dir).join("full_proof_batch_agg_1.json");
-    fs::rename(proof_path, proof_path_to).unwrap();
+    let mut batch_header = None;
+    let mut batch_proofs = Vec::new();
 
-    let batch2_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch2);
-    let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
-    let proof_path_to = Path::new(&output_dir).join("full_proof_batch_agg_2.json");
-    fs::rename(proof_path, proof_path_to).unwrap();
+    for (i, chunk) in [
+        chunks1,
+        chunks2,
+    ].into_iter().enumerate(){
+
+        let batch = gen_batch_proving_task(&output_dir, &chunk, batch_header);
+        dump_as_json(&output_dir, format!("batch_prove_{}", i+1).as_str(), &batch).unwrap();
+        if i == 0 {
+            dump_chunk_protocol(&batch, &output_dir);
+        }
+
+        let batch_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
+        let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
+        let proof_path_to = Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i+1).as_str());
+        fs::rename(proof_path, proof_path_to).unwrap();
+
+        log::info!("batch proof {}, prev hash {:x?}, current {:x?}", i, batch_proof.batch_header.parent_batch_hash, batch_proof.batch_header.batch_hash());
+        batch_header.replace(batch_proof.batch_header.clone());
+        batch_proofs.push(batch_proof);
+    }
 
     let bundle = prover::BundleProvingTask {
-        batch_proofs: vec![batch1_proof, batch2_proof],
+        batch_proofs,
     };
     prove_and_verify_bundle(&output_dir, &mut batch_prover, bundle);
 }
@@ -80,7 +87,7 @@ fn gen_batch_proving_task(
     let chunk_proofs: Vec<_> = chunks
         .into_iter()
         .enumerate()
-        .map(|(i, block_traces)| {
+        .map(|(_, block_traces)| {
             zkevm_prover
                 .gen_chunk_proof(
                     ChunkProvingTask::from(block_traces),
