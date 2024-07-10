@@ -22,10 +22,7 @@ fn gen_bundle_proving_task(batch_proof_files: &[&str]) -> BundleProvingTask {
 
     for proof_file in batch_proof_files {
         let batch_proof: BatchProof = from_json_file(proof_file).unwrap();
-        log::debug!(
-            "Loaded batch-proofs, header {:#?}",
-            batch_proof.batch_header
-        );
+        log::debug!("Loaded batch-proofs, header {:#?}", batch_proof.batch_hash,);
         batch_proofs.push(batch_proof);
     }
 

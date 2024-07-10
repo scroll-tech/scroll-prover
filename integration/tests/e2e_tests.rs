@@ -3,7 +3,7 @@ use prover::{
     eth_types::H256,
     proof::dump_as_json,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
-    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask,
+    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
 use std::{env, fs, path::Path};
 
@@ -32,16 +32,17 @@ fn test_e2e_prove_verify() {
     let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
 
     let mut batch_prover_pending = None;
-    let mut batch_header = None;
+    let mut opt_batch_header = None;
     let mut batch_proofs = Vec::new();
 
-    for (i, chunk) in [
-        chunks1,
-        chunks2,
-    ].into_iter().enumerate(){
-
-        let batch = gen_batch_proving_task(&output_dir, &chunk, batch_header);
-        dump_as_json(&output_dir, format!("batch_prove_{}", i+1).as_str(), &batch).unwrap();
+    for (i, chunk) in [chunks1, chunks2].into_iter().enumerate() {
+        let (batch, batch_header) = gen_batch_proving_task(&output_dir, &chunk, opt_batch_header);
+        dump_as_json(
+            &output_dir,
+            format!("batch_prove_{}", i + 1).as_str(),
+            &batch,
+        )
+        .unwrap();
         if i == 0 {
             dump_chunk_protocol(&batch, &output_dir);
             batch_prover_pending.replace(new_batch_prover(&output_dir));
@@ -50,26 +51,30 @@ fn test_e2e_prove_verify() {
 
         let batch_proof = prove_and_verify_batch(&output_dir, batch_prover, batch);
         let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
-        let proof_path_to = Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i+1).as_str());
+        let proof_path_to =
+            Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i + 1).as_str());
         fs::rename(proof_path, proof_path_to).unwrap();
 
-        log::info!("batch proof {}, prev hash {:x?}, current {:x?}", i, batch_proof.batch_header.parent_batch_hash, batch_proof.batch_header.batch_hash());
-        batch_header.replace(batch_proof.batch_header.clone());
+        log::info!(
+            "batch proof {}, prev hash {:x?}, current {:x?}",
+            i,
+            batch_header.parent_batch_hash,
+            batch_proof.batch_hash,
+        );
+        opt_batch_header.replace(batch_header);
         batch_proofs.push(batch_proof);
     }
 
     let batch_prover = batch_prover_pending.as_mut().unwrap();
-    let bundle = prover::BundleProvingTask {
-        batch_proofs,
-    };
+    let bundle = prover::BundleProvingTask { batch_proofs };
     prove_and_verify_bundle(&output_dir, batch_prover, bundle);
 }
 
 fn gen_batch_proving_task(
     output_dir: &str,
     chunk_dirs: &[String],
-    batch_header: Option<BatchHeader>,
-) -> BatchProvingTask {
+    opt_batch_header: Option<BatchHeader<MAX_AGG_SNARKS>>,
+) -> (BatchProvingTask, BatchHeader<MAX_AGG_SNARKS>) {
     let chunks: Vec<_> = chunk_dirs
         .iter()
         .map(|chunk_dir| load_chunk(chunk_dir).1)
@@ -109,22 +114,34 @@ fn gen_batch_proving_task(
         0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
     ]);
-    let batch_header = BatchHeader {
-        version: batch_header.map_or(4, |header| header.version),
-        batch_index: batch_header.map_or(123, |header| header.batch_index + 1),
+    let batch_header = BatchHeader::construct_from_chunks(
+        opt_batch_header.map_or(4, |header| header.version),
+        opt_batch_header.map_or(123, |header| header.batch_index + 1),
         l1_message_popped,
-        total_l1_message_popped: batch_header.map_or(l1_message_popped, |header| {
+        opt_batch_header.map_or(l1_message_popped, |header| {
             header.total_l1_message_popped + l1_message_popped
         }),
-        parent_batch_hash: batch_header
-            .map_or(dummy_parent_batch_hash, |header| header.batch_hash()),
+        opt_batch_header.map_or(dummy_parent_batch_hash, |header| header.batch_hash()),
         last_block_timestamp,
-        ..Default::default() // these will be populated later.
-    };
-    BatchProvingTask {
-        chunk_proofs,
+        &chunk_proofs
+            .clone()
+            .into_iter()
+            .map(|cp| cp.chunk_info)
+            .collect::<Vec<_>>(),
+    );
+
+    (
+        BatchProvingTask {
+            version: batch_header.version,
+            batch_index: batch_header.batch_index,
+            l1_message_popped: batch_header.l1_message_popped,
+            total_l1_message_popped: batch_header.total_l1_message_popped,
+            parent_batch_hash: batch_header.parent_batch_hash,
+            last_block_timestamp: batch_header.last_block_timestamp,
+            chunk_proofs,
+        },
         batch_header,
-    }
+    )
 }
 
 fn log_batch_pi(trace_paths: &[String]) {
