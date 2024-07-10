@@ -31,7 +31,7 @@ fn test_e2e_prove_verify() {
     let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
     let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
 
-    let mut batch_prover = new_batch_prover(&output_dir);
+    let mut batch_prover_pending = None;
     let mut batch_header = None;
     let mut batch_proofs = Vec::new();
 
@@ -44,9 +44,11 @@ fn test_e2e_prove_verify() {
         dump_as_json(&output_dir, format!("batch_prove_{}", i+1).as_str(), &batch).unwrap();
         if i == 0 {
             dump_chunk_protocol(&batch, &output_dir);
+            batch_prover_pending.replace(new_batch_prover(&output_dir));
         }
+        let batch_prover = batch_prover_pending.as_mut().unwrap();
 
-        let batch_proof = prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
+        let batch_proof = prove_and_verify_batch(&output_dir, batch_prover, batch);
         let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
         let proof_path_to = Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i+1).as_str());
         fs::rename(proof_path, proof_path_to).unwrap();
@@ -56,10 +58,11 @@ fn test_e2e_prove_verify() {
         batch_proofs.push(batch_proof);
     }
 
+    let batch_prover = batch_prover_pending.as_mut().unwrap();
     let bundle = prover::BundleProvingTask {
         batch_proofs,
     };
-    prove_and_verify_bundle(&output_dir, &mut batch_prover, bundle);
+    prove_and_verify_bundle(&output_dir, batch_prover, bundle);
 }
 
 fn gen_batch_proving_task(
