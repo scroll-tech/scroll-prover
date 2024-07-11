@@ -132,13 +132,8 @@ fn gen_batch_proving_task(
 
     (
         BatchProvingTask {
-            version: batch_header.version,
-            batch_index: batch_header.batch_index,
-            l1_message_popped: batch_header.l1_message_popped,
-            total_l1_message_popped: batch_header.total_l1_message_popped,
-            parent_batch_hash: batch_header.parent_batch_hash,
-            last_block_timestamp: batch_header.last_block_timestamp,
             chunk_proofs,
+            batch_header,
         },
         batch_header,
     )

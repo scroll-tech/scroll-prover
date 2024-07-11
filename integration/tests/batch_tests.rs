@@ -30,12 +30,7 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         output_dir.push(format!("batch_{}", len));
         fs::create_dir_all(&output_dir).unwrap();
         let batch = BatchProvingTask {
-            version: batch.version,
-            l1_message_popped: batch.l1_message_popped,
-            total_l1_message_popped: batch.total_l1_message_popped,
-            last_block_timestamp: batch.last_block_timestamp,
-            batch_index: batch.batch_index,
-            parent_batch_hash: batch.parent_batch_hash,
+            batch_header: batch.batch_header,
             chunk_proofs: batch.chunk_proofs[..len].to_vec(),
         };
         prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
