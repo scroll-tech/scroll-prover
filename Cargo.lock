@@ -30,8 +30,8 @@ dependencies = [
 
 [[package]]
 name = "aggregator"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -604,8 +604,8 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 
 [[package]]
 name = "bus-mapping"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1300,8 +1300,8 @@ dependencies = [
 
 [[package]]
 name = "eth-types"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1456,8 +1456,8 @@ dependencies = [
 
 [[package]]
 name = "external-tracer"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1638,8 +1638,8 @@ dependencies = [
 
 [[package]]
 name = "gadgets"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1661,8 +1661,8 @@ dependencies = [
 
 [[package]]
 name = "geth-utils"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2491,8 +2491,8 @@ dependencies = [
 
 [[package]]
 name = "mock"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2506,8 +2506,8 @@ dependencies = [
 
 [[package]]
 name = "mpt-zktrie"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3034,8 +3034,8 @@ dependencies = [
 
 [[package]]
 name = "prover"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4971,8 +4971,8 @@ dependencies = [
 
 [[package]]
 name = "zkevm-circuits"
-version = "0.11.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#e52b511b14e9ff319e423ff1968e8a2dc11cfb2d"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/agg_recursion#9f8a697cc0c22643628b4693c423d2dbd90a8fe9"
 dependencies = [
  "array-init",
  "bus-mapping",
