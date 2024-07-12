@@ -4,6 +4,8 @@ CHAIN_ID ?= 534352
 export CHAIN_ID
 RUST_MIN_STACK ?= 16777216
 export RUST_MIN_STACK
+RUST_BACKTRACE=1
+export RUST_BACKTRACE
 
 help: ## Display this help screen
 	@grep -h \
@@ -27,35 +29,26 @@ clippy: ## Run clippy checks over all workspace members
 test: ## Run tests for all the workspace members
 	@cargo test --release -p integration --test unit_tests
 
-mock:
+chain-prover:
+	@cargo run --bin chain_prover --release
+
+test-mock-prove:
 	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
 
-mock-testnet:
-	@cargo run --bin mock_testnet --release
-
 test-inner-prove:
-	@cargo test --features prove_verify --release test_inner_prove_verify
+	@cargo test --release -p integration --test inner_tests test_inner_prove_verify -- --exact --nocapture
 
 test-chunk-prove:
-	@cargo test --features prove_verify --release test_chunk_prove_verify
-
-test-e2e-prove:
-	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify
-
-test-pi:
-	@cargo test --features prove_verify --release test_batch_pi
+	@cargo test --release -p integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
 
 test-batch-prove:
-	@cargo test --release -p integration --test batch_tests test_batch_prove_verify
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test batch_tests test_batch_prove_verify -- --exact --nocapture
 
-test-batches-with-each-chunk-num-prove:
-	@cargo test --features prove_verify --release test_batches_with_each_chunk_num_prove_verify
+test-e2e-prove:
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify -- --exact --nocapture
 
 test-ccc:
-	@cargo test --release test_capacity_checker
-
-rows:
-	@cargo test --features prove_verify --release estimate_circuit_rows
+	@cargo test --release -p integration --test unit_tests test_capacity_checker -- --exact --nocapture
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
 # As default `degree=25` and `params_dir=./integration/params`.

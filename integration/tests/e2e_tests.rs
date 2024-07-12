@@ -21,12 +21,12 @@ fn test_batch_pi_consistency() {
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_e2e_prove_verify() {
-    use integration::test_util::{new_batch_prover, prove_and_verify_batch};
+    use integration::prove::{new_batch_prover, prove_and_verify_batch};
 
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let chunk_dirs = load_batch("./tests/extra_traces/batch_25").unwrap();
+    let chunk_dirs = load_batch("./tests/extra_traces/batch_73224").unwrap();
     let batch = gen_batch_proving_task(&output_dir, &chunk_dirs);
 
     let mut batch_prover = new_batch_prover(&output_dir);

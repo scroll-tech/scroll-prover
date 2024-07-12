@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import json
 import argparse
@@ -9,17 +10,17 @@ MAX_PARALLEL_DOWNLOADS = 4
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Dump block JSONs for a given batch.')
-parser.add_argument('batch_id', type=int, help='The batch ID to process')
+parser.add_argument('batch_id', type=int, default=0, help='The batch ID to process')
 parser.add_argument('chunk_id', type=int, default=0, help='The chunk ID to process')
 args = parser.parse_args()
 
 # Define the URLs for the RPC calls
 chunks_url = 'http://10.6.13.141:8560/api/chunks?batch_index={}'.format(args.batch_id)
-block_trace_url = 'http://10.6.13.145:8545'
+block_trace_url = "http://10.5.10.102:8545"
 
 # env2
-chunks_url = 'http://10.6.11.134:8560/api/chunks?batch_index={}'.format(args.batch_id)
-block_trace_url = 'http://10.6.11.134:8545'
+# chunks_url = 'http://10.6.11.134:8560/api/chunks?batch_index={}'.format(args.batch_id)
+# block_trace_url = 'http://10.6.11.134:8545'
 
 
 # Create the directory for the batch
@@ -51,14 +52,22 @@ def download_chunk(chunk_id, start_block, end_block):
             'params': [hex_block_number],
             'id': 99
         }
-        response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'})
-        block_data = response.json()["result"]
 
-        # Save the block JSON to a file
-        with open(block_file, 'w') as f:
-            json.dump(block_data, f, indent=2)
-
-        print('Saved block {} to {}'.format(block_number, block_file))
+        try:
+            response = requests.post(block_trace_url, json=payload, headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'})
+            response.raise_for_status()  # Check for HTTP errors
+            block_data = response.json()["result"]
+            # Save the block JSON to a file
+            with open(block_file, 'w') as f:
+                json.dump(block_data, f, indent=2)
+            print('Saved block {} to {}'.format(block_number, block_file))
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}", file=sys.stderr)
+        except requests.exceptions.RequestException as req_err:
+            print(f"Request error occurred: {req_err}", file=sys.stderr)
+        except ValueError:
+            print("Response is not valid JSON:", file=sys.stderr)
+            print(response.text, file=sys.stderr)
 
 def download_batch():
     # Make the request to get the chunk information
@@ -87,5 +96,5 @@ def download_batch():
 
 
 if __name__ == "__main__":
-    download_batch()
-    #download_chunk(1, 1, 4)
+    #download_batch()
+    download_chunk(562585, 4740248, 4740254)
