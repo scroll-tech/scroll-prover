@@ -29,30 +29,30 @@ clippy: ## Run clippy checks over all workspace members
 test: ## Run tests for all the workspace members
 	@cargo test --release -p integration --test unit_tests
 
-chain-prover:
+chain-prover: ## Run chain prover
 	@cargo run --bin chain_prover --release
 
-test-mock-prove:
+test-mock-prove: ## Run mock prover tests
 	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
 
-test-inner-prove:
+test-inner-prove: ## Run inner prover tests
 	@cargo test --release -p integration --test inner_tests test_inner_prove_verify -- --exact --nocapture
 
-test-chunk-prove:
+test-chunk-prove: ## Run chunk prover tests
 	@cargo test --release -p integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
 
-test-batch-prove:
+test-batch-prove: ## Run batch prover tests
 	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test batch_tests test_batch_prove_verify -- --exact --nocapture
 
-test-e2e-prove:
+test-e2e-prove: ## Run e2e prover tests
 	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify -- --exact --nocapture
 
-test-ccc:
+test-ccc: ## Run capacity checker tests
 	@cargo test --release -p integration --test unit_tests test_capacity_checker -- --exact --nocapture
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
 # As default `degree=25` and `params_dir=./integration/params`.
-download-setup:
+download-setup: ## Download trusted setup key
 	sh download_setup.sh ${degree} ${params_dir}
 
 .PHONY: help fmt clippy test test-ci test-all
