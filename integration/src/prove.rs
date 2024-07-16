@@ -57,7 +57,7 @@ pub fn prove_and_verify_batch(
     let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    assert!(verifier.verify_batch_proof(batch_proof.clone()));
+    assert!(verifier.verify_batch_proof(&batch_proof));
     log::info!("Verified batch proof");
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
