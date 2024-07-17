@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1662,7 +1662,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2492,7 +2492,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2507,7 +2507,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3035,7 +3035,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3046,6 +3046,7 @@ dependencies = [
  "dotenvy",
  "eth-types",
  "ethers-core",
+ "gadgets",
  "git-version",
  "halo2_proofs",
  "hex",
@@ -4972,7 +4973,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8809d834293ed687cfff3471c9dcc99ff979a38f"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#8a6c0d0756ee1e238661b84afcb255ee3b0164ad"
 dependencies = [
  "array-init",
  "bus-mapping",
