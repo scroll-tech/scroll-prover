@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use glob::glob;
 use prover::{
@@ -45,7 +45,15 @@ pub fn load_chunk(trace_path: &str) -> (Vec<String>, Vec<BlockTrace>) {
 }
 
 pub fn load_batch(batch_dir: &str) -> anyhow::Result<Vec<String>> {
-    let mut sorted_dirs: Vec<String> = std::fs::read_dir(batch_dir)?
+    let sorted_dirs = read_dir_recursive(batch_dir, "chunk_")?;
+    log::info!("batch content: {:?}", sorted_dirs);
+    Ok(sorted_dirs)
+}
+
+/// Reads inside a directory recursively and returns paths to all sub-directories that match the
+/// given prefix.
+pub fn read_dir_recursive(dir: impl AsRef<Path>, prefix: &str) -> anyhow::Result<Vec<String>> {
+    let mut sorted_dirs: Vec<String> = std::fs::read_dir(dir)?
         .filter_map(|entry| entry.ok())
         .map(|entry| entry.path())
         .filter(|path| path.is_dir())
@@ -54,15 +62,18 @@ pub fn load_batch(batch_dir: &str) -> anyhow::Result<Vec<String>> {
     sorted_dirs.sort_by_key(|s| {
         let path = Path::new(s);
         let dir_name = path.file_name().unwrap().to_string_lossy();
-        dir_name
-            .trim_start_matches("chunk_")
-            .parse::<u32>()
-            .unwrap()
+        dir_name.trim_start_matches(prefix).parse::<u32>().unwrap()
     });
-    let fast = false;
-    if fast {
-        sorted_dirs.truncate(1);
-    }
-    log::info!("batch content: {:?}", sorted_dirs);
     Ok(sorted_dirs)
+}
+
+/// Reads inside a directory and returns all files.
+pub fn read_dir(dir: impl AsRef<Path>) -> anyhow::Result<Vec<PathBuf>> {
+    let mut sorted_files = std::fs::read_dir(dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_file())
+        .collect::<Vec<_>>();
+    sorted_files.sort();
+    Ok(sorted_files)
 }

@@ -8,7 +8,9 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
+    let batch = load_batch_proving_task("tests/test_data/full_proof_batch_prove_1.json");
+    log::info!("batch hash = {:?}", batch.batch_header.batch_hash());
+
     dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);
     prove_and_verify_batch(&output_dir, &mut batch_prover, batch);

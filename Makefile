@@ -50,6 +50,9 @@ test-bundle-prove:
 test-e2e-prove:
 	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify -- --exact --nocapture
 
+test-batch-bundle-prove:
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_batch_bundle_verify -- --exact --nocapture
+
 test-ccc:
 	@cargo test --release -p integration --test unit_tests test_capacity_checker -- --exact --nocapture
 

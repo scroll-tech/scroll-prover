@@ -70,6 +70,44 @@ fn test_e2e_prove_verify() {
     prove_and_verify_bundle(&output_dir, batch_prover, bundle);
 }
 
+#[cfg(feature = "prove_verify")]
+#[test]
+fn test_batch_bundle_verify() -> anyhow::Result<()> {
+    use integration::{
+        prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle},
+        test_util::read_dir,
+    };
+    use prover::{io::from_json_file, BundleProvingTask};
+
+    let output_dir = init_env_and_log("batch_bundle_tests");
+
+    let batch_tasks_paths = read_dir("./tests/test_data/batch_tasks")?;
+    let batch_tasks = batch_tasks_paths
+        .iter()
+        .map(|path| from_json_file::<BatchProvingTask>(&path.as_path().to_string_lossy()))
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    log::info!("num batch tasks = {}", batch_tasks.len());
+
+    let mut prover = new_batch_prover(&output_dir);
+    let batch_proofs = batch_tasks
+        .into_iter()
+        .map(|batch_task| prove_and_verify_batch(&output_dir, &mut prover, batch_task))
+        .collect::<Vec<_>>();
+
+    let n = batch_proofs.len();
+    for i in 1..n {
+        log::info!("bundle {i} batches");
+        let bundle_task = BundleProvingTask {
+            batch_proofs: batch_proofs[0..i].to_vec(),
+        };
+        prove_and_verify_bundle(&output_dir, &mut prover, bundle_task);
+        log::info!("bundle {i} batches OK");
+    }
+
+    Ok(())
+}
+
 fn gen_batch_proving_task(
     output_dir: &str,
     chunk_dirs: &[String],
