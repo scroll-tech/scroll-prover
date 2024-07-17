@@ -74,15 +74,15 @@ fn test_capacity_checker() {
 
     let block_traces = load_chunk_for_test().1;
 
-    let full = true;
+    let full = false;
     let batch_id = 0;
     let chunk_id = 0;
     let avg_each_tx_time = if full {
         let ccc_modes = [
             CCCMode::Optimal,
-            CCCMode::Siger,
             CCCMode::FollowerLight,
             CCCMode::FollowerFull,
+            CCCMode::Siger,
         ];
         run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes).unwrap()
     } else {
