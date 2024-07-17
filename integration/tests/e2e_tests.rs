@@ -82,21 +82,23 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
     let output_dir = init_env_and_log("batch_bundle_tests");
 
     let batch_tasks_paths = read_dir("./tests/test_data/batch_tasks")?;
+    log::info!("batch task paths = {:?}", batch_tasks_paths);
     let batch_tasks = batch_tasks_paths
         .iter()
+        .take(3)
         .map(|path| from_json_file::<BatchProvingTask>(&path.as_path().to_string_lossy()))
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     log::info!("num batch tasks = {}", batch_tasks.len());
 
-    let mut prover = new_batch_prover(&output_dir);
+    let mut prover = new_batch_prover("./tests/test_data");
     let batch_proofs = batch_tasks
         .into_iter()
         .map(|batch_task| prove_and_verify_batch(&output_dir, &mut prover, batch_task))
         .collect::<Vec<_>>();
 
     let n = batch_proofs.len();
-    for i in 1..n {
+    for i in 2..n {
         log::info!("bundle {i} batches");
         let bundle_task = BundleProvingTask {
             batch_proofs: batch_proofs[0..i].to_vec(),

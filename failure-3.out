@@ -1,0 +1,1959 @@
+    Updating git repository `https://github.com/scroll-tech/zkevm-circuits.git`
+    Skipping git submodule `https://github.com/ethereum/tests` due to update strategy in .gitmodules
+    Skipping git submodule `https://github.com/OpenZeppelin/openzeppelin-contracts` due to update strategy in .gitmodules
+warning: path override for crate `halo2_proofs` has altered the original list of
+dependencies; the dependency on `anyhow` was either added or
+modified to not match the previously resolved version
+
+This is currently allowed but is known to produce buggy behavior with spurious
+recompiles and changes to the crate graph. Path overrides unfortunately were
+never intended to support this feature, so for now this message is just a
+warning. In the future, however, this message will become a hard error.
+
+To change the dependency graph via an override it's recommended to use the
+`[patch]` feature of Cargo instead of the path override feature. This is
+documented online at the url below for more information.
+
+https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+
+    Updating crates.io index
+warning: path override for crate `halo2_gadgets` has altered the original list of
+dependencies; the dependency on `halo2_proofs` was either added or
+modified to not match the previously resolved version
+
+This is currently allowed but is known to produce buggy behavior with spurious
+recompiles and changes to the crate graph. Path overrides unfortunately were
+never intended to support this feature, so for now this message is just a
+warning. In the future, however, this message will become a hard error.
+
+To change the dependency graph via an override it's recommended to use the
+`[patch]` feature of Cargo instead of the path override feature. This is
+documented online at the url below for more information.
+
+https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+
+warning: path override for crate `halo2_proofs` has altered the original list of
+dependencies; the dependency on `anyhow` was either added or
+modified to not match the previously resolved version
+
+This is currently allowed but is known to produce buggy behavior with spurious
+recompiles and changes to the crate graph. Path overrides unfortunately were
+never intended to support this feature, so for now this message is just a
+warning. In the future, however, this message will become a hard error.
+
+To change the dependency graph via an override it's recommended to use the
+`[patch]` feature of Cargo instead of the path override feature. This is
+documented online at the url below for more information.
+
+https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+
+warning: path override for crate `halo2_proofs` has altered the original list of
+dependencies; the dependency on `anyhow` was either added or
+modified to not match the previously resolved version
+
+This is currently allowed but is known to produce buggy behavior with spurious
+recompiles and changes to the crate graph. Path overrides unfortunately were
+never intended to support this feature, so for now this message is just a
+warning. In the future, however, this message will become a hard error.
+
+To change the dependency graph via an override it's recommended to use the
+`[patch]` feature of Cargo instead of the path override feature. This is
+documented online at the url below for more information.
+
+https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+
+warning: halo2_proofs@1.1.0: Compiler version doesn't include clang or GCC: "cc" "--version"
+warning: halo2_proofs@1.1.0: Compiler version doesn't include clang or GCC: "c++" "--version"
+warning: unused doc comment
+   --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/dev/cost.rs:106:13
+    |
+106 |             /// Any cells assigned outside of a region.
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+107 |             loose_cells: vec![],
+    |             ------------------- rustdoc does not generate documentation for expression fields
+    |
+    = help: use `//` for a plain comment
+    = note: `#[warn(unused_doc_comments)]` on by default
+
+warning: unused doc comment
+   --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/dev/cost.rs:108:13
+    |
+108 |             /// Pairs of cells between which we have equality constraints.
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+109 |             equality: vec![],
+    |             ---------------- rustdoc does not generate documentation for expression fields
+    |
+    = help: use `//` for a plain comment
+
+warning: unused doc comment
+   --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/dev/cost.rs:110:13
+    |
+110 |             /// Selector assignments used for optimization pass
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+111 |             selectors: vec![vec![false; n]; num_selectors],
+    |             ---------------------------------------------- rustdoc does not generate documentation for expression fields
+    |
+    = help: use `//` for a plain comment
+
+warning: unused imports: `IntoParallelRefMutIterator`, `Scope`, `join`
+  --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/multicore.rs:11:34
+   |
+11 |     iter::{IntoParallelIterator, IntoParallelRefMutIterator, ParallelIterator},
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |     join, scope, Scope,
+   |     ^^^^         ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `log::info`
+ --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/plonk/logging.rs:9:13
+  |
+9 |     pub use log::info;
+  |             ^^^^^^^^^
+
+warning: unused imports: `Ordering`, `ToString`, `format`
+  --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/plonk/logging.rs:12:9
+   |
+12 |         format,
+   |         ^^^^^^
+13 |         string::{String, ToString},
+   |                          ^^^^^^^^
+14 |         sync::{
+15 |             atomic::{AtomicUsize, Ordering},
+   |                                   ^^^^^^^^
+
+warning: unused import: `self::inner::*`
+   --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/plonk/logging.rs:202:9
+    |
+202 | pub use self::inner::*;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused import: `keygen::Assembly`
+  --> /home/scroll/zzhang/test_zkp2/halo2-gpu/halo2_proofs/src/plonk/permutation.rs:18:9
+   |
+18 | pub use keygen::Assembly;
+   |         ^^^^^^^^^^^^^^^^
+
+warning: `halo2_proofs` (lib) generated 8 warnings (run `cargo fix --lib -p halo2_proofs` to apply 5 suggestions)
+   Compiling eth-types v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling gadgets v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling mpt-zktrie v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling bus-mapping v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling zkevm-circuits v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling aggregator v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling prover v0.12.0 (https://github.com/scroll-tech/zkevm-circuits.git?branch=dbg/recursion-failure#a5913d49)
+   Compiling integration v0.10.0 (/home/scroll/rohit/scroll-prover/integration)
+    Finished release [optimized] target(s) in 1m 01s
+     Running tests/e2e_tests.rs (target/release/deps/e2e_tests-685cdae41a719890)
+
+running 1 test
+2024-07-18T03:59:59.894577452+08:00 INFO prover::utils - git version a5913d4
+2024-07-18T03:59:59.894637804+08:00 INFO prover::utils - short git version a5913d4
+2024-07-18T03:59:59.894791519+08:00 INFO e2e_tests - batch task paths = ["./tests/test_data/batch_tasks/batch_task_293205.json", "./tests/test_data/batch_tasks/batch_task_293206.json", "./tests/test_data/batch_tasks/batch_task_293207.json", "./tests/test_data/batch_tasks/batch_task_293208.json", "./tests/test_data/batch_tasks/batch_task_293209.json", "./tests/test_data/batch_tasks/batch_task_293210.json", "./tests/test_data/batch_tasks/batch_task_293211.json", "./tests/test_data/batch_tasks/batch_task_293212.json", "./tests/test_data/batch_tasks/batch_task_293213.json", "./tests/test_data/batch_tasks/batch_task_293214.json"]
+2024-07-18T04:00:01.390711029+08:00 INFO e2e_tests - num batch tasks = 3
+2024-07-18T04:00:01.391093271+08:00 INFO prover::utils - Start loading params with degree 26
+2024-07-18T04:00:11.198037492+08:00 INFO prover::utils - load params successfully!
+2024-07-18T04:00:11.198070003+08:00 INFO prover::utils - Start loading params with degree 21
+2024-07-18T04:00:11.501266385+08:00 INFO prover::utils - load params successfully!
+2024-07-18T04:00:11.501354148+08:00 WARN prover::aggregator::prover - batch-prover: batch_vk.vkey doesn't exist in ./tests/test_data
+2024-07-18T04:00:11.501379649+08:00 WARN prover::aggregator::prover - batch-prover: bundle_vk.vkey doesn't exist in ./tests/test_data
+2024-07-18T04:00:11.501406490+08:00 INFO integration::prove - Constructed batch prover
+2024-07-18T04:00:11.501427121+08:00 INFO integration::prove - Prove batch BEGIN: chunk_num = 29
+2024-07-18T04:00:11.537789694+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:11.571931113+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:11.774401932+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:11.868571699+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:11.902255273+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:12.039762503+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:12.099187409+08:00 INFO aggregator::batch - batch hash 0xe86e067f78b1c29c1cc297f6d9fe670c7beea1eebb226d1b8eeb9616a2bcac7e, datahash 84786e890c015721a37f02a010bd2b84eaf4363cdf04831628a38ddbf497d0bf, z 519fb200d451fea8623ea1bdb15d8138cea68712792a92b9cf1f79dae6df5b54, y 6d50a85330192c8e835cbd6bcdff0f2f23b0b3822e4e0319c92dafd70f0e21da, versioned hash 013c7e2c9ee9cd6511e8952e55ce5568832f8be3864de823d4ead5f6dfd382ae
+2024-07-18T04:00:12.817677363+08:00 INFO prover::common::prover::utils - Before generate pk of layer3
+2024-07-18T04:00:16.586208436+08:00 INFO halo2_proofs::plonk::keygen - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:00:16.961476173+08:00 INFO halo2_proofs::plonk::keygen - pk [4] GPUs free mem = | 23.20 | 23.20 | 23.20 | 23.20 | GiB
+in bytes = | 24908201984 | 24908201984 | 24908201984 | 24908201984 | 
+2024-07-18T04:00:16.964550134+08:00 INFO aggregator::aggregation::config - keccak uses 87 columns
+meta degree = 9
+2024-07-18T04:00:16.981543327+08:00 INFO aggregator::aggregation::circuit - aggregation circuit configured with k = 21 and [63] advice columns
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:00:47.564945935+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:00:47.625685834+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:00:47.625728536+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 397766
+test test_batch_bundle_verify has been running for over 60 seconds
+2024-07-18T04:01:29.170495199+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:01:29.264581081+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:01:29.901175880+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:01:29.995773970+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:01:30.393734275+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:01:30.954341979+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:02:41.106459215+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x2326c3dbaf70c4fa1fd9fd99150579f86ec460133039b94718b31cef4241967b
+2024-07-18T04:02:41.106521467+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[132], gpu_num [4]
+2024-07-18T04:02:42.401782747+08:00 INFO halo2_proofs::plonk::permutation::keygen - build pk[4] GPUs free mem = | 23.20 | 23.20 | 23.20 | 23.20 | GiB
+in bytes = | 24906104832 | 24906104832 | 24906104832 | 24906104832 | 
+2024-07-18T04:02:47.647664302+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[105], gpu_num [4]
+2024-07-18T04:02:48.713738261+08:00 INFO halo2_proofs::plonk::permutation::keygen - end build pk[4] GPUs free mem = | 23.20 | 23.20 | 23.20 | 23.20 | GiB
+in bytes = | 24906104832 | 24906104832 | 24906104832 | 24906104832 | 
+2024-07-18T04:02:49.657243027+08:00 INFO halo2_proofs::plonk::keygen - end pk [4] GPUs free mem = | 23.20 | 23.20 | 23.20 | 23.20 | GiB
+in bytes = | 24906104832 | 24906104832 | 24906104832 | 24906104832 | 
+2024-07-18T04:02:49.682162261+08:00 INFO prover::common::prover::utils - After generate pk of layer3
+2024-07-18T04:02:49.682195282+08:00 INFO prover::common::prover::utils - gen_snark id layer3 desc gen_agg_snark vk transcript_repr 0x2326c3dbaf70c4fa1fd9fd99150579f86ec460133039b94718b31cef4241967b
+2024-07-18T04:02:49.686203535+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:02:49.686332119+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.20 | 23.20 | 23.20 | 23.20 | GiB
+in bytes = | 24906104832 | 24906104832 | 24906104832 | 24906104832 | 
+2024-07-18T04:02:49.689113481+08:00 INFO aggregator::aggregation::config - keccak uses 87 columns
+meta degree = 9
+2024-07-18T04:02:49.705033398+08:00 INFO aggregator::aggregation::circuit - aggregation circuit configured with k = 21 and [63] advice columns
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:03:31.361061577+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:03:31.421847568+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:03:31.421893179+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 397766
+2024-07-18T04:04:17.154782600+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:04:17.249169042+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:04:17.877208349+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:04:17.977842647+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:04:18.550837225+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:04:18.942111393+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:05:42.825741695+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:05:42.893310499+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[373], gpu_num [4]
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:06:12.349203258+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:12.418053454+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:06:12.418098515+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 397766
+2024-07-18T04:06:58.037608261+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:58.131827955+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:58.790641225+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:58.885483891+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:59.488322590+08:00 INFO aggregator::blob - compress batch data from 387581 to 126084, compression ratio 3.07, blob usage 0.993
+2024-07-18T04:06:59.894870470+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:07:52.670735262+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:07:52.733774232+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[10], gpu_num [4]
+2024-07-18T04:07:52.938881935+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:08:33.249698748+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:08:33.251441568+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 21
+2024-07-18T04:08:33.251456589+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 24
+2024-07-18T04:08:33.251470639+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 105
+2024-07-18T04:08:33.251484650+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 105
+2024-07-18T04:08:33.251498560+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 7
+2024-07-18T04:08:33.716327452+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:08:34.108793667+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:08:34.461421895+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:08:34.752631034+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[3], gpu_num [4]
+2024-07-18T04:08:52.139455998+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:08:52.217322398+08:00 INFO halo2_proofs::plonk::prover - num_advice: 390
+2024-07-18T04:08:52.217341839+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:08:52.217356579+08:00 INFO halo2_proofs::plonk::prover - fixed: 132
+2024-07-18T04:08:52.217370460+08:00 INFO halo2_proofs::plonk::prover - lookup: 60
+2024-07-18T04:08:52.217384190+08:00 INFO halo2_proofs::plonk::prover - permutation: 15
+2024-07-18T04:08:52.217397931+08:00 INFO halo2_proofs::plonk::prover - cals: 5799
+2024-07-18T04:08:52.217418291+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 1839
+2024-07-18T04:08:52.217431932+08:00 INFO halo2_proofs::plonk::prover - rotations: 109
+2024-07-18T04:08:52.217458043+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:08:57.277607653+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:08:57.419021701+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:08:59.289202568+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:08:59.289226878+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:09:05.711717979+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:09:10.668102021+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:09:10.819435205+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:09:12.709005444+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:09:12.709028765+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:09:19.102460521+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:09:24.044544156+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:09:24.189448956+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:09:25.991799338+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:09:25.991822379+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:09:32.330525171+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:09:37.017501930+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:09:37.163112140+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:09:38.991820177+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:09:38.991844218+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:09:45.121073506+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:09:49.796030426+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:09:49.934005013+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:09:51.767228439+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:09:51.767253599+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:09:57.931818726+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:10:02.568488325+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:10:02.717781544+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:10:04.574452696+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:10:04.574476917+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:10:10.998253394+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:10:15.645047956+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:10:15.779933479+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:10:17.649697044+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:10:17.649721785+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:10:24.022846290+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:10:28.655144158+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:10:28.795124222+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:10:30.599882356+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:10:30.599906457+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:10:37.369009893+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:10:38.090251552+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:10:38.090270873+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 1732
+2024-07-18T04:10:38.090285013+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 390
+2024-07-18T04:10:41.106886906+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 149
+2024-07-18T04:10:41.106916567+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 132
+2024-07-18T04:10:41.369016890+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 149
+2024-07-18T04:10:42.495024021+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:10:45.663806196+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 24, polys.len = 5
+2024-07-18T04:10:45.663862158+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 56, polys.len = 1
+2024-07-18T04:10:45.663906089+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 6, polys.len = 4
+2024-07-18T04:10:45.663950491+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 8, polys.len = 4
+2024-07-18T04:10:45.663994582+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 4: points.len = 10, polys.len = 1
+2024-07-18T04:10:45.664058034+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 5: points.len = 12, polys.len = 56
+2024-07-18T04:10:45.664091325+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 6: points.len = 2, polys.len = 80
+2024-07-18T04:10:45.664125197+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 7: points.len = 4, polys.len = 83
+2024-07-18T04:10:45.664158418+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 8: points.len = 5, polys.len = 1
+2024-07-18T04:10:45.664191809+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 9: points.len = 40, polys.len = 1
+2024-07-18T04:10:45.664225650+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 10: points.len = 2, polys.len = 3
+2024-07-18T04:10:45.664265011+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 11: points.len = 1, polys.len = 366
+2024-07-18T04:10:45.664298582+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 12: points.len = 10, polys.len = 1
+2024-07-18T04:10:45.664333124+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 13: points.len = 2, polys.len = 118
+2024-07-18T04:10:45.664366745+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 14: points.len = 3, polys.len = 9
+2024-07-18T04:10:45.664400326+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 15: points.len = 9, polys.len = 1
+2024-07-18T04:10:45.664433967+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 16: points.len = 4, polys.len = 3
+2024-07-18T04:10:45.664467688+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 17: points.len = 3, polys.len = 2
+2024-07-18T04:10:45.664501989+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 18: points.len = 5, polys.len = 1
+2024-07-18T04:10:45.664532040+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 19: points.len = 4, polys.len = 5
+2024-07-18T04:10:45.664558451+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 20: points.len = 5, polys.len = 2
+2024-07-18T04:10:45.664584852+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 21: points.len = 3, polys.len = 14
+2024-07-18T04:10:45.664610983+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 22: points.len = 12, polys.len = 1
+2024-07-18T04:10:50.042895062+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:10:54.997138977+08:00 INFO prover::aggregator::prover - Got aggregation snark (layer-3): 5399398064111044993
+2024-07-18T04:10:55.352402188+08:00 INFO prover::common::prover::utils - Before generate pk of layer4
+2024-07-18T04:10:55.353455424+08:00 INFO halo2_proofs::plonk::keygen - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:10:55.353645320+08:00 INFO halo2_proofs::plonk::keygen - pk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:10:55.353743233+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+computing length 236 fixed base msm
+computing length 533 MSM
+computing length 1 MSM
+computing length 1 MSM
+Context "Range" used 2 advice columns and 78093640 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 1, total 7267035 cells used in phase 0.
+Fixed columns: 1, Total fixed cells: 1912321
+2024-07-18T04:11:52.947873161+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:11:52.947935613+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:11:54.355622751+08:00 INFO halo2_proofs::plonk::permutation::keygen - build pk[4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:04.069032344+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[5], gpu_num [4]
+2024-07-18T04:12:06.570906187+08:00 INFO halo2_proofs::plonk::permutation::keygen - end build pk[4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:11.146170300+08:00 INFO halo2_proofs::plonk::keygen - end pk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:11.862684070+08:00 INFO prover::common::prover::utils - After generate pk of layer4
+2024-07-18T04:12:11.870791386+08:00 INFO prover::common::prover::utils - gen_snark id layer4 desc gen_comp_snark vk transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:12:11.872372229+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:12:11.872549595+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:11.872658609+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+computing length 236 fixed base msm
+computing length 533 MSM
+computing length 1 MSM
+computing length 1 MSM
+Context "Range" used 2 advice columns and 78093640 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 1, total 7267035 cells used in phase 0.
+Fixed columns: 1, Total fixed cells: 1912321
+2024-07-18T04:12:39.707476384+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:12:41.104422253+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[0], gpu_num [4]
+2024-07-18T04:12:41.650773464+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:47.914717145+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:12:47.914925012+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 26
+2024-07-18T04:12:47.914940052+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 28
+2024-07-18T04:12:47.914953983+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 5
+2024-07-18T04:12:47.914967843+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 5
+2024-07-18T04:12:47.914981523+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 3
+2024-07-18T04:12:52.505408005+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[2], gpu_num [4]
+2024-07-18T04:13:01.943244289+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:13:03.935024063+08:00 INFO halo2_proofs::plonk::prover - num_advice: 3
+2024-07-18T04:13:03.935045074+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:13:03.935059184+08:00 INFO halo2_proofs::plonk::prover - fixed: 4
+2024-07-18T04:13:03.935073735+08:00 INFO halo2_proofs::plonk::prover - lookup: 1
+2024-07-18T04:13:03.935087705+08:00 INFO halo2_proofs::plonk::prover - permutation: 2
+2024-07-18T04:13:03.935101726+08:00 INFO halo2_proofs::plonk::prover - cals: 19
+2024-07-18T04:13:03.935115756+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 2
+2024-07-18T04:13:03.935129357+08:00 INFO halo2_proofs::plonk::prover - rotations: 4
+2024-07-18T04:13:03.935149107+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:13:08.554778521+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:13:09.896053150+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:13:14.018577007+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:13:14.018602918+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:13:20.342316392+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:13:25.007590613+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:13:26.298075636+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:13:30.578264941+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:13:30.578292182+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:13:36.894540754+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:13:41.663568077+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:13:43.004278573+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:13:47.197287691+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:13:47.197314902+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:13:53.530968765+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:13:58.312558757+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:13:59.652213549+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:14:03.867710055+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:14:03.867734066+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:14:19.640968582+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:14:29.503725058+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:14:29.503748298+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 9
+2024-07-18T04:14:29.503762089+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 3
+2024-07-18T04:14:30.071445827+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 4
+2024-07-18T04:14:30.071474808+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 4
+2024-07-18T04:14:30.297274643+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 4
+2024-07-18T04:14:33.968196307+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:14:35.207205187+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 4, polys.len = 2
+2024-07-18T04:14:35.207278849+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 1, polys.len = 13
+2024-07-18T04:14:35.207342401+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 3, polys.len = 1
+2024-07-18T04:14:35.207408734+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 2, polys.len = 2
+2024-07-18T04:14:46.046376787+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:14:48.283529705+08:00 INFO prover::aggregator::prover - Got final compression thin EVM proof (layer-4): 5399398064111044993
+2024-07-18T04:14:48.283755532+08:00 INFO prover::utils - Start loading params with degree 26
+2024-07-18T04:14:57.869042270+08:00 INFO prover::utils - load params successfully!
+2024-07-18T04:14:57.869153904+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+2024-07-18T04:14:59.261475844+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:14:59.261534896+08:00 INFO integration::prove - Constructed aggregator verifier
+2024-07-18T04:14:59.305315323+08:00 INFO integration::prove - Verified batch proof
+2024-07-18T04:14:59.305332524+08:00 INFO integration::prove - Prove batch END: chunk_num = 29
+2024-07-18T04:14:59.677518439+08:00 INFO integration::prove - Prove batch BEGIN: chunk_num = 30
+2024-07-18T04:14:59.706675622+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:14:59.734551603+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:14:59.864948661+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:14:59.952710102+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:14:59.980549862+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:15:00.110839696+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:15:00.169646040+08:00 INFO aggregator::batch - batch hash 0xe94e08421e4cf553dc68d924e40a0088268312b635275faff0f2b89494e45f2b, datahash b0dcb9e73d4350cd3c27ab0d65e7f4ebf7d15d1e73b7fdb3a773d4809262642b, z 0f2c9918c6633a04d37c01dc275ec0963ed3093ff7bfc487d7108155ab22a774, y 33be79bad8fd6d5f80725e0ce992899b7c876e7f716637260360e6d2c3c289af, versioned hash 019c082270631344493a4243c6483ded5a9f1565302450b735bd6d6fcff73446
+2024-07-18T04:15:00.855284869+08:00 INFO prover::common::prover::utils - gen_snark id layer3 desc gen_agg_snark vk transcript_repr 0x2326c3dbaf70c4fa1fd9fd99150579f86ec460133039b94718b31cef4241967b
+2024-07-18T04:15:00.859462050+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:15:00.859637516+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:15:00.862454971+08:00 INFO aggregator::aggregation::config - keccak uses 87 columns
+meta degree = 9
+2024-07-18T04:15:00.878431840+08:00 INFO aggregator::aggregation::circuit - aggregation circuit configured with k = 21 and [63] advice columns
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:15:42.222194433+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:15:42.285913539+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:15:42.285958971+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 426355
+2024-07-18T04:16:26.158742771+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:16:26.246739502+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:16:26.869481507+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:16:26.957591952+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:16:27.520668669+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:16:27.908645195+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:17:50.894688727+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:17:50.960848339+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[373], gpu_num [4]
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:18:20.190594779+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:18:20.251080869+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:18:20.251121870+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 426355
+2024-07-18T04:19:04.222354928+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:19:04.310117031+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:19:04.967616627+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:19:05.056177307+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:19:05.653774544+08:00 INFO aggregator::blob - compress batch data from 416138 to 125209, compression ratio 3.32, blob usage 0.986
+2024-07-18T04:19:06.058179933+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:19:58.834553435+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:19:58.896121037+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[10], gpu_num [4]
+2024-07-18T04:19:59.094230253+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:20:39.846491485+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:20:39.848273684+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 21
+2024-07-18T04:20:39.848288475+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 24
+2024-07-18T04:20:39.848302545+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 105
+2024-07-18T04:20:39.848317026+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 105
+2024-07-18T04:20:39.848330946+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 7
+2024-07-18T04:20:40.270859040+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:20:40.718719021+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:20:41.174383874+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:20:41.581464010+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[3], gpu_num [4]
+2024-07-18T04:20:59.049428406+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:20:59.127508699+08:00 INFO halo2_proofs::plonk::prover - num_advice: 390
+2024-07-18T04:20:59.127527980+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:20:59.127542120+08:00 INFO halo2_proofs::plonk::prover - fixed: 132
+2024-07-18T04:20:59.127556121+08:00 INFO halo2_proofs::plonk::prover - lookup: 60
+2024-07-18T04:20:59.127570221+08:00 INFO halo2_proofs::plonk::prover - permutation: 15
+2024-07-18T04:20:59.127584221+08:00 INFO halo2_proofs::plonk::prover - cals: 5799
+2024-07-18T04:20:59.127605342+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 1839
+2024-07-18T04:20:59.127619123+08:00 INFO halo2_proofs::plonk::prover - rotations: 109
+2024-07-18T04:20:59.127644103+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:21:04.024627120+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:21:04.167705707+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:21:05.999494+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:21:05.999516921+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:21:12.304719135+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:21:16.947646998+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:21:17.098144003+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:21:18.939825995+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:21:18.939850526+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:21:25.212106876+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:21:29.841090784+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:21:29.995055853+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:21:31.744199449+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:21:31.744223149+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:21:37.818072165+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:21:42.496205948+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:21:42.637517824+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:21:44.483621551+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:21:44.483647092+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:21:50.430370599+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:21:55.111250546+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:21:55.249563071+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:21:57.101199611+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:21:57.101222722+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:22:03.377240825+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:22:08.211509553+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:22:08.359144989+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:22:10.219034955+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:22:10.219058836+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:22:16.446156815+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:22:21.088391184+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:22:21.234713725+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:22:23.052353518+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:22:23.052379489+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:22:29.310194850+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:22:34.006515381+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:22:34.158996717+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:22:35.947249477+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:22:35.947274158+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:22:42.458558594+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:22:43.160075355+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:22:43.160094796+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 1732
+2024-07-18T04:22:43.160110006+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 390
+2024-07-18T04:22:46.254573476+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 149
+2024-07-18T04:22:46.254610537+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 132
+2024-07-18T04:22:46.523395528+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 149
+2024-07-18T04:22:47.768916776+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:22:50.916568376+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 24, polys.len = 5
+2024-07-18T04:22:50.916638208+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 56, polys.len = 1
+2024-07-18T04:22:50.916686110+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 6, polys.len = 4
+2024-07-18T04:22:50.916726801+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 8, polys.len = 4
+2024-07-18T04:22:50.916763592+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 4: points.len = 10, polys.len = 1
+2024-07-18T04:22:50.916799934+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 5: points.len = 12, polys.len = 56
+2024-07-18T04:22:50.916834765+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 6: points.len = 2, polys.len = 80
+2024-07-18T04:22:50.916870116+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 7: points.len = 4, polys.len = 83
+2024-07-18T04:22:50.916905197+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 8: points.len = 5, polys.len = 1
+2024-07-18T04:22:50.916940158+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 9: points.len = 40, polys.len = 1
+2024-07-18T04:22:50.916975840+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 10: points.len = 2, polys.len = 3
+2024-07-18T04:22:50.917009841+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 11: points.len = 1, polys.len = 366
+2024-07-18T04:22:50.917037012+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 12: points.len = 10, polys.len = 1
+2024-07-18T04:22:50.917063982+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 13: points.len = 2, polys.len = 118
+2024-07-18T04:22:50.917090703+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 14: points.len = 3, polys.len = 9
+2024-07-18T04:22:50.917116994+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 15: points.len = 9, polys.len = 1
+2024-07-18T04:22:50.917143475+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 16: points.len = 4, polys.len = 3
+2024-07-18T04:22:50.917196997+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 17: points.len = 3, polys.len = 2
+2024-07-18T04:22:50.917223788+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 18: points.len = 5, polys.len = 1
+2024-07-18T04:22:50.917250219+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 19: points.len = 4, polys.len = 5
+2024-07-18T04:22:50.917277040+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 20: points.len = 5, polys.len = 2
+2024-07-18T04:22:50.917311021+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 21: points.len = 3, polys.len = 14
+2024-07-18T04:22:50.917336952+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 22: points.len = 12, polys.len = 1
+2024-07-18T04:22:55.202564595+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:22:59.958797907+08:00 INFO prover::aggregator::prover - Got aggregation snark (layer-3): 13720506783343571333
+2024-07-18T04:23:00.312617137+08:00 INFO prover::common::prover::utils - gen_snark id layer4 desc gen_comp_snark vk transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:23:00.313789406+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:23:00.313961781+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:23:00.314061485+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+computing length 236 fixed base msm
+computing length 533 MSM
+computing length 1 MSM
+computing length 1 MSM
+Context "Range" used 2 advice columns and 78093640 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 1, total 7267035 cells used in phase 0.
+Fixed columns: 1, Total fixed cells: 1912321
+2024-07-18T04:23:28.235644509+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:23:29.658915032+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[0], gpu_num [4]
+2024-07-18T04:23:30.217056502+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:23:36.510239811+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:23:36.510447348+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 26
+2024-07-18T04:23:36.510462739+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 28
+2024-07-18T04:23:36.510476709+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 5
+2024-07-18T04:23:36.510490510+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 5
+2024-07-18T04:23:36.510504470+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 3
+2024-07-18T04:23:40.884638315+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[2], gpu_num [4]
+2024-07-18T04:23:50.279477+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:23:52.277165720+08:00 INFO halo2_proofs::plonk::prover - num_advice: 3
+2024-07-18T04:23:52.277188160+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:23:52.277202481+08:00 INFO halo2_proofs::plonk::prover - fixed: 4
+2024-07-18T04:23:52.277229432+08:00 INFO halo2_proofs::plonk::prover - lookup: 1
+2024-07-18T04:23:52.277243392+08:00 INFO halo2_proofs::plonk::prover - permutation: 2
+2024-07-18T04:23:52.277257463+08:00 INFO halo2_proofs::plonk::prover - cals: 19
+2024-07-18T04:23:52.277271333+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 2
+2024-07-18T04:23:52.277284644+08:00 INFO halo2_proofs::plonk::prover - rotations: 4
+2024-07-18T04:23:52.277319625+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:23:57.072728748+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:23:58.417393230+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:24:02.673172268+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:24:02.673195689+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:24:08.994044836+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:24:13.821045426+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:24:15.167662305+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:24:19.382488260+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:24:19.382509891+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:24:25.675470560+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:24:30.606818192+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:24:31.940875785+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:24:36.171326608+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:24:36.171347658+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:24:42.428148135+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:24:47.286004428+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:24:48.629705204+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:24:52.793245270+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:24:52.793268521+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:25:08.547698142+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:25:18.468917274+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:25:18.468975876+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 9
+2024-07-18T04:25:18.469002307+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 3
+2024-07-18T04:25:19.050533426+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 4
+2024-07-18T04:25:19.050573567+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 4
+2024-07-18T04:25:19.283281769+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 4
+2024-07-18T04:25:22.895519685+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:25:24.157856833+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 4, polys.len = 2
+2024-07-18T04:25:24.157894314+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 1, polys.len = 13
+2024-07-18T04:25:24.157941956+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 3, polys.len = 1
+2024-07-18T04:25:24.157972587+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 2, polys.len = 2
+2024-07-18T04:25:34.954497295+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:25:37.203600449+08:00 INFO prover::aggregator::prover - Got final compression thin EVM proof (layer-4): 13720506783343571333
+2024-07-18T04:25:37.203945060+08:00 INFO prover::utils - Start loading params with degree 26
+2024-07-18T04:25:46.811230805+08:00 INFO prover::utils - load params successfully!
+2024-07-18T04:25:46.811356859+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+2024-07-18T04:25:48.220952789+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:25:48.221047432+08:00 INFO integration::prove - Constructed aggregator verifier
+2024-07-18T04:25:48.265780363+08:00 INFO integration::prove - Verified batch proof
+2024-07-18T04:25:48.265806024+08:00 INFO integration::prove - Prove batch END: chunk_num = 30
+2024-07-18T04:25:48.644522074+08:00 INFO integration::prove - Prove batch BEGIN: chunk_num = 27
+2024-07-18T04:25:48.676716268+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:48.704287417+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:48.835701770+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:48.924421939+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:48.951930346+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:49.084048842+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:25:49.143509905+08:00 INFO aggregator::batch - batch hash 0x89e4cff73eb70ced80ff30922a283c26f85471cf2271b88c38d8fca8129f293f, datahash 330b9e71ddfdb3a10550a13d09235b11cb93583eaffae0975b7bf44a05a9a740, z 0f5fa5e4a69dcab81255ff91eb793120cf72469c36948b8e073afe660fa4b845, y 42a25e228e2043e18c807515b65df7c68d5248ee131515d2fd174ad28b9256e2, versioned hash 01d900dd6a1d5a1cd09cc6ecaa917bcb27aadc90ee80506d59ea82717d266327
+2024-07-18T04:25:49.824303259+08:00 INFO prover::common::prover::utils - gen_snark id layer3 desc gen_agg_snark vk transcript_repr 0x2326c3dbaf70c4fa1fd9fd99150579f86ec460133039b94718b31cef4241967b
+2024-07-18T04:25:49.828494859+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:25:49.828701665+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:25:49.831585842+08:00 INFO aggregator::aggregation::config - keccak uses 87 columns
+meta degree = 9
+2024-07-18T04:25:49.847733880+08:00 INFO aggregator::aggregation::circuit - aggregation circuit configured with k = 21 and [63] advice columns
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:26:31.238214951+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:26:31.299894568+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:26:31.299946940+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 427087
+2024-07-18T04:27:14.944925880+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:27:15.033775061+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:27:15.658523931+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:27:15.749151021+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:27:16.313133797+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:27:16.704536960+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:28:39.970933315+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:28:40.037351298+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[373], gpu_num [4]
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 8 fixed base msm
+computing length 10 MSM
+computing length 89 MSM
+computing length 89 MSM
+Context "snark aggregation [chunks -> batch]" used 60 advice columns and 123791959 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2915561
+Context "barycentric" used 62 advice columns and 129335002 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 0, total 0 cells used in phase 0.
+Fixed columns: 2, Total fixed cells: 2931943
+2024-07-18T04:29:09.331452369+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:09.392889755+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi_keccak assign with capacity: Some(6988)
+2024-07-18T04:29:09.392961667+08:00 INFO zkevm_circuits::keccak_circuit::keccak_packed_multi - multi keccak total len 427087
+2024-07-18T04:29:53.427623451+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:53.516100337+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:54.175781279+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:54.264788272+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:54.863227745+08:00 INFO aggregator::blob - compress batch data from 416966 to 126950, compression ratio 3.28, blob usage 1.000
+2024-07-18T04:29:55.269581654+08:00 INFO zkevm_circuits::table - assign pow of rand with rows 2097088
+2024-07-18T04:30:48.096549756+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:30:48.161989843+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[10], gpu_num [4]
+2024-07-18T04:30:48.361538835+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:31:28.954834259+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:31:28.956567067+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 21
+2024-07-18T04:31:28.956590398+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 24
+2024-07-18T04:31:28.956611778+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 105
+2024-07-18T04:31:28.956633549+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 105
+2024-07-18T04:31:28.956655850+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 7
+2024-07-18T04:31:29.363597831+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:31:29.802621371+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:31:30.230683875+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:31:30.553767596+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[3], gpu_num [4]
+2024-07-18T04:31:48.194479162+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:31:48.272519008+08:00 INFO halo2_proofs::plonk::prover - num_advice: 390
+2024-07-18T04:31:48.272549529+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:31:48.272566510+08:00 INFO halo2_proofs::plonk::prover - fixed: 132
+2024-07-18T04:31:48.272583570+08:00 INFO halo2_proofs::plonk::prover - lookup: 60
+2024-07-18T04:31:48.272601331+08:00 INFO halo2_proofs::plonk::prover - permutation: 15
+2024-07-18T04:31:48.272618812+08:00 INFO halo2_proofs::plonk::prover - cals: 5799
+2024-07-18T04:31:48.272642152+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 1839
+2024-07-18T04:31:48.272659803+08:00 INFO halo2_proofs::plonk::prover - rotations: 109
+2024-07-18T04:31:48.272690414+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:31:53.512196227+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:31:53.664275798+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:31:55.502260542+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:31:55.502312103+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:32:01.808574514+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:32:06.466722685+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:32:06.614450370+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:32:08.454835460+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:32:08.454873982+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:32:14.733203351+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:32:19.354150266+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:32:19.501578721+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:32:21.252093588+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:32:21.252130069+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:32:27.483331263+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:32:32.206304954+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:32:32.355871120+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:32:34.156283544+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:32:34.156321686+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:32:40.173935681+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:32:45.087279866+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:32:45.242923714+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:32:47.101475099+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:32:47.101512350+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:32:53.129891523+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:32:58.027872869+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:32:58.173883366+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:33:00.033642479+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:33:00.033682370+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:33:06.268917272+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:33:11.277179989+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:33:11.418752038+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:33:13.329599006+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:33:13.329637918+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:33:19.582554639+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[526], gpu_num [4]
+gpu_batch_size: [524288, 524288, 524288, 524288]
+2024-07-18T04:33:24.438091388+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:33:24.601858575+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[105], gpu_num [4]
+2024-07-18T04:33:26.484660897+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 119
+2024-07-18T04:33:26.484698838+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 1298
+2024-07-18T04:33:33.118800988+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:33:33.836933552+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:33:33.836964594+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 1732
+2024-07-18T04:33:33.836982214+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 390
+2024-07-18T04:33:36.819114387+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 149
+2024-07-18T04:33:36.819163189+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 132
+2024-07-18T04:33:37.079051502+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 149
+2024-07-18T04:33:38.169604203+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:33:41.325343659+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 24, polys.len = 5
+2024-07-18T04:33:41.325408831+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 56, polys.len = 1
+2024-07-18T04:33:41.325461353+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 6, polys.len = 4
+2024-07-18T04:33:41.325509254+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 8, polys.len = 4
+2024-07-18T04:33:41.325565006+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 4: points.len = 10, polys.len = 1
+2024-07-18T04:33:41.325613208+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 5: points.len = 12, polys.len = 56
+2024-07-18T04:33:41.325661819+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 6: points.len = 2, polys.len = 80
+2024-07-18T04:33:41.325708741+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 7: points.len = 4, polys.len = 83
+2024-07-18T04:33:41.325767793+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 8: points.len = 5, polys.len = 1
+2024-07-18T04:33:41.325852906+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 9: points.len = 40, polys.len = 1
+2024-07-18T04:33:41.325912658+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 10: points.len = 2, polys.len = 3
+2024-07-18T04:33:41.325953269+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 11: points.len = 1, polys.len = 366
+2024-07-18T04:33:41.325993680+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 12: points.len = 10, polys.len = 1
+2024-07-18T04:33:41.326037202+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 13: points.len = 2, polys.len = 118
+2024-07-18T04:33:41.326081493+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 14: points.len = 3, polys.len = 9
+2024-07-18T04:33:41.326125725+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 15: points.len = 9, polys.len = 1
+2024-07-18T04:33:41.326169826+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 16: points.len = 4, polys.len = 3
+2024-07-18T04:33:41.326212478+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 17: points.len = 3, polys.len = 2
+2024-07-18T04:33:41.326267730+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 18: points.len = 5, polys.len = 1
+2024-07-18T04:33:41.326310751+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 19: points.len = 4, polys.len = 5
+2024-07-18T04:33:41.326352862+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 20: points.len = 5, polys.len = 2
+2024-07-18T04:33:41.326396684+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 21: points.len = 3, polys.len = 14
+2024-07-18T04:33:41.326439755+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 22: points.len = 12, polys.len = 1
+2024-07-18T04:33:45.803610868+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:33:50.564374459+08:00 INFO prover::aggregator::prover - Got aggregation snark (layer-3): 9034297474715742152
+2024-07-18T04:33:50.920052638+08:00 INFO prover::common::prover::utils - gen_snark id layer4 desc gen_comp_snark vk transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:33:50.921288369+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:33:50.921474446+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:33:50.921581259+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+computing length 236 fixed base msm
+computing length 533 MSM
+computing length 1 MSM
+computing length 1 MSM
+Context "Range" used 2 advice columns and 78093640 total advice cells in phase 0
+Special lookup advice cells: optimal columns: 1, total 7267035 cells used in phase 0.
+Fixed columns: 1, Total fixed cells: 1912321
+2024-07-18T04:34:18.909737706+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:34:20.311035255+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[0], gpu_num [4]
+2024-07-18T04:34:20.876408967+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:34:27.185249119+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:34:27.185487867+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 26
+2024-07-18T04:34:27.185514258+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 28
+2024-07-18T04:34:27.185538248+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 5
+2024-07-18T04:34:27.185559619+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 5
+2024-07-18T04:34:27.185578870+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 3
+2024-07-18T04:34:31.783977732+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[2], gpu_num [4]
+2024-07-18T04:34:41.190443569+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:34:43.196490133+08:00 INFO halo2_proofs::plonk::prover - num_advice: 3
+2024-07-18T04:34:43.196527234+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:34:43.196548855+08:00 INFO halo2_proofs::plonk::prover - fixed: 4
+2024-07-18T04:34:43.196572276+08:00 INFO halo2_proofs::plonk::prover - lookup: 1
+2024-07-18T04:34:43.196602187+08:00 INFO halo2_proofs::plonk::prover - permutation: 2
+2024-07-18T04:34:43.196623098+08:00 INFO halo2_proofs::plonk::prover - cals: 19
+2024-07-18T04:34:43.196648228+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 2
+2024-07-18T04:34:43.196672919+08:00 INFO halo2_proofs::plonk::prover - rotations: 4
+2024-07-18T04:34:43.196700350+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:34:47.840677059+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:34:49.178566615+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:34:53.399085461+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:34:53.399119222+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:34:59.770497503+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:35:04.580083320+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:35:05.941281709+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:35:10.186632333+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:35:10.186670784+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:35:16.501482603+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:35:21.311632591+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:35:22.642999826+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:35:26.920970318+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:35:26.921006199+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:35:33.222467404+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[11], gpu_num [4]
+2024-07-18T04:35:38.090081135+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[2], gpu_num [4]
+2024-07-18T04:35:39.442281530+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[5], gpu_num [4]
+2024-07-18T04:35:43.482117579+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:35:43.482151790+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:35:59.298202595+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:09.257679557+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:36:09.257714598+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 9
+2024-07-18T04:36:09.257731469+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 3
+2024-07-18T04:36:09.837920986+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 4
+2024-07-18T04:36:09.837959857+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 4
+2024-07-18T04:36:10.062472501+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 4
+2024-07-18T04:36:13.765782400+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:15.035125417+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 4, polys.len = 2
+2024-07-18T04:36:15.035188019+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 1, polys.len = 13
+2024-07-18T04:36:15.035217180+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 3, polys.len = 1
+2024-07-18T04:36:15.035251381+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 2, polys.len = 2
+2024-07-18T04:36:25.814104237+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:28.058049170+08:00 INFO prover::aggregator::prover - Got final compression thin EVM proof (layer-4): 9034297474715742152
+2024-07-18T04:36:28.058383442+08:00 INFO prover::utils - Start loading params with degree 26
+2024-07-18T04:36:37.683504945+08:00 INFO prover::utils - load params successfully!
+2024-07-18T04:36:37.683628639+08:00 INFO aggregator::compression::circuit - compression circuit configured with k = 26 and [2] advice columns
+2024-07-18T04:36:39.088493638+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x25de12e8cd92256cff196a1f7e123e286a73aebc29859d8e57608b5fd8691ef3
+2024-07-18T04:36:39.088588981+08:00 INFO integration::prove - Constructed aggregator verifier
+2024-07-18T04:36:39.132058426+08:00 INFO integration::prove - Verified batch proof
+2024-07-18T04:36:39.132078757+08:00 INFO integration::prove - Prove batch END: chunk_num = 27
+2024-07-18T04:36:39.513805026+08:00 INFO e2e_tests - bundle 2 batches
+2024-07-18T04:36:39.513918049+08:00 INFO integration::prove - Prove bundle BEGIN
+2024-07-18T04:36:39.515182552+08:00 INFO halo2_proofs::plonk::keygen - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:36:39.515375128+08:00 INFO halo2_proofs::plonk::keygen - vk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:40.997724453+08:00 INFO halo2_proofs::plonk::keygen - end vk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:41.016940421+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x0fba8388d36525a524aafff0a2d8e4c49ffb851033a75df1a518d8cebe8c939f
+2024-07-18T04:36:41.162865402+08:00 INFO prover::common::prover::utils - Before generate pk of layer5
+2024-07-18T04:36:41.163969139+08:00 INFO halo2_proofs::plonk::keygen - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:36:41.164159865+08:00 INFO halo2_proofs::plonk::keygen - pk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+computing length 10 fixed base msm
+computing length 13 MSM
+computing length 1 fixed base msm
+computing length 29 MSM
+computing length 3 MSM
+computing length 3 MSM
+2024-07-18T04:36:42.667909431+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.681745430+08:00 INFO aggregator::recursion::circuit - propagate preprocessed digest: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553776, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553776, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815743, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815743, context_id: 0 }
+2024-07-18T04:36:42.682208666+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.682231587+08:00 INFO aggregator::recursion::circuit - increment round: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553780, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553780, context_id: 0 }
+2024-07-18T04:36:42.682703672+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.682731193+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553712, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 1553712, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553716, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 1553716, context_id: 0 }
+2024-07-18T04:36:42.683121726+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.683146717+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553720, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553720, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815744, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815744, context_id: 0 }
+2024-07-18T04:36:42.683587272+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.683613283+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553724, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 1553724, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553728, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 1553728, context_id: 0 }
+2024-07-18T04:36:42.684000346+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.684020426+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553732, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553732, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815745, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815745, context_id: 0 }
+2024-07-18T04:36:42.684465831+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.684487952+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553736, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 1553736, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553740, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 1553740, context_id: 0 }
+2024-07-18T04:36:42.684886275+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.684910186+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553744, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553744, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815746, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815746, context_id: 0 }
+2024-07-18T04:36:42.685358421+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.685380122+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553748, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 1553748, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553752, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 1553752, context_id: 0 }
+2024-07-18T04:36:42.685778365+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.685800006+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553756, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553756, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815747, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815747, context_id: 0 }
+2024-07-18T04:36:42.686247071+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.686270411+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 6, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 6, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 41, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 41, context_id: 0 }
+2024-07-18T04:36:42.686666794+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.686689975+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 7, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 7, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 42, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 42, context_id: 0 }
+2024-07-18T04:36:42.687088648+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.687109709+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 8, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e86e067f78b1c29c1cc297f6d9fe670c) }, row_offset: 8, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 43, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e86e067f78b1c29c1cc297f6d9fe670c) }, row_offset: 43, context_id: 0 }
+2024-07-18T04:36:42.687500462+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.687523293+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 9, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000007beea1eebb226d1b8eeb9616a2bcac7e) }, row_offset: 9, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 44, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000007beea1eebb226d1b8eeb9616a2bcac7e) }, row_offset: 44, context_id: 0 }
+2024-07-18T04:36:42.687915586+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.687939327+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 10, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 10, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 45, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 45, context_id: 0 }
+2024-07-18T04:36:42.688382481+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.688406552+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 11, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 11, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 46, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 46, context_id: 0 }
+2024-07-18T04:36:42.688810125+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.688831686+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 12, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 12, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 47, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 47, context_id: 0 }
+2024-07-18T04:36:42.689222549+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.689245050+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553760, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553760, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815748, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815748, context_id: 0 }
+2024-07-18T04:36:42.689700485+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.689721726+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553764, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553764, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815749, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815749, context_id: 0 }
+2024-07-18T04:36:42.690172581+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.690193761+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553768, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553768, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815750, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815750, context_id: 0 }
+2024-07-18T04:36:42.690656847+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:42.690688648+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553772, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553772, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815751, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815751, context_id: 0 }
+2024-07-18T04:36:44.174157879+08:00 INFO halo2_proofs::plonk - vk.transcript_repr 0x0309cfbca0def3665b4cca1075ac785715681653504dd806a8ff3085bb56856d
+2024-07-18T04:36:44.174242552+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[6], gpu_num [4]
+2024-07-18T04:36:44.276950126+08:00 INFO halo2_proofs::plonk::permutation::keygen - build pk[4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:44.752545925+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:44.856679587+08:00 INFO halo2_proofs::plonk::permutation::keygen - end build pk[4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:44.999525445+08:00 INFO halo2_proofs::plonk::keygen - end pk [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:45.022662204+08:00 INFO prover::common::prover::utils - After generate pk of layer5
+2024-07-18T04:36:45.145714364+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:36:45.145851849+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+computing length 10 fixed base msm
+computing length 13 MSM
+computing length 1 fixed base msm
+computing length 29 MSM
+computing length 3 MSM
+computing length 3 MSM
+2024-07-18T04:36:46.783496574+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.783535486+08:00 INFO aggregator::recursion::circuit - propagate preprocessed digest: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553776, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553776, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815743, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815743, context_id: 0 }
+2024-07-18T04:36:46.783969900+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.783990811+08:00 INFO aggregator::recursion::circuit - increment round: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553780, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553780, context_id: 0 }
+2024-07-18T04:36:46.784423835+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.784459906+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553712, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 1553712, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553716, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 1553716, context_id: 0 }
+2024-07-18T04:36:46.784838749+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.784863570+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553720, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553720, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815744, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815744, context_id: 0 }
+2024-07-18T04:36:46.785311755+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.785332535+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553724, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 1553724, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553728, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 1553728, context_id: 0 }
+2024-07-18T04:36:46.785705878+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.785726528+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553732, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553732, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815745, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815745, context_id: 0 }
+2024-07-18T04:36:46.786151513+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.786172783+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553736, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 1553736, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553740, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 1553740, context_id: 0 }
+2024-07-18T04:36:46.786549476+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.786569977+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553744, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553744, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815746, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815746, context_id: 0 }
+2024-07-18T04:36:46.787002521+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.787024982+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553748, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 1553748, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553752, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 1553752, context_id: 0 }
+2024-07-18T04:36:46.787400804+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.787420895+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553756, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553756, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815747, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815747, context_id: 0 }
+2024-07-18T04:36:46.787849719+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.787869980+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 6, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 6, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 41, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 41, context_id: 0 }
+2024-07-18T04:36:46.788248423+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.788268823+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 7, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 7, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 42, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 42, context_id: 0 }
+2024-07-18T04:36:46.788648136+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.788668057+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 8, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e86e067f78b1c29c1cc297f6d9fe670c) }, row_offset: 8, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 43, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e86e067f78b1c29c1cc297f6d9fe670c) }, row_offset: 43, context_id: 0 }
+2024-07-18T04:36:46.789045959+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.789070410+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 9, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000007beea1eebb226d1b8eeb9616a2bcac7e) }, row_offset: 9, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 44, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000007beea1eebb226d1b8eeb9616a2bcac7e) }, row_offset: 44, context_id: 0 }
+2024-07-18T04:36:46.789459683+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.789491384+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 10, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 10, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 45, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 45, context_id: 0 }
+2024-07-18T04:36:46.789927228+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.789947129+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 11, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 11, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 46, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 46, context_id: 0 }
+2024-07-18T04:36:46.790324772+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.790346702+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 12, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 12, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 47, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 47, context_id: 0 }
+2024-07-18T04:36:46.790719845+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.790740825+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553760, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553760, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815748, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815748, context_id: 0 }
+2024-07-18T04:36:46.791172950+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.791196921+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553764, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553764, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815749, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815749, context_id: 0 }
+2024-07-18T04:36:46.791622135+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.791644525+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553768, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553768, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815750, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815750, context_id: 0 }
+2024-07-18T04:36:46.792080780+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:46.792102291+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553772, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553772, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815751, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 815751, context_id: 0 }
+2024-07-18T04:36:47.393097438+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:36:47.456863378+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[2], gpu_num [4]
+2024-07-18T04:36:47.530749583+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:47.756263129+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:47.770510934+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 21
+2024-07-18T04:36:47.770552705+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 23
+2024-07-18T04:36:47.770591236+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 7
+2024-07-18T04:36:47.770631327+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 7
+2024-07-18T04:36:47.770670239+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 3
+2024-07-18T04:36:48.083228367+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:48.435173206+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:48.502078950+08:00 INFO halo2_proofs::plonk::prover - num_advice: 5
+2024-07-18T04:36:48.502107981+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:36:48.502125511+08:00 INFO halo2_proofs::plonk::prover - fixed: 6
+2024-07-18T04:36:48.502142452+08:00 INFO halo2_proofs::plonk::prover - lookup: 1
+2024-07-18T04:36:48.502161252+08:00 INFO halo2_proofs::plonk::prover - permutation: 3
+2024-07-18T04:36:48.502181953+08:00 INFO halo2_proofs::plonk::prover - cals: 37
+2024-07-18T04:36:48.502202494+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 4
+2024-07-18T04:36:48.502219064+08:00 INFO halo2_proofs::plonk::prover - rotations: 4
+2024-07-18T04:36:48.502244655+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:48.740692232+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:48.806435177+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:49.021803605+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:49.021837866+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:49.273327386+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:49.519819769+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:49.578584063+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:49.794761529+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:49.794794810+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:50.046792126+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:50.297146688+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:50.357119502+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:50.573847116+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:50.573880067+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:50.811484085+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:51.036590427+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:51.103936546+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:51.321229799+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:51.321264140+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:51.806946314+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:52.162639817+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:36:52.162669918+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 17
+2024-07-18T04:36:52.162686989+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 5
+2024-07-18T04:36:52.199784862+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 6
+2024-07-18T04:36:52.199821563+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 6
+2024-07-18T04:36:52.214554573+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 6
+2024-07-18T04:36:52.401605230+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:52.478648051+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 4, polys.len = 4
+2024-07-18T04:36:52.478710263+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 1, polys.len = 17
+2024-07-18T04:36:52.478763555+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 3, polys.len = 2
+2024-07-18T04:36:52.478817416+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 2, polys.len = 2
+2024-07-18T04:36:52.986297675+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:53.120205586+08:00 INFO prover::common::prover::recursion - construct recursion snark for round 0 ...done
+2024-07-18T04:36:53.256347181+08:00 INFO halo2_proofs::plonk::prover - 
+[ halo2-gpu     | commit: v0.4-29-g2818da7e ]
+[ device num: 4 | cuda version: 11.70 ]
+[ GPU: 0 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 1 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 2 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+[ GPU: 3 | Name: NVIDIA GeForce RTX 3090 | CC: 8.6 | SMs: 82 | Memory: 25.4 GB | BW: 936.1 GB/s ]
+
+2024-07-18T04:36:53.256535378+08:00 INFO halo2_proofs::plonk::prover - proof [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+computing length 10 fixed base msm
+computing length 13 MSM
+computing length 1 fixed base msm
+computing length 29 MSM
+computing length 3 MSM
+computing length 3 MSM
+2024-07-18T04:36:54.889603581+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.889641692+08:00 INFO aggregator::recursion::circuit - propagate preprocessed digest: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553776, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x1311a3daed153730f3eef419f61ee0301c742eba04d71ae8af36fba9e3096552) }, row_offset: 1553776, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815743, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x1311a3daed153730f3eef419f61ee0301c742eba04d71ae8af36fba9e3096552) }, row_offset: 815743, context_id: 0 }
+2024-07-18T04:36:54.889988214+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.890012554+08:00 INFO aggregator::recursion::circuit - increment round: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000001) }, row_offset: 1, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553780, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000001) }, row_offset: 1553780, context_id: 0 }
+2024-07-18T04:36:54.890465739+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.890490530+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553712, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553712, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553716, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553716, context_id: 0 }
+2024-07-18T04:36:54.890948395+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.890968556+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553720, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 1553720, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815744, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000138c76fb48d53797422081e23d6a2231) }, row_offset: 815744, context_id: 0 }
+2024-07-18T04:36:54.891350569+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.891382320+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553724, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553724, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553728, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553728, context_id: 0 }
+2024-07-18T04:36:54.891828125+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.891849725+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553732, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 1553732, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815745, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000a3cf7120832f6fee1b7a276e162d2efb) }, row_offset: 815745, context_id: 0 }
+2024-07-18T04:36:54.892246838+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.892271019+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553736, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553736, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553740, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553740, context_id: 0 }
+2024-07-18T04:36:54.892691713+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.892712194+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553744, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 1553744, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815746, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000053c0f8b8bea2f7f98dd9dcdc743f105) }, row_offset: 815746, context_id: 0 }
+2024-07-18T04:36:54.893089116+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.893109517+08:00 INFO aggregator::recursion::circuit - initial state same as first app snark (round = 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553748, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553748, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553752, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000000000) }, row_offset: 1553752, context_id: 0 }
+2024-07-18T04:36:54.893560142+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.893589183+08:00 INFO aggregator::recursion::circuit - propagate initial state: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553756, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 1553756, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815747, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000009ca664b2b72a21381b7184dd8aa922e0) }, row_offset: 815747, context_id: 0 }
+2024-07-18T04:36:54.893955005+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.893976426+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 6, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000019bb702ba5c3c728ce9c7a037de6e88b) }, row_offset: 6, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 41, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000019bb702ba5c3c728ce9c7a037de6e88b) }, row_offset: 41, context_id: 0 }
+2024-07-18T04:36:54.894348668+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.894369669+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 7, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002e3fd6de9b5734daf1bd1a2e6b1fd2c0) }, row_offset: 7, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 42, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002e3fd6de9b5734daf1bd1a2e6b1fd2c0) }, row_offset: 42, context_id: 0 }
+2024-07-18T04:36:54.894731161+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.894751831+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 8, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e94e08421e4cf553dc68d924e40a0088) }, row_offset: 8, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 43, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e94e08421e4cf553dc68d924e40a0088) }, row_offset: 43, context_id: 0 }
+2024-07-18T04:36:54.895121114+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.895141324+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 9, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000268312b635275faff0f2b89494e45f2b) }, row_offset: 9, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 44, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000268312b635275faff0f2b89494e45f2b) }, row_offset: 44, context_id: 0 }
+2024-07-18T04:36:54.895501506+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.895522537+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 10, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 10, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 45, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000000000000000000000000000082750) }, row_offset: 45, context_id: 0 }
+2024-07-18T04:36:54.895939901+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.895965772+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 11, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 11, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 46, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000c39c8181c517482c17b0055de4726de1) }, row_offset: 46, context_id: 0 }
+2024-07-18T04:36:54.896342784+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.896364025+08:00 INFO aggregator::recursion::circuit - curr state same as state in app snark: lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 12, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 12, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 47, column: Column { index: 0, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000036c06ff12cfefc7a45ce1ce944fb8316) }, row_offset: 47, context_id: 0 }
+2024-07-18T04:36:54.896731877+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.896752548+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553760, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 1553760, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815748, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002d7b9a14497c56ebd0089ea3a6db4e37) }, row_offset: 815748, context_id: 0 }
+2024-07-18T04:36:54.897114060+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.897135520+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553764, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 1553764, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815749, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000000750a2f854ae8ed9d894f71ea9a4c16) }, row_offset: 815749, context_id: 0 }
+2024-07-18T04:36:54.897515403+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.897536104+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553768, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x0000000000000000000000000000000085158ce546759ab417e2226677fc357f) }, row_offset: 1553768, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815750, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x00000000000000000000000000000000e86e067f78b1c29c1cc297f6d9fe670c) }, row_offset: 815750, context_id: 0 }
+2024-07-18T04:36:54.897903576+08:00 INFO aggregator::recursion::circuit - RecursionCircuit: equality constraint check
+2024-07-18T04:36:54.897927247+08:00 INFO aggregator::recursion::circuit - prev state matches (round > 0): lhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 1553772, column: Column { index: 3, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000002482c2eed272952228283a4a6e5c1a3f) }, row_offset: 1553772, context_id: 0 }, rhs=AssignedValue { cell: Cell { region_index: RegionIndex(0), row_offset: 815751, column: Column { index: 1, column_type: Advice } }, value: Value { inner: Some(0x000000000000000000000000000000007beea1eebb226d1b8eeb9616a2bcac7e) }, row_offset: 815751, context_id: 0 }
+2024-07-18T04:36:55.500636021+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[4], gpu_num [4]
+2024-07-18T04:36:55.564015678+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[2], gpu_num [4]
+2024-07-18T04:36:55.638204303+08:00 INFO halo2_proofs::plonk::prover - phase1 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:55.865644423+08:00 INFO halo2_proofs::plonk::prover - phase2 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:55.865993995+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.k() = 21
+2024-07-18T04:36:55.866035296+08:00 INFO halo2_proofs::plonk::permutation::prover - domain.extended_k() = 23
+2024-07-18T04:36:55.866074138+08:00 INFO halo2_proofs::plonk::permutation::prover - columns.len() = 7
+2024-07-18T04:36:55.866113679+08:00 INFO halo2_proofs::plonk::permutation::prover - pkey.permutations.len() = 7
+2024-07-18T04:36:55.866154710+08:00 INFO halo2_proofs::plonk::permutation::prover - chunk_len = 3
+2024-07-18T04:36:56.165539732+08:00 INFO halo2_proofs::poly::domain - using lagrange_to_coeff_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:56.490381560+08:00 INFO halo2_proofs::plonk::prover - phase3 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:36:56.556405554+08:00 INFO halo2_proofs::plonk::prover - num_advice: 5
+2024-07-18T04:36:56.556436375+08:00 INFO halo2_proofs::plonk::prover - instance: 1
+2024-07-18T04:36:56.556453516+08:00 INFO halo2_proofs::plonk::prover - fixed: 6
+2024-07-18T04:36:56.556470556+08:00 INFO halo2_proofs::plonk::prover - lookup: 1
+2024-07-18T04:36:56.556489647+08:00 INFO halo2_proofs::plonk::prover - permutation: 3
+2024-07-18T04:36:56.556512888+08:00 INFO halo2_proofs::plonk::prover - cals: 37
+2024-07-18T04:36:56.556530558+08:00 INFO halo2_proofs::plonk::prover - num_of_gates: 4
+2024-07-18T04:36:56.556548309+08:00 INFO halo2_proofs::plonk::prover - rotations: 4
+2024-07-18T04:36:56.556574310+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:56.805230205+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:56.869885854+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:57.091593074+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:57.091628875+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:57.348093430+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:57.594798860+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:57.659432208+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:57.884677945+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:57.884715547+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:58.135355978+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:58.392551596+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:58.455905743+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:58.679372670+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:58.679423102+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:58.931888634+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[15], gpu_num [4]
+2024-07-18T04:36:59.188282076+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[3], gpu_num [4]
+2024-07-18T04:36:59.253500534+08:00 INFO halo2_proofs::poly::domain - using coeff_to_extended_part_many: vec_num[7], gpu_num [4]
+2024-07-18T04:36:59.475566285+08:00 INFO halo2_proofs::plonk::evaluation - total_evaluator_num = 1
+2024-07-18T04:36:59.475599826+08:00 INFO halo2_proofs::plonk::evaluation - total_calculations_num = 3
+2024-07-18T04:36:59.965232872+08:00 INFO halo2_proofs::plonk::prover - phase4 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:37:00.324633827+08:00 INFO halo2_proofs::plonk::prover - advice: 1
+2024-07-18T04:37:00.324664918+08:00 INFO halo2_proofs::plonk::prover -     batch_size: 17
+2024-07-18T04:37:00.324682259+08:00 INFO halo2_proofs::plonk::prover -     advice.advice_polys.len: 5
+2024-07-18T04:37:00.361588726+08:00 INFO halo2_proofs::plonk::prover - fixed batch size: 6
+2024-07-18T04:37:00.361624367+08:00 INFO halo2_proofs::plonk::prover -     pk.fixed_polys.len: 6
+2024-07-18T04:37:00.376467681+08:00 INFO halo2_proofs::plonk::prover - fixed_evals: 6
+2024-07-18T04:37:00.573420087+08:00 INFO halo2_proofs::plonk::prover - evaluation [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+2024-07-18T04:37:00.647272112+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 0: points.len = 4, polys.len = 4
+2024-07-18T04:37:00.647327814+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 1: points.len = 1, polys.len = 17
+2024-07-18T04:37:00.647376985+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 2: points.len = 3, polys.len = 2
+2024-07-18T04:37:00.647426447+08:00 INFO halo2_proofs::poly::kzg::multiopen::shplonk::prover - [SHPLONK] opening set 3: points.len = 2, polys.len = 2
+2024-07-18T04:37:01.141108277+08:00 INFO halo2_proofs::plonk::prover - phase5 [4] GPUs free mem = | 23.18 | 23.18 | 23.18 | 23.18 | GiB
+in bytes = | 24888279040 | 24888279040 | 24890376192 | 24890376192 | 
+thread 'test_batch_bundle_verify' panicked at integration/src/prove.rs:77:10:
+called `Result::unwrap()` on an `Err` value: The constraint system is not satisfied
+stack backtrace:
+   0: rust_begin_unwind
+             at /rustc/90e321d82a0a9c3d0e3f180d4d17541b729072e0/library/std/src/panicking.rs:645:5
+   1: core::panicking::panic_fmt
+             at /rustc/90e321d82a0a9c3d0e3f180d4d17541b729072e0/library/core/src/panicking.rs:72:14
+   2: core::result::unwrap_failed
+             at /rustc/90e321d82a0a9c3d0e3f180d4d17541b729072e0/library/core/src/result.rs:1649:5
+   3: integration::prove::prove_and_verify_bundle
+   4: core::ops::function::FnOnce::call_once
+   5: core::ops::function::FnOnce::call_once
+             at /rustc/90e321d82a0a9c3d0e3f180d4d17541b729072e0/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test test_batch_bundle_verify ... FAILED
+
+failures:
+
+failures:
+    test_batch_bundle_verify
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 2225.66s
+
+error: test failed, to rerun pass `-p integration --test e2e_tests`
+make: *** [Makefile:54: test-batch-bundle-prove] Error 101
