@@ -157,7 +157,7 @@ impl ChunkBuilder {
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
     let mut chunk_builder = ChunkBuilder::new();
-    chunk_builder.block_limit = Some(1);
+    //chunk_builder.block_limit = Some(1);
     let mut batch_builder = BatchBuilder::new();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
@@ -245,6 +245,12 @@ fn prove_chunk(batch_id: u64, chunk_id: u64, block_traces: Vec<BlockTrace>) -> O
     }
     if env::var("CIRCUIT").unwrap_or_default() == "ccc" {
         let ccc_modes = [CCCMode::Optimal];
+        let ccc_modes = [
+            CCCMode::Optimal,
+            CCCMode::Siger,
+            CCCMode::FollowerLight,
+            CCCMode::FollowerFull,
+        ];
         run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes);
         return None;
     }

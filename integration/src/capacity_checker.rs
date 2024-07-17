@@ -211,8 +211,9 @@ fn get_ccc_result_of_chunk(
     }
     log::info!("capacity_checker test done");
     pretty_print_row_usage(&acc_row_usage_raw, blocks, chunk_id, tag);
-    let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
-    log::info!("avg time each tx: {avg_ccc_time}ms, mode {tag}");
+    let total_time = start_time.elapsed();
+    let avg_ccc_time = total_time.as_millis() / tx_num as u128;
+    log::info!("avg time each tx: {avg_ccc_time}ms, mode {tag}, total time {total_time:?}, tx_num {tx_num}");
 
     (
         acc_row_usage_raw,
