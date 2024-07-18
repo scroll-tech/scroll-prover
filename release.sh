@@ -9,6 +9,10 @@ cp $IN/vk_chunk_0.vkey $OUT/vk_chunk.vkey
 cp $IN/vk_batch_agg.vkey $OUT/vk_batch.vkey
 cp $IN/vk_bundle_recursion.vkey $OUT/vk_bundle.vkey
 
+# add old names as well
+cp $IN/vk_chunk_0.vkey $OUT/chunk_vk.vkey
+cp $IN/vk_batch_agg.vkey $OUT/agg_vk.vkey
+
 # copy verifier contract binary
 cp $IN/evm_verifier.bin $OUT/evm_verifier.bin
 cp $IN/evm_verifier.yul $OUT/evm_verifier.yul
