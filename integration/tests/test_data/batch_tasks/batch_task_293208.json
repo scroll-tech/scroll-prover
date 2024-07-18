@@ -2881,7 +2881,7 @@
         "total_l1_message_popped": 904739,
         "data_hash": "0xcddbdd82bc33e21c6fabac0c3ef1056c40c5bd829ab278db38903587dbf0d47b",
         "blob_versioned_hash": "0x01d702f4ef77de262ed6400e6fed166571faa05ec5d5bb61e864d99571044103",
-        "parent_batch_hash": "0x0f0be6b3ebea686e7e345ea6fb5f8fa8fc8395dbee396cb48107aa411242683b",
+        "parent_batch_hash": "0x3b5c78b2bb265218574ee8a694689e6e37fb5486213d2909e6bc195a8c6014d0",
         "last_block_timestamp": 1721129977,
         "blob_data_proof": [
             "0x0a43eb071975b8fac0dc42052a056393457dddeccb1de08ee6e1ef54d5a26ae2",

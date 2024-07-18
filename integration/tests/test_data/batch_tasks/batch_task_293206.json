@@ -2620,7 +2620,7 @@
         "total_l1_message_popped": 904739,
         "data_hash": "0xb0dcb9e73d4350cd3c27ab0d65e7f4ebf7d15d1e73b7fdb3a773d4809262642b",
         "blob_versioned_hash": "0x019c082270631344493a4243c6483ded5a9f1565302450b735bd6d6fcff73446",
-        "parent_batch_hash": "0x85158ce546759ab417e2226677fc357f2482c2eed272952228283a4a6e5c1a3f",
+        "parent_batch_hash": "0xe86e067f78b1c29c1cc297f6d9fe670c7beea1eebb226d1b8eeb9616a2bcac7e",
         "last_block_timestamp": 1721129689,
         "blob_data_proof": [
             "0x0f2c9918c6633a04d37c01dc275ec0963ed3093ff7bfc487d7108155ab22a774",

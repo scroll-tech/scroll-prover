@@ -2533,7 +2533,7 @@
         "total_l1_message_popped": 904743,
         "data_hash": "0x161169f38c8df29416a8ee61e911984a381c506a7c2bf0a623aff886ff7313d3",
         "blob_versioned_hash": "0x01c34775f05f034c2f908f1a0e0276fdd3ef90b722c06dacaaeb9604c37b519a",
-        "parent_batch_hash": "0x7de8b8a5a98823e9f93c79226916e06b79d0e66fcde4b270825a606ffd04aa4b",
+        "parent_batch_hash": "0x11e0acd7e42a2540214a34840a26b357f97dfa2190e82ed5495743d1e259fd53",
         "last_block_timestamp": 1721130250,
         "blob_data_proof": [
             "0x687584066aa267266b940fa324f4e5c00f62ef53e1b5ea21b116e0efa439e0cf",
