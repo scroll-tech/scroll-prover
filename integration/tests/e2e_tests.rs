@@ -95,15 +95,47 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
         .map(|batch_task| prove_and_verify_batch(&output_dir, &mut prover, batch_task))
         .collect::<Vec<_>>();
 
-    let n = batch_proofs.len();
-    for i in 1..n {
-        log::info!("bundle {i} batches");
-        let bundle_task = BundleProvingTask {
-            batch_proofs: batch_proofs[0..i].to_vec(),
-        };
-        prove_and_verify_bundle(&output_dir, &mut prover, bundle_task);
-        log::info!("bundle {i} batches OK");
-    }
+    assert_eq!(batch_proofs.len(), 10, "expecting 10 batches");
+
+    log::info!("bundle 1 batch");
+    prove_and_verify_bundle(
+        &output_dir,
+        &mut prover,
+        BundleProvingTask {
+            batch_proofs: batch_proofs[0..1].to_vec(),
+        },
+    );
+    log::info!("bundle 1 batches OK");
+
+    log::info!("bundle 2 batches");
+    prove_and_verify_bundle(
+        &output_dir,
+        &mut prover,
+        BundleProvingTask {
+            batch_proofs: batch_proofs[1..3].to_vec(),
+        },
+    );
+    log::info!("bundle 2 batches OK");
+
+    log::info!("bundle 3 batches");
+    prove_and_verify_bundle(
+        &output_dir,
+        &mut prover,
+        BundleProvingTask {
+            batch_proofs: batch_proofs[3..6].to_vec(),
+        },
+    );
+    log::info!("bundle 3 batches OK");
+
+    log::info!("bundle 4 batches");
+    prove_and_verify_bundle(
+        &output_dir,
+        &mut prover,
+        BundleProvingTask {
+            batch_proofs: batch_proofs[6..10].to_vec(),
+        },
+    );
+    log::info!("bundle 4 batches OK");
 
     Ok(())
 }

@@ -7,7 +7,7 @@ mkdir -p $OUT
 cp $IN/chunk_chunk_0.protocol $OUT/chunk.protocol
 cp $IN/vk_chunk_0.vkey $OUT/vk_chunk.vkey
 cp $IN/vk_batch_agg.vkey $OUT/vk_batch.vkey
-cp $IN/vk_bundle_recursion.vkey $OUT/vk_bundle.key
+cp $IN/vk_bundle_recursion.vkey $OUT/vk_bundle.vkey
 
 # copy verifier contract binary
 cp $IN/evm_verifier.bin $OUT/evm_verifier.bin
