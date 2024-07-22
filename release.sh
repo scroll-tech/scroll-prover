@@ -1,5 +1,5 @@
 IN=integration/outputs/e2e_tests
-OUT=release-v0.12.0-rc.2
+OUT=release-v0.12.0-rc.3
 
 mkdir -p $OUT
 
