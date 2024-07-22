@@ -1,8 +1,7 @@
-use crate::test_util::PARAMS_DIR;
+use crate::{test_util::PARAMS_DIR, verifier::*};
 use prover::{
-    aggregator::{Prover as BatchProver, Verifier as BatchVerifier},
-    zkevm::{Prover as ChunkProver, Verifier as ChunkVerifier},
-    BatchProof, BatchProvingTask, BundleProvingTask, ChunkProvingTask,
+    aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchProof, BatchProvingTask,
+    BundleProvingTask, ChunkProvingTask,
 };
 use std::{env, time::Instant};
 
@@ -36,8 +35,8 @@ pub fn prove_and_verify_chunk(
 
     // output_dir is used to load chunk vk
     env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
-    let verifier = ChunkVerifier::from_dirs(params_path, output_dir);
-    assert!(verifier.verify_chunk_proof(chunk_proof));
+    let verifier = new_chunk_verifier(params_path, output_dir);
+    assert!(verifier.verify_snark(chunk_proof.to_snark()));
     log::info!("Verified chunk proof");
 }
 
@@ -54,10 +53,10 @@ pub fn prove_and_verify_batch(
         .unwrap();
 
     env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
-    let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
+    let verifier = new_batch_verifier(PARAMS_DIR, output_dir);
     log::info!("Constructed aggregator verifier");
 
-    assert!(verifier.verify_batch_proof(&batch_proof));
+    assert!(verifier.verify_snark((&batch_proof).into()));
     log::info!("Verified batch proof");
 
     log::info!("Prove batch END: chunk_num = {chunk_num}");
@@ -76,11 +75,11 @@ pub fn prove_and_verify_bundle(
         .gen_bundle_proof(bundle, None, Some(output_dir))
         .unwrap();
 
-    env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
-    let verifier = BatchVerifier::from_dirs(PARAMS_DIR, output_dir);
+    env::set_var("BATCH_VK_FILENAME", "vk_bundle_recursion.vkey");
+    let verifier = EVMVerifier::from_dirs(output_dir);
     log::info!("Constructed bundle verifier");
 
-    assert!(verifier.verify_bundle_proof(bundle_proof));
+    assert!(verifier.verify_evm_proof(bundle_proof.calldata()));
     log::info!("Verifier bundle proof");
 
     log::info!("Prove bundle END");
