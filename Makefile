@@ -42,7 +42,7 @@ test-chunk-prove:
 	@cargo test --release -p integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
 
 test-fold-prove:
-	@cargo test --release -p integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
+	@cargo test --release -p integration --test fold_tests test_fold_prove -- --exact --nocapture
 
 test-batch-prove:
 	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test batch_tests test_batch_prove_verify -- --exact --nocapture
