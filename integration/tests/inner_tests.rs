@@ -13,7 +13,6 @@ fn test_inner_prove_verify() {
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
     let chunk_trace = load_chunk_for_test().1;
-    println!("hehe, chunk_trace={:?}", &chunk_trace);
     log::info!("Loaded chunk trace");
 
     let mut prover = Prover::<SuperCircuit>::from_params_dir(PARAMS_DIR);
