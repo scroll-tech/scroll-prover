@@ -25,13 +25,14 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
+rayon = "1"
 
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.1"  }
 prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.11.4", default-features = false, features = ["parallel_syn", "scroll"] }
 integration = { path = "integration" }
 
 [patch."https://github.com/scroll-tech/zkevm-circuits.git"]
-prover = { git = "https://github.com/snarkify/zkevm-circuits", branch = "step-circuit" }
+prover = { git = "https://github.com/snarkify/zkevm-circuits", branch = "step-circuit-2" }
 #prover = { path = "/Users/chao/opensource/scroll/zkevm-circuits/prover" }
 [patch."https://github.com/scroll-tech/halo2.git"]
 halo2_proofs = { git = "https://github.com/snarkify/halo2", branch = "snarkify/dev.scroll.alpha.2" }
