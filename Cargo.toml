@@ -32,7 +32,7 @@ prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.
 integration = { path = "integration" }
 
 [patch."https://github.com/scroll-tech/zkevm-circuits.git"]
-prover = { git = "https://github.com/snarkify/zkevm-circuits", branch = "step-circuit-2" }
+prover = { git = "https://github.com/snarkify/zkevm-circuits", branch = "step-circuit" }
 #prover = { path = "/Users/chao/opensource/scroll/zkevm-circuits/prover" }
 [patch."https://github.com/scroll-tech/halo2.git"]
 halo2_proofs = { git = "https://github.com/snarkify/halo2", branch = "snarkify/dev.scroll.alpha.2" }
@@ -50,6 +50,10 @@ halo2_proofs = { git = "https://github.com/snarkify/halo2", branch = "snarkify/d
 poseidon = { git = "https://github.com/scroll-tech/poseidon.git", branch = "main" }
 [patch."https://github.com/privacy-scaling-explorations/bls12_381"]
 bls12_381 = { git = "https://github.com/scroll-tech/bls12_381", branch = "feat/impl_scalar_field" }
+
+[patch."https://github.com/scroll-tech/poseidon-circuit.git"]
+poseidon-base = { package = "poseidon-base", git = "https://github.com/snarkify/scroll-poseidon-circuit", branch = "main" }
+hash-circuit = { package = "poseidon-circuit",  git = "https://github.com/snarkify/scroll-poseidon-circuit", branch = "main"  }
 
 [profile.test]
 opt-level = 3
