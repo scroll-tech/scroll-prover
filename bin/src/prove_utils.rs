@@ -2,10 +2,20 @@ use prover::{BlockTrace, ChunkProof};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 #[cfg(feature = "batch-prove")]
-pub fn prove_batch(id: &str, chunk_proofs: Vec<ChunkProof>) {
+use prover::{BatchHeader, MAX_AGG_SNARKS};
+
+#[cfg(feature = "batch-prove")]
+pub fn prove_batch(
+    id: &str,
+    chunk_proofs: Vec<ChunkProof>,
+    batch_header: BatchHeader<MAX_AGG_SNARKS>,
+) {
     use prover::BatchProvingTask;
 
-    let batch = BatchProvingTask { chunk_proofs };
+    let batch = BatchProvingTask {
+        chunk_proofs,
+        batch_header,
+    };
     let result = catch_unwind(AssertUnwindSafe(|| prover::test::batch_prove(id, batch)));
 
     match result {
