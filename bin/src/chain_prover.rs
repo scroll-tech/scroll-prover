@@ -302,7 +302,15 @@ async fn prove_by_batch(
         }
 
         #[cfg(feature = "batch-prove")]
-        prove_utils::prove_batch(&format!("chain_prover: batch-{batch_id}"), chunk_proofs);
+        use prover::BatchHeader;
+        #[cfg(feature = "batch-prove")]
+        let batch_header = BatchHeader::<MAX_AGG_SNARKS>::default();
+        #[cfg(feature = "batch-prove")]
+        prove_utils::prove_batch(
+            &format!("chain_prover: batch-{batch_id}"),
+            chunk_proofs,
+            batch_header,
+        );
     }
 }
 #[tokio::main]

@@ -67,6 +67,36 @@ fn test_evm_verifier() {
     }
 }
 
+// suppose a "proof.json" has been provided under the 'release'
+// directory or the test would fail
+#[ignore]
+#[test]
+fn test_evm_verifier_for_dumped_proof() {
+    use prover::{io::from_json_file, proof::BundleProof};
+
+    init_env_and_log("test_evm_verifer");
+    log::info!("cwd {:?}", std::env::current_dir());
+    let version = "release-v0.12.0-rc.2";
+
+    let proof: BundleProof = from_json_file(&format!("../{version}/proof.json")).unwrap();
+
+    let proof_dump = proof.clone().proof_to_verify();
+    log::info!("pi dump {:#?}", proof_dump.instances());
+
+    let proof = proof.calldata();
+    log::info!("calldata len {}", proof.len());
+
+    log::info!("check released bin");
+    let bytecode = read_all(&format!("../{version}/evm_verifier.bin"));
+    log::info!("bytecode len {}", bytecode.len());
+    match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+        Ok(gas) => log::info!("gas cost {gas}"),
+        Err(e) => {
+            panic!("test failed {e:#?}");
+        }
+    }
+}
+
 #[test]
 fn test_capacity_checker() {
     init_env_and_log("integration");
