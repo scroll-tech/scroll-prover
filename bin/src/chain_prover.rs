@@ -129,6 +129,7 @@ impl ChunkBuilder {
                 let mut chunk = self.traces.clone();
                 chunk.push(trace.clone());
                 self.traces.clear();
+                self.acc_row_usage_normalized = RowUsage::default();
                 return Some(chunk);
             }
         }
@@ -157,7 +158,18 @@ impl ChunkBuilder {
 // Construct chunk myself
 async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
     let mut chunk_builder = ChunkBuilder::new();
-    chunk_builder.block_limit = Some(1);
+    chunk_builder.block_limit = if let Some(v) = env::var("CHUNK_BLOCK_LIMIT")
+        .ok()
+        .and_then(|n| n.parse().ok())
+    {
+        if v == 0 {
+            None
+        } else {
+            Some(v)
+        }
+    } else {
+        Some(1)
+    };
     let mut batch_builder = BatchBuilder::new();
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
