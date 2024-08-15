@@ -9,11 +9,15 @@ use prover::{
 };
 use std::time::Duration;
 
+// 'full' vs 'light':  replay mpt updates or not
+// 'signer' vs 'follower': tx-by-tx or whole-block
+// 'optional': by chunk(multi blocks)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CCCMode {
     Optimal,
-    Siger,
-    FollowerLight,
+    SignerLight,   // current signer ccc
+    SignerFull,    // the checker used in async ccc
+    FollowerLight, // current follower ccc
     FollowerFull,
 }
 
@@ -38,7 +42,8 @@ pub fn run_circuit_capacity_checker(
                 *mode,
                 match mode {
                     CCCMode::Optimal => ccc_by_chunk(batch_id, chunk_id, block_traces),
-                    CCCMode::Siger => ccc_as_signer(chunk_id, block_traces),
+                    CCCMode::SignerLight => ccc_as_signer_light(chunk_id, block_traces),
+                    CCCMode::SignerFull => ccc_as_signer_full(chunk_id, block_traces),
                     CCCMode::FollowerLight => ccc_as_follower_light(chunk_id, block_traces),
                     CCCMode::FollowerFull => ccc_as_follower_full(chunk_id, block_traces),
                 },
@@ -46,6 +51,7 @@ pub fn run_circuit_capacity_checker(
         })
         .collect_vec();
 
+    // compare ratio with first entry
     if results.len() > 1 {
         for idx in 1..results.len() {
             compare_ccc_results(
@@ -58,10 +64,20 @@ pub fn run_circuit_capacity_checker(
         }
     }
 
+    /*
     results
         .into_iter()
-        .find(|(mode, _)| *mode == CCCMode::Siger)
+        .find(|(mode, _)| *mode == CCCMode::SignerLight)
         .map(|(_, (_, t))| t)
+    */
+
+    let fastest_result = results.into_iter().min_by_key(|(_, (_, t))| *t).unwrap();
+    log::info!(
+        "fastest ccc: mode {:?}, time {:?}",
+        fastest_result.0,
+        fastest_result.1 .1
+    );
+    Some(fastest_result.1 .1)
 }
 
 /// print analyze results
@@ -170,7 +186,7 @@ fn get_ccc_result_of_chunk(
     checker.light_mode = light_mode;
 
     if !checker.light_mode && !by_block {
-        unimplemented!("!checker.light_mode && !by_block")
+        //        unimplemented!("!checker.light_mode && !by_block")
     }
 
     let start_time = std::time::Instant::now();
@@ -295,11 +311,16 @@ pub fn ccc_by_chunk(
     (row_usage, avg_ccc_time_per_tx)
 }
 
-pub fn ccc_as_signer(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
-    get_ccc_result_of_chunk(chunk_id, blocks, false, false, true, "chunk-signer")
+pub fn ccc_as_signer_light(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+    get_ccc_result_of_chunk(chunk_id, blocks, false, false, true, "chunk-s-l")
 }
 
-/// current stats inside db
+pub fn ccc_as_signer_full(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
+    get_ccc_result_of_chunk(chunk_id, blocks, false, false, false, "chunk-s-f")
+}
+
+/// The returned row usage is the stats stored in l2geth local db.
+/// While we also have row_usage in coordinator db, where it is real row usage reported by provers.
 pub fn ccc_as_follower_light(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, true, "chunk-f-l")
 }
