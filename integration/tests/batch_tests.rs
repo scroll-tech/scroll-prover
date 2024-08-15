@@ -8,8 +8,20 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let batch = load_batch_proving_task("tests/test_data/full_proof_batch_prove_1.json");
+    let mut batch = load_batch_proving_task("tests/test_data/batch-task-no-encode.json");
     log::info!("batch hash = {:?}", batch.batch_header.batch_hash());
+
+    let chunk_infos = batch.chunk_proofs.clone().into_iter().map(|p| p.chunk_info).collect::<Vec<_>>();
+    let corrected_batch_header = prover::BatchHeader::construct_from_chunks(
+        batch.batch_header.version,
+        batch.batch_header.batch_index,
+        batch.batch_header.l1_message_popped,
+        batch.batch_header.total_l1_message_popped,
+        batch.batch_header.parent_batch_hash,
+        batch.batch_header.last_block_timestamp,
+        &chunk_infos,
+    );
+    batch.batch_header = corrected_batch_header;
 
     dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&output_dir);

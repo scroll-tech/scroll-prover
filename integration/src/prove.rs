@@ -48,9 +48,13 @@ pub fn prove_and_verify_batch(
     let chunk_num = batch.chunk_proofs.len();
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
-    let batch_proof = batch_prover
-        .gen_batch_proof(batch, None, Some(output_dir))
-        .unwrap();
+    let res_batch_proof = batch_prover
+        .gen_batch_proof(batch, None, Some(output_dir));
+    if let Err(e) = res_batch_proof {
+        log::error!("proving err: {e}");
+        panic!("proving err: {:?}", e);
+    }
+    let batch_proof = res_batch_proof.unwrap();
 
     env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
     let verifier = new_batch_verifier(PARAMS_DIR, output_dir);
