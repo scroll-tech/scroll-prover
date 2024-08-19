@@ -8,10 +8,16 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let mut batch = load_batch_proving_task("tests/test_data/batch-task-no-encode.json");
+    let task_path = "tests/test_data/batch-task-with-blob.json";
+    let mut batch = load_batch_proving_task(task_path);
     log::info!("batch hash = {:?}", batch.batch_header.batch_hash());
 
-    let chunk_infos = batch.chunk_proofs.clone().into_iter().map(|p| p.chunk_info).collect::<Vec<_>>();
+    let chunk_infos = batch
+        .chunk_proofs
+        .clone()
+        .into_iter()
+        .map(|p| p.chunk_info)
+        .collect::<Vec<_>>();
     let corrected_batch_header = prover::BatchHeader::construct_from_chunks(
         batch.batch_header.version,
         batch.batch_header.batch_index,
@@ -20,6 +26,7 @@ fn test_batch_prove_verify() {
         batch.batch_header.parent_batch_hash,
         batch.batch_header.last_block_timestamp,
         &chunk_infos,
+        &batch.blob_bytes,
     );
     batch.batch_header = corrected_batch_header;
 
@@ -46,6 +53,8 @@ fn test_batches_with_each_chunk_num_prove_verify() {
         let batch = BatchProvingTask {
             batch_header: batch.batch_header,
             chunk_proofs: batch.chunk_proofs[..len].to_vec(),
+            // FIXME
+            blob_bytes: vec![],
         };
         prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
     }

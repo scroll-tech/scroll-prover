@@ -48,8 +48,7 @@ pub fn prove_and_verify_batch(
     let chunk_num = batch.chunk_proofs.len();
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
-    let res_batch_proof = batch_prover
-        .gen_batch_proof(batch, None, Some(output_dir));
+    let res_batch_proof = batch_prover.gen_batch_proof(batch, None, Some(output_dir));
     if let Err(e) = res_batch_proof {
         log::error!("proving err: {e}");
         panic!("proving err: {:?}", e);
