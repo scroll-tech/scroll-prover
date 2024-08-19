@@ -8,7 +8,8 @@ fn test_batch_prove_verify() {
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let task_path = "tests/test_data/batch-task-with-blob.json";
+    let task_path = "tests/test_data/batch-task-with-blob.json"; // zstd
+    let task_path = "tests/test_data/batch-task-with-blob-raw.json"; // no zstd
     let mut batch = load_batch_proving_task(task_path);
     log::info!("batch hash = {:?}", batch.batch_header.batch_hash());
 
