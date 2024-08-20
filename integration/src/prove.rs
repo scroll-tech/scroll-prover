@@ -1,7 +1,7 @@
 use crate::{test_util::PARAMS_DIR, verifier::*};
 use prover::{
-    aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchProof, BatchProvingTask,
-    BundleProvingTask, ChunkProvingTask,
+    aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchData, BatchProof,
+    BatchProvingTask, BundleProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
 use std::{env, time::Instant};
 
@@ -86,4 +86,24 @@ pub fn prove_and_verify_bundle(
     log::info!("Verifier bundle proof");
 
     log::info!("Prove bundle END");
+}
+
+// `chunks` are unpadded
+// Similar codes with aggregator/src/tests/aggregation.rs
+// Refactor?
+pub fn get_blob_from_chunks(chunks: &[ChunkInfo]) -> Vec<u8> {
+    let num_chunks = chunks.len();
+
+    let padded_chunk =
+        ChunkInfo::mock_padded_chunk_info_for_testing(chunks.last().as_ref().unwrap());
+    let chunks_with_padding = [
+        chunks.to_vec(),
+        vec![padded_chunk; MAX_AGG_SNARKS - num_chunks],
+    ]
+    .concat();
+    let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(chunks.len(), &chunks_with_padding);
+    let batch_bytes = batch_data.get_batch_data_bytes();
+    let blob_bytes = prover::aggregator::eip4844::get_blob_bytes(&batch_bytes);
+    log::info!("blob_bytes len {}", blob_bytes.len());
+    blob_bytes
 }
