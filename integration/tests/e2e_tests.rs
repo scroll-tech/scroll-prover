@@ -1,11 +1,14 @@
-use integration::test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR};
+use integration::{
+    prove::get_blob_from_chunks,
+    test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR},
+};
 use prover::{
     eth_types::H256,
     proof::dump_as_json,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
     zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
-use std::{env, fs, path::Path};
+use std::env;
 
 fn load_test_batch() -> anyhow::Result<Vec<String>> {
     let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
@@ -50,11 +53,13 @@ fn test_e2e_prove_verify() {
         let batch_prover = batch_prover_pending.as_mut().unwrap();
 
         let batch_proof = prove_and_verify_batch(&output_dir, batch_prover, batch);
+        /*
+        use std::{fs, path::Path};
         let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
         let proof_path_to =
             Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i + 1).as_str());
         fs::rename(proof_path, proof_path_to).unwrap();
-
+        */
         log::info!(
             "batch proof {}, prev hash {:x?}, current {:x?}",
             i,
@@ -184,6 +189,14 @@ fn gen_batch_proving_task(
         0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
     ]);
+    let chunks = chunk_proofs
+        .clone()
+        .into_iter()
+        .map(|cp| cp.chunk_info)
+        .collect::<Vec<_>>();
+
+    let blob_bytes = get_blob_from_chunks(&chunks);
+
     let batch_header = BatchHeader::construct_from_chunks(
         opt_batch_header.map_or(4, |header| header.version),
         opt_batch_header.map_or(123, |header| header.batch_index + 1),
@@ -193,17 +206,15 @@ fn gen_batch_proving_task(
         }),
         opt_batch_header.map_or(dummy_parent_batch_hash, |header| header.batch_hash()),
         last_block_timestamp,
-        &chunk_proofs
-            .clone()
-            .into_iter()
-            .map(|cp| cp.chunk_info)
-            .collect::<Vec<_>>(),
+        &chunks,
+        &blob_bytes,
     );
 
     (
         BatchProvingTask {
             chunk_proofs,
             batch_header,
+            blob_bytes,
         },
         batch_header,
     )
@@ -237,7 +248,7 @@ fn log_batch_pi(trace_paths: &[String]) {
             ChunkInfo::from_witness_block(&witness_block, false)
         })
         .collect();
-
+    let blob_bytes = get_blob_from_chunks(&chunk_hashes);
     let real_chunk_count = chunk_hashes.len();
     if real_chunk_count < max_num_snarks {
         let mut padding_chunk_hash = chunk_hashes.last().unwrap().clone();
@@ -262,8 +273,11 @@ fn log_batch_pi(trace_paths: &[String]) {
         last_block_timestamp,
         ..Default::default() // these will be populated later.
     };
-    let batch_hash =
-        BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(&chunk_hashes, batch_header);
+    let batch_hash = BatchHash::<{ prover::MAX_AGG_SNARKS }>::construct(
+        &chunk_hashes,
+        batch_header,
+        &blob_bytes,
+    );
     let blob = batch_hash.point_evaluation_assignments();
 
     let challenge = blob.challenge;
