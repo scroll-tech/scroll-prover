@@ -51,11 +51,12 @@ fn test_e2e_prove_verify() {
         let batch_prover = batch_prover_pending.as_mut().unwrap();
 
         let batch_proof = prove_and_verify_batch(&output_dir, batch_prover, batch);
+        /*
         let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
         let proof_path_to =
             Path::new(&output_dir).join(format!("full_proof_batch_agg_{}.json", i + 1).as_str());
         fs::rename(proof_path, proof_path_to).unwrap();
-
+        */
         log::info!(
             "batch proof {}, prev hash {:x?}, current {:x?}",
             i,

@@ -6,12 +6,26 @@ type SnarkVerifier = Verifier<CompressionCircuit>;
 
 pub fn new_chunk_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
     let raw_vk = force_to_read(assets_dir, &consts::chunk_vk_filename());
+    if raw_vk.is_empty() {
+        panic!(
+            "empty vk read from {}/{}",
+            assets_dir,
+            &consts::chunk_vk_filename()
+        );
+    }
     env::set_var("COMPRESSION_CONFIG", &*config::LAYER2_CONFIG_PATH);
     SnarkVerifier::from_params_dir(params_dir, *config::LAYER2_DEGREE, &raw_vk)
 }
 
 pub fn new_batch_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
     let raw_vk = force_to_read(assets_dir, &consts::batch_vk_filename());
+    if raw_vk.is_empty() {
+        panic!(
+            "empty vk read from {}/{}",
+            assets_dir,
+            &consts::batch_vk_filename()
+        );
+    }
     env::set_var("COMPRESSION_CONFIG", &*config::LAYER4_CONFIG_PATH);
     SnarkVerifier::from_params_dir(params_dir, *config::LAYER4_DEGREE, &raw_vk)
 }
