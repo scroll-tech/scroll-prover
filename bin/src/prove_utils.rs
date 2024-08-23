@@ -10,11 +10,19 @@ pub fn prove_batch(
     chunk_proofs: Vec<ChunkProof>,
     batch_header: BatchHeader<MAX_AGG_SNARKS>,
 ) {
+    use integration::prove::get_blob_from_chunks;
+    use itertools::Itertools;
     use prover::BatchProvingTask;
 
+    let chunk_infos = chunk_proofs
+        .iter()
+        .map(|p| p.chunk_info.clone())
+        .collect_vec();
+    let blob_bytes = get_blob_from_chunks(&chunk_infos);
     let batch = BatchProvingTask {
         chunk_proofs,
         batch_header,
+        blob_bytes,
     };
     let result = catch_unwind(AssertUnwindSafe(|| prover::test::batch_prove(id, batch)));
 

@@ -7,6 +7,7 @@ use integration::capacity_checker::{
     prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
 };
 use prover::{
+    aggregator,
     utils::init_env_and_log,
     zkevm::{circuit::block_traces_to_witness_block, CircuitCapacityChecker, RowUsage},
     BatchData, BlockTrace, ChunkInfo, ChunkProof, MAX_AGG_SNARKS,
@@ -77,7 +78,9 @@ impl BatchBuilder {
             return Some(batch);
         }
 
-        let compressed_da_size = self.batch_data.get_encoded_batch_data_bytes().len();
+        let batch_bytes = self.batch_data.get_batch_data_bytes();
+        let blob_bytes = aggregator::eip4844::get_blob_bytes(&batch_bytes);
+        let compressed_da_size = blob_bytes.len();
         let uncompressed_da_size = self
             .batch_data
             .chunk_sizes
@@ -197,7 +200,8 @@ async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_bl
                 let mut padded_batch = batch.clone();
                 padding_chunk(&mut padded_batch);
                 let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(batch.len(), &padded_batch);
-                let compressed_da_size = batch_data.get_encoded_batch_data_bytes().len();
+                let compressed_da_size =
+                    aggregator::eip4844::get_blob_bytes(&batch_data.get_batch_data_bytes()).len();
                 log::info!(
                     "batch built: blob usage {:.3}, chunk num {}, block num {}, block range {} to {}",
                     compressed_da_size as f32 / constants::N_BLOB_BYTES as f32,
