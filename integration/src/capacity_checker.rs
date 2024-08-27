@@ -135,7 +135,7 @@ fn ccc_block_whole_block(
 
 pub fn txbytx_traces_from_block(block: &BlockTrace) -> Vec<BlockTrace> {
     let mut result = vec![];
-    for tx_idx in 0..block.transactions.len() { 
+    for tx_idx in 0..block.transactions.len() {
         #[rustfmt::skip]
         /*  
         The capacity_checker is expected to be run inside sequencer, where we don't have the traces of blocks, instead we only have traces of tx.
@@ -308,13 +308,14 @@ pub fn ccc_by_chunk(
 ) -> (RowUsage, Duration) {
     log::info!("ccc_by_chunk: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
+    let start_time = std::time::Instant::now();
+
     let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
     let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
     let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
 
-    // TODO: finish this
-    let avg_ccc_time_per_tx = Default::default();
+    let avg_ccc_time_per_tx = Duration::from_millis(start_time.elapsed().as_millis() as u64 / witness_block.txs.len() as u64);
 
     (row_usage, avg_ccc_time_per_tx)
 }

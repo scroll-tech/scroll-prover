@@ -2,14 +2,14 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer_light, prepare_circuit_capacity_checker, run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode
+        ccc_as_signer_light, ccc_by_chunk, prepare_circuit_capacity_checker, run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode
     },
     test_util::load_chunk_for_test,
 };
 use prover::{
     io::read_all,
     utils::{get_block_trace_from_file, init_env_and_log, short_git_version},
-    zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
+    zkevm::{circuit::{block_traces_to_witness_block, TargetCircuit}, CircuitCapacityChecker},
 };
 
 #[test]
@@ -97,15 +97,52 @@ fn test_evm_verifier_for_dumped_proof() {
     }
 }
 
+// Make sure tx-by-tx light_mode=false row usage >= real row usage
 #[test]
 fn test_txbytx_traces() {
+    init_env_and_log("integration");
+    prepare_circuit_capacity_checker();
+
+    use prover::BlockTrace;
+
+    // part1: real row usage
+    let batch_id = 0;
+    let chunk_id = 0;
     let block_trace = get_block_trace_from_file("tests/test_data/ccc/8626705-legacy-block.json");
-    let tx_traces = txbytx_traces_from_block(&block_trace);
-    for (idx, tx_trace) in tx_traces.into_iter().enumerate() {
-        let path = format!("tests/test_data/ccc/8626705-legacy-txbytx/{idx}-new.json");
-        let file = std::fs::File::create(path).unwrap();
-        serde_json::to_writer_pretty(file, &tx_trace).unwrap();
-    }   
+    let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[block_trace]);
+    //log::info!("row usage {:#?}", real_usage);
+    //log::info!("avg time each tx: {}ms", t.as_millis());
+
+    // part2: tx by tx row usage
+    let txbytx_traces: Vec<BlockTrace> = {
+        let f = std::fs::File::open("tests/test_data/ccc/8626705-legacy-txbytx.json").unwrap();
+        serde_json::from_reader(&f).unwrap()
+    };
+    let tx_num = txbytx_traces.len();
+
+    let mut checker = CircuitCapacityChecker::new();
+    checker.light_mode = false;
+    let start_time = std::time::Instant::now();
+    for tx in txbytx_traces {
+        checker.estimate_circuit_capacity(tx).unwrap();
+    }
+    let row_usage = checker.get_acc_row_usage(false);
+    let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
+    //log::info!("row usage {:#?}", row_usage);
+    //log::info!("avg time each tx: {avg_ccc_time}ms");
+
+    // part3: pretty print
+    log::info!("circuit\ttxbytx\tblock");
+    for i in 0..real_usage.row_usage_details.len() {
+        let r1 = row_usage.row_usage_details[i].row_number;
+        let r2 = real_usage.row_usage_details[i].row_number;
+        // FIXME: the "1" of bytecode circuit
+        assert!(r1 + 1 >= r2);
+        log::info!("{}\t{}\t{}", row_usage.row_usage_details[i].name, 
+            r1, r2
+            );
+    }
+    log::info!("{}\t{}\t{}", "avg-tx-ms", t.as_millis(), avg_ccc_time);
 }
 
 #[test]
