@@ -1,14 +1,19 @@
-use crate::{test_util::PARAMS_DIR, verifier::*};
+use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
     aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchData, BatchProof,
     BatchProvingTask, BundleProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
-use std::{env, time::Instant};
+use std::{collections::BTreeMap, env, time::Instant};
+
+use crate::verifier::{new_batch_verifier, new_chunk_verifier, EVMVerifier};
 
 /// The `output_dir` is assumed to output_dir of chunk proving.
-pub fn new_batch_prover(output_dir: &str) -> BatchProver {
+pub fn new_batch_prover<'a>(
+    params_map: &'a BTreeMap<u32, ParamsKZG<Bn256>>,
+    output_dir: &str,
+) -> BatchProver<'a> {
     env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
-    let prover = BatchProver::from_dirs(PARAMS_DIR, output_dir);
+    let prover = BatchProver::from_params_and_assets(params_map, output_dir);
     log::info!("Constructed batch prover");
 
     prover
@@ -17,11 +22,11 @@ pub fn new_batch_prover(output_dir: &str) -> BatchProver {
 pub fn prove_and_verify_chunk(
     chunk: ChunkProvingTask,
     chunk_identifier: Option<&str>,
-    params_path: &str,
+    params_map: &BTreeMap<u32, ParamsKZG<Bn256>>,
     assets_path: &str,
     output_dir: &str,
 ) {
-    let mut prover = ChunkProver::from_dirs(params_path, assets_path);
+    let mut prover = ChunkProver::from_params_and_assets(params_map, assets_path);
     log::info!("Constructed chunk prover");
 
     let now = Instant::now();
@@ -35,12 +40,13 @@ pub fn prove_and_verify_chunk(
 
     // output_dir is used to load chunk vk
     env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
-    let verifier = new_chunk_verifier(params_path, output_dir);
+    let verifier = new_chunk_verifier(params_map, output_dir);
     assert!(verifier.verify_snark(chunk_proof.to_snark()));
     log::info!("Verified chunk proof");
 }
 
 pub fn prove_and_verify_batch(
+    params_map: &BTreeMap<u32, ParamsKZG<Bn256>>,
     output_dir: &str,
     batch_prover: &mut BatchProver,
     batch: BatchProvingTask,
@@ -56,7 +62,7 @@ pub fn prove_and_verify_batch(
     let batch_proof = res_batch_proof.unwrap();
 
     env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
-    let verifier = new_batch_verifier(PARAMS_DIR, output_dir);
+    let verifier = new_batch_verifier(params_map, output_dir);
     log::info!("Constructed aggregator verifier");
 
     assert!(verifier.verify_snark((&batch_proof).into()));
