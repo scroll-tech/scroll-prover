@@ -3,8 +3,9 @@
 // Instead this is more as a testing tool.
 // For production prover, see https://github.com/scroll-tech/scroll/tree/develop/prover
 
-use integration::capacity_checker::{
-    prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
+use integration::{
+    capacity_checker::{prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode},
+    l2geth,
 };
 use prover::{
     aggregator,
@@ -15,7 +16,6 @@ use prover::{
 use std::env;
 
 mod constants;
-mod l2geth_client;
 mod prove_utils;
 mod rollupscan_client;
 
@@ -158,7 +158,7 @@ impl ChunkBuilder {
 }
 
 // Construct chunk myself
-async fn prove_by_block(l2geth: &l2geth_client::Client, begin_block: i64, end_block: i64) {
+async fn prove_by_block(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
     let mut chunk_builder = ChunkBuilder::new();
     //chunk_builder.block_limit = Some(1);
     let mut batch_builder = BatchBuilder::new();
@@ -263,7 +263,7 @@ fn prove_chunk(batch_id: u64, chunk_id: u64, block_traces: Vec<BlockTrace>) -> O
 
 // Use constructed chunk/batch info from coordinator
 async fn prove_by_batch(
-    l2geth: &l2geth_client::Client,
+    l2geth: &l2geth::Client,
     rollupscan: &rollupscan_client::Client,
     begin_batch: i64,
     end_batch: i64,
@@ -328,7 +328,7 @@ async fn main() {
 
     warmup();
 
-    let l2geth = l2geth_client::Client::new("chain_prover", &setting.l2geth_api_url)
+    let l2geth = l2geth::Client::new("chain_prover", &setting.l2geth_api_url)
         .unwrap_or_else(|e| panic!("chain_prover: failed to initialize ethers Provider: {e}"));
     let rollupscan = rollupscan_client::Client::new("chain_prover", &setting.rollupscan_api_url);
 

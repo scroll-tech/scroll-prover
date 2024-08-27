@@ -315,7 +315,9 @@ pub fn ccc_by_chunk(
     let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");
 
-    let avg_ccc_time_per_tx = Duration::from_millis(start_time.elapsed().as_millis() as u64 / witness_block.txs.len() as u64);
+    let avg_ccc_time_per_tx = Duration::from_millis(
+        start_time.elapsed().as_millis() as u64 / witness_block.txs.len() as u64,
+    );
 
     (row_usage, avg_ccc_time_per_tx)
 }

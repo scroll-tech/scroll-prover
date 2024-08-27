@@ -2185,6 +2185,7 @@ name = "integration"
 version = "0.13.0"
 dependencies = [
  "anyhow",
+ "ethers-providers",
  "glob",
  "halo2_proofs",
  "itertools 0.10.5",
@@ -2198,6 +2199,7 @@ dependencies = [
  "serde_json",
  "snark-verifier",
  "snark-verifier-sdk",
+ "tokio",
 ]
 
 [[package]]

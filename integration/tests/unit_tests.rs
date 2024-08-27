@@ -2,14 +2,19 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer_light, ccc_by_chunk, prepare_circuit_capacity_checker, run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode
+        ccc_as_signer_light, ccc_by_chunk, prepare_circuit_capacity_checker,
+        run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode,
     },
+    l2geth,
     test_util::load_chunk_for_test,
 };
 use prover::{
     io::read_all,
-    utils::{get_block_trace_from_file, init_env_and_log, short_git_version},
-    zkevm::{circuit::{block_traces_to_witness_block, TargetCircuit}, CircuitCapacityChecker},
+    utils::{get_block_trace_from_file, init_env_and_log, read_env_var, short_git_version},
+    zkevm::{
+        circuit::{block_traces_to_witness_block, TargetCircuit},
+        CircuitCapacityChecker,
+    },
 };
 
 #[test]
@@ -108,16 +113,44 @@ fn test_txbytx_traces() {
     // part1: real row usage
     let batch_id = 0;
     let chunk_id = 0;
-    let block_trace = get_block_trace_from_file("tests/test_data/ccc/8626705-legacy-block.json");
+    let ccc_block: usize = read_env_var("CCC_BLOCK", 0);
+    let is_local = ccc_block == 0;
+    let (block_trace, txbytx_traces) = if is_local {
+        let block_trace =
+            get_block_trace_from_file("tests/test_data/ccc/8626705-legacy-block.json");
+
+        let txbytx_traces: Vec<BlockTrace> = {
+            let f = std::fs::File::open("tests/test_data/ccc/8626705-legacy-txbytx.json").unwrap();
+            serde_json::from_reader(&f).unwrap()
+        };
+        (block_trace, txbytx_traces)
+    } else {
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let l2geth = l2geth::Client::new("unit_test", "http://127.0.0.1:8545")
+            .unwrap_or_else(|e| panic!("chain_prover: failed to initialize ethers Provider: {e}"));
+        let (trace, tx_traces) = runtime.block_on(async {
+    let trace = l2geth
+        .get_block_trace_by_num(ccc_block as i64, false)
+        .await
+        .unwrap_or_else(|e| {
+            panic!("chain_prover: failed to request l2geth block-trace API for block-{ccc_block}: {e}")
+        });
+        let tx_traces = l2geth
+        .get_txbytx_trace_by_num(ccc_block as i64)
+        .await
+        .unwrap_or_else(|e| {
+            panic!("chain_prover: failed to request l2geth block-trace API for block-{ccc_block}: {e}")
+        });
+        (trace, tx_traces)
+    });
+        (trace, tx_traces)
+    };
     let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[block_trace]);
     //log::info!("row usage {:#?}", real_usage);
     //log::info!("avg time each tx: {}ms", t.as_millis());
 
     // part2: tx by tx row usage
-    let txbytx_traces: Vec<BlockTrace> = {
-        let f = std::fs::File::open("tests/test_data/ccc/8626705-legacy-txbytx.json").unwrap();
-        serde_json::from_reader(&f).unwrap()
-    };
+
     let tx_num = txbytx_traces.len();
 
     let mut checker = CircuitCapacityChecker::new();
@@ -138,9 +171,7 @@ fn test_txbytx_traces() {
         let r2 = real_usage.row_usage_details[i].row_number;
         // FIXME: the "1" of bytecode circuit
         assert!(r1 + 1 >= r2);
-        log::info!("{}\t{}\t{}", row_usage.row_usage_details[i].name, 
-            r1, r2
-            );
+        log::info!("{}\t{}\t{}", row_usage.row_usage_details[i].name, r1, r2);
     }
     log::info!("{}\t{}\t{}", "avg-tx-ms", t.as_millis(), avg_ccc_time);
 }

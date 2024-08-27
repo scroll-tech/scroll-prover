@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+ethers-providers.workspace = true
 anyhow.workspace = true
 glob.workspace = true
 itertools.workspace = true
@@ -14,6 +15,7 @@ rand.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_derive.workspace = true
+tokio.workspace = true
 
 revm = { version = "3.5.0", default-features = false, features = ["std"] }
 snark-verifier = { git = "https://github.com/scroll-tech/snark-verifier", branch = "develop" }
