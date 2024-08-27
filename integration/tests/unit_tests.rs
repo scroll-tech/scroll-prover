@@ -2,19 +2,14 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer_light, ccc_by_chunk, prepare_circuit_capacity_checker,
-        run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode,
+        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
     },
-    l2geth,
     test_util::load_chunk_for_test,
 };
 use prover::{
     io::read_all,
-    utils::{get_block_trace_from_file, init_env_and_log, read_env_var, short_git_version},
-    zkevm::{
-        circuit::{block_traces_to_witness_block, TargetCircuit},
-        CircuitCapacityChecker,
-    },
+    utils::{init_env_and_log, short_git_version},
+    zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
 };
 
 #[test]
@@ -114,15 +109,14 @@ fn test_capacity_checker() {
     let chunk_id = 0;
     let avg_each_tx_time = if full {
         let ccc_modes = [
-            //CCCMode::Optimal,
-            //CCCMode::SignerLight,
-            CCCMode::SignerFull,
-            //CCCMode::FollowerLight,
+            CCCMode::Optimal,
+            CCCMode::Siger,
+            CCCMode::FollowerLight,
             CCCMode::FollowerFull,
         ];
         run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes).unwrap()
     } else {
-        ccc_as_signer_light(chunk_id, &block_traces).1
+        ccc_as_signer(chunk_id, &block_traces).1
     };
     log::info!("avg_each_tx_time {avg_each_tx_time:?}");
 }
