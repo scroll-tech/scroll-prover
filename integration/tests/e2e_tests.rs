@@ -1,3 +1,4 @@
+use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use integration::{
     prove::get_blob_from_chunks,
     test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR},
@@ -8,7 +9,7 @@ use prover::{
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
     zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
-use std::env;
+use std::{collections::BTreeMap, env};
 
 fn load_test_batch() -> anyhow::Result<Vec<String>> {
     let batch_dir = read_env_var("TRACE_PATH", "./tests/extra_traces/batch_25".to_string());
@@ -27,9 +28,20 @@ fn test_batch_pi_consistency() {
 #[test]
 fn test_e2e_prove_verify() {
     use integration::prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle};
+    use itertools::Itertools;
+    use prover::config::{AGG_DEGREES, ZKEVM_DEGREES};
 
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
+
+    let params_map = prover::common::Prover::load_params_map(
+        PARAMS_DIR,
+        &ZKEVM_DEGREES
+            .iter()
+            .copied()
+            .chain(AGG_DEGREES.iter().copied())
+            .collect_vec(),
+    );
 
     let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
     let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
@@ -39,7 +51,8 @@ fn test_e2e_prove_verify() {
     let mut batch_proofs = Vec::new();
 
     for (i, chunk) in [chunks1, chunks2].into_iter().enumerate() {
-        let (batch, batch_header) = gen_batch_proving_task(&output_dir, &chunk, opt_batch_header);
+        let (batch, batch_header) =
+            gen_batch_proving_task(&params_map, &output_dir, &chunk, opt_batch_header);
         dump_as_json(
             &output_dir,
             format!("batch_prove_{}", i + 1).as_str(),
@@ -48,11 +61,11 @@ fn test_e2e_prove_verify() {
         .unwrap();
         if i == 0 {
             dump_chunk_protocol(&batch, &output_dir);
-            batch_prover_pending.replace(new_batch_prover(&output_dir));
+            batch_prover_pending.replace(new_batch_prover(&params_map, &output_dir));
         }
         let batch_prover = batch_prover_pending.as_mut().unwrap();
 
-        let batch_proof = prove_and_verify_batch(&output_dir, batch_prover, batch);
+        let batch_proof = prove_and_verify_batch(&params_map, &output_dir, batch_prover, batch);
         /*
         use std::{fs, path::Path};
         let proof_path = Path::new(&output_dir).join("full_proof_batch_agg.json");
@@ -82,10 +95,15 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
         prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle},
         test_util::read_dir,
     };
-    use prover::{io::from_json_file, BundleProvingTask};
+    use itertools::Itertools;
+    use prover::{config::AGG_DEGREES, io::from_json_file, BundleProvingTask};
 
     let output_dir = init_env_and_log("batch_bundle_tests");
 
+    let params_map = prover::common::Prover::load_params_map(
+        PARAMS_DIR,
+        &AGG_DEGREES.iter().copied().collect_vec(),
+    );
     let batch_tasks_paths = read_dir("./tests/test_data/batch_tasks")?;
     let batch_tasks = batch_tasks_paths
         .iter()
@@ -94,10 +112,10 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
 
     log::info!("num batch tasks = {}", batch_tasks.len());
 
-    let mut prover = new_batch_prover(&output_dir);
+    let mut prover = new_batch_prover(&params_map, &output_dir);
     let batch_proofs = batch_tasks
         .into_iter()
-        .map(|batch_task| prove_and_verify_batch(&output_dir, &mut prover, batch_task))
+        .map(|batch_task| prove_and_verify_batch(&params_map, &output_dir, &mut prover, batch_task))
         .collect::<Vec<_>>();
 
     assert_eq!(batch_proofs.len(), 10, "expecting 10 batches");
@@ -146,6 +164,7 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
 }
 
 fn gen_batch_proving_task(
+    params_map: &BTreeMap<u32, ParamsKZG<Bn256>>,
     output_dir: &str,
     chunk_dirs: &[String],
     opt_batch_header: Option<BatchHeader<MAX_AGG_SNARKS>>,
@@ -165,7 +184,7 @@ fn gen_batch_proving_task(
             .map_or(0, |block_trace| block_trace.header.timestamp.as_u64())
     });
 
-    let mut zkevm_prover = zkevm::Prover::from_dirs(PARAMS_DIR, ASSETS_DIR);
+    let mut zkevm_prover = zkevm::Prover::from_params_and_assets(params_map, ASSETS_DIR);
     log::info!("Constructed zkevm prover");
     let chunk_proofs: Vec<_> = chunks
         .into_iter()

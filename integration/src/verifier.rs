@@ -1,10 +1,15 @@
+use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{common::Verifier, config, consts, io::force_to_read, CompressionCircuit};
 use snark_verifier_sdk::verify_evm_calldata;
-use std::env;
+use std::{collections::BTreeMap, env};
 
-type SnarkVerifier = Verifier<CompressionCircuit>;
+type SnarkVerifier<'a> = Verifier<'a, CompressionCircuit>;
 
-pub fn new_chunk_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
+// FIXME: why we use common::Verifier instead of ChunkVerifier here?
+pub fn new_chunk_verifier<'a>(
+    params_map: &'a BTreeMap<u32, ParamsKZG<Bn256>>,
+    assets_dir: &str,
+) -> SnarkVerifier<'a> {
     let raw_vk = force_to_read(assets_dir, &consts::chunk_vk_filename());
     if raw_vk.is_empty() {
         panic!(
@@ -14,10 +19,16 @@ pub fn new_chunk_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
         );
     }
     env::set_var("COMPRESSION_CONFIG", &*config::LAYER2_CONFIG_PATH);
-    SnarkVerifier::from_params_dir(params_dir, *config::LAYER2_DEGREE, &raw_vk)
+    let params = params_map
+        .get(&config::LAYER2_DEGREE)
+        .expect("should be loaded");
+    SnarkVerifier::from_params(params, &raw_vk)
 }
 
-pub fn new_batch_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
+pub fn new_batch_verifier<'a>(
+    params_map: &'a BTreeMap<u32, ParamsKZG<Bn256>>,
+    assets_dir: &str,
+) -> SnarkVerifier<'a> {
     let raw_vk = force_to_read(assets_dir, &consts::batch_vk_filename());
     if raw_vk.is_empty() {
         panic!(
@@ -27,7 +38,10 @@ pub fn new_batch_verifier(params_dir: &str, assets_dir: &str) -> SnarkVerifier {
         );
     }
     env::set_var("COMPRESSION_CONFIG", &*config::LAYER4_CONFIG_PATH);
-    SnarkVerifier::from_params_dir(params_dir, *config::LAYER4_DEGREE, &raw_vk)
+    let params = params_map
+        .get(&config::LAYER4_DEGREE)
+        .expect("should be loaded");
+    SnarkVerifier::from_params(params, &raw_vk)
 }
 
 #[derive(Debug)]

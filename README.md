@@ -16,7 +16,7 @@ cargo install svm-rs
 svm install 0.8.19
 ```
 
-Download all setup params, degree `20`, `24` and `26` are used in [config](https://github.com/scroll-tech/scroll-prover/tree/main/integration/configs).
+Download all setup params(SRS), degree `20`, `24` and `26` are used in [config](https://github.com/scroll-tech/scroll-prover/tree/main/integration/configs).
 Could only download params of degree `26`, but it may affect performance (when downsizing params).
 ```shell
 make download-setup -e degree=20
@@ -28,6 +28,8 @@ Or specify other degree and target directory to download.
 # As default `degree=26` and `params_dir=./integration/params`.
 make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 ```
+
+There params are mirrored from [PSE's converted setup files](https://github.com/han0110/halo2-kzg-srs) which was originally created by `perpetual-powers-of-tau`.
 
 ### Testing
 

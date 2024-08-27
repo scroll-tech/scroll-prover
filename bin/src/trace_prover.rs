@@ -32,10 +32,18 @@ fn main() {
     let traces = load_chunk(&args.trace_path).1;
     prover::eth_types::constants::set_scroll_block_constants_with_trace(&traces[0]);
     let chunk = ChunkProvingTask::from(traces);
+    let params_map = prover::common::Prover::load_params_map(
+        &args.params_path,
+        &[
+            *prover::config::INNER_DEGREE,
+            *prover::config::LAYER1_DEGREE,
+            *prover::config::LAYER2_DEGREE,
+        ],
+    );
     prove_and_verify_chunk(
         chunk,
         Some("0"), // same with `make test-chunk-prove`, to load vk
-        &args.params_path,
+        &params_map,
         &args.assets_path,
         &output_dir,
     );

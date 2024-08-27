@@ -5,8 +5,17 @@ use std::{fs, path::PathBuf};
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_batch_prove_verify() {
+    use integration::test_util::PARAMS_DIR;
+    use itertools::Itertools;
+    use prover::config::AGG_DEGREES;
+
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
+
+    let params_map = prover::common::Prover::load_params_map(
+        PARAMS_DIR,
+        &AGG_DEGREES.iter().copied().collect_vec(),
+    );
 
     //let task_path = "tests/test_data/batch-task-with-blob.json"; // zstd
     let task_path = "tests/test_data/batch-task-with-blob-raw.json"; // no zstd
@@ -32,19 +41,28 @@ fn test_batch_prove_verify() {
     batch.batch_header = corrected_batch_header;
 
     dump_chunk_protocol(&batch, &output_dir);
-    let mut batch_prover = new_batch_prover(&output_dir);
-    prove_and_verify_batch(&output_dir, &mut batch_prover, batch);
+    let mut batch_prover = new_batch_prover(&params_map, &output_dir);
+    prove_and_verify_batch(&params_map, &output_dir, &mut batch_prover, batch);
 }
 
 #[cfg(feature = "prove_verify")]
 #[test]
 fn test_batches_with_each_chunk_num_prove_verify() {
+    use integration::test_util::PARAMS_DIR;
+    use itertools::Itertools;
+    use prover::config::AGG_DEGREES;
+
     let output_dir = init_env_and_log("batches_with_each_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
+    let params_map = prover::common::Prover::load_params_map(
+        PARAMS_DIR,
+        &AGG_DEGREES.iter().copied().collect_vec(),
+    );
+
     let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
     dump_chunk_protocol(&batch, &output_dir);
-    let mut batch_prover = new_batch_prover(&output_dir);
+    let mut batch_prover = new_batch_prover(&params_map, &output_dir);
 
     // Iterate over chunk proofs to test with 1 to max chunks (in a batch).
     for len in 1..batch.chunk_proofs.len() {
@@ -57,7 +75,12 @@ fn test_batches_with_each_chunk_num_prove_verify() {
             // FIXME
             blob_bytes: vec![],
         };
-        prove_and_verify_batch(&output_dir.to_string_lossy(), &mut batch_prover, batch);
+        prove_and_verify_batch(
+            &params_map,
+            &output_dir.to_string_lossy(),
+            &mut batch_prover,
+            batch,
+        );
     }
 }
 
