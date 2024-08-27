@@ -2195,6 +2195,7 @@ dependencies = [
  "revm 3.5.0",
  "serde",
  "serde_derive",
+ "serde_json",
  "snark-verifier",
  "snark-verifier-sdk",
 ]

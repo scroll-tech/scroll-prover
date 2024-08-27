@@ -133,9 +133,9 @@ fn ccc_block_whole_block(
     checker.estimate_circuit_capacity(block.clone()).unwrap();
 }
 
-fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, block: &BlockTrace) {
-    for tx_idx in 0..block.transactions.len() {
-        log::info!("processing {}th block {}th tx", block_idx, tx_idx);
+pub fn txbytx_traces_from_block(block: &BlockTrace) -> Vec<BlockTrace> {
+    let mut result = vec![];
+    for tx_idx in 0..block.transactions.len() { 
         #[rustfmt::skip]
         /*  
         The capacity_checker is expected to be run inside sequencer, where we don't have the traces of blocks, instead we only have traces of tx.
@@ -147,7 +147,6 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             storage_trace: 
                 storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
         */
-
         let tx_trace = BlockTrace {
             transactions: vec![block.transactions[tx_idx].clone()],
             execution_results: vec![block.execution_results[tx_idx].clone()],
@@ -159,6 +158,15 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
             start_l1_queue_index: block.start_l1_queue_index,
             ..Default::default()
         };
+        result.push(tx_trace);
+    }
+    result
+}
+
+fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, block: &BlockTrace) {
+    let traces = txbytx_traces_from_block(block);
+    for (tx_idx, tx_trace) in traces.into_iter().enumerate() {
+        log::info!("processing {}th block {}th tx", block_idx, tx_idx);
         log::debug!("calling estimate_circuit_capacity");
         let results = checker.estimate_circuit_capacity(tx_trace).unwrap();
         log::info!("after {}th block {}th tx: {:?}", block_idx, tx_idx, results);

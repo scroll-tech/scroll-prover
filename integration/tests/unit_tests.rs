@@ -2,14 +2,13 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer_light, prepare_circuit_capacity_checker, run_circuit_capacity_checker,
-        CCCMode,
+        ccc_as_signer_light, prepare_circuit_capacity_checker, run_circuit_capacity_checker, txbytx_traces_from_block, CCCMode
     },
     test_util::load_chunk_for_test,
 };
 use prover::{
     io::read_all,
-    utils::{init_env_and_log, short_git_version},
+    utils::{get_block_trace_from_file, init_env_and_log, short_git_version},
     zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
 };
 
@@ -96,6 +95,17 @@ fn test_evm_verifier_for_dumped_proof() {
             panic!("test failed {e:#?}");
         }
     }
+}
+
+#[test]
+fn test_txbytx_traces() {
+    let block_trace = get_block_trace_from_file("tests/test_data/ccc/8626705-legacy-block.json");
+    let tx_traces = txbytx_traces_from_block(&block_trace);
+    for (idx, tx_trace) in tx_traces.into_iter().enumerate() {
+        let path = format!("tests/test_data/ccc/8626705-legacy-txbytx/{idx}-new.json");
+        let file = std::fs::File::create(path).unwrap();
+        serde_json::to_writer_pretty(file, &tx_trace).unwrap();
+    }   
 }
 
 #[test]
