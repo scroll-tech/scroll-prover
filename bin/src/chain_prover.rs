@@ -4,7 +4,9 @@
 // For production prover, see https://github.com/scroll-tech/scroll/tree/develop/prover
 
 use integration::{
-    capacity_checker::{prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode},
+    capacity_checker::{
+        ccc_by_chunk, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
+    },
     l2geth,
 };
 use prover::{
@@ -317,6 +319,67 @@ async fn prove_by_batch(
         );
     }
 }
+
+// Make sure tx-by-tx light_mode=false row usage >= real row usage
+
+async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
+    let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
+        // Blocks within last 24 hours
+        let block_num = 24 * 1200;
+        log::info!("use latest {block_num} blocks");
+        let latest_block = l2geth.get_block_number().await.unwrap();
+        (latest_block as i64 - block_num, latest_block as i64)
+    } else {
+        (begin_block, end_block)
+    };
+    for block_num in begin_block..=end_block {
+        // part1: real row usage
+        let block_num = block_num as u64;
+        let batch_id = block_num;
+        let chunk_id = block_num;
+        let trace = l2geth
+        .get_block_trace_by_num(block_num as i64, false)
+        .await
+        .unwrap_or_else(|e| {
+            panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
+        });
+        let tx_traces = l2geth
+        .get_txbytx_trace_by_num(block_num as i64)
+        .await
+        .unwrap_or_else(|e| {
+            panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
+        });
+        let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[trace]);
+
+        // part2: tx by tx row usage
+        let tx_num = tx_traces.len();
+        let mut checker = CircuitCapacityChecker::new();
+        checker.light_mode = false;
+        let start_time = std::time::Instant::now();
+        for tx in tx_traces {
+            checker.estimate_circuit_capacity(tx).unwrap();
+        }
+        let row_usage = checker.get_acc_row_usage(false);
+        let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
+
+        // part3: pretty print
+        log::info!("circuit\ttxbytx\tblock\tblock-{block_num}");
+        for i in 0..real_usage.row_usage_details.len() {
+            let r1 = row_usage.row_usage_details[i].row_number;
+            let r2 = real_usage.row_usage_details[i].row_number;
+            // FIXME: the "1" of bytecode circuit
+            assert!(r1 + 1 >= r2);
+            let show_name: String = row_usage.row_usage_details[i]
+                .name
+                .chars()
+                .take(7)
+                .collect();
+            log::info!("{}\t{}\t{}", show_name, r1, r2);
+        }
+        log::info!("{}\t{}\t{}", "avgtxms", t.as_millis(), avg_ccc_time);
+    }
+}
+
 #[tokio::main]
 async fn main() {
     init_env_and_log("chain_prover");
@@ -332,10 +395,17 @@ async fn main() {
         .unwrap_or_else(|e| panic!("chain_prover: failed to initialize ethers Provider: {e}"));
     let rollupscan = rollupscan_client::Client::new("chain_prover", &setting.rollupscan_api_url);
 
-    if setting.batch_mode {
-        prove_by_batch(&l2geth, &rollupscan, setting.begin_batch, setting.end_batch).await;
+    let test_mode = &setting.test_mode;
+
+    if test_mode == "batch_prove" {
+        prove_by_batch(&l2geth, &rollupscan, setting.begin_batch, setting.end_batch).await
+    } else if test_mode == "block_prove" {
+        prove_by_block(&l2geth, setting.begin_block, setting.end_block).await
+    } else if test_mode == "txtx_ccc" {
+        txtx_ccc(&l2geth, setting.begin_block, setting.end_block).await
     } else {
-        prove_by_block(&l2geth, setting.begin_block, setting.end_block).await;
+        // Handle unknown test_mode here
+        unimplemented!("{test_mode}");
     }
 
     log::info!("chain_prover: END");
@@ -350,7 +420,7 @@ struct Setting {
     end_block: i64,
     l2geth_api_url: String,
     rollupscan_api_url: String,
-    batch_mode: bool,
+    test_mode: String,
 }
 
 impl Setting {
@@ -375,7 +445,7 @@ impl Setting {
             .ok()
             .and_then(|n| n.parse().ok())
             .unwrap_or_default();
-        let batch_mode = env::var("BATCH_MODE")
+        let test_mode = env::var("TEST_MODE")
             .ok()
             .and_then(|n| n.parse().ok())
             .unwrap_or_default();
@@ -387,7 +457,7 @@ impl Setting {
             end_block,
             l2geth_api_url,
             rollupscan_api_url,
-            batch_mode,
+            test_mode,
         }
     }
 }
