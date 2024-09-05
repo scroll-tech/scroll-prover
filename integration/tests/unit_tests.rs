@@ -8,7 +8,7 @@ use integration::{
 };
 use prover::{
     io::read_all,
-    utils::{init_env_and_log, short_git_version},
+    utils::{init_env_and_log, short_git_version, read_env_var},
     zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
 };
 
@@ -126,9 +126,42 @@ fn estimate_circuit_rows() {
     init_env_and_log("integration");
     prepare_circuit_capacity_checker();
 
+    let repeated = read_env_var("PROF_REPEAT", 20);
+
     let (_, block_trace) = load_chunk_for_test();
-    let witness_block = block_traces_to_witness_block(block_trace).unwrap();
+
+    let mut block_traces = (0..repeated)
+        .map(|_| block_trace.clone())
+        .collect::<Vec<_>>();
+
     log::info!("estimating used rows");
+
+    #[cfg(feature = "pprof")]
+    let guard = pprof::ProfilerGuardBuilder::default()
+        .frequency(1000)
+        .blocklist(&["libc", "libgcc", "pthread", "vdso"])
+        .build()
+        .unwrap();
+
+    let now = std::time::Instant::now();
+
+    for _ in 0..repeated {
+        let block_trace = std::hint::black_box(&mut block_traces).pop().unwrap();
+        let witness_block = block_traces_to_witness_block(std::hint::black_box(block_trace)).unwrap();
+        let row_usage = <prover::zkevm::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(std::hint::black_box(&witness_block));
+        std::mem::forget(std::hint::black_box(witness_block));
+        std::mem::forget(std::hint::black_box(row_usage));
+    }
+
+    let ccc_elapsed = now.elapsed();
+
+    #[cfg(feature = "pprof")]
+    if let Ok(report) = guard.report().build() {
+        let file = std::fs::File::create("flamegraph.svg").unwrap();
+        report.flamegraph(file).unwrap();
+    };
+
+    let witness_block = block_traces_to_witness_block(block_trace).unwrap();
     let row_usage = <prover::zkevm::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(&witness_block);
     let r = row_usage
         .iter()
@@ -136,4 +169,9 @@ fn estimate_circuit_rows() {
         .unwrap()
         .clone();
     log::info!("final rows: {} {}", r.row_num_real, r.name);
+
+    log::info!(
+        "ccc_elapsed: {:.2}ms",
+        ccc_elapsed.as_millis() as f64 / repeated as f64
+    );
 }
