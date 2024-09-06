@@ -5,7 +5,8 @@
 
 use integration::{
     capacity_checker::{
-        ccc_by_chunk, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
+        ccc_by_chunk, ccc_txbytx_full, compare_txbytx, prepare_circuit_capacity_checker,
+        run_circuit_capacity_checker, CCCMode,
     },
     l2geth,
 };
@@ -335,8 +336,6 @@ async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
     for block_num in begin_block..=end_block {
         // part1: real row usage
         let block_num = block_num as u64;
-        let batch_id = block_num;
-        let chunk_id = block_num;
         let trace = l2geth
         .get_block_trace_by_num(block_num as i64, false)
         .await
@@ -349,34 +348,8 @@ async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
         .unwrap_or_else(|e| {
             panic!("chain_prover: failed to request l2geth block-trace API for block-{block_num}: {e}")
         });
-        let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[trace]);
 
-        // part2: tx by tx row usage
-        let tx_num = tx_traces.len();
-        let mut checker = CircuitCapacityChecker::new();
-        checker.light_mode = false;
-        let start_time = std::time::Instant::now();
-        for tx in tx_traces {
-            checker.estimate_circuit_capacity(tx).unwrap();
-        }
-        let row_usage = checker.get_acc_row_usage(false);
-        let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
-
-        // part3: pretty print
-        log::info!("circuit\ttxbytx\tblock\tblock-{block_num}");
-        for i in 0..real_usage.row_usage_details.len() {
-            let r1 = row_usage.row_usage_details[i].row_number;
-            let r2 = real_usage.row_usage_details[i].row_number;
-            // FIXME: the "1" of bytecode circuit
-            assert!(r1 + 1 >= r2);
-            let show_name: String = row_usage.row_usage_details[i]
-                .name
-                .chars()
-                .take(7)
-                .collect();
-            log::info!("{}\t{}\t{}", show_name, r1, r2);
-        }
-        log::info!("{}\t{}\t{}", "avgtxms", t.as_millis(), avg_ccc_time);
+        compare_txbytx(&tx_traces, &trace, block_num);
     }
 }
 
