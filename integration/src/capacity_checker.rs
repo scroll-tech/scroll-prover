@@ -329,6 +329,7 @@ pub fn compare_txbytx(tx_traces: &[BlockTrace], trace: &BlockTrace, block_num: u
     let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[trace.clone()]);
 
     // part2: tx by tx row usage
+    log::info!("txbytx ccc");
     let (row_usage, avg_ccc_time) = ccc_txbytx_full(&tx_traces);
 
     // part3: pretty print
