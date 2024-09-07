@@ -2,7 +2,8 @@
 
 use integration::{
     capacity_checker::{
-        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
+        ccc_as_signer, ccc_txbytx_full, compare_txbytx, prepare_circuit_capacity_checker,
+        run_circuit_capacity_checker, CCCMode,
     },
     test_util::load_chunk_for_test,
 };
@@ -10,6 +11,7 @@ use prover::{
     io::read_all,
     utils::{init_env_and_log, short_git_version},
     zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
+    BlockTrace,
 };
 
 #[test]
@@ -119,6 +121,22 @@ fn test_capacity_checker() {
         ccc_as_signer(chunk_id, &block_traces).1
     };
     log::info!("avg_each_tx_time {avg_each_tx_time:?}");
+}
+
+#[test]
+fn test_txbytx_ccc() {
+    init_env_and_log("integration");
+    prepare_circuit_capacity_checker();
+
+    let tx_traces: Vec<BlockTrace> = {
+        let f = std::fs::File::open("tests/extra_traces/0x47aa-txbytx.json").unwrap();
+        serde_json::from_reader(&f).unwrap()
+    };
+    let trace: BlockTrace = {
+        let f = std::fs::File::open("tests/extra_traces/0x47aa-block.json").unwrap();
+        serde_json::from_reader(&f).unwrap()
+    };
+    compare_txbytx(&tx_traces, &trace, 0);
 }
 
 #[test]

@@ -309,3 +309,47 @@ pub fn ccc_as_follower_light(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage,
 pub fn ccc_as_follower_full(chunk_id: u64, blocks: &[BlockTrace]) -> (RowUsage, Duration) {
     get_ccc_result_of_chunk(chunk_id, blocks, true, false, false, "chunk-f-f")
 }
+
+pub fn ccc_txbytx_full(tx_traces: &[BlockTrace]) -> (RowUsage, Duration) {
+    let tx_num = tx_traces.len();
+    let mut checker = CircuitCapacityChecker::new();
+    checker.light_mode = false;
+    let start_time = std::time::Instant::now();
+    for tx in tx_traces {
+        checker.estimate_circuit_capacity(tx.clone()).unwrap();
+    }
+    let row_usage = checker.get_acc_row_usage(false);
+    let avg_ccc_time = start_time.elapsed().as_millis() / tx_num as u128;
+    (row_usage, Duration::from_millis(avg_ccc_time as u64))
+}
+
+pub fn compare_txbytx(tx_traces: &[BlockTrace], trace: &BlockTrace, block_num: u64) {
+    let batch_id = block_num;
+    let chunk_id = block_num;
+    let (real_usage, t) = ccc_by_chunk(batch_id, chunk_id, &[trace.clone()]);
+
+    // part2: tx by tx row usage
+    log::info!("txbytx ccc");
+    let (row_usage, avg_ccc_time) = ccc_txbytx_full(&tx_traces);
+
+    // part3: pretty print
+    log::info!("circuit\ttxbytx\tblock\tblock-{block_num}");
+    for i in 0..real_usage.row_usage_details.len() {
+        let r1 = row_usage.row_usage_details[i].row_number;
+        let r2 = real_usage.row_usage_details[i].row_number;
+        // FIXME: the "1" of bytecode circuit
+        assert!(r1 + 1 >= r2);
+        let show_name: String = row_usage.row_usage_details[i]
+            .name
+            .chars()
+            .take(7)
+            .collect();
+        log::info!("{}\t{}\t{}", show_name, r1, r2);
+    }
+    log::info!(
+        "{}\t{}\t{}",
+        "avgtxms",
+        t.as_millis(),
+        avg_ccc_time.as_millis()
+    );
+}
