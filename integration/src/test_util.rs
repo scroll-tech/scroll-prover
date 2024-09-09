@@ -10,9 +10,10 @@ pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
 
 pub fn trace_path_for_test() -> String {
+    // use trace file of post-curie upgrade
     read_env_var(
         "TRACE_PATH",
-        "tests/extra_traces/batch_34700/chunk_1236462/block_4176564.json".to_string(),
+        "tests/extra_traces/batch1/chunk_1/block_7156762.json".to_string(),
     )
 }
 
