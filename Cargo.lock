@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -42,8 +42,8 @@ dependencies = [
  "eth-types",
  "ethers-core",
  "gadgets",
- "halo2-base 0.2.2",
- "halo2-ecc 0.2.2",
+ "halo2-base",
+ "halo2-ecc",
  "halo2_proofs",
  "hex",
  "itertools 0.11.0",
@@ -55,9 +55,8 @@ dependencies = [
  "revm-primitives 7.1.0",
  "serde",
  "serde_json",
- "snark-verifier 0.1.0",
- "snark-verifier-sdk 0.0.1",
- "snark-verifier-sdk 0.1.8",
+ "snark-verifier",
+ "snark-verifier-sdk",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "zkevm-circuits",
@@ -620,7 +619,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -733,8 +732,7 @@ dependencies = [
  "js-sys",
  "num-integer",
  "num-traits",
- "serde",
- "time 0.1.45",
+ "time",
  "wasm-bindgen",
  "winapi",
 ]
@@ -772,7 +770,7 @@ dependencies = [
  "clap_lex",
  "indexmap",
  "once_cell",
- "strsim 0.10.0",
+ "strsim",
  "termcolor",
  "textwrap",
 ]
@@ -859,25 +857,6 @@ dependencies = [
  "sha2",
  "sha3 0.10.6",
  "thiserror",
-]
-
-[[package]]
-name = "compression"
-version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
-dependencies = [
- "ark-std 0.3.0",
- "env_logger",
- "halo2_proofs",
- "halo2curves",
- "log",
- "rand",
- "serde",
- "serde_json",
- "serde_stacker",
- "snark-verifier 0.1.8",
- "snark-verifier-sdk 0.0.1",
- "snark-verifier-sdk 0.1.8",
 ]
 
 [[package]]
@@ -1090,18 +1069,8 @@ version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a01d95850c592940db9b8194bc39f4bc0e89dee5c4265e4b1807c34a9aba453c"
 dependencies = [
- "darling_core 0.13.4",
- "darling_macro 0.13.4",
-]
-
-[[package]]
-name = "darling"
-version = "0.20.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f63b86c8a8826a49b8c21f08a2d07338eec8d900540f8630dc76284be802989"
-dependencies = [
- "darling_core 0.20.10",
- "darling_macro 0.20.10",
+ "darling_core",
+ "darling_macro",
 ]
 
 [[package]]
@@ -1114,22 +1083,8 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "strsim 0.10.0",
+ "strsim",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "darling_core"
-version = "0.20.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95133861a8032aaea082871032f5815eb9e98cef03fa916ab4500513994df9e5"
-dependencies = [
- "fnv",
- "ident_case",
- "proc-macro2",
- "quote",
- "strsim 0.11.1",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -1138,20 +1093,9 @@ version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c972679f83bdf9c42bd905396b6c3588a843a17f0f16dfcfa3e2c5d57441835"
 dependencies = [
- "darling_core 0.13.4",
+ "darling_core",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "darling_macro"
-version = "0.20.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d336a2a514f6ccccaa3e09b02d41d35330c07ddf03a62165fcec10bb561c7806"
-dependencies = [
- "darling_core 0.20.10",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -1168,15 +1112,6 @@ checksum = "fffa369a668c8af7dbf8b5e56c9f744fbd399949ed171606040001947de40b1c"
 dependencies = [
  "const-oid",
  "zeroize",
-]
-
-[[package]]
-name = "deranged"
-version = "0.3.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b42b6fa04a440b495c8b04d0e71b707c585f83cb9cb28cf8cd0d976c315e31b4"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -1380,7 +1315,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1397,7 +1332,7 @@ dependencies = [
  "revm-primitives 7.1.0",
  "serde",
  "serde_json",
- "serde_with 1.14.0",
+ "serde_with",
  "sha3 0.10.6",
  "strum 0.25.0",
  "strum_macros 0.25.3",
@@ -1536,7 +1471,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1718,7 +1653,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1741,7 +1676,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -1757,18 +1692,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
-]
-
-[[package]]
-name = "getset"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e45727250e75cc04ff2846a66397da8ef2b3db8e40e0cef4df67950a07621eb9"
-dependencies = [
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -1871,33 +1794,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "halo2-base"
-version = "0.4.1"
-source = "git+https://github.com/scroll-tech/halo2-lib.git?branch=community-edition#508815c24d9963b6fdef6f1cfe6c4597c4c779ef"
-dependencies = [
- "getset",
- "halo2_proofs",
- "itertools 0.11.0",
- "log",
- "num-bigint",
- "num-integer",
- "num-traits",
- "poseidon-primitives",
- "rand_chacha",
- "rayon",
- "rustc-hash",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "halo2-ecc"
 version = "0.2.2"
 source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#817cace374a9f4b2eca682b1cc36f143255ea25f"
 dependencies = [
  "ff",
  "group",
- "halo2-base 0.2.2",
+ "halo2-base",
  "itertools 0.10.5",
  "num-bigint",
  "num-integer",
@@ -1907,25 +1810,6 @@ dependencies = [
  "rand_core",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "halo2-ecc"
-version = "0.4.1"
-source = "git+https://github.com/scroll-tech/halo2-lib.git?branch=community-edition#508815c24d9963b6fdef6f1cfe6c4597c4c779ef"
-dependencies = [
- "halo2-base 0.4.1",
- "itertools 0.11.0",
- "num-bigint",
- "num-integer",
- "num-traits",
- "rand",
- "rand_chacha",
- "rand_core",
- "rayon",
- "serde",
- "serde_json",
- "test-case",
 ]
 
 [[package]]
@@ -2012,7 +1896,7 @@ dependencies = [
 [[package]]
 name = "halo2curves"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/halo2curves?branch=v0.1.0#a495a7b11ad13e5cd0cca7ca5d737b398cfaf1b7"
+source = "git+https://github.com/scroll-tech/halo2curves?branch=v0.1.0#112f5b9bf27f6b1708ba7d1c2fc14cb3c6e55604"
 dependencies = [
  "blake2b_simd",
  "bls12_381",
@@ -2022,7 +1906,6 @@ dependencies = [
  "maybe-rayon",
  "num-bigint",
  "num-traits",
- "pairing",
  "pasta_curves",
  "paste",
  "rand",
@@ -2291,7 +2174,6 @@ checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
  "hashbrown 0.12.3",
- "serde",
 ]
 
 [[package]]
@@ -2329,8 +2211,8 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "snark-verifier 0.1.0",
- "snark-verifier-sdk 0.0.1",
+ "snark-verifier",
+ "snark-verifier-sdk",
  "tokio",
 ]
 
@@ -2627,7 +2509,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2642,7 +2524,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3070,21 +2952,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "poseidon-primitives"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bd95570f7ea849b4187298b5bb229643e44e1d47ddf3979d0db8a1c28be26a8"
-dependencies = [
- "bitvec",
- "ff",
- "lazy_static",
- "log",
- "rand",
- "rand_xorshift",
- "thiserror",
-]
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3186,7 +3053,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3194,7 +3061,6 @@ dependencies = [
  "blake2",
  "bus-mapping",
  "chrono",
- "compression",
  "dotenvy",
  "eth-types",
  "ethers-core",
@@ -3213,9 +3079,8 @@ dependencies = [
  "serde_json",
  "serde_stacker",
  "sha2",
- "snark-verifier 0.1.0",
- "snark-verifier-sdk 0.0.1",
- "snark-verifier-sdk 0.1.8",
+ "snark-verifier",
+ "snark-verifier-sdk",
  "zkevm-circuits",
 ]
 
@@ -3290,9 +3155,9 @@ dependencies = [
 
 [[package]]
 name = "rayon"
-version = "1.10.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b418a60154510ca1a002a752ca9714984e21e4241e804d32555251faf8b78ffa"
+checksum = "1d2df5196e37bcc87abebc0053e20787d73847bb33134a69841207dd0a47f03b"
 dependencies = [
  "either",
  "rayon-core",
@@ -3300,12 +3165,14 @@ dependencies = [
 
 [[package]]
 name = "rayon-core"
-version = "1.12.1"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
+checksum = "4b8f95bd6966f5c87776639160a66bd8ab9895d9d4ab01ddba9fc60661aebe8d"
 dependencies = [
+ "crossbeam-channel",
  "crossbeam-deque",
  "crossbeam-utils",
+ "num_cpus",
 ]
 
 [[package]]
@@ -3470,11 +3337,9 @@ dependencies = [
  "auto_impl",
  "bitflags 2.6.0",
  "bitvec",
- "c-kzg 0.1.1",
  "enumn",
  "hashbrown 0.14.3",
  "hex",
- "once_cell",
 ]
 
 [[package]]
@@ -3971,23 +3836,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "678b5a069e50bf00ecd22d0cd8ddf7c236f68581b03db652061ed5eb13a312ff"
 dependencies = [
  "serde",
- "serde_with_macros 1.5.2",
-]
-
-[[package]]
-name = "serde_with"
-version = "2.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07ff71d2c147a7b57362cead5e22f772cd52f6ab31cfcd9edcd7f6aeb2a0afbe"
-dependencies = [
- "base64 0.13.1",
- "chrono",
- "hex",
- "indexmap",
- "serde",
- "serde_json",
- "serde_with_macros 2.3.3",
- "time 0.3.26",
+ "serde_with_macros",
 ]
 
 [[package]]
@@ -3996,22 +3845,10 @@ version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e182d6ec6f05393cc0e5ed1bf81ad6db3a8feedf8ee515ecdd369809bcce8082"
 dependencies = [
- "darling 0.13.4",
+ "darling",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "serde_with_macros"
-version = "2.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "881b6f881b17d13214e5d494c939ebab463d01264ce1811e9d4ac3a882e7695f"
-dependencies = [
- "darling 0.20.10",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -4111,12 +3948,12 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#572ef69d1595fca82213d3b05e859eaf355a5fa1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#58c46b74c73156b9e09dc27617369d2acfb4461b"
 dependencies = [
  "bytes",
  "ethereum-types",
- "halo2-base 0.2.2",
- "halo2-ecc 0.2.2",
+ "halo2-base",
+ "halo2-ecc",
  "hex",
  "itertools 0.12.1",
  "num-bigint",
@@ -4132,36 +3969,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "snark-verifier"
-version = "0.1.8"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=axiom-community-edition#5a92289e86b384490a78ff1dbca689d91a6adf5e"
-dependencies = [
- "halo2-base 0.4.1",
- "halo2-ecc 0.4.1",
- "hex",
- "itertools 0.11.0",
- "lazy_static",
- "num-bigint",
- "num-integer",
- "num-traits",
- "pairing",
- "rand",
- "revm 3.5.0",
- "ruint",
- "serde",
- "sha3 0.10.6",
-]
-
-[[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#572ef69d1595fca82213d3b05e859eaf355a5fa1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#58c46b74c73156b9e09dc27617369d2acfb4461b"
 dependencies = [
  "bincode",
  "ethereum-types",
  "ff",
- "halo2-base 0.2.2",
- "halo2_proofs",
+ "halo2-base",
  "hex",
  "itertools 0.12.1",
  "log",
@@ -4172,30 +3987,7 @@ dependencies = [
  "rand_chacha",
  "serde",
  "serde_json",
- "snark-verifier 0.1.0",
-]
-
-[[package]]
-name = "snark-verifier-sdk"
-version = "0.1.8"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=axiom-community-edition#5a92289e86b384490a78ff1dbca689d91a6adf5e"
-dependencies = [
- "bincode",
- "ethereum-types",
- "getset",
- "halo2-base 0.4.1",
- "hex",
- "itertools 0.11.0",
- "lazy_static",
- "num-bigint",
- "num-integer",
- "num-traits",
- "rand",
- "rand_chacha",
- "serde",
- "serde_json",
- "serde_with 2.3.3",
- "snark-verifier 0.1.8",
+ "snark-verifier",
 ]
 
 [[package]]
@@ -4258,12 +4050,6 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
-
-[[package]]
-name = "strsim"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "strum"
@@ -4376,39 +4162,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "test-case"
-version = "3.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb2550dd13afcd286853192af8601920d959b14c401fcece38071d53bf0768a8"
-dependencies = [
- "test-case-macros",
-]
-
-[[package]]
-name = "test-case-core"
-version = "3.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adcb7fd841cd518e279be3d5a3eb0636409487998a4aff22f3de87b81e88384f"
-dependencies = [
- "cfg-if 1.0.0",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
-]
-
-[[package]]
-name = "test-case-macros"
-version = "3.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c89e72a01ed4c579669add59014b9a524d609c0c88c6a585ce37485879f6ffb"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.66",
- "test-case-core",
-]
-
-[[package]]
 name = "textwrap"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4463,34 +4216,6 @@ dependencies = [
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi",
-]
-
-[[package]]
-name = "time"
-version = "0.3.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a79d09ac6b08c1ab3906a2f7cc2e81a0e27c7ae89c63812df75e52bef0751e07"
-dependencies = [
- "deranged",
- "itoa",
- "serde",
- "time-core",
- "time-macros",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7300fbefb4dadc1af235a9cef3737cea692a9d97e1b9cbcd4ebdae6f8868e6fb"
-
-[[package]]
-name = "time-macros"
-version = "0.2.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75c65469ed6b3a4809d987a41eb1dc918e9bc1d92211cbad7ae82931846f7451"
-dependencies = [
- "time-core",
 ]
 
 [[package]]
@@ -5265,7 +4990,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.12.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/migrate_compression#b69ec741429daab0cba1053dbdf7b921eae335b5"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?rev=6e6ee0eed02a366918fbc820e26b1dd8c97923e2#6e6ee0eed02a366918fbc820e26b1dd8c97923e2"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -5276,8 +5001,8 @@ dependencies = [
  "ethers-signers",
  "ff",
  "gadgets",
- "halo2-base 0.2.2",
- "halo2-ecc 0.2.2",
+ "halo2-base",
+ "halo2-ecc",
  "halo2-mpt-circuits",
  "halo2_gadgets",
  "halo2_proofs",
@@ -5297,8 +5022,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3 0.10.6",
- "snark-verifier 0.1.0",
- "snark-verifier-sdk 0.0.1",
+ "snark-verifier",
+ "snark-verifier-sdk",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "subtle",
@@ -5307,7 +5032,7 @@ dependencies = [
 [[package]]
 name = "zktrie"
 version = "0.3.0"
-source = "git+https://github.com/scroll-tech/zktrie.git?branch=v0.9#460b8c22af65b7809164548cba1e0253b6db5a70"
+source = "git+https://github.com/scroll-tech/zktrie.git?branch=main#460b8c22af65b7809164548cba1e0253b6db5a70"
 dependencies = [
  "gobuild",
  "zktrie_rust",
@@ -5316,7 +5041,7 @@ dependencies = [
 [[package]]
 name = "zktrie_rust"
 version = "0.3.0"
-source = "git+https://github.com/scroll-tech/zktrie.git?branch=v0.9#460b8c22af65b7809164548cba1e0253b6db5a70"
+source = "git+https://github.com/scroll-tech/zktrie.git?branch=main#460b8c22af65b7809164548cba1e0253b6db5a70"
 dependencies = [
  "hex",
  "lazy_static",
