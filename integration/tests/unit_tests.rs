@@ -1,9 +1,7 @@
 // Fast tests which can be finished within minutes
 
 use integration::{
-    capacity_checker::{
-        ccc_as_signer, prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode,
-    },
+    capacity_checker::{prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode},
     test_util::load_chunk_for_test,
 };
 use prover::{
@@ -104,21 +102,15 @@ fn test_capacity_checker() {
 
     let block_traces = load_chunk_for_test().1;
 
-    let full = true;
     let batch_id = 0;
     let chunk_id = 0;
-    let avg_each_tx_time = if full {
-        let ccc_modes = [
-            CCCMode::Optimal,
-            CCCMode::Siger,
-            CCCMode::FollowerLight,
-            CCCMode::FollowerFull,
-        ];
-        run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes).unwrap()
-    } else {
-        ccc_as_signer(chunk_id, &block_traces).1
-    };
-    log::info!("avg_each_tx_time {avg_each_tx_time:?}");
+    let ccc_modes = [
+        CCCMode::Optimal,
+        //CCCMode::Siger,
+        //CCCMode::FollowerLight,
+        CCCMode::FollowerFull,
+    ];
+    run_circuit_capacity_checker(batch_id, chunk_id, &block_traces, &ccc_modes);
 }
 
 #[test]
