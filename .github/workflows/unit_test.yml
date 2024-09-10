@@ -48,7 +48,7 @@ jobs:
       - run: git config --system --add safe.directory /__w/scroll-prover/scroll-prover
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2023-12-03
+          toolchain: nightly-2024-07-07
       - name: Cargo cache
         uses: Swatinem/rust-cache@v2
       - name: Setup golang
