@@ -188,8 +188,7 @@ fn gen_batch_proving_task(
     log::info!("Constructed zkevm prover");
     let chunk_proofs: Vec<_> = chunks
         .into_iter()
-        .enumerate()
-        .map(|(_, block_traces)| {
+        .map(|block_traces| {
             zkevm_prover
                 .gen_chunk_proof(
                     ChunkProvingTask::from(block_traces),
@@ -261,8 +260,7 @@ fn log_batch_pi(trace_paths: &[String]) {
 
     let mut chunk_hashes: Vec<ChunkInfo> = chunk_traces
         .into_iter()
-        .enumerate()
-        .map(|(_i, chunk_trace)| {
+        .map(|chunk_trace| {
             let witness_block = chunk_trace_to_witness_block(chunk_trace.clone()).unwrap();
             ChunkInfo::from_witness_block(&witness_block, false)
         })

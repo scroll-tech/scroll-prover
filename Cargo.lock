@@ -30,8 +30,8 @@ dependencies = [
 
 [[package]]
 name = "aggregator"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -51,8 +51,8 @@ dependencies = [
  "num-bigint",
  "once_cell",
  "rand",
- "revm-precompile 7.0.0",
- "revm-primitives 4.0.0",
+ "revm-precompile 9.2.0",
+ "revm-primitives 7.1.0",
  "serde",
  "serde_json",
  "snark-verifier",
@@ -88,6 +88,20 @@ name = "allocator-api2"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0942ffc6dcaadf03badf6e6a2d0228460359d5e34b57ccdc720b7382dfbd5ec5"
+
+[[package]]
+name = "alloy-eips"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9431c99a3b3fe606ede4b3d4043bdfbcb780c45b8d8d226c3804e2b75cfbe68"
+dependencies = [
+ "alloy-primitives 0.7.7",
+ "alloy-rlp",
+ "c-kzg 1.0.2",
+ "k256",
+ "once_cell",
+ "serde",
+]
 
 [[package]]
 name = "alloy-primitives"
@@ -604,8 +618,8 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 
 [[package]]
 name = "bus-mapping"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -620,7 +634,7 @@ dependencies = [
  "mpt-zktrie",
  "num",
  "poseidon-circuit",
- "revm-precompile 7.0.0",
+ "revm-precompile 9.2.0",
  "serde",
  "serde_json",
  "strum 0.25.0",
@@ -1300,8 +1314,8 @@ dependencies = [
 
 [[package]]
 name = "eth-types"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1314,8 +1328,8 @@ dependencies = [
  "num-bigint",
  "poseidon-base",
  "regex",
- "revm-precompile 7.0.0",
- "revm-primitives 4.0.0",
+ "revm-precompile 9.2.0",
+ "revm-primitives 7.1.0",
  "serde",
  "serde_json",
  "serde_with",
@@ -1456,8 +1470,8 @@ dependencies = [
 
 [[package]]
 name = "external-tracer"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1638,8 +1652,8 @@ dependencies = [
 
 [[package]]
 name = "gadgets"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1661,8 +1675,8 @@ dependencies = [
 
 [[package]]
 name = "geth-utils"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2503,8 +2517,8 @@ dependencies = [
 
 [[package]]
 name = "mock"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2518,8 +2532,8 @@ dependencies = [
 
 [[package]]
 name = "mpt-zktrie"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3048,8 +3062,8 @@ dependencies = [
 
 [[package]]
 name = "prover"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3307,14 +3321,15 @@ dependencies = [
 
 [[package]]
 name = "revm-precompile"
-version = "7.0.0"
-source = "git+https://github.com/scroll-tech/revm?branch=scroll-evm-executor/v36#36c304d9e9ba4e4b2d5468d91a6bd27210133b6a"
+version = "9.2.0"
+source = "git+https://github.com/scroll-tech/revm?branch=scroll-evm-executor/v40#5e215742c4d9d771f73d74fcba39628b1a2e3452"
 dependencies = [
  "aurora-engine-modexp",
  "c-kzg 1.0.2",
+ "cfg-if 1.0.0",
  "k256",
  "once_cell",
- "revm-primitives 4.0.0",
+ "revm-primitives 7.1.0",
  "ripemd",
  "secp256k1 0.29.0",
  "sha2",
@@ -3339,9 +3354,10 @@ dependencies = [
 
 [[package]]
 name = "revm-primitives"
-version = "4.0.0"
-source = "git+https://github.com/scroll-tech/revm?branch=scroll-evm-executor/v36#36c304d9e9ba4e4b2d5468d91a6bd27210133b6a"
+version = "7.1.0"
+source = "git+https://github.com/scroll-tech/revm?branch=scroll-evm-executor/v40#5e215742c4d9d771f73d74fcba39628b1a2e3452"
 dependencies = [
+ "alloy-eips",
  "alloy-primitives 0.7.7",
  "auto_impl",
  "bitflags 2.6.0",
@@ -3351,11 +3367,9 @@ dependencies = [
  "derive_more",
  "dyn-clone",
  "enumn",
- "halo2curves",
  "hashbrown 0.14.3",
  "hex",
  "once_cell",
- "poseidon-base",
  "serde",
 ]
 
@@ -4540,26 +4554,27 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.84"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31f8dcbc21f30d9b8f2ea926ecb58f6b91192c17e9d33594b3df58b2007ca53b"
+checksum = "a82edfc16a6c469f5f44dc7b571814045d60404b55a0ee849f9bcfa2e63dd9b5"
 dependencies = [
  "cfg-if 1.0.0",
+ "once_cell",
  "wasm-bindgen-macro",
 ]
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.84"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95ce90fd5bcc06af55a641a86428ee4229e44e07033963a2290a8e241607ccb9"
+checksum = "9de396da306523044d3302746f1208fa71d7532227f15e347e2d93e4145dd77b"
 dependencies = [
  "bumpalo",
  "log",
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.66",
  "wasm-bindgen-shared",
 ]
 
@@ -4577,9 +4592,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.84"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c21f77c0bedc37fd5dc21f897894a5ca01e7bb159884559461862ae90c0b4c5"
+checksum = "585c4c91a46b072c92e908d99cb1dcdf95c5218eeb6f3bf1efa991ee7a68cccf"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -4587,22 +4602,22 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.84"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2aff81306fcac3c7515ad4e177f521b5c9a15f2b08f4e32d823066102f35a5f6"
+checksum = "afc340c74d9005395cf9dd098506f7f44e38f2b4a21c6aaacf9a105ea5e1e836"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.66",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.84"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
+checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
 
 [[package]]
 name = "web-sys"
@@ -4985,8 +5000,8 @@ dependencies = [
 
 [[package]]
 name = "zkevm-circuits"
-version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?tag=v0.13.1#4009e5593f13ba73f64f556011ee5ef47bc4ebf3"
+version = "0.12.0"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=develop#bf73bdea1809d6e07e53025c1b940d0e8d21dea2"
 dependencies = [
  "array-init",
  "bus-mapping",

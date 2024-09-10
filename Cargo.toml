@@ -17,7 +17,7 @@ ethers-providers = "2"
 glob = "0.3"
 itertools = "0.10"
 log = "0.4"
-log4rs = { version = "1.2", default_features = false, features = ["console_appender", "file_appender"] }
+log4rs = { version = "1.2", default-features = false, features = ["console_appender", "file_appender"] }
 rand = "0.8"
 rand_xorshift = "0.3"
 reqwest = { version = "0.11", default-features = false, features = [ "json", "rustls-tls" ] }
@@ -27,7 +27,7 @@ serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
 
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.1"  }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", tag = "v0.13.1", default-features = false, features = ["parallel_syn", "scroll"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll"] }
 integration = { path = "integration" }
 
 [patch.crates-io]
