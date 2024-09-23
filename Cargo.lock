@@ -2259,15 +2259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2924,7 +2915,7 @@ dependencies = [
 [[package]]
 name = "poseidon-base"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#becce8bdd31315108c8f1e0a39ca4e5d20c67dcc"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
 dependencies = [
  "bitvec",
  "halo2curves",
@@ -2935,11 +2926,10 @@ dependencies = [
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#becce8bdd31315108c8f1e0a39ca4e5d20c67dcc"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
 dependencies = [
  "ff",
  "halo2_proofs",
- "itertools 0.13.0",
  "log",
  "poseidon-base",
  "rand",
