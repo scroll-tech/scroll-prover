@@ -29,9 +29,12 @@ pub fn prove_and_verify_chunk(
     let mut prover = ChunkProver::from_params_and_assets(params_map, assets_path);
     log::info!("Constructed chunk prover");
 
+    let chunk_identifier =
+        chunk_identifier.map_or_else(|| chunk.identifier(), |name| name.to_string());
+
     let now = Instant::now();
     let chunk_proof = prover
-        .gen_chunk_proof(chunk, chunk_identifier, None, Some(output_dir))
+        .gen_chunk_proof(chunk, Some(&chunk_identifier), None, Some(output_dir))
         .expect("cannot generate chunk snark");
     log::info!(
         "finish generating chunk snark, elapsed: {:?}",
@@ -39,7 +42,10 @@ pub fn prove_and_verify_chunk(
     );
 
     // output_dir is used to load chunk vk
-    env::set_var("CHUNK_VK_FILENAME", "vk_chunk_0.vkey");
+    env::set_var(
+        "CHUNK_VK_FILENAME",
+        &format!("vk_chunk_{chunk_identifier}.vkey"),
+    );
     let verifier = new_chunk_verifier(params_map, output_dir);
     assert!(verifier.verify_snark(chunk_proof.to_snark()));
     log::info!("Verified chunk proof");
