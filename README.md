@@ -16,6 +16,8 @@ cargo install svm-rs
 svm install 0.8.19
 ```
 
+You also need to install [`axel`](https://github.com/axel-download-accelerator/axel).
+
 Download all setup params(SRS), degree `20`, `24` and `26` are used in [config](https://github.com/scroll-tech/scroll-prover/tree/main/integration/configs).
 Could only download params of degree `26`, but it may affect performance (when downsizing params).
 ```shell

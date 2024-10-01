@@ -1,5 +1,5 @@
-set -x
-set -e
+#!/bin/sh
+set -eux
 
 # Set degree to env SCROLL_PROVER_MAX_DEGREE, first input or default value 26.
 degree="${SCROLL_PROVER_MAX_DEGREE:-${1:-26}}"
