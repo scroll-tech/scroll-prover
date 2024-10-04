@@ -32,8 +32,8 @@ fn test_sp1_chunk_prove_verify() {
         test_util::{load_chunk, trace_path_for_test},
     };
     use itertools::Itertools;
-    use prover::{config::ZKEVM_DEGREES, ChunkProvingTask};
-    use prover::{common::Prover, config, utils::chunk_trace_to_witness_block, io::load_snark};
+    use prover::{config::{ZKEVM_DEGREES, LayerId::Layer2}, ChunkProvingTask};
+    use prover::{common::Prover, utils::chunk_trace_to_witness_block, io::load_snark};
     use std::{fs, path::Path};
     use snark_verifier_sdk::verify_snark_shplonk;
 
@@ -76,9 +76,9 @@ fn test_sp1_chunk_prove_verify() {
     let snark = comm_prover.load_or_gen_comp_snark(
         // layer1
         "sp1",
-        &task_id,
+        Layer2.id(),
         false,
-        config::LayerId::Layer2.degree(),
+        Layer2.degree(),
         sp1_snark,
         Some(&output_dir),
     ).unwrap();
