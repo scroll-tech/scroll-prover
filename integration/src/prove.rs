@@ -1,6 +1,6 @@
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
-    aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchData, BatchProof,
+    aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, ChunkProof, BatchData, BatchProof,
     BatchProvingTask, BundleProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
 };
 use std::{collections::BTreeMap, env, time::Instant};
@@ -19,15 +19,120 @@ pub fn new_batch_prover<'a>(
     prover
 }
 
-pub fn prove_and_verify_chunk(
-    chunk: ChunkProvingTask,
-    chunk_identifier: Option<&str>,
+use prover::{Snark, utils::chunk_trace_to_witness_block};
+use anyhow::Result;
+
+/// SP1Prover simple compress a snark from sp1, so we have
+/// same snark (only different preprocess bytes) as zkevm's chunk proof
+pub struct SP1Prover<'p> (ChunkProver<'p>);
+
+impl<'params> SP1Prover<'params> {
+    pub fn from_params_and_assets(
+        params_map: &'params BTreeMap<u32, ParamsKZG<Bn256>>,
+        assets_dir: &str,
+    ) -> Self {
+        Self(ChunkProver::from_params_and_assets(params_map, assets_dir))
+    }
+
+    pub fn get_vk(&self) -> Option<Vec<u8>> {
+        self.0.get_vk()
+    }
+
+    pub fn gen_chunk_proof(
+        &mut self,
+        chunk: ChunkProvingTask,
+        chunk_identifier: &str,
+        sp1_snark: Snark,
+        output_dir: Option<&str>,
+    ) -> Result<ChunkProof> {
+
+        use prover::config::LayerId::Layer2;
+
+        let witness_block = chunk_trace_to_witness_block(chunk.block_traces)?;
+        let chunk_info = 
+        if let Some(chunk_info_input) = chunk.chunk_info {
+            chunk_info_input
+        } else {
+            log::info!("gen chunk_info {chunk_identifier:?}");
+            ChunkInfo::from_witness_block(&witness_block, false)
+        };
+
+        let comp_snark = self.0.prover_impl.load_or_gen_comp_snark(
+            chunk_identifier, 
+            Layer2.id(),
+            false, 
+            Layer2.degree(), 
+            sp1_snark, 
+            output_dir,
+        )?;
+
+        let result = ChunkProof::new(
+            comp_snark,
+            self.0.prover_impl.pk(Layer2.id()),
+            chunk_info,
+            Vec::new(),
+        );
+
+        if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+            proof.dump(output_dir, &chunk_identifier)?;
+        }
+
+        result        
+    }
+
+}
+
+/// prove_and_verify_sp1_chunk would expect a sp1 snark name "sp1_snark_<chunk_id>.json"
+pub fn prove_and_verify_sp1_chunk(
     params_map: &BTreeMap<u32, ParamsKZG<Bn256>>,
-    assets_path: &str,
     output_dir: &str,
-) {
-    let mut prover = ChunkProver::from_params_and_assets(params_map, assets_path);
-    log::info!("Constructed chunk prover");
+    sp1_dir: Option<&str>,
+    chunk: ChunkProvingTask,
+    prover: &mut SP1Prover,
+    chunk_identifier: Option<&str>,
+) -> ChunkProof {
+
+    use prover::io::load_snark;
+    use std::path::Path;    
+
+    let chunk_identifier =
+        chunk_identifier.map_or_else(|| chunk.identifier(), |name| name.to_string());
+
+    let sp1_dir = sp1_dir.unwrap_or(output_dir);
+    let sp1_snark_name = format!("sp1_snark_{}.json", chunk_identifier);
+
+    let now = Instant::now();
+    let sp1_snark = load_snark(
+        Path::new(sp1_dir).join(&sp1_snark_name).to_str().unwrap()
+    ).ok().flatten().unwrap();
+    let chunk_proof = prover
+        .gen_chunk_proof(chunk, &chunk_identifier, sp1_snark, Some(output_dir))
+        .expect("cannot generate sp1 chunk snark");
+    log::info!(
+        "finish generating sp1 chunk snark, elapsed: {:?}",
+        now.elapsed()
+    );
+
+    // output_dir is used to load chunk vk
+    env::set_var(
+        "CHUNK_VK_FILENAME",
+        &format!("vk_chunk_{chunk_identifier}.vkey"),
+    );
+    let verifier = new_chunk_verifier(params_map, output_dir);
+    assert!(verifier.verify_snark(chunk_proof.clone().to_snark()));
+    log::info!("Verified sp1 chunk proof");
+
+    chunk_proof
+}
+
+
+pub fn prove_and_verify_chunk(
+    params_map: &BTreeMap<u32, ParamsKZG<Bn256>>,
+    output_dir: &str,
+    chunk: ChunkProvingTask,
+    prover: &mut ChunkProver,
+    chunk_identifier: Option<&str>,
+) -> ChunkProof {
 
     let chunk_identifier =
         chunk_identifier.map_or_else(|| chunk.identifier(), |name| name.to_string());
@@ -47,8 +152,10 @@ pub fn prove_and_verify_chunk(
         &format!("vk_chunk_{chunk_identifier}.vkey"),
     );
     let verifier = new_chunk_verifier(params_map, output_dir);
-    assert!(verifier.verify_snark(chunk_proof.to_snark()));
+    assert!(verifier.verify_snark(chunk_proof.clone().to_snark()));
     log::info!("Verified chunk proof");
+
+    chunk_proof
 }
 
 pub fn prove_and_verify_batch(
