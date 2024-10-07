@@ -1,6 +1,6 @@
 use clap::Parser;
 use integration::{prove::prove_and_verify_chunk, test_util::load_chunk};
-use prover::{utils::init_env_and_log, ChunkProvingTask, zkevm::Prover};
+use prover::{utils::init_env_and_log, zkevm::Prover, ChunkProvingTask};
 use std::env;
 
 #[derive(Parser, Debug)]
@@ -40,8 +40,8 @@ fn main() {
             *prover::config::LAYER2_DEGREE,
         ],
     );
-    let mut prover = Prover::from_params_and_assets(&params_map, &args.assets_path,);
-    log::info!("Constructed chunk prover");    
+    let mut prover = Prover::from_params_and_assets(&params_map, &args.assets_path);
+    log::info!("Constructed chunk prover");
     prove_and_verify_chunk(
         &params_map,
         &output_dir,

@@ -90,14 +90,12 @@ fn test_batches_with_each_chunk_num_prove_verify() {
 fn test_batch_prove_verify_after_chunk_tests() {
     use integration::{
         prove::get_blob_from_chunks,
-        test_util::{PARAMS_DIR, trace_path_for_test, load_chunk},
+        test_util::{load_chunk, trace_path_for_test, PARAMS_DIR},
     };
     use itertools::Itertools;
     use prover::{
-        eth_types::H256,
-        BatchHeader, ChunkProvingTask,
-        config::AGG_DEGREES, 
-        proof::ChunkProof};
+        config::AGG_DEGREES, eth_types::H256, proof::ChunkProof, BatchHeader, ChunkProvingTask,
+    };
 
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
@@ -108,7 +106,7 @@ fn test_batch_prove_verify_after_chunk_tests() {
     );
 
     let trace_paths_env = trace_path_for_test();
-    let trace_paths : Vec<_> = trace_paths_env.split(';').collect();
+    let trace_paths: Vec<_> = trace_paths_env.split(';').collect();
     log::info!("Use traces paths {trace_paths:?}");
 
     let mut l1_message_popped = 0;
@@ -118,21 +116,18 @@ fn test_batch_prove_verify_after_chunk_tests() {
     let chunk_proofs = trace_paths
         .iter()
         .map(|chunk_dir| load_chunk(chunk_dir).1)
-        .map(|traces|{
+        .map(|traces| {
             // make use of traces before consumed by chunkproof
-            l1_message_popped += traces.iter().map(|tr|tr.num_l1_txs()).sum::<u64>();
-            last_block_timestamp = traces.last().map_or(
-                last_block_timestamp,
-                |tr|tr.header.timestamp.as_u64()
-            );
+            l1_message_popped += traces.iter().map(|tr| tr.num_l1_txs()).sum::<u64>();
+            last_block_timestamp = traces
+                .last()
+                .map_or(last_block_timestamp, |tr| tr.header.timestamp.as_u64());
 
             let task = ChunkProvingTask::from(traces);
-            ChunkProof::from_json_file(
-                &output_dir, 
-                &task.identifier(),
-            )
+            ChunkProof::from_json_file(&output_dir, &task.identifier())
         })
-        .collect::<Result<Vec<_>, _>>().unwrap();
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
 
     let chunk_infos = chunk_proofs
         .iter()
@@ -141,12 +136,14 @@ fn test_batch_prove_verify_after_chunk_tests() {
 
     let blob_bytes = get_blob_from_chunks(&chunk_infos);
 
-
     let batch_header = BatchHeader::construct_from_chunks(
-        4, 123, l1_message_popped, l1_message_popped,
+        4,
+        123,
+        l1_message_popped,
+        l1_message_popped,
         H256([
-            0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0,
+            0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
         ]),
         last_block_timestamp,
         &chunk_infos,
