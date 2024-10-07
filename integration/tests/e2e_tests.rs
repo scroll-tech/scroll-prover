@@ -1,6 +1,6 @@
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use integration::{
-    prove::get_blob_from_chunks,
+    prove::{prove_and_verify_chunk, prove_and_verify_sp1_chunk, get_blob_from_chunks, SP1Prover},
     test_util::{load_batch, load_chunk, load_chunk_for_test, ASSETS_DIR, PARAMS_DIR},
 };
 use prover::{
@@ -43,16 +43,27 @@ fn test_e2e_prove_verify() {
             .collect_vec(),
     );
 
-    let chunks1 = load_batch("./tests/extra_traces/batch1").unwrap();
-    let chunks2 = load_batch("./tests/extra_traces/batch2").unwrap();
+    let chunk_paths = read_env_var("E2E_TRACE_PATHS", 
+    "./tests/extra_traces/batch1;./tests/extra_traces/batch2".to_string());
+    let chunks = chunk_paths.split(';').map(|dir|load_batch(dir).unwrap());
+
+    let sp1_path = {
+        let p = read_env_var("SP1_PATH", String::new());
+        if p.is_empty() {
+            None
+        } else {
+            Some(p)
+        }
+    };
 
     let mut batch_prover_pending = None;
     let mut opt_batch_header = None;
     let mut batch_proofs = Vec::new();
 
-    for (i, chunk) in [chunks1, chunks2].into_iter().enumerate() {
+    for (i, chunk) in chunks.enumerate() {
         let (batch, batch_header) =
-            gen_batch_proving_task(&params_map, &output_dir, &chunk, opt_batch_header);
+            gen_batch_proving_task(&params_map, &output_dir, 
+                &chunk, opt_batch_header, sp1_path.as_ref().map(String::as_str));
         dump_as_json(
             &output_dir,
             format!("batch_prove_{}", i + 1).as_str(),
@@ -168,6 +179,7 @@ fn gen_batch_proving_task(
     output_dir: &str,
     chunk_dirs: &[String],
     opt_batch_header: Option<BatchHeader<MAX_AGG_SNARKS>>,
+    sp1_path: Option<&str>,
 ) -> (BatchProvingTask, BatchHeader<MAX_AGG_SNARKS>) {
     let chunks: Vec<_> = chunk_dirs
         .iter()
@@ -184,21 +196,38 @@ fn gen_batch_proving_task(
             .map_or(0, |block_trace| block_trace.header.timestamp.as_u64())
     });
 
-    let mut zkevm_prover = zkevm::Prover::from_params_and_assets(params_map, ASSETS_DIR);
-    log::info!("Constructed zkevm prover");
-    let chunk_proofs: Vec<_> = chunks
+    let chunk_proofs = if let Some(sp1_path) = sp1_path {
+        let mut zkevm_prover = SP1Prover::from_params_and_assets(params_map, ASSETS_DIR);
+        log::info!("Constructed sp1 prover");
+        chunks
         .into_iter()
         .map(|block_traces| {
-            zkevm_prover
-                .gen_chunk_proof(
-                    ChunkProvingTask::from(block_traces),
-                    None,
-                    None,
-                    Some(output_dir),
-                )
-                .unwrap()
+            prove_and_verify_sp1_chunk(
+                params_map,
+                output_dir,
+                Some(sp1_path),
+                ChunkProvingTask::from(block_traces),
+                &mut zkevm_prover,
+                None,
+            )
         })
-        .collect();
+        .collect::<Vec<_>>()
+    } else {
+        let mut zkevm_prover = zkevm::Prover::from_params_and_assets(params_map, ASSETS_DIR);
+        log::info!("Constructed zkevm prover");
+        chunks
+        .into_iter()
+        .map(|block_traces| {
+            prove_and_verify_chunk(
+                params_map,
+                output_dir,
+                ChunkProvingTask::from(block_traces),
+                &mut zkevm_prover,
+                None,
+            )
+        })
+        .collect::<Vec<_>>()
+    };
 
     log::info!("Generated chunk proofs");
 
