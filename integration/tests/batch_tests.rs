@@ -159,7 +159,7 @@ fn test_batch_prove_verify_after_chunk_tests() {
         blob_bytes,
     };
 
-    dump_chunk_protocol(&batch, &output_dir);
+    // dump_chunk_protocol(&batch, &output_dir);
     let mut batch_prover = new_batch_prover(&params_map, &output_dir);
     prove_and_verify_batch(&params_map, &output_dir, &mut batch_prover, batch);
 }
