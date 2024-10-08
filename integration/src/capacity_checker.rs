@@ -125,9 +125,9 @@ fn ccc_block_tx_by_tx(checker: &mut CircuitCapacityChecker, block_idx: usize, bl
         The capacity_checker is expected to be run inside sequencer, where we don't have the traces of blocks, instead we only have traces of tx.
         For the "tx_trace":
             transactions: 
-                the tx itself. For compatibility reasons, transactions is a vector of len 1 now.   
+                the tx itself. For compatibility reasons, transactions are a vector of len 1 now.   
             execution_results: 
-                tx execution trace. Similar with above, it is also of len 1 vevtor.   
+                tx execution trace. Similar with above, it is also of len 1 vector.   
             storage_trace: 
                 storage_trace is prestate + siblings(or proofs) of touched storage_slots and accounts of this tx.
         */
