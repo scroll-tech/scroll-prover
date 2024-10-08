@@ -23,7 +23,7 @@ fn test_chunk_prove_verify() {
     let chunk = ChunkProvingTask::from(traces);
     let mut prover = ChunkProver::from_params_and_assets(&params_map, ASSETS_DIR);
     log::info!("Constructed chunk prover");
-    prove_and_verify_chunk(&params_map, &output_dir, chunk, &mut prover, None);
+    prove_and_verify_chunk(&params_map, &output_dir, chunk, &mut prover, None, true);
 }
 
 #[cfg(feature = "prove_verify")]

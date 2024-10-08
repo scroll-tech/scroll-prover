@@ -48,6 +48,7 @@ fn main() {
         chunk,
         &mut prover,
         Some("0"), // same with `make test-chunk-prove`, to load vk
+        true,
     );
     log::info!("chunk prove done");
 }

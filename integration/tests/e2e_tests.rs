@@ -68,7 +68,7 @@ fn test_e2e_prove_verify() {
             &output_dir,
             &chunk,
             opt_batch_header,
-            sp1_path.as_ref().map(String::as_str),
+            sp1_path.as_deref(),
         );
         dump_as_json(
             &output_dir,
@@ -230,6 +230,7 @@ fn gen_batch_proving_task(
                     ChunkProvingTask::from(block_traces),
                     &mut zkevm_prover,
                     None,
+                    false,
                 )
             })
             .collect::<Vec<_>>()
