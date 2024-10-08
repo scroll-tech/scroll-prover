@@ -124,7 +124,15 @@ fn test_batch_prove_verify_after_chunk_tests() {
                 .map_or(last_block_timestamp, |tr| tr.header.timestamp.as_u64());
 
             let task = ChunkProvingTask::from(traces);
-            ChunkProof::from_json_file(&output_dir, &task.identifier())
+            let loaded_proof = ChunkProof::from_json_file(&output_dir, &task.identifier());
+            if let Ok(proof) = loaded_proof.as_ref() {
+                log::info!(
+                    "expected PI of {} is {:#x?}",
+                    task.identifier(),
+                    proof.chunk_info.public_input_hash(),
+                );
+            }
+            loaded_proof
         })
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
