@@ -2,7 +2,6 @@ use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
     aggregator::Prover as BatchProver, zkevm::Prover as ChunkProver, BatchData, BatchProof,
     BatchProvingTask, BundleProvingTask, ChunkInfo, ChunkProof, ChunkProvingTask, MAX_AGG_SNARKS,
-    Proof as CommonProof,
 };
 use std::{collections::BTreeMap, env, time::Instant};
 
@@ -66,40 +65,24 @@ impl<'params> SP1Prover<'params> {
         )?;
 
         let pk = self.0.prover_impl.pk(Layer2.id());
+        let result = ChunkProof::new(
+            comp_snark,
+            pk,
+            chunk_info,
+            Vec::new(),
+        );
+
         // in case we read the snark directly from previous calculation,
-        // the pk is not avaliable and we use a work-around to construct
-        // the proof (and dumping is not needed)
-        if pk.is_none() {
-            log::info!("restore chunk_snark {chunk_identifier:?} from disk");
-            // vk must be loaded (dumped along with snark together) in this case
-            assert!(self.0.get_vk().is_some());
-            let protocol = serde_json::to_vec(&comp_snark.protocol)?;
-            let proof = CommonProof::from_snark(
-                comp_snark,
-                self.0.get_vk().expect("checked"),
-            );
-
-            Ok(ChunkProof {
-                proof,
-                protocol,
-                chunk_info,
-                row_usages: Vec::new(),
-            })
-
-        } else {
-            let result = ChunkProof::new(
-                comp_snark,
-                pk,
-                chunk_info,
-                Vec::new(),
-            );
-
+        // the pk is not avaliable and we skip dumping the proof
+        if pk.is_some() {
             if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
                 proof.dump(output_dir, chunk_identifier)?;
-            }
-
-            result
+            }            
+        } else {
+            log::info!("skip dumping vk since snark is restore from disk")
         }
+        result
+        
     }
 }
 
