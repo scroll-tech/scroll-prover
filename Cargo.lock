@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1662,7 +1662,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2510,7 +2510,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3038,7 +3038,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -4977,7 +4977,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#5b3d53540f583bc8745a1d2d4f960ee04ac13a1a"
 dependencies = [
  "array-init",
  "bus-mapping",
