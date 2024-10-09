@@ -122,3 +122,23 @@ fn test_evm_verifier_from_bin() {
 
     log::info!("contrace done at {}", contract);
 }
+
+#[ignore]
+#[test]
+fn test_evm_verifier_from_bin_2() {
+    use prover::io::read_all;
+    use snark_verifier::loader::evm::ExecutorBuilder;
+    use prover::eth_types::Address;
+
+    let output_dir = init_env_and_log("test_evm_verifer");
+
+    let bytecode = read_all(&format!("{output_dir}/evm_verifier.bin"));
+    log::info!("bytecode len {}", bytecode.len());
+
+    let mut evm = ExecutorBuilder::default().with_gas_limit(u64::MAX.into()).build();
+
+    let caller = Address::from_low_u64_be(0xfe);
+    let deploy_result = evm.deploy(caller, bytecode.into(), 0.into());
+
+    log::info!("deployment result = {:?}", deploy_result);
+}
