@@ -2184,6 +2184,7 @@ dependencies = [
 name = "integration"
 version = "0.13.0"
 dependencies = [
+ "aggregator",
  "anyhow",
  "ethers-providers",
  "glob",
