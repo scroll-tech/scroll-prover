@@ -38,6 +38,7 @@ fn gen_bundle_proving_task(batch_proof_files: &[&str]) -> BundleProvingTask {
     BundleProvingTask { batch_proofs }
 }
 
+
 #[test]
 fn test_evm_verifier_from_layer5() {
     use prover::{
@@ -74,4 +75,53 @@ fn test_evm_verifier_from_layer5() {
         Some(output_dir.as_str()),
     ).unwrap();
 
+}
+
+#[ignore]
+#[test]
+fn test_evm_verifier_from_bin() {
+    use prover::io::read_all;
+    use revm::{
+        primitives::{CreateScheme, ExecutionResult, Output, TransactTo, TxEnv},
+        InMemoryDB, EVM,
+    };
+
+    let output_dir = init_env_and_log("test_evm_verifer");
+
+    let bytecode = read_all(&format!("{output_dir}/evm_verifier.bin"));
+    log::info!("bytecode len {}", bytecode.len());
+
+    let mut evm = EVM {
+        env: Default::default(),
+        db: Some(InMemoryDB::default()),
+    };
+
+    // only deployment code
+    evm.env.tx = TxEnv {
+        gas_limit: u64::MAX,
+        transact_to: TransactTo::Create(CreateScheme::Create),
+        data: bytecode.into(),
+        ..Default::default()
+    };
+
+    let result = evm.transact_commit().unwrap();
+    let contract = match result {
+        ExecutionResult::Success {
+            output: Output::Create(_, Some(contract)),
+            ..
+        } => contract,
+        ExecutionResult::Revert { gas_used, output } => {
+            panic!(
+                "Contract deployment transaction reverts with gas_used {gas_used} and output {:#x}",
+                output
+            )
+        }
+        ExecutionResult::Halt { reason, gas_used } => panic!(
+                "Contract deployment transaction halts unexpectedly with gas_used {gas_used} and reason {:?}",
+                reason
+            ),
+        _ => unreachable!(),
+    };
+
+    log::info!("contrace done at {}", contract);
 }
