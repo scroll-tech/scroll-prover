@@ -2915,18 +2915,17 @@ dependencies = [
 [[package]]
 name = "poseidon-base"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
 dependencies = [
  "bitvec",
  "halo2curves",
  "lazy_static",
- "once_cell",
 ]
 
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
 dependencies = [
  "ff",
  "halo2_proofs",
