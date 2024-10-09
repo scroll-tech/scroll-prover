@@ -76,7 +76,7 @@ fn test_bundle_prove_verify_after_batch() {
 
 #[ignore]
 #[test]
-fn test_evm_verifier_from_bin() {
+fn test_evm_verifier_new_revm() {
     use prover::io::read_all;
     use revm::{
         primitives::{CreateScheme, ExecutionResult, Output, TransactTo, TxEnv},
@@ -125,7 +125,7 @@ fn test_evm_verifier_from_bin() {
 
 #[ignore]
 #[test]
-fn test_evm_verifier_from_bin_2() {
+fn test_evm_verifier_old_revm() {
     use prover::io::read_all;
     use snark_verifier::loader::evm::ExecutorBuilder;
     use prover::eth_types::Address;
@@ -140,5 +140,6 @@ fn test_evm_verifier_from_bin_2() {
     let caller = Address::from_low_u64_be(0xfe);
     let deploy_result = evm.deploy(caller, bytecode.into(), 0.into());
 
-    log::info!("deployment result = {:?}", deploy_result);
+    log::info!("exit reason = {:?}", deploy_result.exit_reason);
+    log::info!("reverted    = {:?}", deploy_result.reverted);
 }

@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1662,7 +1662,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -1767,7 +1767,7 @@ dependencies = [
 [[package]]
 name = "halo2-base"
 version = "0.2.2"
-source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#817cace374a9f4b2eca682b1cc36f143255ea25f"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#99d8995db12f1f675885bf0d4dc3ae68c170084b"
 dependencies = [
  "ff",
  "halo2_proofs",
@@ -1782,7 +1782,7 @@ dependencies = [
 [[package]]
 name = "halo2-ecc"
 version = "0.2.2"
-source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#817cace374a9f4b2eca682b1cc36f143255ea25f"
+source = "git+https://github.com/scroll-tech/halo2-lib?branch=develop#99d8995db12f1f675885bf0d4dc3ae68c170084b"
 dependencies = [
  "ff",
  "group",
@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2510,7 +2510,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -2915,17 +2915,18 @@ dependencies = [
 [[package]]
 name = "poseidon-base"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
 dependencies = [
  "bitvec",
  "halo2curves",
  "lazy_static",
+ "once_cell",
 ]
 
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#7b96835c6201afdbfaf3d13d641efbaaf5db2d20"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
 dependencies = [
  "ff",
  "halo2_proofs",
@@ -3038,7 +3039,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3059,6 +3060,7 @@ dependencies = [
  "num-bigint",
  "rand",
  "rand_xorshift",
+ "revm 3.5.0",
  "serde",
  "serde_derive",
  "serde_json",
@@ -4976,7 +4978,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#7ec558876fb7a1241d3eaaeb73a7804099af8401"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#252b8d99702f889c434495c2b40b769cdf89bd76"
 dependencies = [
  "array-init",
  "bus-mapping",
