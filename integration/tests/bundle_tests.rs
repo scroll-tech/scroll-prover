@@ -50,7 +50,6 @@ fn test_bundle_prove_verify_after_batch() {
 
     let mut batch_tasks = glob(&format!("{output_dir}/full_proof_batch_prove_?.json"))
         .unwrap()
-        .into_iter()
         .map(|task_path| {
             from_json_file::<BatchProvingTask>(task_path.unwrap().to_str().unwrap()).unwrap()
         })
