@@ -38,30 +38,39 @@ fn gen_bundle_proving_task(batch_proof_files: &[&str]) -> BundleProvingTask {
     BundleProvingTask { batch_proofs }
 }
 
-
 #[ignore]
 #[test]
 fn test_bundle_prove_verify_after_batch() {
-    use prover::{BatchProvingTask, io::from_json_file};
     use glob::glob;
     use integration::test_util::PARAMS_DIR;
     use itertools::Itertools;
-    use prover::config::AGG_DEGREES;
+    use prover::{config::AGG_DEGREES, io::from_json_file, BatchProvingTask};
 
     let output_dir = init_env_and_log("bundle_tests");
 
     let mut batch_tasks = glob(&format!("{output_dir}/full_proof_batch_prove_?.json"))
-    .unwrap().into_iter().map(
-        |task_path|from_json_file::<BatchProvingTask>(task_path.unwrap().to_str().unwrap()).unwrap(),
-    ).collect::<Vec<_>>();
+        .unwrap()
+        .into_iter()
+        .map(|task_path| {
+            from_json_file::<BatchProvingTask>(task_path.unwrap().to_str().unwrap()).unwrap()
+        })
+        .collect::<Vec<_>>();
 
-    batch_tasks.as_mut_slice().sort_by_key(|task|task.batch_header.batch_index);
+    batch_tasks
+        .as_mut_slice()
+        .sort_by_key(|task| task.batch_header.batch_index);
 
-    let batch_proofs: Vec<BatchProof> = batch_tasks.iter()
-        .map(|task|{
+    let batch_proofs: Vec<BatchProof> = batch_tasks
+        .iter()
+        .map(|task| {
             log::info!("local batch proof {}", task.identifier());
-            from_json_file(&format!("{output_dir}/full_proof_batch_{}.json", task.identifier())).unwrap()
-        }).collect();
+            from_json_file(&format!(
+                "{output_dir}/full_proof_batch_{}.json",
+                task.identifier()
+            ))
+            .unwrap()
+        })
+        .collect();
 
     let bundle = BundleProvingTask { batch_proofs };
     let params_map = prover::common::Prover::load_params_map(
@@ -71,7 +80,6 @@ fn test_bundle_prove_verify_after_batch() {
 
     let mut prover = new_batch_prover(&params_map, &output_dir);
     prove_and_verify_bundle(&output_dir, &mut prover, bundle);
-
 }
 
 #[ignore]
@@ -126,16 +134,17 @@ fn test_evm_verifier_new_revm() {
 #[ignore]
 #[test]
 fn test_evm_verifier_old_revm() {
-    use prover::io::read_all;
+    use prover::{eth_types::Address, io::read_all};
     use snark_verifier::loader::evm::ExecutorBuilder;
-    use prover::eth_types::Address;
 
     let output_dir = init_env_and_log("test_evm_verifer");
 
     let bytecode = read_all(&format!("{output_dir}/evm_verifier.bin"));
     log::info!("bytecode len {}", bytecode.len());
 
-    let mut evm = ExecutorBuilder::default().with_gas_limit(u64::MAX.into()).build();
+    let mut evm = ExecutorBuilder::default()
+        .with_gas_limit(u64::MAX.into())
+        .build();
 
     let caller = Address::from_low_u64_be(0xfe);
     let deploy_result = evm.deploy(caller, bytecode.into(), 0.into());

@@ -107,6 +107,165 @@ fn test_e2e_prove_verify() {
 
 #[cfg(feature = "prove_verify")]
 #[test]
+fn test_e2e_prove_verify_hybrid() {
+    use integration::prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle};
+    use itertools::Itertools;
+    use prover::config::{AGG_DEGREES, ZKEVM_DEGREES};
+
+    // setup output dir for tests.
+    let output_dir = init_env_and_log("e2e_tests");
+    log::info!("initialize ENV and create output-dir {output_dir}: OK");
+
+    // load kzg params.
+    let params_map = prover::common::Prover::load_params_map(
+        PARAMS_DIR,
+        &ZKEVM_DEGREES
+            .iter()
+            .copied()
+            .chain(AGG_DEGREES.iter().copied())
+            .collect_vec(),
+    );
+    log::info!("load params map: OK");
+
+    // - batch1: contains chunk_1 (halo2-based super circuit).
+    // - batch_sproll: contains chunk_1 (sp1). This dir already contains inner snark.
+    let chunk_paths = read_env_var(
+        "E2E_TRACE_PATHS",
+        "./tests/extra_traces/batch1;./tests/extra_traces/batch_sproll/".to_string(),
+    );
+    let chunks = chunk_paths
+        .split(';')
+        .map(|dir| load_batch(dir).unwrap())
+        .collect_vec();
+    log::info!("read chunks paths");
+    for (i, item) in chunks.iter().enumerate() {
+        log::info!("{i}: {item:?}");
+    }
+    assert_eq!(chunks.len(), 2, "there are 2 chunks");
+    assert_eq!(chunks[0].len(), 1, "single chunk in that dir");
+    assert_eq!(chunks[1].len(), 1, "single chunk in that dir");
+    log::info!("OK");
+
+    // path to find inner snark generated via sp1 and sp1-halo2-wrap.
+    let sp1_path = {
+        let p = read_env_var("SP1_PATH", String::new());
+        if p.is_empty() {
+            None
+        } else {
+            Some(p)
+        }
+    };
+    assert!(sp1_path.is_some(), "must provide SP1_PATH env var");
+    log::info!("sp1 path: {sp1_path:?} OK");
+
+    let chunk_1 = load_chunk(&chunks[0][0]).1;
+    let chunk_2 = load_chunk(&chunks[1][0]).1;
+    let l1_message_popped = [chunk_1.clone(), chunk_2.clone()]
+        .iter()
+        .flatten()
+        .map(|chunk| chunk.num_l1_txs())
+        .sum();
+    let last_block_timestamp = chunk_2
+        .last()
+        .map_or(0, |block_trace| block_trace.header.timestamp.as_u64());
+
+    // halo2 chunk
+    let chunk_1_proofs = {
+        let mut zkevm_prover = zkevm::Prover::from_params_and_assets(&params_map, ASSETS_DIR);
+        log::info!("Constructed zkevm prover");
+        chunk_1
+            .into_iter()
+            .map(|block_trace| {
+                prove_and_verify_chunk(
+                    &params_map,
+                    &output_dir,
+                    ChunkProvingTask::from(vec![block_trace]),
+                    &mut zkevm_prover,
+                    None,
+                    false,
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(chunk_1_proofs.len(), 1, "only 1 halo2-chunk");
+    log::info!("halo2 chunk proof OK");
+
+    // sp1 chunk
+    let chunk_2_proofs = {
+        let mut zkevm_prover = SP1Prover::from_params_and_assets(&params_map, ASSETS_DIR);
+        log::info!("Constructed sp1 prover");
+        chunk_2
+            .into_iter()
+            .map(|block_trace| {
+                prove_and_verify_sp1_chunk(
+                    &params_map,
+                    &output_dir,
+                    sp1_path.as_deref(),
+                    ChunkProvingTask::from(vec![block_trace]),
+                    &mut zkevm_prover,
+                    None,
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(chunk_2_proofs.len(), 1, "only 1 sp1-chunk");
+    log::info!("sp1 chunk proof OK");
+
+    // dump chunk proof's SNARK protocol.
+    chunk_1_proofs[0]
+        .dump(&output_dir, "halo2")
+        .expect("should dump protocol OK");
+    chunk_2_proofs[0]
+        .dump(&output_dir, "sp1")
+        .expect("should dump protocol OK");
+    log::info!("dumped chunk protocols OK");
+
+    // generate batch proving task
+    let batch_proving_task = {
+        let dummy_parent_batch_hash = H256([
+            0xab, 0xac, 0xad, 0xae, 0xaf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+        ]);
+        let chunks = vec![
+            chunk_1_proofs[0].chunk_info.clone(),
+            chunk_2_proofs[0].chunk_info.clone(),
+        ];
+        let blob_bytes = get_blob_from_chunks(&chunks);
+        let batch_header = BatchHeader::construct_from_chunks(
+            4,
+            123,
+            l1_message_popped,
+            l1_message_popped,
+            dummy_parent_batch_hash,
+            last_block_timestamp,
+            &chunks,
+            &blob_bytes,
+        );
+        BatchProvingTask {
+            chunk_proofs: vec![chunk_1_proofs[0].clone(), chunk_2_proofs[0].clone()],
+            batch_header,
+            blob_bytes,
+        }
+    };
+    log::info!("batch proving task OK");
+
+    let mut batch_prover = new_batch_prover(&params_map, &output_dir);
+    let batch_proof = prove_and_verify_batch(
+        &params_map,
+        &output_dir,
+        &mut batch_prover,
+        batch_proving_task,
+    );
+    log::info!("batch proof generated OK");
+
+    let bundle_proving_task = prover::BundleProvingTask {
+        batch_proofs: vec![batch_proof],
+    };
+    prove_and_verify_bundle(&output_dir, &mut batch_prover, bundle_proving_task);
+}
+
+#[cfg(feature = "prove_verify")]
+#[test]
 fn test_batch_bundle_verify() -> anyhow::Result<()> {
     use integration::{
         prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle},
