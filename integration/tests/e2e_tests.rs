@@ -7,7 +7,8 @@ use prover::{
     eth_types::H256,
     proof::dump_as_json,
     utils::{chunk_trace_to_witness_block, init_env_and_log, read_env_var},
-    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkProvingTask, MAX_AGG_SNARKS,
+    zkevm, BatchHash, BatchHeader, BatchProvingTask, ChunkInfo, ChunkKind, ChunkProvingTask,
+    MAX_AGG_SNARKS,
 };
 use std::{collections::BTreeMap, env};
 
@@ -178,7 +179,7 @@ fn test_e2e_prove_verify_hybrid() {
                 prove_and_verify_chunk(
                     &params_map,
                     &output_dir,
-                    ChunkProvingTask::from(vec![block_trace]),
+                    ChunkProvingTask::new(vec![block_trace], ChunkKind::Halo2),
                     &mut zkevm_prover,
                     None,
                     false,
@@ -200,7 +201,7 @@ fn test_e2e_prove_verify_hybrid() {
                     &params_map,
                     &output_dir,
                     sp1_path.as_deref(),
-                    ChunkProvingTask::from(vec![block_trace]),
+                    ChunkProvingTask::new(vec![block_trace], ChunkKind::Sp1),
                     &mut zkevm_prover,
                     None,
                 )
@@ -370,7 +371,7 @@ fn gen_batch_proving_task(
                     params_map,
                     output_dir,
                     Some(sp1_path),
-                    ChunkProvingTask::from(block_traces),
+                    ChunkProvingTask::new(block_traces, ChunkKind::Sp1),
                     &mut zkevm_prover,
                     None,
                 )
@@ -385,7 +386,7 @@ fn gen_batch_proving_task(
                 prove_and_verify_chunk(
                     params_map,
                     output_dir,
-                    ChunkProvingTask::from(block_traces),
+                    ChunkProvingTask::new(block_traces, ChunkKind::Halo2),
                     &mut zkevm_prover,
                     None,
                     false,

@@ -31,7 +31,7 @@ fn main() {
 
     let traces = load_chunk(&args.trace_path).1;
     prover::eth_types::constants::set_scroll_block_constants_with_trace(&traces[0]);
-    let chunk = ChunkProvingTask::from(traces);
+    let chunk = ChunkProvingTask::new(traces, prover::ChunkKind::Halo2);
     let params_map = prover::common::Prover::load_params_map(
         &args.params_path,
         &[

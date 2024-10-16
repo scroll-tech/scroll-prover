@@ -20,7 +20,7 @@ fn test_chunk_prove_verify() {
 
     let trace_path = trace_path_for_test();
     let traces = load_chunk(&trace_path).1;
-    let chunk = ChunkProvingTask::from(traces);
+    let chunk = ChunkProvingTask::new(traces, prover::ChunkKind::Halo2);
     let mut prover = ChunkProver::from_params_and_assets(&params_map, ASSETS_DIR);
     log::info!("Constructed chunk prover");
     prove_and_verify_chunk(&params_map, &output_dir, chunk, &mut prover, None, true);
@@ -54,7 +54,7 @@ fn test_sp1_chunk_prove_verify() {
     };
 
     let traces = load_chunk(&trace_path).1;
-    let chunk = ChunkProvingTask::from(traces);
+    let chunk = ChunkProvingTask::new(traces, prover::ChunkKind::Sp1);
     let mut prover = SP1Prover::from_params_and_assets(&params_map, ASSETS_DIR);
     log::info!("Constructed sp1 chunk prover");
     prove_and_verify_sp1_chunk(

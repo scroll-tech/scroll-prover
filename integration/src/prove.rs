@@ -12,7 +12,8 @@ pub fn new_batch_prover<'a>(
     params_map: &'a BTreeMap<u32, ParamsKZG<Bn256>>,
     output_dir: &str,
 ) -> BatchProver<'a> {
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
+    env::set_var("HALO2_CHUNK_PROTOCOL", "chunk_chunk_halo2.protocol");
+    env::set_var("SP1_CHUNK_PROTOCOL", "chunk_chunk_sp1.protocol");
     let prover = BatchProver::from_params_and_assets(params_map, output_dir);
     log::info!("Constructed batch prover");
 
@@ -65,7 +66,7 @@ impl<'params> SP1Prover<'params> {
         )?;
 
         let pk = self.0.prover_impl.pk(Layer2.id());
-        let result = ChunkProof::new(comp_snark, pk, chunk_info, Vec::new());
+        let result = ChunkProof::new(comp_snark, pk, chunk_info, chunk.chunk_kind, Vec::new());
 
         // in case we read the snark directly from previous calculation,
         // the pk is not avaliable and we skip dumping the proof

@@ -123,7 +123,7 @@ fn test_batch_prove_verify_after_chunk_tests() {
                 .last()
                 .map_or(last_block_timestamp, |tr| tr.header.timestamp.as_u64());
 
-            let task = ChunkProvingTask::from(traces);
+            let task = ChunkProvingTask::new(traces, prover::ChunkKind::Halo2);
             let loaded_proof = ChunkProof::from_json_file(&output_dir, &task.identifier());
             if let Ok(proof) = loaded_proof.as_ref() {
                 log::info!(

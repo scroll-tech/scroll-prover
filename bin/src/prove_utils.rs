@@ -55,7 +55,7 @@ pub fn prove_chunk(id: &str, traces: Vec<BlockTrace>) -> Option<ChunkProof> {
         #[cfg(feature = "chunk-prove")]
         let proof = Some(prover::test::chunk_prove(
             id,
-            prover::ChunkProvingTask::from(traces),
+            prover::ChunkProvingTask::new(traces, prover::ChunkKind::Halo2),
         ));
         #[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
         mock_prove(id, traces);
