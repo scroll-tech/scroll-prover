@@ -131,7 +131,7 @@ fn test_e2e_prove_verify_hybrid() {
     // - batch_sproll: contains chunk_1 (sp1). This dir already contains inner snark.
     let chunk_paths = read_env_var(
         "E2E_TRACE_PATHS",
-        "./tests/extra_traces/batch1;./tests/extra_traces/batch_sproll/".to_string(),
+        "./tests/extra_traces/hybrid_batch/".to_string(),
     );
     let chunks = chunk_paths
         .split(';')
@@ -141,9 +141,8 @@ fn test_e2e_prove_verify_hybrid() {
     for (i, item) in chunks.iter().enumerate() {
         log::info!("{i}: {item:?}");
     }
-    assert_eq!(chunks.len(), 2, "there are 2 chunks");
-    assert_eq!(chunks[0].len(), 1, "single chunk in that dir");
-    assert_eq!(chunks[1].len(), 1, "single chunk in that dir");
+    assert_eq!(chunks.len(), 1, "there is 1 batch");
+    assert_eq!(chunks[0].len(), 2, "there are 2 chunks in the batch");
     log::info!("OK");
 
     // path to find inner snark generated via sp1 and sp1-halo2-wrap.
@@ -159,7 +158,7 @@ fn test_e2e_prove_verify_hybrid() {
     log::info!("sp1 path: {sp1_path:?} OK");
 
     let chunk_1 = load_chunk(&chunks[0][0]).1;
-    let chunk_2 = load_chunk(&chunks[1][0]).1;
+    let chunk_2 = load_chunk(&chunks[0][1]).1;
     let l1_message_popped = [chunk_1.clone(), chunk_2.clone()]
         .iter()
         .flatten()
