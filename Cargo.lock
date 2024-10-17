@@ -31,7 +31,7 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
@@ -55,8 +55,8 @@ dependencies = [
  "revm-primitives 4.0.0",
  "serde",
  "serde_json",
- "snark-verifier",
- "snark-verifier-sdk",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
+ "snark-verifier-sdk 0.0.1 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "zkevm-circuits",
@@ -605,7 +605,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1639,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "eth-types",
  "halo2_proofs",
@@ -1662,7 +1662,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2197,8 +2197,8 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "snark-verifier",
- "snark-verifier-sdk",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=v0.1)",
+ "snark-verifier-sdk 0.0.1 (git+https://github.com/scroll-tech/snark-verifier?branch=v0.1)",
  "tokio",
 ]
 
@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2510,7 +2510,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -3038,7 +3038,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3065,8 +3065,8 @@ dependencies = [
  "serde_json",
  "serde_stacker",
  "sha2",
- "snark-verifier",
- "snark-verifier-sdk",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
+ "snark-verifier-sdk 0.0.1 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
  "zkevm-circuits",
 ]
 
@@ -3934,6 +3934,29 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg#7d9868ee25edc1b3e882f60c8f065e801f49f039"
+dependencies = [
+ "bytes",
+ "ethereum-types",
+ "halo2-base",
+ "halo2-ecc",
+ "hex",
+ "itertools 0.12.1",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "poseidon",
+ "rand",
+ "revm 2.3.1",
+ "rlp",
+ "rustc-hash",
+ "serde",
+ "sha3 0.10.6",
+]
+
+[[package]]
+name = "snark-verifier"
+version = "0.1.0"
 source = "git+https://github.com/scroll-tech/snark-verifier?branch=v0.1#58c46b74c73156b9e09dc27617369d2acfb4461b"
 dependencies = [
  "bytes",
@@ -3957,6 +3980,28 @@ dependencies = [
 [[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg#7d9868ee25edc1b3e882f60c8f065e801f49f039"
+dependencies = [
+ "bincode",
+ "ethereum-types",
+ "ff",
+ "halo2-base",
+ "hex",
+ "itertools 0.12.1",
+ "log",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "rand",
+ "rand_chacha",
+ "serde",
+ "serde_json",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
+]
+
+[[package]]
+name = "snark-verifier-sdk"
+version = "0.0.1"
 source = "git+https://github.com/scroll-tech/snark-verifier?branch=v0.1#58c46b74c73156b9e09dc27617369d2acfb4461b"
 dependencies = [
  "bincode",
@@ -3973,7 +4018,7 @@ dependencies = [
  "rand_chacha",
  "serde",
  "serde_json",
- "snark-verifier",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=v0.1)",
 ]
 
 [[package]]
@@ -4977,7 +5022,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.13.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=test/downgrade-rust#6dd70e785952fc4b536c4ef3864cbc9e492ea418"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/hybrid-snark-agg#21b40933d3ee9fbe17eeb737b738b5514c4214b6"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -5009,8 +5054,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3 0.10.6",
- "snark-verifier",
- "snark-verifier-sdk",
+ "snark-verifier 0.1.0 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
+ "snark-verifier-sdk 0.0.1 (git+https://github.com/scroll-tech/snark-verifier?branch=feat/hybrid-snark-agg)",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "subtle",
