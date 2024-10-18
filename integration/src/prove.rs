@@ -14,6 +14,7 @@ pub fn new_batch_prover<'a>(
 ) -> BatchProver<'a> {
     env::set_var("HALO2_CHUNK_PROTOCOL", "chunk_chunk_halo2.protocol");
     env::set_var("SP1_CHUNK_PROTOCOL", "chunk_chunk_sp1.protocol");
+    env::set_var("SCROLL_PROVER_ASSETS_DIR", output_dir);
     let prover = BatchProver::from_params_and_assets(params_map, output_dir);
     log::info!("Constructed batch prover");
 
