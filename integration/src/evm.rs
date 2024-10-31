@@ -13,9 +13,10 @@ pub fn deploy_and_call(deployment_code: Vec<u8>, calldata: Vec<u8>) -> Result<u6
         data: deployment_code.into(),
         ..Default::default()
     };
+    let mut db = InMemoryDB::default();
     let mut evm = Evm::builder()
         .with_spec_id(SpecId::CANCUN)
-        .with_db(InMemoryDB::default())
+        .with_db(&mut db)
         .with_env(env.clone())
         .build();
     let result = evm.transact_commit().unwrap();
@@ -31,11 +32,12 @@ pub fn deploy_and_call(deployment_code: Vec<u8>, calldata: Vec<u8>) -> Result<u6
             ))
         }
         ExecutionResult::Halt { reason, gas_used } => return Err(format!(
-                "Contract deployment transaction halts unexpectedly with gas_used {gas_used} and reason {:?}",
-                reason
-            )),
+            "Contract deployment transaction halts unexpectedly with gas_used {gas_used} and reason {:?}",
+            reason
+        )),
         _ => unreachable!(),
     };
+    drop(evm);
 
     env.tx = TxEnv {
         gas_limit: u64::MAX,
@@ -45,7 +47,7 @@ pub fn deploy_and_call(deployment_code: Vec<u8>, calldata: Vec<u8>) -> Result<u6
     };
     let mut evm = Evm::builder()
         .with_spec_id(SpecId::CANCUN)
-        .with_db(InMemoryDB::default())
+        .with_db(&mut db)
         .with_env(env)
         .build();
     let result = evm.transact_commit().unwrap();
