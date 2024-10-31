@@ -31,11 +31,11 @@ dependencies = [
 [[package]]
 name = "aggregator"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "ark-std 0.3.0",
  "bitstream-io",
- "c-kzg 1.0.2",
+ "c-kzg 1.0.3",
  "ctor",
  "encoder",
  "env_logger",
@@ -97,7 +97,7 @@ checksum = "d9431c99a3b3fe606ede4b3d4043bdfbcb780c45b8d8d226c3804e2b75cfbe68"
 dependencies = [
  "alloy-primitives 0.7.7",
  "alloy-rlp",
- "c-kzg 1.0.2",
+ "c-kzg 1.0.3",
  "k256",
  "once_cell",
  "serde",
@@ -619,7 +619,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "bus-mapping"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -679,15 +679,16 @@ dependencies = [
 
 [[package]]
 name = "c-kzg"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdf100c4cea8f207e883ff91ca886d621d8a166cb04971dfaa9bb8fd99ed95df"
+checksum = "f0307f72feab3300336fb803a57134159f6e20139af1357f36c54cb90d8e8928"
 dependencies = [
  "blst",
  "cc",
  "glob",
  "hex",
  "libc",
+ "once_cell",
  "serde",
 ]
 
@@ -855,7 +856,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "sha2",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "thiserror",
 ]
 
@@ -1243,7 +1244,7 @@ dependencies = [
  "rand",
  "rlp",
  "serde",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "zeroize",
 ]
 
@@ -1309,7 +1310,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "thiserror",
  "uuid",
 ]
@@ -1317,7 +1318,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "base64 0.13.1",
  "ethers-core",
@@ -1335,7 +1336,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "strum 0.25.0",
  "strum_macros 0.25.3",
  "subtle",
@@ -1354,7 +1355,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "thiserror",
  "uint",
 ]
@@ -1473,7 +1474,7 @@ dependencies = [
 [[package]]
 name = "external-tracer"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "eth-types",
  "geth-utils",
@@ -1655,12 +1656,12 @@ dependencies = [
 [[package]]
 name = "gadgets"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "eth-types",
  "halo2_proofs",
  "poseidon-base",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "strum 0.25.0",
 ]
 
@@ -1678,7 +1679,7 @@ dependencies = [
 [[package]]
 name = "geth-utils"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "env_logger",
  "gobuild",
@@ -2314,9 +2315,9 @@ dependencies = [
 
 [[package]]
 name = "keccak"
-version = "0.1.3"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3afef3b6eff9ce9d8ff9b3601125eec7f0c8cbac7abd14f355d053fa56c98768"
+checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
 dependencies = [
  "cpufeatures",
 ]
@@ -2511,7 +2512,7 @@ dependencies = [
 [[package]]
 name = "mock"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "eth-types",
  "ethers-core",
@@ -2526,7 +2527,7 @@ dependencies = [
 [[package]]
 name = "mpt-zktrie"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "eth-types",
  "halo2curves",
@@ -2952,7 +2953,7 @@ dependencies = [
 [[package]]
 name = "poseidon-base"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#b978cee00aae1e0a1e79e0d74c4683b137f5ea2d"
 dependencies = [
  "bitvec",
  "halo2curves",
@@ -2963,7 +2964,7 @@ dependencies = [
 [[package]]
 name = "poseidon-circuit"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#d52fa404e8f03b5c3f85c090ccb8b08c112e2f4d"
+source = "git+https://github.com/scroll-tech/poseidon-circuit.git?branch=main#b978cee00aae1e0a1e79e0d74c4683b137f5ea2d"
 dependencies = [
  "ff",
  "halo2_proofs",
@@ -3085,7 +3086,7 @@ dependencies = [
 [[package]]
 name = "prover"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "aggregator",
  "anyhow",
@@ -3302,7 +3303,7 @@ dependencies = [
  "primitive-types",
  "revm_precompiles",
  "rlp",
- "sha3 0.10.6",
+ "sha3 0.10.8",
 ]
 
 [[package]]
@@ -3348,7 +3349,7 @@ version = "9.2.0"
 source = "git+https://github.com/scroll-tech/revm?branch=scroll-evm-executor/v40#5e215742c4d9d771f73d74fcba39628b1a2e3452"
 dependencies = [
  "aurora-engine-modexp",
- "c-kzg 1.0.2",
+ "c-kzg 1.0.3",
  "cfg-if 1.0.0",
  "k256",
  "once_cell",
@@ -3385,7 +3386,7 @@ dependencies = [
  "auto_impl",
  "bitflags 2.6.0",
  "bitvec",
- "c-kzg 1.0.2",
+ "c-kzg 1.0.3",
  "cfg-if 1.0.0",
  "derive_more",
  "dyn-clone",
@@ -3410,7 +3411,7 @@ dependencies = [
  "ripemd",
  "secp256k1 0.24.3",
  "sha2",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "substrate-bn",
 ]
 
@@ -3920,9 +3921,9 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.10.6"
+version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdf0c33fae925bdc080598b84bc15c55e7b9a4a43b3c704da051f977469691c9"
+checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
 dependencies = [
  "digest 0.10.7",
  "keccak",
@@ -3998,7 +3999,7 @@ dependencies = [
  "rlp",
  "rustc-hash",
  "serde",
- "sha3 0.10.6",
+ "sha3 0.10.8",
 ]
 
 [[package]]
@@ -5025,7 +5026,7 @@ dependencies = [
 [[package]]
 name = "zkevm-circuits"
 version = "0.14.0"
-source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#852916a0bfc722fcabc7dfd0e0a5a47eb2657995"
+source = "git+https://github.com/scroll-tech/zkevm-circuits.git?branch=feat/sol-verifier#b176f81d059d1828762343f32672eac25fc6c583"
 dependencies = [
  "array-init",
  "bus-mapping",
@@ -5057,7 +5058,7 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "sha3 0.10.6",
+ "sha3 0.10.8",
  "snark-verifier",
  "snark-verifier-sdk",
  "strum 0.25.0",

@@ -1,6 +1,5 @@
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{common::Verifier, config, consts, io::force_to_read, CompressionCircuit};
-use snark_verifier_sdk::verify_evm_calldata;
 use std::{collections::BTreeMap, env};
 
 type SnarkVerifier<'a> = Verifier<'a, CompressionCircuit>;
@@ -57,6 +56,9 @@ impl EVMVerifier {
     }
 
     pub fn verify_evm_proof(&self, call_data: Vec<u8>) -> bool {
-        verify_evm_calldata(self.0.clone(), call_data)
+        //let res = crate::evm::deploy_and_call(self.0.clone(), call_data);
+        let res = prover::deploy_and_call(self.0.clone(), call_data);
+        log::debug!("verify_evm_proof result {:?}", res);
+        res.is_ok()
     }
 }
