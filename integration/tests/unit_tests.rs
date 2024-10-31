@@ -46,7 +46,7 @@ fn test_evm_verifier() {
         log::info!("svm use {}", version);
         let bytecode = compile_yul(&String::from_utf8(yul.clone()).unwrap());
         log::info!("bytecode len {}", bytecode.len());
-        match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+        match prover::deploy_and_call(bytecode, proof.clone()) {
             Ok(gas) => log::info!("gas cost {gas}"),
             Err(e) => {
                 panic!("test failed {e:#?}");
@@ -57,7 +57,7 @@ fn test_evm_verifier() {
     log::info!("check released bin");
     let bytecode = read_all(&format!("../{version}/evm_verifier.bin"));
     log::info!("bytecode len {}", bytecode.len());
-    match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+    match prover::deploy_and_call(bytecode, proof.clone()) {
         Ok(gas) => log::info!("gas cost {gas}"),
         Err(e) => {
             panic!("test failed {e:#?}");
@@ -89,7 +89,8 @@ fn test_evm_verifier_for_dumped_proof() {
     path.push("evm_verifier.bin");
     let bytecode = read_all(path);
     log::info!("bytecode len {}", bytecode.len());
-    match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+
+    match prover::deploy_and_call(bytecode, proof.clone()) {
         Ok(gas) => log::info!("gas cost {gas}"),
         Err(e) => {
             panic!("test failed {e:#?}");

@@ -56,7 +56,6 @@ impl EVMVerifier {
     }
 
     pub fn verify_evm_proof(&self, call_data: Vec<u8>) -> bool {
-        //let res = crate::evm::deploy_and_call(self.0.clone(), call_data);
         let res = prover::deploy_and_call(self.0.clone(), call_data);
         log::debug!("verify_evm_proof result {:?}", res);
         res.is_ok()
