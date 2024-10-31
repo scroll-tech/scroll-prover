@@ -8,6 +8,7 @@ use prover::{
     io::read_all,
     utils::{init_env_and_log, short_git_version},
     zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
+    EvmProof,
 };
 
 #[test]
@@ -65,27 +66,32 @@ fn test_evm_verifier() {
     }
 }
 
-// suppose a "proof.json" has been provided under the 'release'
-// directory or the test would fail
 #[ignore]
 #[test]
 fn test_evm_verifier_for_dumped_proof() {
-    use prover::{io::from_json_file, proof::BundleProof};
+    use prover::io::from_json_file;
 
     init_env_and_log("test_evm_verifer");
     log::info!("cwd {:?}", std::env::current_dir());
-    let version = "release-v0.12.0-rc.2";
 
-    let proof: BundleProof = from_json_file(&format!("../{version}/proof.json")).unwrap();
+    let search_pattern = "outputs/e2e_tests_*/full_proof_evm_layer6_*.json";
 
-    let proof_dump = proof.clone().proof_to_verify();
-    log::info!("pi dump {:#?}", proof_dump.instances());
+    let mut paths = glob::glob(search_pattern).expect("Failed to read glob pattern");
+
+    let mut path = paths.last().unwrap().unwrap();
+    log::info!("proof path {}", path.display());
+    let evm_proof: EvmProof = from_json_file(&path).unwrap();
+
+    log::trace!("pi dump {:#?}", evm_proof.proof.instances());
+    let proof: prover::BundleProof = evm_proof.proof.into();
 
     let proof = proof.calldata();
     log::info!("calldata len {}", proof.len());
 
     log::info!("check released bin");
-    let bytecode = read_all(&format!("../{version}/evm_verifier.bin"));
+    path.pop();
+    path.push("evm_verifier.bin");
+    let bytecode = read_all(path);
     log::info!("bytecode len {}", bytecode.len());
     match integration::evm::deploy_and_call(bytecode, proof.clone()) {
         Ok(gas) => log::info!("gas cost {gas}"),
