@@ -107,7 +107,7 @@ fn test_batch_bundle_verify() -> anyhow::Result<()> {
     let batch_tasks_paths = read_dir("./tests/test_data/batch_tasks")?;
     let batch_tasks: Vec<BatchProvingTask> = batch_tasks_paths
         .iter()
-        .map(|path| from_json_file::<_, BatchProvingTask>(path))
+        .map(from_json_file::<_, BatchProvingTask>)
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     log::info!("num batch tasks = {}", batch_tasks.len());
