@@ -1,23 +1,23 @@
 use revm::{
-    primitives::{CreateScheme, ExecutionResult, Output, TransactTo, TxEnv},
-    InMemoryDB, EVM,
+    primitives::{Env, ExecutionResult, Output, SpecId, TxEnv, TxKind},
+    Evm, InMemoryDB,
 };
 
 /// Deploy contract and then call with calldata.
 /// Returns gas_used of call to deployed contract if both transactions are successful.
 pub fn deploy_and_call(deployment_code: Vec<u8>, calldata: Vec<u8>) -> Result<u64, String> {
-    let mut evm = EVM {
-        env: Default::default(),
-        db: Some(InMemoryDB::default()),
-    };
-
-    evm.env.tx = TxEnv {
+    let mut env = Box::<Env>::default();
+    env.tx = TxEnv {
         gas_limit: u64::MAX,
-        transact_to: TransactTo::Create(CreateScheme::Create),
+        transact_to: TxKind::Create,
         data: deployment_code.into(),
         ..Default::default()
     };
-
+    let mut evm = Evm::builder()
+        .with_spec_id(SpecId::CANCUN)
+        .with_db(InMemoryDB::default())
+        .with_env(env.clone())
+        .build();
     let result = evm.transact_commit().unwrap();
     let contract = match result {
         ExecutionResult::Success {
@@ -37,13 +37,17 @@ pub fn deploy_and_call(deployment_code: Vec<u8>, calldata: Vec<u8>) -> Result<u6
         _ => unreachable!(),
     };
 
-    evm.env.tx = TxEnv {
+    env.tx = TxEnv {
         gas_limit: u64::MAX,
-        transact_to: TransactTo::Call(contract),
+        transact_to: TxKind::Call(contract),
         data: calldata.into(),
         ..Default::default()
     };
-
+    let mut evm = Evm::builder()
+        .with_spec_id(SpecId::CANCUN)
+        .with_db(InMemoryDB::default())
+        .with_env(env)
+        .build();
     let result = evm.transact_commit().unwrap();
     match result {
         ExecutionResult::Success { gas_used, .. } => Ok(gas_used),
