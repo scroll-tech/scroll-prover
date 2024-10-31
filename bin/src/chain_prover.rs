@@ -141,7 +141,6 @@ impl ChunkBuilder {
         // Condition2: ccc
         let ccc_result = {
             let mut checker = CircuitCapacityChecker::new();
-            checker.set_light_mode(false);
             checker.estimate_circuit_capacity(trace.clone()).unwrap()
         };
         self.acc_row_usage_normalized.add(&ccc_result);
@@ -320,8 +319,6 @@ async fn prove_by_batch(
     }
 }
 
-// Make sure tx-by-tx light_mode=false row usage >= real row usage
-
 async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
@@ -354,7 +351,6 @@ async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
         // part2: tx by tx row usage
         let tx_num = tx_traces.len();
         let mut checker = CircuitCapacityChecker::new();
-        checker.light_mode = false;
         let start_time = std::time::Instant::now();
         for tx in tx_traces {
             checker.estimate_circuit_capacity(tx).unwrap();
