@@ -3661,6 +3661,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1792db035ce95be60c3f8853017b3999209281c24e2ba5bc8e59bf97a0c590c1"
 
 [[package]]
+name = "scroll-prover"
+version = "0.14.0"
+dependencies = [
+ "anyhow",
+ "ethers-providers",
+ "glob",
+ "halo2_proofs",
+ "itertools 0.10.5",
+ "log",
+ "log4rs",
+ "prover",
+ "rand",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "snark-verifier",
+ "snark-verifier-sdk",
+ "tokio",
+]
+
+[[package]]
 name = "scrypt"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
