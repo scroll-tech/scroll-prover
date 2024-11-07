@@ -1,11 +1,8 @@
 use itertools::Itertools;
 use prover::{
-    zkevm::{
-        circuit::{block_traces_to_witness_block, calculate_row_usage_of_witness_block},
-        CircuitCapacityChecker, RowUsage, SubCircuitRowUsage,
-    },
-    zkevm_circuits::evm_circuit::ExecutionState,
-    BlockTrace,
+    calculate_row_usage_of_witness_block, chunk_trace_to_witness_block,
+    eth_types::l2_types::BlockTrace, zkevm_circuits::evm_circuit::ExecutionState,
+    CircuitCapacityChecker, RowUsage, SubCircuitRowUsage,
 };
 use std::time::Duration;
 
@@ -262,7 +259,7 @@ pub fn ccc_by_chunk(
     log::info!("ccc_by_chunk: run ccc for batch-{batch_id} chunk-{chunk_id}");
 
     let start_time = std::time::Instant::now();
-    let witness_block = block_traces_to_witness_block(Vec::from(block_traces)).unwrap();
+    let witness_block = chunk_trace_to_witness_block(Vec::from(block_traces)).unwrap();
     let rows = calculate_row_usage_of_witness_block(&witness_block).unwrap();
     let row_usage = RowUsage::from_row_usage_details(rows);
     pretty_print_row_usage(&row_usage, block_traces, chunk_id, "chunk-opt");

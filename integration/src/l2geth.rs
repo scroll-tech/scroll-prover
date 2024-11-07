@@ -1,6 +1,6 @@
 use anyhow::Result;
 use ethers_providers::{Http, Middleware, Provider};
-use prover::BlockTrace;
+use prover::eth_types::l2_types::BlockTrace;
 use serde::Serialize;
 
 pub struct Client {

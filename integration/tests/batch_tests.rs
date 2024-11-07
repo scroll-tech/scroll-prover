@@ -1,5 +1,5 @@
 use integration::prove::{new_batch_prover, prove_and_verify_batch};
-use prover::{io::from_json_file, utils::init_env_and_log, BatchProvingTask};
+use prover::{init_env_and_log, read_json_deep, BatchProvingTask};
 use std::{fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
@@ -7,14 +7,14 @@ use std::{fs, path::PathBuf};
 fn test_batch_prove_verify() {
     use integration::test_util::PARAMS_DIR;
     use itertools::Itertools;
-    use prover::config::AGG_DEGREES;
+    use prover::BATCH_PROVER_DEGREES;
 
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let params_map = prover::common::Prover::load_params_map(
+    let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &AGG_DEGREES.iter().copied().collect_vec(),
+        &BATCH_PROVER_DEGREES.iter().copied().collect_vec(),
     );
 
     //let task_path = "tests/test_data/batch-task-with-blob.json"; // zstd
@@ -26,7 +26,7 @@ fn test_batch_prove_verify() {
         .chunk_proofs
         .clone()
         .into_iter()
-        .map(|p| p.chunk_info)
+        .map(|p| p.inner.chunk_info().clone())
         .collect::<Vec<_>>();
     let corrected_batch_header = prover::BatchHeader::construct_from_chunks(
         batch.batch_header.version,
@@ -50,14 +50,13 @@ fn test_batch_prove_verify() {
 fn test_batches_with_each_chunk_num_prove_verify() {
     use integration::test_util::PARAMS_DIR;
     use itertools::Itertools;
-    use prover::config::AGG_DEGREES;
 
     let output_dir = init_env_and_log("batches_with_each_chunk_num_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let params_map = prover::common::Prover::load_params_map(
+    let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &AGG_DEGREES.iter().copied().collect_vec(),
+        &prover::BATCH_PROVER_DEGREES.iter().copied().collect_vec(),
     );
 
     let batch = load_batch_proving_task("tests/test_data/full_proof_1.json");
@@ -85,11 +84,11 @@ fn test_batches_with_each_chunk_num_prove_verify() {
 }
 
 fn load_batch_proving_task(batch_task_file: &str) -> BatchProvingTask {
-    let batch: BatchProvingTask = from_json_file(batch_task_file).unwrap();
+    let batch: BatchProvingTask = read_json_deep(batch_task_file).unwrap();
     let tx_bytes_total_len: usize = batch
         .chunk_proofs
         .iter()
-        .map(|c| c.chunk_info.tx_bytes.len())
+        .map(|c| c.inner.chunk_info().tx_bytes.len())
         .sum();
     log::info!("Loaded chunk-hashes and chunk-proofs, batch info: chunk num {}, tx_bytes_total_len {tx_bytes_total_len}", batch.chunk_proofs.len());
     batch

@@ -1,4 +1,4 @@
-use prover::{BlockTrace, ChunkProof};
+use prover::{eth_types::l2_types::BlockTrace, ChunkProofV2};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 #[cfg(feature = "batch-prove")]
@@ -7,7 +7,7 @@ use prover::{BatchHeader, MAX_AGG_SNARKS};
 #[cfg(feature = "batch-prove")]
 pub fn prove_batch(
     id: &str,
-    chunk_proofs: Vec<ChunkProof>,
+    chunk_proofs: Vec<ChunkProofV2>,
     batch_header: BatchHeader<MAX_AGG_SNARKS>,
 ) {
     use integration::prove::get_blob_from_chunks;
@@ -16,7 +16,7 @@ pub fn prove_batch(
 
     let chunk_infos = chunk_proofs
         .iter()
-        .map(|p| p.chunk_info.clone())
+        .map(|p| p.inner.chunk_info().clone())
         .collect_vec();
     let blob_bytes = get_blob_from_chunks(&chunk_infos);
     let batch = BatchProvingTask {
@@ -24,7 +24,7 @@ pub fn prove_batch(
         batch_header,
         blob_bytes,
     };
-    let result = catch_unwind(AssertUnwindSafe(|| prover::test::batch_prove(id, batch)));
+    let result = catch_unwind(AssertUnwindSafe(|| prover::batch_prove(id, batch)));
 
     match result {
         Ok(_) => log::info!("{id}: succeeded to prove batch"),
@@ -41,21 +41,15 @@ pub fn prove_batch(
     }
 }
 
-pub fn prove_chunk(id: &str, traces: Vec<BlockTrace>) -> Option<ChunkProof> {
+pub fn prove_chunk(id: &str, traces: Vec<BlockTrace>) -> Option<ChunkProofV2> {
     let result = catch_unwind(AssertUnwindSafe(|| {
         #[cfg(not(feature = "chunk-prove"))]
-        let proof = None::<ChunkProof>;
+        let proof = None::<ChunkProofV2>;
 
-        #[cfg(feature = "inner-prove")]
-        {
-            let witness_block =
-                prover::zkevm::circuit::block_traces_to_witness_block(traces.clone()).unwrap();
-            prover::test::inner_prove(id, &witness_block);
-        }
         #[cfg(feature = "chunk-prove")]
-        let proof = Some(prover::test::chunk_prove(
+        let proof = Some(prover::chunk_prove(
             id,
-            prover::ChunkProvingTask::from(traces),
+            prover::ChunkProvingTask::new(traces),
         ));
         #[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
         mock_prove(id, traces);
@@ -84,12 +78,10 @@ pub fn prove_chunk(id: &str, traces: Vec<BlockTrace>) -> Option<ChunkProof> {
 }
 
 #[cfg(not(any(feature = "inner-prove", feature = "chunk-prove")))]
-fn mock_prove(id: &str, traces: Vec<BlockTrace>) {
-    use prover::{inner::Prover, zkevm::circuit::SuperCircuit};
-
+fn mock_prove(id: &str, traces: Vec<prover::eth_types::l2_types::BlockTrace>) {
     log::info!("{id}: mock-prove BEGIN");
 
-    Prover::<SuperCircuit>::mock_prove_target_circuit_chunk(traces)
+    integration::mock::mock_prove_target_circuit_chunk(traces)
         .unwrap_or_else(|err| panic!("{id}: failed to mock-prove: {err}"));
 
     log::info!("{id}: mock-prove END");
