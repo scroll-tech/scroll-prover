@@ -1,4 +1,6 @@
-use prover::{force_to_read, DEPLOYMENT_CODE_FILENAME};
+use std::path::PathBuf;
+
+use prover::{force_read, DEPLOYMENT_CODE_FILENAME};
 
 #[derive(Debug)]
 pub struct EVMVerifier(Vec<u8>);
@@ -9,7 +11,8 @@ impl EVMVerifier {
     }
 
     pub fn from_dirs(assets_dir: &str) -> Self {
-        Self::new(force_to_read(assets_dir, &DEPLOYMENT_CODE_FILENAME))
+        let path = PathBuf::from(assets_dir).join(DEPLOYMENT_CODE_FILENAME.clone());
+        Self::new(force_read(&path))
     }
 
     pub fn verify_evm_proof(&self, call_data: Vec<u8>) -> bool {
