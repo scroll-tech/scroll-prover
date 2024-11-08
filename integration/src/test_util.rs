@@ -1,13 +1,23 @@
-use std::path::{Path, PathBuf};
+use std::{
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 use glob::glob;
-use prover::{
-    utils::{get_block_trace_from_file, read_env_var},
-    BlockTrace,
-};
+use prover::{eth_types::l2_types::BlockTrace, get_block_trace_from_file, read_env_var};
 
 pub const ASSETS_DIR: &str = "./test_assets";
 pub const PARAMS_DIR: &str = "./params";
+
+pub fn read_all<P>(filename: P) -> Vec<u8>
+where
+    P: AsRef<Path>,
+{
+    let mut buf = vec![];
+    let mut fd = std::fs::File::open(filename).unwrap();
+    fd.read_to_end(&mut buf).unwrap();
+    buf
+}
 
 pub fn trace_path_for_test() -> String {
     // use trace file of post-curie upgrade
