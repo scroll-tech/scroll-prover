@@ -12,7 +12,8 @@ pub fn new_batch_prover<'a>(
     params_map: &'a BTreeMap<u32, ParamsKZG<Bn256>>,
     output_dir: &str,
 ) -> BatchProver<'a> {
-    env::set_var("CHUNK_PROTOCOL_FILENAME", "chunk_chunk_0.protocol");
+    env::set_var("HALO2_CHUNK_PROTOCOL", "protocol_chunk_0.protocol");
+    env::set_var("SP1_CHUNK_PROTOCOL", "protocol_chunk_0.protocol");
     let prover = BatchProver::from_params_and_assets(params_map, output_dir);
     log::info!("Constructed batch prover");
 
@@ -62,6 +63,7 @@ pub fn prove_and_verify_batch(
     let chunk_num = batch.chunk_proofs.len();
     log::info!("Prove batch BEGIN: chunk_num = {chunk_num}");
 
+    let batch_id = batch.identifier();
     let res_batch_proof = batch_prover.gen_batch_proof(batch, None, Some(output_dir));
     if let Err(e) = res_batch_proof {
         log::error!("proving err: {e}");
@@ -69,7 +71,7 @@ pub fn prove_and_verify_batch(
     }
     let batch_proof = res_batch_proof.unwrap();
 
-    env::set_var("BATCH_VK_FILENAME", "vk_batch_agg.vkey");
+    env::set_var("BATCH_VK_FILENAME", format!("vk_batch_{batch_id}.vkey"));
     let verifier = BatchVerifier::from_params_and_assets(params_map, output_dir);
     log::info!("Constructed aggregator verifier");
 
