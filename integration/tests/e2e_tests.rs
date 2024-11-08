@@ -503,11 +503,10 @@ fn log_batch_pi(trace_paths: &[String]) {
 */
 
 fn dump_chunk_protocol(batch: &BatchProvingTask, output_dir: &str) {
-    // Dump chunk-procotol to "chunk_chunk_0.protocol" for batch proving.
-    batch
-        .chunk_proofs
-        .first()
-        .unwrap()
-        .dump(output_dir, "0")
-        .unwrap();
+    // Dump chunk-procotol to "protocol_chunk_{halo2,sp1}.protocol" for batch proving.
+    let protocol = batch.chunk_proofs.first().unwrap();
+
+    protocol.dump(output_dir, "halo2").unwrap();
+    // adhoc!
+    protocol.dump(output_dir, "sp1").unwrap();
 }
