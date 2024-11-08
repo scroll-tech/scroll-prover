@@ -27,7 +27,7 @@ serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
 
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.1"  }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "feat/upgrade5-prover", default-features = false, features = ["parallel_syn", "scroll"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll"] }
 integration = { path = "integration" }
 
 [patch.crates-io]
