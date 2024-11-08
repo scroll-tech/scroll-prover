@@ -1,11 +1,13 @@
+use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
-    get_blob_bytes, BatchData, BatchProofV2, BatchProver, BatchProvingTask, BatchVerifier,
-    BundleProvingTask, ChunkInfo, ChunkProofV2, ChunkProver, ChunkProvingTask, ChunkVerifier, MAX_AGG_SNARKS,
+    chunk_trace_to_witness_block, get_blob_bytes, BatchData, BatchProofV2, BatchProver,
+    BatchProvingTask, BatchVerifier, BundleProvingTask, ChunkInfo, ChunkProofV2,
+    ChunkProofV2Metadata, ChunkProver, ChunkProvingTask, ChunkVerifier, Snark, MAX_AGG_SNARKS,
 };
 use std::{collections::BTreeMap, env, time::Instant};
 
-use crate::verifier::EVMVerifier;
+use crate::verifier::{new_chunk_verifier, EVMVerifier};
 
 /// The `output_dir` is assumed to output_dir of chunk proving.
 pub fn new_batch_prover<'a>(
@@ -20,9 +22,6 @@ pub fn new_batch_prover<'a>(
 
     prover
 }
-
-use anyhow::Result;
-use prover::{utils::chunk_trace_to_witness_block, Snark};
 
 /// SP1Prover simple compress a snark from sp1, so we have
 /// same snark (only different preprocess bytes) as zkevm's chunk proof
@@ -46,8 +45,8 @@ impl<'params> SP1Prover<'params> {
         chunk_identifier: &str,
         sp1_snark: Snark,
         output_dir: Option<&str>,
-    ) -> Result<ChunkProof> {
-        use prover::config::LayerId::Layer2;
+    ) -> Result<ChunkProofV2> {
+        use prover::LayerId::Layer2;
 
         let witness_block = chunk_trace_to_witness_block(chunk.block_traces)?;
         let chunk_info = if let Some(chunk_info_input) = chunk.chunk_info {
@@ -67,18 +66,21 @@ impl<'params> SP1Prover<'params> {
         )?;
 
         let pk = self.0.prover_impl.pk(Layer2.id());
-        let result = ChunkProof::new(comp_snark, pk, chunk_info, chunk.chunk_kind, Vec::new());
+        let proof_metadata =
+            ChunkProofV2Metadata::new(&comp_snark, prover::ChunkKind::Sp1, chunk_info, None)?;
+        let proof = ChunkProofV2::new(comp_snark, pk, proof_metadata)?;
 
         // in case we read the snark directly from previous calculation,
         // the pk is not avaliable and we skip dumping the proof
         if pk.is_some() {
-            if let (Some(output_dir), Ok(proof)) = (output_dir, &result) {
+            if let Some(output_dir) = output_dir {
                 proof.dump(output_dir, chunk_identifier)?;
             }
         } else {
             log::info!("skip dumping vk since snark is restore from disk")
         }
-        result
+
+        Ok(proof)
     }
 }
 
@@ -90,10 +92,7 @@ pub fn prove_and_verify_sp1_chunk(
     chunk: ChunkProvingTask,
     prover: &mut SP1Prover,
     chunk_identifier: Option<&str>,
-) -> ChunkProof {
-    use prover::io::load_snark;
-    use std::path::Path;
-
+) -> ChunkProofV2 {
     let chunk_identifier =
         chunk_identifier.map_or_else(|| chunk.identifier(), |name| name.to_string());
 
@@ -101,10 +100,8 @@ pub fn prove_and_verify_sp1_chunk(
     let sp1_snark_name = format!("sp1_snark_{}.json", chunk_identifier);
 
     let now = Instant::now();
-    let sp1_snark = load_snark(Path::new(sp1_dir).join(&sp1_snark_name).to_str().unwrap())
-        .ok()
-        .flatten()
-        .unwrap();
+    let snark_path = std::path::Path::new(sp1_dir).join(&sp1_snark_name);
+    let sp1_snark = prover::read_json_deep(snark_path).expect("failed to load SNARK");
     let chunk_proof = prover
         .gen_chunk_proof(chunk, &chunk_identifier, sp1_snark, Some(output_dir))
         .expect("cannot generate sp1 chunk snark");
@@ -119,7 +116,8 @@ pub fn prove_and_verify_sp1_chunk(
         &format!("vk_chunk_{chunk_identifier}.vkey"),
     );
     let verifier = new_chunk_verifier(params_map, output_dir);
-    assert!(verifier.verify_snark(chunk_proof.clone().to_snark()));
+    let snark = Snark::try_from(&chunk_proof).expect("should be ok");
+    assert!(verifier.verify_snark(snark));
     log::info!("Verified sp1 chunk proof");
 
     chunk_proof

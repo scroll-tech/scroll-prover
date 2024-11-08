@@ -108,19 +108,19 @@ fn test_e2e_prove_verify() {
 fn test_e2e_prove_verify_hybrid() {
     use integration::prove::{new_batch_prover, prove_and_verify_batch, prove_and_verify_bundle};
     use itertools::Itertools;
-    use prover::config::{AGG_DEGREES, ZKEVM_DEGREES};
+    use prover::{BATCH_PROVER_DEGREES, CHUNK_PROVER_DEGREES};
 
     // setup output dir for tests.
     let output_dir = init_env_and_log("e2e_tests");
     log::info!("initialize ENV and create output-dir {output_dir}: OK");
 
     // load kzg params.
-    let params_map = prover::common::Prover::load_params_map(
+    let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &ZKEVM_DEGREES
+        &CHUNK_PROVER_DEGREES
             .iter()
             .copied()
-            .chain(AGG_DEGREES.iter().copied())
+            .chain(BATCH_PROVER_DEGREES.iter().copied())
             .collect_vec(),
     );
     log::info!("load params map: OK");
@@ -168,7 +168,7 @@ fn test_e2e_prove_verify_hybrid() {
 
     // halo2 chunk
     let chunk_1_proofs = {
-        let mut zkevm_prover = zkevm::Prover::from_params_and_assets(&params_map, ASSETS_DIR);
+        let mut zkevm_prover = prover::ChunkProver::from_params_and_assets(&params_map, ASSETS_DIR);
         log::info!("Constructed zkevm prover");
         chunk_1
             .into_iter()
@@ -176,7 +176,7 @@ fn test_e2e_prove_verify_hybrid() {
                 prove_and_verify_chunk(
                     &params_map,
                     &output_dir,
-                    ChunkProvingTask::new(vec![block_trace], ChunkKind::Halo2),
+                    ChunkProvingTask::new(vec![block_trace]),
                     &mut zkevm_prover,
                     None,
                     false,
@@ -198,7 +198,7 @@ fn test_e2e_prove_verify_hybrid() {
                     &params_map,
                     &output_dir,
                     sp1_path.as_deref(),
-                    ChunkProvingTask::new(vec![block_trace], ChunkKind::Sp1),
+                    ChunkProvingTask::new(vec![block_trace]),
                     &mut zkevm_prover,
                     None,
                 )
@@ -224,8 +224,8 @@ fn test_e2e_prove_verify_hybrid() {
             0, 0, 0, 0, 0, 0, 0, 0,
         ]);
         let chunks = vec![
-            chunk_1_proofs[0].chunk_info.clone(),
-            chunk_2_proofs[0].chunk_info.clone(),
+            chunk_1_proofs[0].inner.chunk_info().clone(),
+            chunk_2_proofs[0].inner.chunk_info().clone(),
         ];
         let blob_bytes = get_blob_from_chunks(&chunks);
         let batch_header = BatchHeader::construct_from_chunks(
@@ -368,7 +368,7 @@ fn gen_batch_proving_task(
                     params_map,
                     output_dir,
                     Some(sp1_path),
-                    ChunkProvingTask::new(block_traces, ChunkKind::Sp1),
+                    ChunkProvingTask::new(block_traces),
                     &mut zkevm_prover,
                     None,
                 )
@@ -383,7 +383,7 @@ fn gen_batch_proving_task(
                 prove_and_verify_chunk(
                     params_map,
                     output_dir,
-                    ChunkProvingTask::new(block_traces, ChunkKind::Halo2),
+                    ChunkProvingTask::new(block_traces),
                     &mut zkevm_prover,
                     None,
                     false,

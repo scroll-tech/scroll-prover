@@ -13,13 +13,13 @@ fn test_chunk_prove_verify() {
 
     let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &ZKEVM_DEGREES.iter().copied().collect_vec(),
+        &CHUNK_PROVER_DEGREES.iter().copied().collect_vec(),
     );
 
     let trace_path = trace_path_for_test();
     let traces = load_chunk(&trace_path).1;
-    let chunk = ChunkProvingTask::new(traces, prover::ChunkKind::Halo2);
-    let mut prover = ChunkProver::from_params_and_assets(&params_map, ASSETS_DIR);
+    let chunk = ChunkProvingTask::new(traces);
+    let mut prover = prover::ChunkProver::from_params_and_assets(&params_map, ASSETS_DIR);
     log::info!("Constructed chunk prover");
     prove_and_verify_chunk(&params_map, &output_dir, chunk, &mut prover, None, true);
 }

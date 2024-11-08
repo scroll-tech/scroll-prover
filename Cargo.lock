@@ -2940,6 +2940,7 @@ dependencies = [
  "bitvec",
  "halo2curves",
  "lazy_static",
+ "once_cell",
 ]
 
 [[package]]

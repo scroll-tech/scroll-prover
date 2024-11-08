@@ -93,15 +93,15 @@ fn test_batch_prove_verify_after_chunk_tests() {
     };
     use itertools::Itertools;
     use prover::{
-        config::AGG_DEGREES, eth_types::H256, proof::ChunkProof, BatchHeader, ChunkProvingTask,
+        eth_types::H256, BatchHeader, ChunkProofV2, ChunkProvingTask, BATCH_PROVER_DEGREES,
     };
 
     let output_dir = init_env_and_log("batch_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let params_map = prover::common::Prover::load_params_map(
+    let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &AGG_DEGREES.iter().copied().collect_vec(),
+        &BATCH_PROVER_DEGREES.iter().copied().collect_vec(),
     );
 
     let trace_paths_env = trace_path_for_test();
@@ -122,13 +122,13 @@ fn test_batch_prove_verify_after_chunk_tests() {
                 .last()
                 .map_or(last_block_timestamp, |tr| tr.header.timestamp.as_u64());
 
-            let task = ChunkProvingTask::new(traces, prover::ChunkKind::Halo2);
-            let loaded_proof = ChunkProof::from_json_file(&output_dir, &task.identifier());
+            let task = ChunkProvingTask::new(traces);
+            let loaded_proof = ChunkProofV2::from_json(&output_dir, &task.identifier());
             if let Ok(proof) = loaded_proof.as_ref() {
                 log::info!(
                     "expected PI of {} is {:#x?}",
                     task.identifier(),
-                    proof.chunk_info.public_input_hash(),
+                    proof.inner.chunk_info().public_input_hash(),
                 );
             }
             loaded_proof
@@ -138,7 +138,7 @@ fn test_batch_prove_verify_after_chunk_tests() {
 
     let chunk_infos = chunk_proofs
         .iter()
-        .map(|proof| proof.chunk_info.clone())
+        .map(|proof| proof.inner.chunk_info().clone())
         .collect::<Vec<_>>();
 
     let blob_bytes = get_blob_from_chunks(&chunk_infos);

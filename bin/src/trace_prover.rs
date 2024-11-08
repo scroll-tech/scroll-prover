@@ -34,7 +34,7 @@ fn main() {
     let chunk = ChunkProvingTask::new(traces);
     let params_map =
         prover::Prover::load_params_map(&args.params_path, &prover::CHUNK_PROVER_DEGREES);
-    let mut prover = ChunkProverProver::from_params_and_assets(&params_map, &args.assets_path);
+    let mut prover = ChunkProver::from_params_and_assets(&params_map, &args.assets_path);
     log::info!("Constructed chunk prover");
     prove_and_verify_chunk(
         &params_map,
