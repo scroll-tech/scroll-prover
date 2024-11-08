@@ -2,12 +2,11 @@
 
 use integration::{
     capacity_checker::{prepare_circuit_capacity_checker, run_circuit_capacity_checker, CCCMode},
-    test_util::load_chunk_for_test,
+    test_util::{load_chunk_for_test, read_all},
 };
 use prover::{
-    io::read_all,
-    utils::{init_env_and_log, short_git_version},
-    zkevm::circuit::{block_traces_to_witness_block, TargetCircuit},
+    calculate_row_usage_of_witness_block, chunk_trace_to_witness_block, init_env_and_log,
+    read_json, short_git_version,
 };
 
 #[test]
@@ -46,7 +45,7 @@ fn test_evm_verifier() {
         log::info!("svm use {}", version);
         let bytecode = compile_yul(&String::from_utf8(yul.clone()).unwrap());
         log::info!("bytecode len {}", bytecode.len());
-        match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+        match prover::deploy_and_call(bytecode, proof.clone()) {
             Ok(gas) => log::info!("gas cost {gas}"),
             Err(e) => {
                 panic!("test failed {e:#?}");
@@ -57,7 +56,7 @@ fn test_evm_verifier() {
     log::info!("check released bin");
     let bytecode = read_all(&format!("../{version}/evm_verifier.bin"));
     log::info!("bytecode len {}", bytecode.len());
-    match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+    match prover::deploy_and_call(bytecode, proof.clone()) {
         Ok(gas) => log::info!("gas cost {gas}"),
         Err(e) => {
             panic!("test failed {e:#?}");
@@ -65,29 +64,30 @@ fn test_evm_verifier() {
     }
 }
 
-// suppose a "proof.json" has been provided under the 'release'
-// directory or the test would fail
 #[ignore]
 #[test]
 fn test_evm_verifier_for_dumped_proof() {
-    use prover::{io::from_json_file, proof::BundleProof};
-
     init_env_and_log("test_evm_verifer");
     log::info!("cwd {:?}", std::env::current_dir());
-    let version = "release-v0.12.0-rc.2";
 
-    let proof: BundleProof = from_json_file(&format!("../{version}/proof.json")).unwrap();
+    let search_pattern = "outputs/e2e_tests_*/full_proof_bundle_recursion.json";
 
-    let proof_dump = proof.clone().proof_to_verify();
-    log::info!("pi dump {:#?}", proof_dump.instances());
+    let paths = glob::glob(search_pattern).expect("Failed to read glob pattern");
+
+    let mut path = paths.last().unwrap().unwrap();
+    log::info!("proof path {}", path.display());
+    let proof: prover::BundleProof = read_json(&path).unwrap();
 
     let proof = proof.calldata();
     log::info!("calldata len {}", proof.len());
 
     log::info!("check released bin");
-    let bytecode = read_all(&format!("../{version}/evm_verifier.bin"));
+    path.pop();
+    path.push("evm_verifier.bin");
+    let bytecode = read_all(path);
     log::info!("bytecode len {}", bytecode.len());
-    match integration::evm::deploy_and_call(bytecode, proof.clone()) {
+
+    match prover::deploy_and_call(bytecode, proof.clone()) {
         Ok(gas) => log::info!("gas cost {gas}"),
         Err(e) => {
             panic!("test failed {e:#?}");
@@ -119,13 +119,13 @@ fn estimate_circuit_rows() {
     prepare_circuit_capacity_checker();
 
     let (_, block_trace) = load_chunk_for_test();
-    let witness_block = block_traces_to_witness_block(block_trace).unwrap();
+    let witness_block = chunk_trace_to_witness_block(block_trace).unwrap();
     log::info!("estimating used rows");
-    let row_usage = <prover::zkevm::circuit::SuperCircuit as TargetCircuit>::Inner::min_num_rows_block_subcircuits(&witness_block);
+    let row_usage = calculate_row_usage_of_witness_block(&witness_block).unwrap();
     let r = row_usage
         .iter()
-        .max_by_key(|x| x.row_num_real)
+        .max_by_key(|x| x.row_number)
         .unwrap()
         .clone();
-    log::info!("final rows: {} {}", r.row_num_real, r.name);
+    log::info!("final rows: {} {}", r.row_number, r.name);
 }

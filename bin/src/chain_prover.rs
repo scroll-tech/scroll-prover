@@ -10,10 +10,8 @@ use integration::{
     l2geth,
 };
 use prover::{
-    aggregator,
-    utils::init_env_and_log,
-    zkevm::{circuit::block_traces_to_witness_block, CircuitCapacityChecker, RowUsage},
-    BatchData, BlockTrace, ChunkInfo, ChunkProof, MAX_AGG_SNARKS,
+    eth_types::l2_types::BlockTrace, init_env_and_log, BatchData, ChunkInfo, ChunkProofV2,
+    CircuitCapacityChecker, RowUsage, MAX_AGG_SNARKS,
 };
 use std::env;
 
@@ -81,7 +79,7 @@ impl BatchBuilder {
         }
 
         let batch_bytes = self.batch_data.get_batch_data_bytes();
-        let blob_bytes = aggregator::eip4844::get_blob_bytes(&batch_bytes);
+        let blob_bytes = prover::get_blob_bytes(&batch_bytes);
         let compressed_da_size = blob_bytes.len();
         let uncompressed_da_size = self
             .batch_data
@@ -141,7 +139,6 @@ impl ChunkBuilder {
         // Condition2: ccc
         let ccc_result = {
             let mut checker = CircuitCapacityChecker::new();
-            checker.set_light_mode(false);
             checker.estimate_circuit_capacity(trace.clone()).unwrap()
         };
         self.acc_row_usage_normalized.add(&ccc_result);
@@ -195,7 +192,7 @@ async fn prove_by_block(l2geth: &l2geth::Client, begin_block: i64, end_block: i6
                 unimplemented!("uncomment below");
                 //ChunkInfo::from_block_traces(&chunk)
             } else {
-                let witness_block = block_traces_to_witness_block(chunk).unwrap();
+                let witness_block = prover::chunk_trace_to_witness_block(chunk).unwrap();
                 ChunkInfo::from_witness_block(&witness_block, false)
             };
             if let Some(batch) = batch_builder.add(chunk_info) {
@@ -203,7 +200,7 @@ async fn prove_by_block(l2geth: &l2geth::Client, begin_block: i64, end_block: i6
                 padding_chunk(&mut padded_batch);
                 let batch_data = BatchData::<{ MAX_AGG_SNARKS }>::new(batch.len(), &padded_batch);
                 let compressed_da_size =
-                    aggregator::eip4844::get_blob_bytes(&batch_data.get_batch_data_bytes()).len();
+                    prover::get_blob_bytes(&batch_data.get_batch_data_bytes()).len();
                 log::info!(
                     "batch built: blob usage {:.3}, chunk num {}, block num {}, block range {} to {}",
                     compressed_da_size as f32 / constants::N_BLOB_BYTES as f32,
@@ -235,7 +232,11 @@ fn padding_chunk(chunks: &mut Vec<ChunkInfo>) {
     }
 }
 
-fn prove_chunk(batch_id: u64, chunk_id: u64, block_traces: Vec<BlockTrace>) -> Option<ChunkProof> {
+fn prove_chunk(
+    batch_id: u64,
+    chunk_id: u64,
+    block_traces: Vec<BlockTrace>,
+) -> Option<ChunkProofV2> {
     let total_gas: u64 = block_traces
         .iter()
         .map(|b| b.header.gas_used.as_u64())
@@ -320,8 +321,6 @@ async fn prove_by_batch(
     }
 }
 
-// Make sure tx-by-tx light_mode=false row usage >= real row usage
-
 async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
     let (begin_block, end_block) = if begin_block == 0 && end_block == 0 {
         // Blocks within last 24 hours
@@ -354,7 +353,6 @@ async fn txtx_ccc(l2geth: &l2geth::Client, begin_block: i64, end_block: i64) {
         // part2: tx by tx row usage
         let tx_num = tx_traces.len();
         let mut checker = CircuitCapacityChecker::new();
-        checker.light_mode = false;
         let start_time = std::time::Instant::now();
         for tx in tx_traces {
             checker.estimate_circuit_capacity(tx).unwrap();
