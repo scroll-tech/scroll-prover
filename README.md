@@ -33,6 +33,8 @@ make download-setup -e degree=DEGREE params_dir=PARAMS_DIR
 
 There params are mirrored from [PSE's converted setup files](https://github.com/han0110/halo2-kzg-srs) which was originally created by `perpetual-powers-of-tau`.
 
+(If you want to run tests, you also need to download `25`: `make download-setup -e degree=25`.)
+
 ### Testing
 
 `make test-chunk-prove` and `make test-e2e-prove` are the main testing entries for multi-level circuit constraint system of scroll-prover. Developers could understand how the system works by reading the codes of these tests.

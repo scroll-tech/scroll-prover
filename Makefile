@@ -27,34 +27,34 @@ clippy: ## Run clippy checks over all workspace members
 	@cargo clippy --all-features --all-targets -- -D warnings
 
 test: ## Run tests for all the workspace members
-	@cargo test --release -p integration --test unit_tests
+	@cargo test --release --package integration --test unit_tests
 
 chain-prover:
 	@cargo run --bin chain_prover --release
 
 test-mock-prove:
-	@cargo test --release -p integration --test mock_tests test_mock_prove -- --exact --nocapture
+	@cargo test --release --package integration --test mock_tests test_mock_prove -- --exact --nocapture
 
 test-inner-prove:
-	@cargo test --release -p integration --test inner_tests test_inner_prove_verify -- --exact --nocapture
+	@cargo test --release --package integration --test inner_tests test_inner_prove_verify -- --exact --nocapture
 
 test-chunk-prove:
-	@cargo test --release -p integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
+	@cargo test --release --package integration --test chunk_tests test_chunk_prove_verify -- --exact --nocapture
 
 test-batch-prove:
-	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test batch_tests test_batch_prove_verify -- --exact --nocapture
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release --package integration --test batch_tests test_batch_prove_verify -- --exact --nocapture
 
 test-bundle-prove:
-	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test bundle_tests test_bundle_prove_verify -- --exact --nocapture
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release --package integration --test bundle_tests test_bundle_prove_verify -- --exact --nocapture
 
 test-e2e-prove:
-	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_e2e_prove_verify -- --exact --nocapture
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release --package integration --test e2e_tests test_e2e_prove_verify -- --exact --nocapture
 
 test-batch-bundle-prove:
-	@SCROLL_PROVER_DUMP_YUL=true cargo test --release -p integration --test e2e_tests test_batch_bundle_verify -- --exact --nocapture
+	@SCROLL_PROVER_DUMP_YUL=true cargo test --release --package integration --test e2e_tests test_batch_bundle_verify -- --exact --nocapture
 
 test-ccc:
-	@cargo test --release -p integration --test unit_tests test_capacity_checker -- --exact --nocapture
+	@cargo test --release --package integration --test unit_tests test_capacity_checker -- --exact --nocapture
 
 # Could be called as `make download-setup -e degree=DEGREE params_dir=PARAMS_DIR`.
 # As default `degree=25` and `params_dir=./integration/params`.
