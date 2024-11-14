@@ -1,5 +1,5 @@
 use integration::prove::{new_batch_prover, prove_and_verify_bundle};
-use prover::{io::from_json_file, utils::init_env_and_log, BatchProof, BundleProvingTask};
+use prover::{init_env_and_log, read_json, BatchProofV2, BundleProvingTask};
 //use std::{fs, path::PathBuf};
 
 #[cfg(feature = "prove_verify")]
@@ -7,14 +7,14 @@ use prover::{io::from_json_file, utils::init_env_and_log, BatchProof, BundleProv
 fn test_bundle_prove_verify() {
     use integration::test_util::PARAMS_DIR;
     use itertools::Itertools;
-    use prover::config::AGG_DEGREES;
+    use prover::BATCH_PROVER_DEGREES;
 
     let output_dir = init_env_and_log("bundle_tests");
     log::info!("Initialized ENV and created output-dir {output_dir}");
 
-    let params_map = prover::common::Prover::load_params_map(
+    let params_map = prover::Prover::load_params_map(
         PARAMS_DIR,
-        &AGG_DEGREES.iter().copied().collect_vec(),
+        &BATCH_PROVER_DEGREES.iter().copied().collect_vec(),
     );
 
     let bundle_task = gen_bundle_proving_task(&[
@@ -30,8 +30,11 @@ fn gen_bundle_proving_task(batch_proof_files: &[&str]) -> BundleProvingTask {
     let mut batch_proofs = Vec::new();
 
     for proof_file in batch_proof_files {
-        let batch_proof: BatchProof = from_json_file(proof_file).unwrap();
-        log::debug!("Loaded batch-proofs, header {:#?}", batch_proof.batch_hash,);
+        let batch_proof: BatchProofV2 = read_json(proof_file).unwrap();
+        log::debug!(
+            "Loaded batch-proofs, header {:#?}",
+            batch_proof.inner.batch_hash
+        );
         batch_proofs.push(batch_proof);
     }
 

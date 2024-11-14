@@ -1,6 +1,6 @@
 use clap::Parser;
 use integration::{prove::prove_and_verify_chunk, test_util::load_chunk};
-use prover::{utils::init_env_and_log, ChunkProvingTask};
+use prover::{init_env_and_log, ChunkProvingTask};
 use std::env;
 
 #[derive(Parser, Debug)]
@@ -31,15 +31,9 @@ fn main() {
 
     let traces = load_chunk(&args.trace_path).1;
     prover::eth_types::constants::set_scroll_block_constants_with_trace(&traces[0]);
-    let chunk = ChunkProvingTask::from(traces);
-    let params_map = prover::common::Prover::load_params_map(
-        &args.params_path,
-        &[
-            *prover::config::INNER_DEGREE,
-            *prover::config::LAYER1_DEGREE,
-            *prover::config::LAYER2_DEGREE,
-        ],
-    );
+    let chunk = ChunkProvingTask::new(traces);
+    let params_map =
+        prover::Prover::load_params_map(&args.params_path, &prover::CHUNK_PROVER_DEGREES);
     prove_and_verify_chunk(
         chunk,
         Some("0"), // same with `make test-chunk-prove`, to load vk
