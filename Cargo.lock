@@ -1078,6 +1078,7 @@ dependencies = [
  "rand",
  "rand_xorshift",
  "reqwest 0.11.20",
+ "scroll-prover",
  "serde",
  "serde_derive",
  "serde_json",
@@ -1102,7 +1103,7 @@ dependencies = [
  "bitflags 2.6.0",
  "cexpr",
  "clang-sys",
- "itertools 0.11.0",
+ "itertools 0.13.0",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -5342,7 +5343,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9552f850d5f0964a4e4d0bf306459ac29323ddfbae05e35a7c0d35cb0803cc5"
 dependencies = [
  "anyhow",
- "itertools 0.11.0",
+ "itertools 0.13.0",
  "proc-macro2",
  "quote",
  "syn 2.0.87",
@@ -6780,7 +6781,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 [[package]]
 name = "snark-verifier"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#572ef69d1595fca82213d3b05e859eaf355a5fa1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#948671cac73f11e66187a15483e38ab3626dc2a3"
 dependencies = [
  "bytes",
  "ethereum-types",
@@ -6803,7 +6804,7 @@ dependencies = [
 [[package]]
 name = "snark-verifier-sdk"
 version = "0.0.1"
-source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#572ef69d1595fca82213d3b05e859eaf355a5fa1"
+source = "git+https://github.com/scroll-tech/snark-verifier?branch=develop#948671cac73f11e66187a15483e38ab3626dc2a3"
 dependencies = [
  "bincode",
  "ethereum-types",
@@ -6979,7 +6980,7 @@ dependencies = [
 [[package]]
 name = "sp1-halo2-wrap"
 version = "0.1.0"
-source = "git+ssh://git@github.com/scroll-tech/sp1-halo2-wrap.git?branch=refactor#3f9b856bf2a38c3175d5bc218f6df881f112836e"
+source = "git+ssh://git@github.com/scroll-tech/sp1-halo2-wrap.git#97030475507042783ef41623314654d3348b1043"
 dependencies = [
  "bincode",
  "clap 4.5.20",
@@ -7317,7 +7318,7 @@ dependencies = [
 [[package]]
 name = "sproll-host"
 version = "0.1.0"
-source = "git+ssh://git@github.com/scroll-tech/sproll-evm.git?branch=compability/sp1-prover#d2153215c446dca722f996b13b8acfbe2f4e20a4"
+source = "git+ssh://git@github.com/scroll-tech/sproll-evm.git?branch=compability/sp1-prover#3e756a4fca4fb6a19fead4166c7e5308faa53ae9"
 dependencies = [
  "cargo_metadata 0.18.1",
  "hex",
@@ -7339,7 +7340,7 @@ dependencies = [
 [[package]]
 name = "sproll-lib"
 version = "0.1.0"
-source = "git+ssh://git@github.com/scroll-tech/sproll-evm.git?branch=compability/sp1-prover#d2153215c446dca722f996b13b8acfbe2f4e20a4"
+source = "git+ssh://git@github.com/scroll-tech/sproll-evm.git?branch=compability/sp1-prover#3e756a4fca4fb6a19fead4166c7e5308faa53ae9"
 
 [[package]]
 name = "stable_deref_trait"

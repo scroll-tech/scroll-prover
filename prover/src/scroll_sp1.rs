@@ -1,20 +1,25 @@
-
-use prover::{
-    common, zkevm::Verifier,
-    types::ChunkProvingTask, ChunkProof,
-    io::try_to_read,
-    config::LayerId,
-    consts::CHUNK_VK_FILENAME, 
-};
 use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
+use prover::{
+    common, config::LayerId, consts::CHUNK_VK_FILENAME, io::try_to_read, types::ChunkProvingTask,
+    zkevm::Verifier, ChunkProof,
+    eth_types::l2_types::BlockTrace,
+};
+use rand::Rng;
+use snark_verifier_sdk::Snark;
 use std::collections::BTreeMap;
+
+use super::prover_utils::{load_elf, ToSp1BlockTrace};
+use sp1_host::SprollRunner;
+use sp1_halo2_backend::{Prover as Halo2WrapProver, BaseConfigParams as Halo2WrapParams};
+
+
 pub struct Sp1Prover<'params> {
     pub prover_impl: common::Prover<'params>,
+    pub halo2_wrap_prover: Option<Halo2WrapProver>,
     verifier: Option<Verifier<'params>>,
     raw_vk: Option<Vec<u8>>,
 }
-
 
 impl<'params> Sp1Prover<'params> {
     pub fn from_params_and_assets(
@@ -41,6 +46,7 @@ impl<'params> Sp1Prover<'params> {
             prover_impl,
             raw_vk,
             verifier,
+            halo2_wrap_prover: None,
         }
     }
 
@@ -48,6 +54,51 @@ impl<'params> Sp1Prover<'params> {
         self.prover_impl
             .raw_vk(LayerId::Layer2.id())
             .or_else(|| self.raw_vk.clone())
+    }
+
+    pub fn gen_sp1_snark(
+        &mut self,
+        rng: &mut (impl Rng + Send),
+        block_traces: impl IntoIterator<Item = BlockTrace>,
+    ) -> Result<Snark> {
+        let mut runner = SprollRunner::new(block_traces.into_iter().map(ToSp1BlockTrace))?;
+
+        runner.prepare_stdin();
+        #[cfg(feature = "sp1-hint")]
+        runner.hook_poseidon()?;
+        runner.run_on_host()?;
+
+        log::info!("start sp1 prove");
+        let sp1_client = SprollRunner::prove_client();
+        let (sp1_proof, vk) = runner.prove_compressed(&sp1_client, &load_elf()?, true)?;
+
+        log::info!("start halo2 wrap");
+        if self.halo2_wrap_prover.is_none() {
+            let param = Halo2WrapParams::load();
+            let wrap_prover = if let Some(param) = param {
+                Halo2WrapProver::new(param, None)
+            } else {
+                Halo2WrapProver::new_test(LayerId::Layer1.degree() as usize)
+            };
+            self.halo2_wrap_prover.replace(wrap_prover);
+        }
+        let wrap_prover = self.halo2_wrap_prover.as_mut().expect("has been created");
+        let preprocessed_proof = wrap_prover.preprocess(
+            sp1_client.prover.sp1_prover(), // TODO: do not downgrade to cpu prover?
+            &vk, 
+            sp1_proof
+        )?;
+        if wrap_prover.config().test_only {
+            log::warn!("no param set, test circuit");
+            wrap_prover.test_param(&preprocessed_proof)?;
+        }
+
+        let snark = wrap_prover.prove(
+            Some(self.prover_impl.params(wrap_prover.config().k as u32)), 
+            rng, 
+            &preprocessed_proof,
+        )?;
+        Ok(snark)
     }
 
     pub fn gen_chunk_proof(
@@ -59,6 +110,14 @@ impl<'params> Sp1Prover<'params> {
     ) -> Result<ChunkProof> {
         assert!(!chunk.is_empty());
 
+        let mut runner = SprollRunner::new(chunk.block_traces.into_iter().map(ToSp1BlockTrace))?;
+
+        runner.prepare_stdin();
+        #[cfg(feature = "sp1-hint")]
+        runner.hook_poseidon()?;
+        runner.run_on_host()?;
+
+        log::info!("start prove ");
         unimplemented!();
     }
 
