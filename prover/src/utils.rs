@@ -1,4 +1,4 @@
-use prover::{eth_types::l2_types::BlockTrace, utils::read_env_var};
+use prover::{eth_types::l2_types::BlockTrace, read_env_var};
 use serde_json::Result as SeResult;
 use sp1_host::{trace, BlockTrace as SbvBlockTrace};
 use std::io::{Read, Error};

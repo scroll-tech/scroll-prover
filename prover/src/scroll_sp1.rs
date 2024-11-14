@@ -1,13 +1,13 @@
 use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
-    common, config::LayerId, consts::CHUNK_VK_FILENAME, io::try_to_read, types::ChunkProvingTask,
-    zkevm::Verifier, ChunkProof,
+    Prover as ProverImpl, LayerId, CHUNK_VK_FILENAME, try_read, ChunkProvingTask,
+    ChunkVerifier, ChunkProof,
     eth_types::l2_types::BlockTrace,
 };
 use rand::Rng;
 use snark_verifier_sdk::Snark;
-use std::collections::BTreeMap;
+use std::{path::PathBuf, collections::BTreeMap};
 
 use super::prover_utils::{load_elf, ToSp1BlockTrace};
 use sp1_host::SprollRunner;
@@ -15,9 +15,9 @@ use sp1_halo2_backend::{Prover as Halo2WrapProver, BaseConfigParams as Halo2Wrap
 
 
 pub struct Sp1Prover<'params> {
-    pub prover_impl: common::Prover<'params>,
+    pub prover_impl: ProverImpl<'params>,
     pub halo2_wrap_prover: Option<Halo2WrapProver>,
-    verifier: Option<Verifier<'params>>,
+    verifier: Option<ChunkVerifier<'params>>,
     raw_vk: Option<Vec<u8>>,
 }
 
@@ -26,18 +26,20 @@ impl<'params> Sp1Prover<'params> {
         params_map: &'params BTreeMap<u32, ParamsKZG<Bn256>>,
         assets_dir: &str,
     ) -> Self {
-        let prover_impl = common::Prover::from_params_map(params_map);
+        let path = PathBuf::from(assets_dir).join(CHUNK_VK_FILENAME.clone());
+        let raw_vk = try_read(&path);
 
-        let raw_vk = try_to_read(assets_dir, &CHUNK_VK_FILENAME);
+        let prover_impl = ProverImpl::from_params_map(params_map);
+
         let verifier = if raw_vk.is_none() {
             log::warn!(
-                "zkevm-prover: {} doesn't exist in {}",
+                "Sp1Prover setup without verifying key (dev mode): {} doesn't exist in {}",
                 *CHUNK_VK_FILENAME,
                 assets_dir
             );
             None
         } else {
-            Some(Verifier::from_params_and_assets(
+            Some(ChunkVerifier::from_params_and_assets(
                 prover_impl.params_map,
                 assets_dir,
             ))
