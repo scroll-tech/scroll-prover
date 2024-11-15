@@ -1,5 +1,5 @@
 use clap::Parser;
-use integration::test_util::load_chunk;
+use integration::test_util::load_chunk_compatible;
 use prover::{init_env_and_log, gen_rng, ChunkProvingTask};
 use scroll_prover::Sp1Prover;
 use std::env;
@@ -17,9 +17,11 @@ struct Args {
     #[clap(
         short,
         long = "trace",
-        default_value = "tests/extra_traces/batch_34700/chunk_1236462/block_4176564.json"
+        default_value = "tests/extra_traces/batch_sproll/5224657.json"
     )]
     trace_path: String,
+    #[clap(short, long = "exec-test")]
+    exec: bool,
 }
 
 const DEFAULT_PARAM : &str = 
@@ -44,7 +46,7 @@ fn main() {
 
     let args = Args::parse();
 
-    let traces = load_chunk(&args.trace_path).1;
+    let traces = load_chunk_compatible(&args.trace_path).1;
     prover::eth_types::constants::set_scroll_block_constants_with_trace(&traces[0]);
     let chunk = ChunkProvingTask::new(traces);
     let params_map = prover::Prover::load_params_map(
