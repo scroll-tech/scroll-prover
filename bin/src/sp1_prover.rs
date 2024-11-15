@@ -57,7 +57,9 @@ fn main() {
             *prover::LAYER2_DEGREE,
         ],
     );
-
+    log::warn!("must set VERIFY_VK to false, we also enfore SHARD_SIZE");
+    env::set_var("VERIFY_VK", "false");
+    env::set_var("SHARD_SIZE", "524288");
     env::set_var("BASE_CONFIG_PARAMS", DEFAULT_PARAM);
     let mut prover = Sp1Prover::from_params_and_assets(&params_map, &args.assets_path);
     log::info!("Constructed sp1 prover");
