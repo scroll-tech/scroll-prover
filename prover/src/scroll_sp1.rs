@@ -1,10 +1,8 @@
-use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
     Prover as ProverImpl, LayerId, CHUNK_VK_FILENAME, try_read, ChunkProvingTask,
-    ChunkVerifier, 
-    eth_types::l2_types::BlockTrace,
-    ChunkInfo, chunk_trace_to_witness_block,
+    ChunkVerifier, ProverError, ChunkProverError,
+    eth_types::l2_types::BlockTrace, ChunkInfo,
     ChunkProofV2Metadata, ChunkProofV2,
 };
 use rand::Rng;
@@ -60,23 +58,39 @@ impl<'params> Sp1Prover<'params> {
             .or_else(|| self.raw_vk.clone())
     }
 
-    pub fn gen_sp1_snark<'a>(
+    pub fn load_or_gen_sp1_snark<'a>(
         &mut self,
-        rng: impl Rng + Send,
+        name: &str,
+        id: &str,
         block_traces: impl IntoIterator<Item = &'a BlockTrace>,
-    ) -> Result<Snark> {
-        let mut runner = SprollRunner::new(block_traces.into_iter().map(ToSp1BlockTrace))?;
+        output_dir: Option<&str>,
+    ) -> Result<Snark, ProverError> {
+        use prover::{read_json_deep, write_json,  gen_rng};
+        use std::path::Path;
+
+        // If an output directory is provided and we are successfully able to locate a SNARK with
+        // the same identifier on disk, return early.
+        if let Some(dir) = output_dir {
+            let path = Path::new(dir).join(format!("snark_{}_{}.json", id, name));
+            if let Ok(snark) = read_json_deep(&path) {
+                return Ok(snark);
+            }
+        }
+
+        let mut runner = SprollRunner::new(block_traces.into_iter()
+        .map(ToSp1BlockTrace)).map_err(|e|ProverError::Custom(e.to_string()))?;
 
         runner.prepare_stdin();
         #[cfg(feature = "sp1-hint")]
-        runner.hook_poseidon()?;
-        runner.run_on_host()?;
+        runner.hook_poseidon().map_err(|e|ProverError::Custom(e.to_string()))?;
+        runner.run_on_host().map_err(|e|ProverError::Custom(e.to_string()))?;
 
         log::info!("start sp1 prove");
         let sp1_client = SprollRunner::prove_client();
-        let (sp1_proof, vk) = runner.prove_compressed(&sp1_client, &load_elf()?, true)?;
+        let (sp1_proof, vk) = runner.prove_compressed(&sp1_client, &load_elf()?, true)
+        .map_err(|e|ProverError::Custom(e.to_string()))?;
 
-        log::info!("start halo2 wrap");
+        log::info!("start halo2 wrap proving");
         if self.halo2_wrap_prover.is_none() {
             let param = Halo2WrapParams::load();
             let wrap_prover = if let Some(param) = param {
@@ -91,17 +105,28 @@ impl<'params> Sp1Prover<'params> {
             sp1_client.prover.sp1_prover(), // TODO: do not downgrade to cpu prover?
             &vk, 
             sp1_proof
-        )?;
+        ).map_err(|e|ProverError::Custom(e.to_string()))?;
+        log::info!("complete bn254 wrap");
         if wrap_prover.config().test_only {
             log::warn!("no param set, test circuit");
-            wrap_prover.test_param(&preprocessed_proof)?;
+            wrap_prover.test_param(&preprocessed_proof)
+            .map_err(|e|ProverError::Custom(e.to_string()))?;
         }
-
+        
+        let rng = gen_rng();
         let snark = wrap_prover.prove(
             Some(self.prover_impl.params(wrap_prover.config().k as u32)), 
             rng, 
             &preprocessed_proof,
-        )?;
+        ).map_err(|e|ProverError::Custom(e.to_string()))?;
+        log::info!("complete halo2 wrap");
+
+        // Write to disk if an output directory is provided.
+        if let Some(dir) = output_dir {
+            let path = Path::new(dir).join(format!("snark_{}_{}.json", id, name));
+            write_json(&path, &snark)?;
+        }
+
         Ok(snark)
     }
 
@@ -109,25 +134,25 @@ impl<'params> Sp1Prover<'params> {
         &mut self,
         chunk: ChunkProvingTask,
         chunk_id: Option<&str>,
-        _inner_id: Option<&str>,
+        inner_id: Option<&str>,
         output_dir: Option<&str>,
-    ) -> Result<ChunkProofV2> {
+    ) -> Result<ChunkProofV2, ProverError> {
         assert!(!chunk.is_empty());
-        use prover::gen_rng;
-
-        let sp1_snark = self.gen_sp1_snark(
-            gen_rng(),
-            &chunk.block_traces
-        )?;
 
         let chunk_identifier = chunk_id.map_or_else(|| chunk.identifier(), |name| name.to_string());
-        let witness_block = chunk_trace_to_witness_block(chunk.block_traces)?;
         let chunk_info = if let Some(chunk_info_input) = chunk.chunk_info {
             chunk_info_input
         } else {
-            log::info!("gen chunk_info {chunk_identifier:?}");
-            ChunkInfo::from_witness_block(&witness_block, false)
+            log::info!("gen chunk_info {chunk_identifier:?} from traces");
+            ChunkInfo::from_block_traces(&chunk.block_traces)
         };
+
+        let sp1_snark = self.load_or_gen_sp1_snark(
+            &chunk_identifier,
+            inner_id.unwrap_or("sp1"),
+            &chunk.block_traces,
+            output_dir,
+        )?;
 
         let comp_snark = self.prover_impl.load_or_gen_comp_snark(
             &chunk_identifier,
@@ -136,7 +161,8 @@ impl<'params> Sp1Prover<'params> {
             LayerId::Layer2.degree(),
             sp1_snark,
             output_dir,
-        )?;
+        ).map_err(|e|ProverError::Custom(e.to_string()))?;
+        self.check_vk()?;
 
         let pk = self.prover_impl.pk(LayerId::Layer2.id());
         let proof_metadata =
@@ -153,11 +179,17 @@ impl<'params> Sp1Prover<'params> {
             log::info!("skip dumping vk since snark is restore from disk")
         }
 
+        // If the verifier was set, i.e. production environments, we also do a sanity verification
+        // of the proof that was generated above.
+        if let Some(verifier) = &self.verifier {
+            verifier.verify_chunk_proof(&proof)?;
+        }
+
         Ok(proof)
     }
 
     /// Check vk generated is same with vk loaded from assets
-    fn check_vk(&self) {
+    fn check_vk(&self) -> Result<(), ChunkProverError> {
         if self.raw_vk.is_some() {
             let gen_vk = self
                 .prover_impl
@@ -165,7 +197,7 @@ impl<'params> Sp1Prover<'params> {
                 .unwrap_or_default();
             if gen_vk.is_empty() {
                 log::warn!("no gen_vk found, skip check_vk");
-                return;
+                return Ok(());
             }
             let init_vk = self.raw_vk.clone().unwrap_or_default();
             if gen_vk != init_vk {
@@ -173,7 +205,12 @@ impl<'params> Sp1Prover<'params> {
                     "sp1-prover: generated VK is different with init one - gen_vk = {:?}, init_vk = {:?}",
                     gen_vk.get(..16), init_vk.get(..16),
                 );
+                return Err(ChunkProverError::VerifyingKeyMismatch(
+                    format!("{:x?}", gen_vk.get(..16)),
+                    format!("{:x?}", init_vk.get(..16)),
+                ));
             }
         }
+        Ok(())
     }
 }
