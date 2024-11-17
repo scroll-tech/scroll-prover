@@ -3,16 +3,16 @@ use serde_json::Result as SeResult;
 use sp1_host::{trace, BlockTrace as SbvBlockTrace};
 use std::io::{Read, Error};
 
-pub fn to_sp1_block_trace(block_trace: BlockTrace) -> SeResult<SbvBlockTrace> {
+pub fn to_sp1_block_trace(block_trace: &BlockTrace) -> SeResult<SbvBlockTrace> {
     // TODO: there would be a huge work to turn each member in `block_trace`
     // to corresponding one in the sp1 struct since they are all derived
     // by alloy. A serialize - deserialize process is induced for workaround
-    serde_json::from_slice(&serde_json::to_vec(&block_trace)?)
+    serde_json::from_slice(&serde_json::to_vec(block_trace)?)
 }
 
-pub struct ToSp1BlockTrace(pub BlockTrace);
+pub struct ToSp1BlockTrace<'a>(pub &'a BlockTrace);
 
-impl TryInto<trace::BlockTrace> for ToSp1BlockTrace {
+impl<'a> TryInto<trace::BlockTrace> for ToSp1BlockTrace<'a> {
     type Error = serde_json::Error;
 
     fn try_into(self) -> Result<trace::BlockTrace, Self::Error> {
@@ -41,7 +41,7 @@ mod test {
         );
         let trace = serde_json::from_slice::<BlockTrace>(json_bytes).unwrap();
 
-        let sp1_trace = to_sp1_block_trace(trace.clone()).unwrap();
+        let sp1_trace = to_sp1_block_trace(&trace).unwrap();
 
         // randomly check some fields
         assert_eq!(

@@ -2,8 +2,10 @@ use anyhow::Result;
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use prover::{
     Prover as ProverImpl, LayerId, CHUNK_VK_FILENAME, try_read, ChunkProvingTask,
-    ChunkVerifier, ChunkProof,
+    ChunkVerifier, 
     eth_types::l2_types::BlockTrace,
+    ChunkInfo, chunk_trace_to_witness_block,
+    ChunkProofV2Metadata, ChunkProofV2,
 };
 use rand::Rng;
 use snark_verifier_sdk::Snark;
@@ -58,10 +60,10 @@ impl<'params> Sp1Prover<'params> {
             .or_else(|| self.raw_vk.clone())
     }
 
-    pub fn gen_sp1_snark(
+    pub fn gen_sp1_snark<'a>(
         &mut self,
-        rng: &mut (impl Rng + Send),
-        block_traces: impl IntoIterator<Item = BlockTrace>,
+        rng: impl Rng + Send,
+        block_traces: impl IntoIterator<Item = &'a BlockTrace>,
     ) -> Result<Snark> {
         let mut runner = SprollRunner::new(block_traces.into_iter().map(ToSp1BlockTrace))?;
 
@@ -106,21 +108,52 @@ impl<'params> Sp1Prover<'params> {
     pub fn gen_chunk_proof(
         &mut self,
         chunk: ChunkProvingTask,
-        chunk_identifier: Option<&str>,
-        inner_id: Option<&str>,
+        chunk_id: Option<&str>,
+        _inner_id: Option<&str>,
         output_dir: Option<&str>,
-    ) -> Result<ChunkProof> {
+    ) -> Result<ChunkProofV2> {
         assert!(!chunk.is_empty());
+        use prover::gen_rng;
 
-        let mut runner = SprollRunner::new(chunk.block_traces.into_iter().map(ToSp1BlockTrace))?;
+        let sp1_snark = self.gen_sp1_snark(
+            gen_rng(),
+            &chunk.block_traces
+        )?;
 
-        runner.prepare_stdin();
-        #[cfg(feature = "sp1-hint")]
-        runner.hook_poseidon()?;
-        runner.run_on_host()?;
+        let chunk_identifier = chunk_id.map_or_else(|| chunk.identifier(), |name| name.to_string());
+        let witness_block = chunk_trace_to_witness_block(chunk.block_traces)?;
+        let chunk_info = if let Some(chunk_info_input) = chunk.chunk_info {
+            chunk_info_input
+        } else {
+            log::info!("gen chunk_info {chunk_identifier:?}");
+            ChunkInfo::from_witness_block(&witness_block, false)
+        };
 
-        log::info!("start prove ");
-        unimplemented!();
+        let comp_snark = self.prover_impl.load_or_gen_comp_snark(
+            &chunk_identifier,
+            LayerId::Layer2.id(),
+            false,
+            LayerId::Layer2.degree(),
+            sp1_snark,
+            output_dir,
+        )?;
+
+        let pk = self.prover_impl.pk(LayerId::Layer2.id());
+        let proof_metadata =
+            ChunkProofV2Metadata::new(&comp_snark, prover::ChunkKind::Sp1, chunk_info, None)?;
+        let proof = ChunkProofV2::new(comp_snark, pk, proof_metadata)?;
+
+        // in case we read the snark directly from previous calculation,
+        // the pk is not avaliable and we skip dumping the proof
+        if pk.is_some() {
+            if let Some(output_dir) = output_dir {
+                proof.dump(output_dir, &chunk_identifier)?;
+            }
+        } else {
+            log::info!("skip dumping vk since snark is restore from disk")
+        }
+
+        Ok(proof)
     }
 
     /// Check vk generated is same with vk loaded from assets

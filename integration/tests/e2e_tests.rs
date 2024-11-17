@@ -1,10 +1,10 @@
 use halo2_proofs::{halo2curves::bn256::Bn256, poly::kzg::commitment::ParamsKZG};
 use integration::{
-    prove::{get_blob_from_chunks, prove_and_verify_chunk, prove_and_verify_sp1_chunk, SP1Prover},
+    prove::{get_blob_from_chunks, prove_and_verify_chunk, prove_and_verify_sp1_chunk},
     test_util::{load_batch, load_chunk, ASSETS_DIR, PARAMS_DIR},
 };
 use prover::{
-    eth_types::H256, init_env_and_log, read_env_var, BatchHeader, BatchProvingTask, ChunkProver,
+    eth_types::H256, init_env_and_log, read_env_var, BatchHeader, BatchProvingTask, ChunkProver, Sp1Prover,
     ChunkProvingTask, MAX_AGG_SNARKS,
 };
 use std::collections::BTreeMap;
@@ -47,15 +47,6 @@ fn test_e2e_prove_verify() {
     );
     let chunks = chunk_paths.split(';').map(|dir| load_batch(dir).unwrap());
 
-    let sp1_path = {
-        let p = read_env_var("SP1_PATH", String::new());
-        if p.is_empty() {
-            None
-        } else {
-            Some(p)
-        }
-    };
-
     let mut batch_prover_pending = None;
     let mut opt_batch_header = None;
     let mut batch_proofs = Vec::new();
@@ -66,7 +57,6 @@ fn test_e2e_prove_verify() {
             &output_dir,
             &chunk,
             opt_batch_header,
-            sp1_path.as_deref(),
         );
         dump_as_json(
             &output_dir,
@@ -143,17 +133,17 @@ fn test_e2e_prove_verify_hybrid() {
     assert_eq!(chunks[0].len(), 2, "there are 2 chunks in the batch");
     log::info!("OK");
 
-    // path to find inner snark generated via sp1 and sp1-halo2-wrap.
-    let sp1_path = {
-        let p = read_env_var("SP1_PATH", String::new());
-        if p.is_empty() {
-            None
-        } else {
-            Some(p)
-        }
-    };
-    assert!(sp1_path.is_some(), "must provide SP1_PATH env var");
-    log::info!("sp1 path: {sp1_path:?} OK");
+    // // path to find inner snark generated via sp1 and sp1-halo2-wrap.
+    // let sp1_path = {
+    //     let p = read_env_var("SP1_PATH", String::new());
+    //     if p.is_empty() {
+    //         None
+    //     } else {
+    //         Some(p)
+    //     }
+    // };
+    // assert!(sp1_path.is_some(), "must provide SP1_PATH env var");
+    // log::info!("sp1 path: {sp1_path:?} OK");
 
     let chunk_1 = load_chunk(&chunks[0][0]).1;
     let chunk_2 = load_chunk(&chunks[0][1]).1;
@@ -189,7 +179,7 @@ fn test_e2e_prove_verify_hybrid() {
 
     // sp1 chunk
     let chunk_2_proofs = {
-        let mut zkevm_prover = SP1Prover::from_params_and_assets(&params_map, ASSETS_DIR);
+        let mut sp1_prover = prover::Sp1Prover::from_params_and_assets(&params_map, ASSETS_DIR);
         log::info!("Constructed sp1 prover");
         chunk_2
             .into_iter()
@@ -197,9 +187,8 @@ fn test_e2e_prove_verify_hybrid() {
                 prove_and_verify_sp1_chunk(
                     &params_map,
                     &output_dir,
-                    sp1_path.as_deref(),
                     ChunkProvingTask::new(vec![block_trace]),
-                    &mut zkevm_prover,
+                    &mut sp1_prover,
                     None,
                 )
             })
@@ -341,7 +330,6 @@ fn gen_batch_proving_task(
     output_dir: &str,
     chunk_dirs: &[String],
     opt_batch_header: Option<BatchHeader<MAX_AGG_SNARKS>>,
-    sp1_path: Option<&str>,
 ) -> (BatchProvingTask, BatchHeader<MAX_AGG_SNARKS>) {
     let chunks: Vec<_> = chunk_dirs
         .iter()
@@ -358,8 +346,9 @@ fn gen_batch_proving_task(
             .map_or(0, |block_trace| block_trace.header.timestamp.as_u64())
     });
 
-    let chunk_proofs = if let Some(sp1_path) = sp1_path {
-        let mut zkevm_prover = SP1Prover::from_params_and_assets(params_map, ASSETS_DIR);
+
+    let chunk_proofs = if read_env_var("TEST_SP1", false) {
+        let mut sp1_prover = Sp1Prover::from_params_and_assets(params_map, ASSETS_DIR);
         log::info!("Constructed sp1 prover");
         chunks
             .into_iter()
@@ -367,9 +356,8 @@ fn gen_batch_proving_task(
                 prove_and_verify_sp1_chunk(
                     params_map,
                     output_dir,
-                    Some(sp1_path),
                     ChunkProvingTask::new(block_traces),
-                    &mut zkevm_prover,
+                    &mut sp1_prover,
                     None,
                 )
             })

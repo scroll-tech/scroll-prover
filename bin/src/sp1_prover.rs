@@ -1,7 +1,6 @@
 use clap::Parser;
-use integration::test_util::load_chunk_compatible;
-use prover::{init_env_and_log, gen_rng, ChunkProvingTask};
-use scroll_prover::Sp1Prover;
+use integration::{prove::prove_and_verify_sp1_chunk, test_util::load_chunk_compatible};
+use scroll_prover::{init_env_and_log, Sp1Prover, ChunkProvingTask};
 use std::env;
 
 #[derive(Parser, Debug)]
@@ -20,8 +19,6 @@ struct Args {
         default_value = "tests/extra_traces/batch_sproll/5224657.json"
     )]
     trace_path: String,
-    #[clap(short, long = "exec-test")]
-    exec: bool,
 }
 
 const DEFAULT_PARAM : &str = 
@@ -62,24 +59,14 @@ fn main() {
     env::set_var("SHARD_SIZE", "524288");
     env::set_var("BASE_CONFIG_PARAMS", DEFAULT_PARAM);
     let mut prover = Sp1Prover::from_params_and_assets(&params_map, &args.assets_path);
-    log::info!("Constructed sp1 prover");
+    log::info!("Constructed sp1 chunk prover");
 
-    let mut rng = gen_rng();
-    let now = std::time::Instant::now();
-    let _chunk_snark = prover
-        .gen_sp1_snark(&mut rng, chunk.block_traces)
-        .expect("cannot generate sp1 snark");
-    log::info!(
-        "finish generating sp1 snark, elapsed: {:?}",
-        now.elapsed()
+    prove_and_verify_sp1_chunk(
+        &params_map,
+        &output_dir,
+        chunk,
+        &mut prover,
+        Some("0"), // same with `make test-chunk-prove`, to load vk        
     );
-
-    // prove_and_verify_chunk(
-    //     chunk,
-    //     Some("0"), // same with `make test-chunk-prove`, to load vk
-    //     &params_map,
-    //     &args.assets_path,
-    //     &output_dir,
-    // );
     log::info!("sp1 prove done");
 }
