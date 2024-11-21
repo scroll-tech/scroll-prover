@@ -6,6 +6,10 @@ RUST_MIN_STACK ?= 16777216
 export RUST_MIN_STACK
 RUST_BACKTRACE=1
 export RUST_BACKTRACE
+VERIFY_VK=false
+export VERIFY_VK
+SHARD_SIZE ?= 524288
+export SHARD_SIZE
 
 help: ## Display this help screen
 	@grep -h \
