@@ -86,7 +86,7 @@ impl<'params> Sp1Prover<'params> {
         runner.run_on_host().map_err(|e|ProverError::Custom(e.to_string()))?;
 
         log::info!("start sp1 prove");
-        let sp1_client = SprollRunner::prove_client();
+        let sp1_client = SprollRunner::prover_client();
         let (sp1_proof, vk) = runner.prove_compressed(&sp1_client, &load_elf()?, true)
         .map_err(|e|ProverError::Custom(e.to_string()))?;
 

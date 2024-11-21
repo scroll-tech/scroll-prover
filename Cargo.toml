@@ -28,11 +28,10 @@ serde_json = "1.0"
 tokio = { version = "1.32", features = ["full"] }
 
 halo2_proofs = { git = "https://github.com/scroll-tech/halo2.git", branch = "v1.1"  }
-prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "develop", default-features = false, features = ["parallel_syn", "scroll"] }
+prover = { git = "https://github.com/scroll-tech/zkevm-circuits.git", branch = "fix/revm_in_test", default-features = false, features = ["parallel_syn", "scroll"] }
 integration = { path = "integration" }
 scroll-prover = { path = "prover" }
 
-revm = { git = "https://github.com/scroll-tech/revm", branch = "scroll-evm-executor/feat/v49/sp1", features = ["negate-scroll-default-handler"] }
 
 [patch.crates-io]
 halo2curves = { git = "https://github.com/scroll-tech/halo2curves", branch = "v0.1.0" }
@@ -80,6 +79,7 @@ bls12_381 = { git = "https://github.com/scroll-tech/bls12_381", branch = "feat/i
 [patch."https://github.com/scroll-tech/revm"]
 revm = { git = "https://github.com/scroll-tech//revm", branch = "scroll-evm-executor/feat/v49/sp1" }
 revm-primitives = { git = "https://github.com/scroll-tech//revm", branch = "scroll-evm-executor/feat/v49/sp1" }
+revm-precompile = { git = "https://github.com/scroll-tech//revm", branch = "scroll-evm-executor/feat/v49/sp1" }
 
 # uncomment to test on upstream
 #[patch."https://github.com/scroll-tech/sp1.git"]
