@@ -3849,6 +3849,7 @@ dependencies = [
  "log",
  "log4rs",
  "rand",
+ "revm 17.1.0",
  "scroll-prover",
  "serde",
  "serde_derive",
@@ -3998,6 +3999,19 @@ checksum = "bb8515fff80ed850aea4a1595f2e519c003e2a00a82fe168ebf5269196caf444"
 dependencies = [
  "digest 0.10.7",
  "sha3-asm",
+]
+
+[[package]]
+name = "kzg-rs"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0850eb19206463a61bede4f7b7e6b21731807137619044b1f3c287ebcfe2b3b0"
+dependencies = [
+ "ff 0.13.0",
+ "hex",
+ "sha2",
+ "sp1_bls12_381",
+ "spin 0.9.8",
 ]
 
 [[package]]
@@ -5165,7 +5179,7 @@ dependencies = [
  "bn254",
  "itertools 0.13.0",
  "sp1-intrinsics",
- "sp1-lib",
+ "sp1-lib 2.0.0",
 ]
 
 [[package]]
@@ -5825,6 +5839,7 @@ dependencies = [
  "c-kzg",
  "cfg-if 1.0.0",
  "k256",
+ "kzg-rs",
  "once_cell",
  "p256",
  "revm-primitives 13.0.0",
@@ -5866,11 +5881,13 @@ dependencies = [
  "auto_impl",
  "bitflags 2.6.0",
  "bitvec",
+ "c-kzg",
  "cfg-if 1.0.0",
  "dyn-clone",
  "enumn",
  "getrandom",
  "hex",
+ "kzg-rs",
  "poseidon-bn254",
  "serde",
 ]
@@ -7028,6 +7045,20 @@ dependencies = [
 
 [[package]]
 name = "sp1-lib"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bea7811abd2d3a991007fcb284f41152840b8388c171288d0c52c6793956609c"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "cfg-if 1.0.0",
+ "hex",
+ "serde",
+ "snowbridge-amcl",
+]
+
+[[package]]
+name = "sp1-lib"
 version = "2.0.0"
 source = "git+https://github.com/scroll-tech/sp1.git?branch=scroll-dev-0830#bc5b34fee2fbaefb804a585b9764e652f804b627"
 dependencies = [
@@ -7293,6 +7324,21 @@ dependencies = [
  "sysinfo",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "sp1_bls12_381"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a27c4b8901334dc09099dd82f80a72ddfc76b0046f4b342584c808f1931bed5a"
+dependencies = [
+ "cfg-if 1.0.0",
+ "ff 0.13.0",
+ "group 0.13.0",
+ "pairing 0.23.0",
+ "rand_core",
+ "sp1-lib 1.2.0",
+ "subtle",
 ]
 
 [[package]]
