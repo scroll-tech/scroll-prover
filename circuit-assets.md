@@ -19,7 +19,7 @@ To know more about how these files are generated, see [here](https://github.com/
 ## Circuit Assets Files (VKs)
 
 
-Assets files are related to circuit versions. Available in Github [latest](./release-latest) and S3:
+Assets files are related to circuit versions. Available in Github [v0.13.1 assets](./release-v0.13.1) and S3:
 
 ```
 
