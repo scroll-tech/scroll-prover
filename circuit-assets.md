@@ -13,6 +13,8 @@ do
 done
 ```
 
+Checksum can be found [here](./params-sha256sum)   
+
 To know more about how these files are generated, see [here](https://github.com/han0110/halo2-kzg-srs?tab=readme-ov-file#download-the-converted-srs)
 
 

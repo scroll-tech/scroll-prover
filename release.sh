@@ -35,7 +35,6 @@ function upload_s3() {
   cd $OUT
   sha256sum * > sha256sum
   cd ..
-  cd integration/params/; sha256sum * >> ../../$OUT/sha256sum; cd ../..
 
   aws --profile default s3 cp $OUT s3://circuit-release/$OUT --recursive
 }
